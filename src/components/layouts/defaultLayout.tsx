@@ -1,17 +1,20 @@
 // src/components/AquaLayout.tsx
-'use client'
-import React, { ReactNode } from 'react';
+"use client";
+import React, { ReactNode } from "react";
 import AquaFooter from "./footer";
 import AquaHeader from "./header";
-import Head from 'next/head';
-import { defaultMetadata, Metadata } from '../head/metaData'; // Adjust the path as necessary
+import Head from "next/head";
+import { defaultMetadata, Metadata } from "../head/metaData"; // Adjust the path as necessary
 
 interface AquaLayoutProps {
   children: ReactNode;
   metadata?: Metadata;
 }
 
-const AquaLayout = ({ children, metadata = defaultMetadata }: AquaLayoutProps) => {
+const AquaLayout = ({
+  children,
+  metadata = defaultMetadata,
+}: AquaLayoutProps) => {
   return (
     <>
       <Head>
@@ -35,6 +38,6 @@ const AquaLayout = ({ children, metadata = defaultMetadata }: AquaLayoutProps) =
       <AquaFooter />
     </>
   );
-}
+};
 
 export default AquaLayout;
