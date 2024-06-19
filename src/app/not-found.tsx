@@ -17,7 +17,10 @@ const NotFound = () => {
             >
               Go back home
             </a>
-            <a href="/contact-us" className="text-sm font-semibold text-gray-900">
+            <a
+              href="/contact-us"
+              className="text-sm font-semibold text-gray-900"
+            >
               Contact support <span aria-hidden="true">&rarr;</span>
             </a>
           </div>

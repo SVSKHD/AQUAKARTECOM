@@ -1,6 +1,4 @@
-const AquaProductPage = () =>{
-return(
-    <h1>hello Product</h1>
-)
-}
-export default AquaProductPage
+const AquaProductPage = () => {
+  return <h1>hello Product</h1>;
+};
+export default AquaProductPage;

@@ -1,6 +1,6 @@
 // src/layouts/DashboardLayout.tsx
 "use client";
-import React from 'react';
+import React from "react";
 import {
   CalendarIcon,
   ChartPieIcon,
@@ -8,25 +8,37 @@ import {
   FolderIcon,
   HomeIcon,
   UsersIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 const navigation = [
-  { name: 'Dashboard', href: '#', icon: HomeIcon, count: '5', current: true },
-  { name: 'Team', href: '#', icon: UsersIcon, current: false },
-  { name: 'Projects', href: '#', icon: FolderIcon, count: '12', current: false },
-  { name: 'Calendar', href: '#', icon: CalendarIcon, count: '20+', current: false },
-  { name: 'Documents', href: '#', icon: DocumentDuplicateIcon, current: false },
-  { name: 'Reports', href: '#', icon: ChartPieIcon, current: false },
+  { name: "Dashboard", href: "#", icon: HomeIcon, count: "5", current: true },
+  { name: "Team", href: "#", icon: UsersIcon, current: false },
+  {
+    name: "Projects",
+    href: "#",
+    icon: FolderIcon,
+    count: "12",
+    current: false,
+  },
+  {
+    name: "Calendar",
+    href: "#",
+    icon: CalendarIcon,
+    count: "20+",
+    current: false,
+  },
+  { name: "Documents", href: "#", icon: DocumentDuplicateIcon, current: false },
+  { name: "Reports", href: "#", icon: ChartPieIcon, current: false },
 ];
 
 const teams = [
-  { id: 1, name: 'Heroicons', href: '#', initial: 'H', current: false },
-  { id: 2, name: 'Tailwind Labs', href: '#', initial: 'T', current: false },
-  { id: 3, name: 'Workcation', href: '#', initial: 'W', current: false },
+  { id: 1, name: "Heroicons", href: "#", initial: "H", current: false },
+  { id: 2, name: "Tailwind Labs", href: "#", initial: "T", current: false },
+  { id: 3, name: "Workcation", href: "#", initial: "W", current: false },
 ];
 
 function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 interface DashboardLayoutProps {
@@ -51,14 +63,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <a
                   href={item.href}
                   className={classNames(
-                    item.current ? 'bg-indigo-700 text-white' : 'text-indigo-200 hover:bg-indigo-700 hover:text-white',
-                    'group flex items-center gap-x-3 rounded-md p-2 text-sm font-medium'
+                    item.current
+                      ? "bg-indigo-700 text-white"
+                      : "text-indigo-200 hover:bg-indigo-700 hover:text-white",
+                    "group flex items-center gap-x-3 rounded-md p-2 text-sm font-medium",
                   )}
                 >
                   <item.icon
                     className={classNames(
-                      item.current ? 'text-white' : 'text-indigo-200 group-hover:text-white',
-                      'h-6 w-6'
+                      item.current
+                        ? "text-white"
+                        : "text-indigo-200 group-hover:text-white",
+                      "h-6 w-6",
                     )}
                     aria-hidden="true"
                   />
@@ -76,15 +92,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             ))}
           </ul>
           <div className="mt-6">
-            <div className="text-xs font-semibold text-indigo-200">Your teams</div>
+            <div className="text-xs font-semibold text-indigo-200">
+              Your teams
+            </div>
             <ul className="mt-2 space-y-1">
               {teams.map((team) => (
                 <li key={team.id}>
                   <a
                     href={team.href}
                     className={classNames(
-                      team.current ? 'bg-indigo-700 text-white' : 'text-indigo-200 hover:bg-indigo-700 hover:text-white',
-                      'group flex items-center gap-x-3 rounded-md p-2 text-sm font-medium'
+                      team.current
+                        ? "bg-indigo-700 text-white"
+                        : "text-indigo-200 hover:bg-indigo-700 hover:text-white",
+                      "group flex items-center gap-x-3 rounded-md p-2 text-sm font-medium",
                     )}
                   >
                     <span className="flex h-6 w-6 items-center justify-center rounded-lg border border-indigo-400 bg-indigo-500 text-xs font-medium text-white">

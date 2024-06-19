@@ -95,18 +95,17 @@ export default function Example() {
                 </DisclosureButton>
               </div>
               <div className="hidden lg:relative lg:z-10 lg:ml-4 lg:flex lg:items-center">
-              <button
+                <button
                   type="button"
                   className="relative ml-auto flex-shrink-0 rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                 >
                   <span className="absolute -inset-1.5" />
                   <span className="sr-only">View notifications</span>
                   <ShoppingBagIcon className="h-6 w-6" aria-hidden="true" />
-                  
-                    <span className="absolute right-0 top-0 block h-2.5 w-2.5 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-green-400 ring-2 p-2 ring-white text-xs text-white flex items-center justify-center">
-                     2
-                    </span>
-               
+
+                  <span className="absolute right-0 top-0 block h-2.5 w-2.5 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-green-400 ring-2 p-2 ring-white text-xs text-white flex items-center justify-center">
+                    2
+                  </span>
                 </button>
 
                 {/* Profile dropdown */}
@@ -136,7 +135,7 @@ export default function Example() {
                               href={item.href}
                               className={classNames(
                                 focus ? "bg-gray-100" : "",
-                                "block px-4 py-2 text-sm text-gray-700"
+                                "block px-4 py-2 text-sm text-gray-700",
                               )}
                             >
                               {item.name}
@@ -161,7 +160,7 @@ export default function Example() {
                     item.current
                       ? "bg-gray-900 text-white"
                       : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                    "inline-flex items-center rounded-md px-3 py-2 text-sm font-medium"
+                    "inline-flex items-center rounded-md px-3 py-2 text-sm font-medium",
                   )}
                   aria-current={item.current ? "page" : undefined}
                 >
@@ -182,7 +181,7 @@ export default function Example() {
                     item.current
                       ? "bg-gray-900 text-white"
                       : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                    "block rounded-md px-3 py-2 text-base font-medium"
+                    "block rounded-md px-3 py-2 text-base font-medium",
                   )}
                   aria-current={item.current ? "page" : undefined}
                 >
@@ -212,11 +211,10 @@ export default function Example() {
                   <span className="absolute -inset-1.5" />
                   <span className="sr-only">View notifications</span>
                   <ShoppingBagIcon className="h-6 w-6" aria-hidden="true" />
-                  
-                    <span className="absolute right-0 top-0 block h-2.5 w-2.5 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-green-400 ring-2 p-2 ring-white text-xs text-white flex items-center justify-center">
-                     2
-                    </span>
-               
+
+                  <span className="absolute right-0 top-0 block h-2.5 w-2.5 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-green-400 ring-2 p-2 ring-white text-xs text-white flex items-center justify-center">
+                    2
+                  </span>
                 </button>
               </div>
               <div className="mt-3 space-y-1 px-2">
