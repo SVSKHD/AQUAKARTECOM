@@ -1,3 +1,4 @@
+'use client'
 const navigation = {
     solutions: [
       { name: 'Marketing', href: '#' },
@@ -89,6 +90,7 @@ const navigation = {
   }
   
   export default function Example() {
+    const year = new Date().getFullYear()
     return (
       <footer className="bg-white" aria-labelledby="footer-heading">
         <h2 id="footer-heading" className="sr-only">
@@ -196,7 +198,7 @@ const navigation = {
               ))}
             </div>
             <p className="mt-8 text-xs leading-5 text-gray-500 md:order-1 md:mt-0">
-              &copy; 2020 Your Company, Inc. All rights reserved.
+              &copy; {year} Aquakart, Inc. All rights reserved.
             </p>
           </div>
         </div>
