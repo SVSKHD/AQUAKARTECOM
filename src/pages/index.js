@@ -1,11 +1,6 @@
-import Image from "next/image";
-import { Inter } from "next/font/google";
-import Example from "@/components/layouts/header";
-
-const inter = Inter({ subsets: ["latin"] });
-
+import AquaLayout from "@/components/layouts/layout";
 export default function Home() {
   return (
-    <Example/>
+    <AquaLayout/>
   );
 }
