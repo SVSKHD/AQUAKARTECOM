@@ -11,15 +11,16 @@ import {
   import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
   
   const navigation = [
-    { name: 'Dashboard', href: '#', current: true },
-    { name: 'Team', href: '#', current: false },
-    { name: 'Projects', href: '#', current: false },
-    { name: 'Calendar', href: '#', current: false },
+    { name: 'Shop', href: '/shop', current: true },
+    { name: 'Compare', href: '/compare', current: false },
+    { name: 'About', href: '/about', current: false },
   ]
   
   function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
   }
+
+  
   
 const AquaHeader = () => {
     return (
