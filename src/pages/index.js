@@ -1,6 +1,7 @@
-import AquaLayout from "@/components/layouts/layout";
-export default function Home() {
+import AquaHomeIndexComponent from "@/pageComponents/home";
+const AquaHome = ()=> {
   return (
-    <AquaLayout/>
+    <AquaHomeIndexComponent/>
   );
 }
+export default AquaHome
