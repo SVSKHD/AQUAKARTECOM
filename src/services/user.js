@@ -2,12 +2,20 @@ import axios from "axios"
 
 const BASE = process.env.NEXT_PUBLIC_API_URL 
 
-const userLoginWithPhone = () =>axios.post(`${BASE}/login/phone`)
+const UserLoginWithPhone = (number) =>axios.post(`${BASE}/login/phone`, number)
+const UserSignpWithPhone = (number) =>axios.post(`${BASE}/signup/phone` , number)
+const UserLogin = (data) =>axios.post(`${BASE}/login`, data)
+const UserSignup = (data) =>axios.post(`${BASE}/signup`, data)
+const UserDetails = (data) =>axios.post(`${BASE}/user/update`,data)
 
 
 
 const UserServiceOperations={
-    userLoginWithPhone
+    UserLoginWithPhone,
+    UserSignpWithPhone,
+    UserLogin,
+    UserSignup,
+    UserDetails
 }
 
 export default UserServiceOperations
