@@ -7,6 +7,7 @@ const UserSignpWithPhone = (number) =>axios.post(`${BASE}/signup/phone` , number
 const UserLogin = (data) =>axios.post(`${BASE}/login`, data)
 const UserSignup = (data) =>axios.post(`${BASE}/signup`, data)
 const UserDetails = (data) =>axios.post(`${BASE}/user/update`,data)
+const UserForgotPassword = (otp , password)=>axios.post(`${BASE}/forgot-password`)
 
 
 
@@ -15,7 +16,8 @@ const UserServiceOperations={
     UserSignpWithPhone,
     UserLogin,
     UserSignup,
-    UserDetails
+    UserDetails,
+    UserForgotPassword
 }
 
 export default UserServiceOperations
