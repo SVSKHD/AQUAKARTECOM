@@ -1,16 +1,14 @@
-
+import LW from "@/assests/logo-white.png"
+import CategoryServiceOperations from "@/services/categories"
+import SubCategoryServiceOperations from "@/services/subcategory"
+import Image from "next/image"
+import { useEffect, useState } from "react"
 const navigation = {
     solutions: [
       { name: 'Marketing', href: '#' },
       { name: 'Analytics', href: '#' },
       { name: 'Commerce', href: '#' },
       { name: 'Insights', href: '#' },
-    ],
-    support: [
-      { name: 'Pricing', href: '#' },
-      { name: 'Documentation', href: '#' },
-      { name: 'Guides', href: '#' },
-      { name: 'API Status', href: '#' },
     ],
     company: [
       { name: 'About', href: '#' },
@@ -90,6 +88,22 @@ const navigation = {
   }
   const year = new Date().getFullYear()
 const AquaFooter = () =>{
+  const [categories, setCategories] = useState([]);
+  const [subactegories , setSubCategories] = useState([])
+  useEffect(() => {
+    const fetchCategories = () => {
+      CategoryServiceOperations.Allcategories().then((res) => {
+        setCategories(res.data.data);
+      });
+    };
+    const fetchSubCategories = () => {
+      SubCategoryServiceOperations.AllSubcategories().then((res) => {
+        setSubCategories(res.data.data);
+      });
+    };
+    fetchCategories();
+    fetchSubCategories()
+  }, []); // Only run once, when the component mounts
     return (
       <footer className="bg-gray-900" aria-labelledby="footer-heading">
         <h2 id="footer-heading" className="sr-only">
@@ -97,10 +111,10 @@ const AquaFooter = () =>{
         </h2>
         <div className="mx-auto max-w-7xl px-6 pb-8 pt-16 sm:pt-24 lg:px-8 lg:pt-32">
           <div className="xl:grid xl:grid-cols-3 xl:gap-8">
-            <img
-              className="h-7"
-              src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-              alt="Company name"
+            <Image
+              className="h-30 w-30"
+              src={LW}
+              alt="Aquakart"
             />
             <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
               <div className="md:grid md:grid-cols-2 md:gap-8">
@@ -117,12 +131,12 @@ const AquaFooter = () =>{
                   </ul>
                 </div>
                 <div className="mt-10 md:mt-0">
-                  <h3 className="text-sm font-semibold leading-6 text-white">Support</h3>
+                  <h3 className="text-sm font-semibold leading-6 text-white">Categories</h3>
                   <ul role="list" className="mt-6 space-y-4">
-                    {navigation.support.map((item) => (
+                    {categories.map((item) => (
                       <li key={item.name}>
-                        <a href={item.href} className="text-sm leading-6 text-gray-300 hover:text-white">
-                          {item.name}
+                        <a href={`/categories/${item.title}`} className="text-sm leading-6 text-gray-300 hover:text-white">
+                          {item.title}
                         </a>
                       </li>
                     ))}
@@ -131,12 +145,12 @@ const AquaFooter = () =>{
               </div>
               <div className="md:grid md:grid-cols-2 md:gap-8">
                 <div>
-                  <h3 className="text-sm font-semibold leading-6 text-white">Company</h3>
+                  <h3 className="text-sm font-semibold leading-6 text-white">SubCategories</h3>
                   <ul role="list" className="mt-6 space-y-4">
-                    {navigation.company.map((item) => (
+                    {subactegories.map((item) => (
                       <li key={item.name}>
-                        <a href={item.href} className="text-sm leading-6 text-gray-300 hover:text-white">
-                          {item.name}
+                        <a href={`/subcategory/${item.title}`} className="text-sm leading-6 text-gray-300 hover:text-white">
+                          {item.title}
                         </a>
                       </li>
                     ))}

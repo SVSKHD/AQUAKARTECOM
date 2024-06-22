@@ -21,7 +21,7 @@ const AquaCategoryCard = ({ category }) => {
         />
       </div>
       <div className="mt-4">
-        <h3 className="text-lg font-medium text-gray-900">{category.title}</h3>
+        <h3 className="text-lg font-medium text-gray-900">{category.title.toUpperCase()}</h3>
         <p className="mt-1 text-sm text-gray-500">
           {isExpanded ? category.description : `${category.description.substring(0, 100)}...`}
         </p>
