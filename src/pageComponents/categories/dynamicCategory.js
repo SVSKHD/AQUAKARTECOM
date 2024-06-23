@@ -7,24 +7,33 @@ const AquaDynamicCategoryIndexComponent = () => {
   const router = useRouter();
   const { id } = router.query;
   const seo = {
-    title: "category",
+    title: "Category",
   };
   const [category, setCategory] = useState({});
+
   useEffect(() => {
-    const fetCategoryByTitle = () => {
-      CategoryServiceOperations.CategoyByTitle(id).then((res) => {
-        setCategory(res.data.data);
-      });
+    const fetchCategoryByTitle = () => {
+      if (id) {
+        CategoryServiceOperations.CategoyByTitle(id)
+          .then((res) => {
+            setCategory(res.data.data);
+          })
+          .catch((error) => {
+            console.error("Failed to fetch category:", error);
+          });
+      }
     };
-    fetCategoryByTitle();
-  });
+    fetchCategoryByTitle();
+  }, [id]); // Adding dependency array to avoid repeated calls
+
   return (
     <>
       <AquaLayout seo={seo}>
-        {JSON.stringify(id)}
+        {id ? JSON.stringify(id) : "Loading..."}
         {/* {JSON.stringify(category)} */}
       </AquaLayout>
     </>
   );
 };
+
 export default AquaDynamicCategoryIndexComponent;

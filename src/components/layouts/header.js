@@ -16,9 +16,11 @@ import {
   XMarkIcon,
   ShoppingCartIcon,
   HeartIcon,
+  UserIcon,
 } from "@heroicons/react/24/outline";
 import LW from "@/assests/logo-white.png";
 import Image from "next/image";
+import { useSelector } from "react-redux";
 
 const navigation = [
   { name: "Shop", href: "/shop" },
@@ -32,6 +34,7 @@ function classNames(...classes) {
 
 const AquaHeader = () => {
   const { openCartDrawer, openFavDrawer } = useCartDrawer();
+  const { userData } = useSelector((state) => ({ ...state }));
   const router = useRouter();
 
   return (
@@ -78,7 +81,7 @@ const AquaHeader = () => {
                   </div>
                 </div>
               </div>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                 <button
                   onClick={() => openFavDrawer()}
                   type="button"
@@ -100,65 +103,77 @@ const AquaHeader = () => {
                 </button>
 
                 {/* Profile dropdown */}
-                <Menu as="div" className="relative ml-3">
-                  <div>
-                    <MenuButton className="p-2 relative flex rounded-full bg-gray-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
-                      <span className="absolute -inset-1.5" />
-                      <span className="sr-only">Open user menu</span>
-                      UN
-                    </MenuButton>
-                  </div>
-                  <Transition
-                    enter="transition ease-out duration-100"
-                    enterFrom="transform opacity-0 scale-95"
-                    enterTo="transform opacity-100 scale-100"
-                    leave="transition ease-in duration-75"
-                    leaveFrom="transform opacity-100 scale-100"
-                    leaveTo="transform opacity-0 scale-95"
-                  >
-                    <MenuItems className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      <MenuItem>
-                        {({ focus }) => (
-                          <a
-                            href="#"
-                            className={classNames(
-                              focus ? "bg-gray-100" : "",
-                              "block px-4 py-2 text-sm text-gray-700",
-                            )}
-                          >
-                            Your Profile
-                          </a>
-                        )}
-                      </MenuItem>
-                      <MenuItem>
-                        {({ focus }) => (
-                          <a
-                            href="#"
-                            className={classNames(
-                              focus ? "bg-gray-100" : "",
-                              "block px-4 py-2 text-sm text-gray-700",
-                            )}
-                          >
-                            Settings
-                          </a>
-                        )}
-                      </MenuItem>
-                      <MenuItem>
-                        {({ focus }) => (
-                          <a
-                            href="#"
-                            className={classNames(
-                              focus ? "bg-gray-100" : "",
-                              "block px-4 py-2 text-sm text-gray-700",
-                            )}
-                          >
-                            Sign out
-                          </a>
-                        )}
-                      </MenuItem>
-                    </MenuItems>
-                  </Transition>
-                </Menu>
+                {userData ? (
+                  <Menu as="div" className="relative ml-3">
+                    <div>
+                      <MenuButton className="p-2 relative flex rounded-full bg-gray-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                        <span className="absolute -inset-1.5" />
+                        <span className="sr-only">Open user menu</span>
+                        UN
+                      </MenuButton>
+                    </div>
+                    <Transition
+                      enter="transition ease-out duration-100"
+                      enterFrom="transform opacity-0 scale-95"
+                      enterTo="transform opacity-100 scale-100"
+                      leave="transition ease-in duration-75"
+                      leaveFrom="transform opacity-100 scale-100"
+                      leaveTo="transform opacity-0 scale-95"
+                    >
+                      <MenuItems className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <MenuItem>
+                          {({ focus }) => (
+                            <a
+                              href="#"
+                              className={classNames(
+                                focus ? "bg-gray-100" : "",
+                                "block px-4 py-2 text-sm text-gray-700",
+                              )}
+                            >
+                              Your Profile
+                            </a>
+                          )}
+                        </MenuItem>
+                        <MenuItem>
+                          {({ focus }) => (
+                            <a
+                              href="#"
+                              className={classNames(
+                                focus ? "bg-gray-100" : "",
+                                "block px-4 py-2 text-sm text-gray-700",
+                              )}
+                            >
+                              Settings
+                            </a>
+                          )}
+                        </MenuItem>
+                        <MenuItem>
+                          {({ focus }) => (
+                            <a
+                              href="#"
+                              className={classNames(
+                                focus ? "bg-gray-100" : "",
+                                "block px-4 py-2 text-sm text-gray-700",
+                              )}
+                            >
+                              Sign out
+                            </a>
+                          )}
+                        </MenuItem>
+                      </MenuItems>
+                    </Transition>
+                  </Menu>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="relative rounded-full bg-gray-800  ml-2 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                    >
+                      <span className="sr-only">View notifications</span>
+                      <UserIcon className="h-6 w-6" aria-hidden="true" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
