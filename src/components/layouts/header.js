@@ -15,6 +15,7 @@ import {
   Bars3Icon,
   XMarkIcon,
   ShoppingCartIcon,
+  HeartIcon,
 } from "@heroicons/react/24/outline";
 import LW from "@/assests/logo-white.png";
 import Image from "next/image";
@@ -30,7 +31,7 @@ function classNames(...classes) {
 }
 
 const AquaHeader = () => {
-  const { openCartDrawer, closeCartDrawer } = useCartDrawer();
+  const { openCartDrawer, openFavDrawer } = useCartDrawer();
   const router = useRouter();
 
   return (
@@ -78,6 +79,14 @@ const AquaHeader = () => {
                 </div>
               </div>
               <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+                <button
+                  onClick={() => openFavDrawer()}
+                  type="button"
+                  className="relative rounded-full bg-gray-800 p-1 mr-2 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                >
+                  <span className="sr-only">View notifications</span>
+                  <HeartIcon className="h-6 w-6" aria-hidden="true" />
+                </button>
                 <button
                   onClick={() => openCartDrawer()}
                   type="button"

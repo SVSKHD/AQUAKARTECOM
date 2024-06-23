@@ -1,14 +1,16 @@
 import { useSelector } from "react-redux";
 import AquaReuseDrawer from "../reusables/drawer";
-import useCartDrawer from "@/utils/drawer";
+import useDrawer from "@/utils/drawer";
 
-const AquaCartDrawer = ({ show, close, children }) => {
+const AquaCartDrawer = () => {
   const { cartDrawer } = useSelector((state) => ({ ...state }));
-  const { closeCartDrawer } = useCartDrawer();
+  const { closeCartDrawer } = useDrawer();
   return (
-    <AquaReuseDrawer show={cartDrawer} close={closeCartDrawer}>
-      <h1>cart</h1>
-    </AquaReuseDrawer>
+    <AquaReuseDrawer
+      open={cartDrawer}
+      close={() => closeCartDrawer()}
+      title="Cart"
+    ></AquaReuseDrawer>
   );
 };
 export default AquaCartDrawer;

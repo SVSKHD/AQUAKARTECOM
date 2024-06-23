@@ -1,6 +1,6 @@
 import { useDispatch } from "react-redux";
 
-const useCartDrawer = () => {
+const useDrawer = () => {
   const dispatch = useDispatch();
 
   const openCartDrawer = () => {
@@ -17,7 +17,21 @@ const useCartDrawer = () => {
     });
   };
 
-  return { openCartDrawer, closeCartDrawer };
+  const openFavDrawer = () => {
+    dispatch({
+      type: "SET_FAV_DRAWER_VISIBLE",
+      payload: true,
+    });
+  };
+
+  const closeFavDrawer = () => {
+    dispatch({
+      type: "SET_FAV_DRAWER_VISIBLE",
+      payload: false,
+    });
+  };
+
+  return { openCartDrawer, closeCartDrawer, openFavDrawer, closeFavDrawer };
 };
 
-export default useCartDrawer;
+export default useDrawer;
