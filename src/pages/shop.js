@@ -1,10 +1,6 @@
-import AquaShopComponentIndex from "@/pageComponents/shop"
+import AquaShopComponentIndex from "@/pageComponents/shop";
 
-
-
-const AquaShopIndex = () =>{
-return(
-    <AquaShopComponentIndex/>
-)
-}
-export default AquaShopIndex
+const AquaShopIndex = () => {
+  return <AquaShopComponentIndex />;
+};
+export default AquaShopIndex;

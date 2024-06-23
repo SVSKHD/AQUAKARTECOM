@@ -1,11 +1,11 @@
-import { useState, Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { useState, Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
-export default function AquaReuseDrawer({ open, setOpen, children }) {
+export default function AquaReuseDrawer({ show, close, children }) {
   return (
-    <Transition show={open} as={Fragment}>
-      <Dialog className="relative z-10" onClose={setOpen}>
+    <Transition show={show} as={Fragment}>
+      <Dialog className="relative z-10" onClose={close}>
         <Transition.Child
           enter="ease-in-out duration-500"
           enterFrom="opacity-0"

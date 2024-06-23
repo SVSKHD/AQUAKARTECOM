@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { useRouter } from 'next/router';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { useRouter } from "next/router";
 
 // Component to display each category
 const AquaCategoryCard = ({ category }) => {
@@ -21,15 +21,19 @@ const AquaCategoryCard = ({ category }) => {
         />
       </div>
       <div className="mt-4">
-        <h3 className="text-lg font-medium text-gray-900">{category.title.toUpperCase()}</h3>
+        <h3 className="text-lg font-medium text-gray-900">
+          {category.title.toUpperCase()}
+        </h3>
         <p className="mt-1 text-sm text-gray-500">
-          {isExpanded ? category.description : `${category.description.substring(0, 100)}...`}
+          {isExpanded
+            ? category.description
+            : `${category.description.substring(0, 100)}...`}
         </p>
         <button
           onClick={handleReadMore}
           className="text-indigo-600 hover:text-indigo-500 text-sm"
         >
-          {isExpanded ? 'Read Less' : 'Read More'}
+          {isExpanded ? "Read Less" : "Read More"}
         </button>
       </div>
     </div>
@@ -44,7 +48,7 @@ AquaCategoryCard.propTypes = {
     photos: PropTypes.arrayOf(
       PropTypes.shape({
         secure_url: PropTypes.string.isRequired,
-      })
+      }),
     ).isRequired,
   }).isRequired,
 };

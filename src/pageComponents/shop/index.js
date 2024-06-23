@@ -1,15 +1,15 @@
-import AquaLayout from "@/components/layouts/layout"
+import AquaLayout from "@/components/layouts/layout";
 
-const AquaShopComponentIndex = () =>{
-    const seo = {
-        title:"shop"
-    }
-return(
+const AquaShopComponentIndex = () => {
+  const seo = {
+    title: "shop",
+  };
+  return (
     <>
-    <AquaLayout seo={seo}>
-<h1>Shop</h1>
-    </AquaLayout>
+      <AquaLayout seo={seo}>
+        <h1>Shop</h1>
+      </AquaLayout>
     </>
-)
-}
-export default AquaShopComponentIndex
+  );
+};
+export default AquaShopComponentIndex;

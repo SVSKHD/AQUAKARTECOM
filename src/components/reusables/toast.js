@@ -1,5 +1,10 @@
-import { ExclamationTriangleIcon, CheckCircleIcon, InformationCircleIcon, XCircleIcon } from '@heroicons/react/20/solid'
-import PropTypes from 'prop-types'
+import {
+  ExclamationTriangleIcon,
+  CheckCircleIcon,
+  InformationCircleIcon,
+  XCircleIcon,
+} from "@heroicons/react/20/solid";
+import PropTypes from "prop-types";
 
 const alertStyles = {
   success: {
@@ -30,17 +35,20 @@ const alertStyles = {
     message: "text-red-700",
     IconComponent: XCircleIcon,
   },
-}
+};
 
 const AquaAlert = ({ type, title, message }) => {
-  const styles = alertStyles[type]
-  const IconComponent = styles.IconComponent
+  const styles = alertStyles[type];
+  const IconComponent = styles.IconComponent;
 
   return (
     <div className={`rounded-md p-4 ${styles.container}`}>
       <div className="flex">
         <div className="flex-shrink-0">
-          <IconComponent className={`h-5 w-5 ${styles.icon}`} aria-hidden="true" />
+          <IconComponent
+            className={`h-5 w-5 ${styles.icon}`}
+            aria-hidden="true"
+          />
         </div>
         <div className="ml-3">
           <h3 className={`text-sm font-medium ${styles.title}`}>{title}</h3>
@@ -50,13 +58,13 @@ const AquaAlert = ({ type, title, message }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 Alert.propTypes = {
-  type: PropTypes.oneOf(['success', 'info', 'warning', 'danger']).isRequired,
+  type: PropTypes.oneOf(["success", "info", "warning", "danger"]).isRequired,
   title: PropTypes.string.isRequired,
   message: PropTypes.string.isRequired,
-}
+};
 
-export default AquaAlert
+export default AquaAlert;

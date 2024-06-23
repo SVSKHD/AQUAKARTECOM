@@ -1,5 +1,6 @@
-import React from 'react';
-import { useRouter } from 'next/router';
+import useCartDrawer from "@/utils/drawer";
+import React from "react";
+import { useRouter } from "next/router";
 import {
   Disclosure,
   DisclosureButton,
@@ -9,26 +10,31 @@ import {
   MenuItem,
   MenuItems,
   Transition,
-} from '@headlessui/react';
-import { Bars3Icon, XMarkIcon , ShoppingCartIcon} from '@heroicons/react/24/outline';
-import LW from "@/assests/logo-white.png"
-import Image from 'next/image';
+} from "@headlessui/react";
+import {
+  Bars3Icon,
+  XMarkIcon,
+  ShoppingCartIcon,
+} from "@heroicons/react/24/outline";
+import LW from "@/assests/logo-white.png";
+import Image from "next/image";
+
 
 const navigation = [
-  { name: 'Shop', href: '/shop' },
-  { name: 'Compare', href: '/compare' },
-  { name: 'About', href: '/about' },
+  { name: "Shop", href: "/shop" },
+  { name: "Compare", href: "/compare" },
+  { name: "About", href: "/about" },
 ];
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
-const AquaHeader = () => {
-  const router = useRouter();
-  const cartDrawer = () =>{
 
-  }
+const AquaHeader = () => {
+  const { openCartDrawer, closeCartDrawer } = useCartDrawer();
+  const router = useRouter();
+
   return (
     <Disclosure as="nav" className="bg-gray-800">
       {({ open }) => (
@@ -49,11 +55,7 @@ const AquaHeader = () => {
               </div>
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex flex-shrink-0 items-center">
-                  <Image
-                    className="h-8 w-auto"
-                    src={LW}
-                    alt="Aquakart"
-                  />
+                  <Image className="h-8 w-auto" src={LW} alt="Aquakart" />
                 </div>
                 <div className="hidden sm:ml-6 sm:block">
                   <div className="flex space-x-4">
@@ -62,10 +64,14 @@ const AquaHeader = () => {
                         key={item.name}
                         href={item.href}
                         className={classNames(
-                          router.pathname === item.href ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                          'rounded-md px-3 py-2 text-sm font-medium'
+                          router.pathname === item.href
+                            ? "bg-gray-900 text-white"
+                            : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                          "rounded-md px-3 py-2 text-sm font-medium",
                         )}
-                        aria-current={router.pathname === item.href ? 'page' : undefined}
+                        aria-current={
+                          router.pathname === item.href ? "page" : undefined
+                        }
                       >
                         {item.name}
                       </a>
@@ -74,18 +80,17 @@ const AquaHeader = () => {
                 </div>
               </div>
               <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-              <button
-              onClick={()=>console.log("cart")}
-  type="button"
-  className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
->
-  <span className="sr-only">View notifications</span>
-  <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />
-  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-green-400 text-xs text-white ring-2 ring-white">
-    2
-  </span>
-</button>
-
+                <button
+                  onClick={() => openCartDrawer()}
+                  type="button"
+                  className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                >
+                  <span className="sr-only">View notifications</span>
+                  <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-green-400 text-xs text-white ring-2 ring-white">
+                    2
+                  </span>
+                </button>
 
                 {/* Profile dropdown */}
                 <Menu as="div" className="relative ml-3">
@@ -93,7 +98,7 @@ const AquaHeader = () => {
                     <MenuButton className="p-2 relative flex rounded-full bg-gray-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                       <span className="absolute -inset-1.5" />
                       <span className="sr-only">Open user menu</span>
-                       UN
+                      UN
                     </MenuButton>
                   </div>
                   <Transition
@@ -109,7 +114,10 @@ const AquaHeader = () => {
                         {({ focus }) => (
                           <a
                             href="#"
-                            className={classNames(focus ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}
+                            className={classNames(
+                              focus ? "bg-gray-100" : "",
+                              "block px-4 py-2 text-sm text-gray-700",
+                            )}
                           >
                             Your Profile
                           </a>
@@ -119,7 +127,10 @@ const AquaHeader = () => {
                         {({ focus }) => (
                           <a
                             href="#"
-                            className={classNames(focus ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}
+                            className={classNames(
+                              focus ? "bg-gray-100" : "",
+                              "block px-4 py-2 text-sm text-gray-700",
+                            )}
                           >
                             Settings
                           </a>
@@ -129,7 +140,10 @@ const AquaHeader = () => {
                         {({ focus }) => (
                           <a
                             href="#"
-                            className={classNames(focus ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}
+                            className={classNames(
+                              focus ? "bg-gray-100" : "",
+                              "block px-4 py-2 text-sm text-gray-700",
+                            )}
                           >
                             Sign out
                           </a>
@@ -150,10 +164,14 @@ const AquaHeader = () => {
                   as="a"
                   href={item.href}
                   className={classNames(
-                    router.pathname === item.href ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                    'block rounded-md px-3 py-2 text-base font-medium'
+                    router.pathname === item.href
+                      ? "bg-gray-900 text-white"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                    "block rounded-md px-3 py-2 text-base font-medium",
                   )}
-                  aria-current={router.pathname === item.href ? 'page' : undefined}
+                  aria-current={
+                    router.pathname === item.href ? "page" : undefined
+                  }
                 >
                   {item.name}
                 </DisclosureButton>
@@ -164,6 +182,6 @@ const AquaHeader = () => {
       )}
     </Disclosure>
   );
-}
+};
 
 export default AquaHeader;

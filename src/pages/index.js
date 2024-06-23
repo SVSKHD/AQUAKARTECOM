@@ -1,7 +1,5 @@
 import AquaHomeIndexComponent from "@/pageComponents/home";
-const AquaHome = ()=> {
-  return (
-    <AquaHomeIndexComponent/>
-  );
-}
-export default AquaHome
+const AquaHome = () => {
+  return <AquaHomeIndexComponent />;
+};
+export default AquaHome;
