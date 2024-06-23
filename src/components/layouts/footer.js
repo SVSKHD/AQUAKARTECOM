@@ -139,7 +139,7 @@ const AquaFooter = () => {
                   {categories.map((item) => (
                     <li key={item.name}>
                       <a
-                        href={`/categories/${item.title}`}
+                        href={`/category/${item.title}`}
                         className="text-sm leading-6 text-gray-300 hover:text-white"
                       >
                         {item.title}

@@ -5,6 +5,7 @@ import { cartDrawerReducer } from "./reducers/cartDrawerReducer";
 import { authDialogReducer } from "./reducers/authDialog";
 import { favDataReducer } from "./reducers/favDataReducer";
 import { cartDataReducer } from "./reducers/cartDataReducer";
+import {userReducer} from "./reducers/userDataReducer"
 
 const rootReducer = combineReducers({
   favDrawer: favDrawerReducer,
@@ -12,6 +13,7 @@ const rootReducer = combineReducers({
   authDialog: authDialogReducer,
   favData: favDataReducer,
   cartData: cartDataReducer,
+  userData: userReducer
 });
 
 export default rootReducer;
