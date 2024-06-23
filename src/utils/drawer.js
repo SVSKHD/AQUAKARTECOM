@@ -5,14 +5,14 @@ const useCartDrawer = () => {
 
   const openCartDrawer = () => {
     dispatch({
-      type: 'SET_CART_DRAWER_VISIBLE',
+      type: "SET_CART_DRAWER_VISIBLE",
       payload: true,
     });
   };
 
   const closeCartDrawer = () => {
     dispatch({
-      type: 'SET_CART_DRAWER_VISIBLE',
+      type: "SET_CART_DRAWER_VISIBLE",
       payload: false,
     });
   };

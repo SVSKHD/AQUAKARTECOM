@@ -17,11 +17,11 @@ export const store = createStore(persistedReducer);
 export const persistor = persistStore(store);
 
 export default function App({ Component, pageProps }) {
-  return(
-  <Provider store={store}>
-    <PersistGate persistor={persistor}>
-      <Component {...pageProps} />
-    </PersistGate>
-  </Provider>
-)
+  return (
+    <Provider store={store}>
+      <PersistGate persistor={persistor}>
+        <Component {...pageProps} />
+      </PersistGate>
+    </Provider>
+  );
 }

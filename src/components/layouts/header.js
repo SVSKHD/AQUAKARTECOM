@@ -19,7 +19,6 @@ import {
 import LW from "@/assests/logo-white.png";
 import Image from "next/image";
 
-
 const navigation = [
   { name: "Shop", href: "/shop" },
   { name: "Compare", href: "/compare" },
@@ -29,7 +28,6 @@ const navigation = [
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
-
 
 const AquaHeader = () => {
   const { openCartDrawer, closeCartDrawer } = useCartDrawer();

@@ -8,7 +8,7 @@ const AquaLayout = (props) => {
     <>
       <AquaSeo seo={props.seo} />
       <AquaHeader />
-      <AquaCartDrawer/>
+      <AquaCartDrawer />
       {props.children}
       <AquaFooter />
     </>
