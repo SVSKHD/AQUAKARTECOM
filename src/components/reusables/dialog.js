@@ -1,11 +1,11 @@
-import { useState, Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useState, Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
-const AquaResponsiveDialog = ({ open, setOpen, title, children, onConfirm }) => {
+const AquaResponsiveDialog = ({ open, close, title, children, onConfirm }) => {
   return (
     <Transition show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={() => setOpen(false)}>
+      <Dialog as="div" className="relative z-10" onClose={close}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -34,7 +34,7 @@ const AquaResponsiveDialog = ({ open, setOpen, title, children, onConfirm }) => 
                   <button
                     type="button"
                     className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    onClick={() => setOpen(false)}
+                    onClick={close}
                   >
                     <span className="sr-only">Close</span>
                     <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -42,15 +42,19 @@ const AquaResponsiveDialog = ({ open, setOpen, title, children, onConfirm }) => 
                 </div>
                 <div className="sm:flex sm:items-start">
                   <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
-                    <CheckCircleIcon className="h-6 w-6 text-green-600" aria-hidden="true" />
+                    <CheckCircleIcon
+                      className="h-6 w-6 text-green-600"
+                      aria-hidden="true"
+                    />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                    <Dialog.Title
+                      as="h3"
+                      className="text-lg font-medium leading-6 text-gray-900"
+                    >
                       {title}
                     </Dialog.Title>
-                    <div className="mt-2">
-                      {children}
-                    </div>
+                    <div className="mt-2">{children}</div>
                   </div>
                 </div>
                 <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
@@ -64,7 +68,7 @@ const AquaResponsiveDialog = ({ open, setOpen, title, children, onConfirm }) => 
                   <button
                     type="button"
                     className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                    onClick={() => setOpen(false)}
+                    onClick={close}
                   >
                     Cancel
                   </button>
@@ -76,6 +80,6 @@ const AquaResponsiveDialog = ({ open, setOpen, title, children, onConfirm }) => 
       </Dialog>
     </Transition>
   );
-}
+};
 
 export default AquaResponsiveDialog;

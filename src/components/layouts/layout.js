@@ -12,10 +12,8 @@ const AquaLayout = (props) => {
       <AquaHeader />
       <AquaCartDrawer />
       <AquafavDrawer />
-      <AquaAuthDialog/>
-      <div className="p-1">
-      {props.children}
-      </div>
+      <AquaAuthDialog />
+      <div className="p-1">{props.children}</div>
       <AquaFooter />
     </>
   );

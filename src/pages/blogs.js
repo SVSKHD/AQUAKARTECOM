@@ -1,8 +1,6 @@
-import AquaAllBllogsIndexComponent from "@/pageComponents/blogs"
+import AquaAllBllogsIndexComponent from "@/pageComponents/blogs";
 
-const AquaBlogsIndex = () =>{
-return(
-    <AquaAllBllogsIndexComponent/>
-)
-}
-export default AquaBlogsIndex
+const AquaBlogsIndex = () => {
+  return <AquaAllBllogsIndexComponent />;
+};
+export default AquaBlogsIndex;

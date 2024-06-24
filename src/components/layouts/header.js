@@ -1,4 +1,5 @@
 import useCartDrawer from "@/utils/drawer";
+import useDialog from "@/utils/dialog";
 import React from "react";
 import { useRouter } from "next/router";
 import {
@@ -22,11 +23,12 @@ import LW from "@/assests/logo-white.png";
 import Image from "next/image";
 import { useSelector } from "react-redux";
 
+
 const navigation = [
   { name: "Shop", href: "/shop" },
   { name: "Compare", href: "/compare" },
   { name: "About", href: "/about" },
-  { name: "Know More" , href:"/blogs"}
+  { name: "Know More", href: "/blogs" },
 ];
 
 function classNames(...classes) {
@@ -35,6 +37,7 @@ function classNames(...classes) {
 
 const AquaHeader = () => {
   const { openCartDrawer, openFavDrawer } = useCartDrawer();
+  const {openAuthDialog} = useDialog()
   const { userData } = useSelector((state) => ({ ...state }));
   const router = useRouter();
 
@@ -169,6 +172,7 @@ const AquaHeader = () => {
                     <button
                       type="button"
                       className="relative rounded-full bg-gray-800  ml-2 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                      onClick={()=>openAuthDialog()}
                     >
                       <span className="sr-only">View notifications</span>
                       <UserIcon className="h-6 w-6" aria-hidden="true" />
