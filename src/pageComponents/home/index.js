@@ -4,9 +4,15 @@ const AquaHomeIndexComponent = () => {
   const seo = {
     title: "hello",
   };
-  return (
-    <AquaLayout seo={seo}>
-      <h1>home</h1>
+
+return (
+  <AquaLayout seo={seo}>
+
+
+
+
+
+
     </AquaLayout>
   );
 };
