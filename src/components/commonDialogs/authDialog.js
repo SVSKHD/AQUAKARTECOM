@@ -1,15 +1,20 @@
 import { useState } from "react";
 import AquaResponsiveDialog from "../reusables/dialog";
-import { useSelector } from "react-redux";
 import useDialog from "@/utils/dialog";
+import AquaSignin from "../auth/signin";
+import AquaSignup from "../auth/signup";
+import AquaSignupWithPhone from "../auth/signupwithphone";
+import { useDispatch , useSelector} from "react-redux";
+
 
 const AquaAuthDialog = () => {
   const { authDialog } = useSelector((state) => ({ ...state }));
   const {openAuthDialog , closeAuthDialog} = useDialog()    
+  const {} = useSelector((state)=>({...state}))
+  const dispatch = useDispatch()
 
   const handleConfirm = () => {
     console.log("Confirmed");
-
   };
 
   return (
@@ -20,12 +25,13 @@ const AquaAuthDialog = () => {
         title="Auth"
         onConfirm={handleConfirm}
       >
-        <p className="text-sm text-gray-500">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur
-          amet labore.
-        </p>
+        
       </AquaResponsiveDialog>
     </div>
   );
 };
 export default AquaAuthDialog;
+
+
+
+
