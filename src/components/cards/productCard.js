@@ -1,7 +1,9 @@
 import React from 'react';
+import useProduct from '@/utils/product';
 
 const AquaProductCard = ({ product}) => {
     const {title, photos, price, href, color } = product
+    const {formatCurrencyINRWithK} = useProduct
   return (
     <div className="relative">
       <div className="relative h-72 w-full overflow-hidden rounded-lg">
@@ -12,7 +14,7 @@ const AquaProductCard = ({ product}) => {
         />
       </div>
       <div className="relative mt-4">
-        <h3 className="text-sm font-medium text-gray-900">{title}</h3>
+        <h3 className="text-lg font-medium text-gray-900">{title}</h3>
         <p className="mt-1 text-sm text-gray-500">{color}</p>
       </div>
       <div className="absolute inset-x-0 top-0 flex h-72 items-end justify-end overflow-hidden rounded-lg p-4">
@@ -20,7 +22,7 @@ const AquaProductCard = ({ product}) => {
           aria-hidden="true"
           className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black opacity-50"
         />
-        <p className="relative text-lg font-semibold text-white">{price}</p>
+        <p className="relative text-lg font-semibold text-white">{formatCurrencyINRWithK(price)}</p>
       </div>
       <div className="mt-6">
         <a
