@@ -1,5 +1,5 @@
 import LW from "@/assests/logo-white.png";
-import CategoryServiceOperations from "@/services/categories";
+import CategoryServiceOperations from "@/services/category";
 import SubCategoryServiceOperations from "@/services/subcategory";
 import Image from "next/image";
 import { useEffect, useState } from "react";

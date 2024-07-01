@@ -1,10 +1,14 @@
-import AquaLayout from "@/components/layouts/layout";
-
-const AquaHomeIndexComponent = () => {
-  const seo = {
-    title: "hello",
-  };
-
-  return <AquaLayout seo={seo}></AquaLayout>;
+import AquaLayout from "@/components/Layout/Layout";
+import AquaProductCard from "@/components/cards/productCard";
+const AquaHomeComponent = () => {
+  return (
+    <>
+      <AquaLayout>
+        <div className="container">
+         
+        </div>
+      </AquaLayout>
+    </>
+  );
 };
-export default AquaHomeIndexComponent;
+export default AquaHomeComponent;

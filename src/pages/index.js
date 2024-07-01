@@ -1,5 +1,10 @@
-import AquaHomeIndexComponent from "@/pageComponents/home";
-const AquaHome = () => {
-  return <AquaHomeIndexComponent />;
+import AquaHomeComponent from "@/pageComponents/home";
+
+const AquaHomePage = () => {
+  return (
+    <>
+      <AquaHomeComponent />
+    </>
+  );
 };
-export default AquaHome;
+export default AquaHomePage;

@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import AquaReuseDrawer from "../reusables/drawer";
+import AquaReuseDrawer from "../../reusables/drawer";
 import useDrawer from "@/utils/drawer";
 
 const AquafavDrawer = () => {

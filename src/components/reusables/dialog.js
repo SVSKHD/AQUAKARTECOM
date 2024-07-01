@@ -2,7 +2,14 @@ import { useState, Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
-const AquaResponsiveDialog = ({ open, close, title, children, onConfirm , actions}) => {
+const AquaResponsiveDialog = ({
+  open,
+  close,
+  title,
+  children,
+  onConfirm,
+  actions,
+}) => {
   return (
     <Transition show={open} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={close}>
@@ -57,23 +64,26 @@ const AquaResponsiveDialog = ({ open, close, title, children, onConfirm , action
                     <div className="mt-2">{children}</div>
                   </div>
                 </div>
-                {actions?(<div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                  <button
-                    type="button"
-                    className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
-                    onClick={onConfirm}
-                  >
-                    Confirm
-                  </button>
-                  <button
-                    type="button"
-                    className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                    onClick={close}
-                  >
-                    Cancel
-                  </button>
-                </div>):""}
-                
+                {actions ? (
+                  <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                    <button
+                      type="button"
+                      className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
+                      onClick={onConfirm}
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      type="button"
+                      className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+                      onClick={close}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  ""
+                )}
               </Dialog.Panel>
             </Transition.Child>
           </div>

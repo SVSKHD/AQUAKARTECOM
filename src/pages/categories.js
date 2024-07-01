@@ -1,6 +1,9 @@
-import AquaCategoriesIndexComponent from "@/pageComponents/categories";
-
-const AquaCategoriesPage = () => {
-  return <AquaCategoriesIndexComponent />;
+import AquaAllCategoriesComponent from "@/pageComponents/categories";
+const AquaCategories = () => {
+  return (
+    <>
+      <AquaAllCategoriesComponent />
+    </>
+  );
 };
-export default AquaCategoriesPage;
+export default AquaCategories;

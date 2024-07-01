@@ -1,15 +1,6 @@
-import AquaLayout from "@/components/layouts/layout";
-import AquaReuseDrawer from "@/components/reusables/drawer";
-import { useState } from "react";
+import AquaLayout from "@/components/Layout/Layout";
 
-const AquaCompareIndexComponent = () => {
-  const seo = {
-    title: "compare",
-  };
-  return (
-    <AquaLayout seo={seo}>
-      <h1>Compare</h1>
-    </AquaLayout>
-  );
+const AquaCompareComponent = () => {
+  return <AquaLayout></AquaLayout>;
 };
-export default AquaCompareIndexComponent;
+export default AquaCompareComponent;

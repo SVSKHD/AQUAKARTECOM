@@ -1,6 +1,9 @@
-import AquaCompareIndexComponent from "@/pageComponents/compare";
-
+import AquaCompareComponent from "@/pageComponents/compare";
 const AquaCompare = () => {
-  return <AquaCompareIndexComponent />;
+  return (
+    <>
+      <AquaCompareComponent />
+    </>
+  );
 };
 export default AquaCompare;

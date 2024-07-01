@@ -1,56 +1,30 @@
-import React, { useState } from "react";
-import PropTypes from "prop-types";
-import { useRouter } from "next/router";
+import React from 'react';
+import {FaShare} from "react-icons/fa"
 
-// Component to display each category
 const AquaCategoryCard = ({ category }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const router = useRouter();
-
-  const handleReadMore = () => {
-    router.push(`/category/${category.title}`);
-  };
-
+    const {title, photos, price, href, color , _id } = category
   return (
-    <div className="bg-white shadow-md rounded-lg p-4">
-      <div className="aspect-w-4 aspect-h-3 overflow-hidden rounded-lg bg-gray-100">
+    <div className="group relative">
+      <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none group-hover:opacity-75 lg:h-80">
         <img
-          src={category.photos[0].secure_url}
-          alt={category.title}
-          className="object-cover object-center"
+          src={photos[0].secure_url}
+          alt={title}
+          className="h-full w-full object-cover object-center lg:h-full lg:w-full"
         />
       </div>
-      <div className="mt-4">
-        <h3 className="text-lg font-medium text-gray-900">
-          {category.title.toUpperCase()}
-        </h3>
-        <p className="mt-1 text-sm text-gray-500">
-          {isExpanded
-            ? category.description
-            : `${category.description.substring(0, 100)}...`}
-        </p>
-        <button
-          onClick={handleReadMore}
-          className="text-indigo-600 hover:text-indigo-500 text-sm"
-        >
-          {isExpanded ? "Read Less" : "Read More"}
-        </button>
+      <div className="mt-4 flex justify-between">
+        <div>
+          <h3 className="text-md font-bold text-gray-700">
+            <a href={`/category/${_id}`}>
+              <span aria-hidden="true" className="absolute inset-0" />
+              {title}
+            </a>
+          </h3>
+        </div>
+        <button className="text-sm font-medium text-gray-900"><FaShare/></button>
       </div>
     </div>
   );
-};
-
-AquaCategoryCard.propTypes = {
-  category: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    photos: PropTypes.arrayOf(
-      PropTypes.shape({
-        secure_url: PropTypes.string.isRequired,
-      }),
-    ).isRequired,
-  }).isRequired,
 };
 
 export default AquaCategoryCard;

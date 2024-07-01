@@ -15,7 +15,7 @@ const rootReducer = combineReducers({
   favData: favDataReducer,
   cartData: cartDataReducer,
   userData: userReducer,
-  userStatus:userStatusReducer
+  userStatus: userStatusReducer,
 });
 
 export default rootReducer;
