@@ -1,23 +1,19 @@
-// reducers/notificationReducer.js
-
-// Action Types
-
 // Initial State
 const initialState = {
   show: false,
   messageType: '',
-  description: '',
+  message: '',
 };
 
 // Reducer
-const toastReducer = (state = initialState, action) => {
+export const toastReducer = (state = initialState, action) => {
   switch (action.type) {
     case "SHOW_NOTIFICATION":
       return {
         ...state,
         show: true,
         messageType: action.payload.messageType,
-        description: action.payload.description,
+        message: action.payload.message,
       };
     case "HIDE_NOTIFICATION":
       return initialState;
@@ -25,6 +21,3 @@ const toastReducer = (state = initialState, action) => {
       return state;
   }
 };
-
-
-export default toastReducer;

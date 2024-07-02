@@ -12,12 +12,8 @@ const AquaProductCard = ({ product}) => {
     const [fav , setAddFav] = useState(false)
     const {title, photos, price, href, color } = product
     const {formatCurrencyINRWithK} = useCurrency
-    const {AddToCart , AddToFav} = useProduct()
+    const {AddAndRemoveCart , AddAndRemoveFav} = useProduct()
 
-
-    const handleAddToCart = () =>{
-
-    }
   return (
     <div className="relative">
       <div className="relative h-72 w-full overflow-hidden rounded-lg">
@@ -43,7 +39,7 @@ const AquaProductCard = ({ product}) => {
   <button
     type="button"
     className="relative inline-flex items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:z-10"
-    onClick={()=>AddToCart(product , setAddCart)}
+    onClick={()=>AddAndRemoveCart(product , setAddCart)}
   >
    
     {cart ? <FaCartArrowDown className="text-green-700" size={25}/> : <FaCartShopping size={25}/>}
@@ -51,6 +47,7 @@ const AquaProductCard = ({ product}) => {
   <button
     type="button"
     className="relative -ml-px inline-flex items-center bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:z-10"
+    onClick={()=>AddAndRemoveFav(product, setAddFav)}
   >
     {fav ? <FaHeart className="text-red-700" size={25}/>:<FaHeartBroken className="text-red-700" size={25} />}
   </button>

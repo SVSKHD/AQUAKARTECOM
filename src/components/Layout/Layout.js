@@ -1,6 +1,7 @@
+import { useSelector } from "react-redux";
 import AquaCartDrawer from "../common/commonDrawers/cartDrawer";
 import AquafavDrawer from "../common/commonDrawers/favDrawer";
-import AquaToastNotification from "../toast/toast";
+import AquaToast from "../reusables/toast";
 import AquaFooter from "./Footer";
 import AquaHeader from "./Header";
 
@@ -10,7 +11,7 @@ const AquaLayout = (props) => {
       <AquaHeader />
       <AquaCartDrawer />
       <AquafavDrawer />
-      <AquaToastNotification/>
+      <AquaToast/>
       <main>{props.children}</main>
       <AquaFooter />
     </>
