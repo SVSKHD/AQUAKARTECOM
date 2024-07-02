@@ -1,9 +1,23 @@
+import {useState , useEffect} from "react"
 import React from 'react';
-import useProduct from '@/utils/product';
+import useCurrency from '@/utils/currency';
+import useProduct from "@/utils/product";
+import {FaHeart , FaHeartBroken} from "react-icons/fa"
+import {FaCartArrowDown , FaCartShopping} from "react-icons/fa6"
+
 
 const AquaProductCard = ({ product}) => {
+    const [loading , setLoading] = useState(false)
+    const [cart , setAddCart] = useState(false)
+    const [fav , setAddFav] = useState(false)
     const {title, photos, price, href, color } = product
-    const {formatCurrencyINRWithK} = useProduct
+    const {formatCurrencyINRWithK} = useCurrency
+    const {AddToCart , AddToFav} = useProduct()
+
+
+    const handleAddToCart = () =>{
+
+    }
   return (
     <div className="relative">
       <div className="relative h-72 w-full overflow-hidden rounded-lg">
@@ -22,15 +36,33 @@ const AquaProductCard = ({ product}) => {
           aria-hidden="true"
           className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black opacity-50"
         />
-        <p className="relative text-lg font-semibold text-white">{formatCurrencyINRWithK(price)}</p>
+        <p className="bg-gray-800 rounded-md p-1 relative text-lg font-semibold text-white">{formatCurrencyINRWithK(price)}</p>
       </div>
       <div className="mt-6">
-        <a
-          href={href}
-          className="relative flex items-center justify-center rounded-md border border-transparent bg-gray-100 px-8 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200"
-        >
-          Add to bag<span className="sr-only">, {title}</span>
-        </a>
+      <span className="isolate inline-flex rounded-md shadow-sm">
+  <button
+    type="button"
+    className="relative inline-flex items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:z-10"
+    onClick={()=>AddToCart(product , setAddCart)}
+  >
+   
+    {cart ? <FaCartArrowDown className="text-green-700" size={25}/> : <FaCartShopping size={25}/>}
+  </button>
+  <button
+    type="button"
+    className="relative -ml-px inline-flex items-center bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:z-10"
+  >
+    {fav ? <FaHeart className="text-red-700" size={25}/>:<FaHeartBroken className="text-red-700" size={25} />}
+  </button>
+  <button
+    type="button"
+    className="relative -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:z-10"
+  >
+    Days
+  </button>
+</span>
+
+
       </div>
     </div>
   );

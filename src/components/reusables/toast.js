@@ -1,3 +1,4 @@
+import React from "react";
 import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
@@ -61,7 +62,7 @@ const AquaAlert = ({ type, title, message }) => {
   );
 };
 
-Alert.propTypes = {
+AquaAlert.propTypes = {
   type: PropTypes.oneOf(["success", "info", "warning", "danger"]).isRequired,
   title: PropTypes.string.isRequired,
   message: PropTypes.string.isRequired,

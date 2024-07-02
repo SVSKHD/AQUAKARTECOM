@@ -1,6 +1,10 @@
-import AquaLayout from "@/components/Layout/Layout";
+import AquaLayout from "@/components/Layout/Layout"
 
-const AquaCompareComponent = () => {
-  return <AquaLayout></AquaLayout>;
-};
-export default AquaCompareComponent;
+const AquaCompareComponent = () =>{
+return(
+<AquaLayout>
+    
+</AquaLayout>
+)
+}
+export default AquaCompareComponent

@@ -37,7 +37,7 @@ function classNames(...classes) {
 const AquaHeader = () => {
   const { openCartDrawer, openFavDrawer } = useCartDrawer();
   const { openAuthDialog } = useDialog();
-  const { userData } = useSelector((state) => ({ ...state }));
+  const { userData , cartData} = useSelector((state) => ({ ...state }));
   const router = useRouter();
 
   return (
@@ -101,7 +101,7 @@ const AquaHeader = () => {
                   <span className="sr-only">View notifications</span>
                   <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />
                   <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-green-400 text-xs text-white ring-2 ring-white">
-                    2
+                    {cartData.length}
                   </span>
                 </button>
 
