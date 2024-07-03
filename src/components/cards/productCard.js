@@ -4,15 +4,26 @@ import useCurrency from '@/utils/currency';
 import useProduct from "@/utils/product";
 import {FaHeart , FaHeartBroken} from "react-icons/fa"
 import {FaCartArrowDown , FaCartShopping} from "react-icons/fa6"
+import { useSelector } from "react-redux";
 
 
 const AquaProductCard = ({ product}) => {
-    const [loading , setLoading] = useState(false)
+  const [loading , setLoading] = useState(false)
     const [cart , setAddCart] = useState(false)
     const [fav , setAddFav] = useState(false)
-    const {title, photos, price, href, color } = product
+    const {title, photos, price, color } = product
     const {formatCurrencyINRWithK} = useCurrency
     const {AddAndRemoveCart , AddAndRemoveFav} = useProduct()
+    const {cartData , favData} = useSelector((state)=>({...state}))
+
+  useEffect(() => {
+    const isProductInCart = cartData.some((item) => item._id === product?._id);
+    const isProductInFav = favData.some((item) => item._id === product?._id);
+    setAddCart(isProductInCart);
+    setAddFav(isProductInFav);
+  }, [cartData, product?._id, favData]);
+
+    
 
   return (
     <div className="relative">
@@ -50,12 +61,6 @@ const AquaProductCard = ({ product}) => {
     onClick={()=>AddAndRemoveFav(product, setAddFav)}
   >
     {fav ? <FaHeart className="text-red-700" size={25}/>:<FaHeartBroken className="text-red-700" size={25} />}
-  </button>
-  <button
-    type="button"
-    className="relative -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:z-10"
-  >
-    Days
   </button>
 </span>
 
