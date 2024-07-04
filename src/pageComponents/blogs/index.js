@@ -3,14 +3,25 @@ import AquaLayout from "@/components/Layout/Layout";
 import BlogServiceOperations from "@/services/blog";
 import AQ from "@/assests/logo-white.png";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const AquaBlogComponnet = () => {
+  const router = useRouter()
   const [blogs, setBlogs] = useState([]);
   useEffect(() => {
     BlogServiceOperations.AllBlogs().then((res) => {
       setBlogs(res.data.data);
     });
   }, []);
+
+  const seoData = { 
+    title: "Aquakart | Compare Products",
+    description:
+      "Aquakart's product comparison tool empowers shoppers to make informed decisions by offering side-by-side comparisons of features, prices, and customer reviews. Easily evaluate multiple products, discover the best deals, and find the perfect fit for your needs.",
+    canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
+    image:
+      "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
+   };
   const posts = [
     {
       id: 1,
@@ -31,7 +42,7 @@ const AquaBlogComponnet = () => {
     // More posts...
   ];
   return (
-    <AquaLayout>
+    <AquaLayout seo={seoData}>
       <div className="bg-white py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
@@ -78,7 +89,7 @@ const AquaBlogComponnet = () => {
                   </div>
                 </div>
                 <h3 className="mt-3 text-lg font-semibold leading-6 text-white">
-                  <a href={`/blog/${post.title}`}>
+                  <a href={`/blog/${post._id}`}>
                     <span className="absolute inset-0" />
                     {post.title}
                   </a>

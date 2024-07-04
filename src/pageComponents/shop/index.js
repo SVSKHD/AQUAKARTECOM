@@ -8,7 +8,7 @@ const AquaShopComponent = () => {
   const router = useRouter();
   const SeoData = {
     title: "Aquakart | Shop",
-    canonical: `${process.env.apiKey}${router.asPath}`,
+    canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
   };
 
   const [products, setProducts] = useState([]);
