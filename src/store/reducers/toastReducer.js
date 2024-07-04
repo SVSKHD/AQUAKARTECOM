@@ -1,8 +1,8 @@
 // Initial State
 const initialState = {
   show: false,
-  messageType: '',
-  message: '',
+  messageType: "",
+  message: "",
 };
 
 // Reducer

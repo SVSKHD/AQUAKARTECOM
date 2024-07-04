@@ -7,11 +7,10 @@ import { favDataReducer } from "./reducers/favDataReducer";
 import { cartDataReducer } from "./reducers/cartDataReducer";
 import { userReducer } from "./reducers/userDataReducer";
 import { userStatusReducer } from "./reducers/userStatusReducer";
-import {toastReducer} from "./reducers/toastReducer"
-
+import { toastReducer } from "./reducers/toastReducer";
 
 const rootReducer = combineReducers({
-  toastNotify:toastReducer,
+  toastNotify: toastReducer,
   favDrawer: favDrawerReducer,
   cartDrawer: cartDrawerReducer,
   authDialog: authDialogReducer,

@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect } from 'react';
+import { Fragment, useState, useEffect } from "react";
 import {
   Dialog,
   DialogBackdrop,
@@ -14,108 +14,114 @@ import {
   TabList,
   TabPanel,
   TabPanels,
-} from '@headlessui/react';
-import { Bars3Icon, MagnifyingGlassIcon, ShoppingCartIcon, UserIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { ChevronDownIcon, StarIcon } from '@heroicons/react/20/solid';
-import AquaLayout from '@/components/Layout/Layout';
-import { useRouter } from 'next/router';
-import ProductServiceOperations from '@/services/products';
+} from "@headlessui/react";
+import {
+  Bars3Icon,
+  MagnifyingGlassIcon,
+  ShoppingCartIcon,
+  UserIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import { ChevronDownIcon, StarIcon } from "@heroicons/react/20/solid";
+import AquaLayout from "@/components/Layout/Layout";
+import { useRouter } from "next/router";
+import ProductServiceOperations from "@/services/products";
 
 const navigation = {
   categories: [
     {
-      name: 'Women',
+      name: "Women",
       featured: [
-        { name: 'Sleep', href: '#' },
-        { name: 'Swimwear', href: '#' },
-        { name: 'Underwear', href: '#' },
+        { name: "Sleep", href: "#" },
+        { name: "Swimwear", href: "#" },
+        { name: "Underwear", href: "#" },
       ],
       collection: [
-        { name: 'Everything', href: '#' },
-        { name: 'Core', href: '#' },
-        { name: 'New Arrivals', href: '#' },
-        { name: 'Sale', href: '#' },
+        { name: "Everything", href: "#" },
+        { name: "Core", href: "#" },
+        { name: "New Arrivals", href: "#" },
+        { name: "Sale", href: "#" },
       ],
       categories: [
-        { name: 'Basic Tees', href: '#' },
-        { name: 'Artwork Tees', href: '#' },
-        { name: 'Bottoms', href: '#' },
-        { name: 'Underwear', href: '#' },
-        { name: 'Accessories', href: '#' },
+        { name: "Basic Tees", href: "#" },
+        { name: "Artwork Tees", href: "#" },
+        { name: "Bottoms", href: "#" },
+        { name: "Underwear", href: "#" },
+        { name: "Accessories", href: "#" },
       ],
       brands: [
-        { name: 'Full Nelson', href: '#' },
-        { name: 'My Way', href: '#' },
-        { name: 'Re-Arranged', href: '#' },
-        { name: 'Counterfeit', href: '#' },
-        { name: 'Significant Other', href: '#' },
+        { name: "Full Nelson", href: "#" },
+        { name: "My Way", href: "#" },
+        { name: "Re-Arranged", href: "#" },
+        { name: "Counterfeit", href: "#" },
+        { name: "Significant Other", href: "#" },
       ],
     },
     {
-      name: 'Men',
+      name: "Men",
       featured: [
-        { name: 'Casual', href: '#' },
-        { name: 'Boxers', href: '#' },
-        { name: 'Outdoor', href: '#' },
+        { name: "Casual", href: "#" },
+        { name: "Boxers", href: "#" },
+        { name: "Outdoor", href: "#" },
       ],
       collection: [
-        { name: 'Everything', href: '#' },
-        { name: 'Core', href: '#' },
-        { name: 'New Arrivals', href: '#' },
-        { name: 'Sale', href: '#' },
+        { name: "Everything", href: "#" },
+        { name: "Core", href: "#" },
+        { name: "New Arrivals", href: "#" },
+        { name: "Sale", href: "#" },
       ],
       categories: [
-        { name: 'Artwork Tees', href: '#' },
-        { name: 'Pants', href: '#' },
-        { name: 'Accessories', href: '#' },
-        { name: 'Boxers', href: '#' },
-        { name: 'Basic Tees', href: '#' },
+        { name: "Artwork Tees", href: "#" },
+        { name: "Pants", href: "#" },
+        { name: "Accessories", href: "#" },
+        { name: "Boxers", href: "#" },
+        { name: "Basic Tees", href: "#" },
       ],
       brands: [
-        { name: 'Significant Other', href: '#' },
-        { name: 'My Way', href: '#' },
-        { name: 'Counterfeit', href: '#' },
-        { name: 'Re-Arranged', href: '#' },
-        { name: 'Full Nelson', href: '#' },
+        { name: "Significant Other", href: "#" },
+        { name: "My Way", href: "#" },
+        { name: "Counterfeit", href: "#" },
+        { name: "Re-Arranged", href: "#" },
+        { name: "Full Nelson", href: "#" },
       ],
     },
   ],
   pages: [
-    { name: 'Company', href: '#' },
-    { name: 'Stores', href: '#' },
+    { name: "Company", href: "#" },
+    { name: "Stores", href: "#" },
   ],
 };
 
 const footerNavigation = {
   account: [
-    { name: 'Manage Account', href: '#' },
-    { name: 'Saved Items', href: '#' },
-    { name: 'Orders', href: '#' },
-    { name: 'Redeem Gift card', href: '#' },
+    { name: "Manage Account", href: "#" },
+    { name: "Saved Items", href: "#" },
+    { name: "Orders", href: "#" },
+    { name: "Redeem Gift card", href: "#" },
   ],
   service: [
-    { name: 'Shipping & Returns', href: '#' },
-    { name: 'Warranty', href: '#' },
-    { name: 'FAQ', href: '#' },
-    { name: 'Find a store', href: '#' },
-    { name: 'Get in touch', href: '#' },
+    { name: "Shipping & Returns", href: "#" },
+    { name: "Warranty", href: "#" },
+    { name: "FAQ", href: "#" },
+    { name: "Find a store", href: "#" },
+    { name: "Get in touch", href: "#" },
   ],
   company: [
-    { name: 'Who we are', href: '#' },
-    { name: 'Press', href: '#' },
-    { name: 'Careers', href: '#' },
-    { name: 'Terms & Conditions', href: '#' },
-    { name: 'Privacy', href: '#' },
+    { name: "Who we are", href: "#" },
+    { name: "Press", href: "#" },
+    { name: "Careers", href: "#" },
+    { name: "Terms & Conditions", href: "#" },
+    { name: "Privacy", href: "#" },
   ],
   connect: [
-    { name: 'Facebook', href: '#' },
-    { name: 'Instagram', href: '#' },
-    { name: 'Pinterest', href: '#' },
+    { name: "Facebook", href: "#" },
+    { name: "Instagram", href: "#" },
+    { name: "Pinterest", href: "#" },
   ],
 };
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 const ProductImages = ({ photos }) => {
@@ -213,8 +219,10 @@ export default function AquaDynamicProductComponent() {
                       key={category.name}
                       className={({ selected }) =>
                         classNames(
-                          selected ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-900',
-                          'flex-1 whitespace-nowrap border-b-2 px-1 py-4 text-base font-medium'
+                          selected
+                            ? "border-indigo-600 text-indigo-600"
+                            : "border-transparent text-gray-900",
+                          "flex-1 whitespace-nowrap border-b-2 px-1 py-4 text-base font-medium",
                         )
                       }
                     >
@@ -225,11 +233,17 @@ export default function AquaDynamicProductComponent() {
               </div>
               <TabPanels as={Fragment}>
                 {navigation.categories.map((category, categoryIdx) => (
-                  <TabPanel key={category.name} className="space-y-12 px-4 pb-6 pt-10">
+                  <TabPanel
+                    key={category.name}
+                    className="space-y-12 px-4 pb-6 pt-10"
+                  >
                     <div className="grid grid-cols-1 items-start gap-x-6 gap-y-10">
                       <div className="grid grid-cols-1 gap-x-6 gap-y-10">
                         <div>
-                          <p id={`mobile-featured-heading-${categoryIdx}`} className="font-medium text-gray-900">
+                          <p
+                            id={`mobile-featured-heading-${categoryIdx}`}
+                            className="font-medium text-gray-900"
+                          >
                             Featured
                           </p>
                           <ul
@@ -247,10 +261,17 @@ export default function AquaDynamicProductComponent() {
                           </ul>
                         </div>
                         <div>
-                          <p id="mobile-categories-heading" className="font-medium text-gray-900">
+                          <p
+                            id="mobile-categories-heading"
+                            className="font-medium text-gray-900"
+                          >
                             Categories
                           </p>
-                          <ul role="list" aria-labelledby="mobile-categories-heading" className="mt-6 space-y-6">
+                          <ul
+                            role="list"
+                            aria-labelledby="mobile-categories-heading"
+                            className="mt-6 space-y-6"
+                          >
                             {category.categories.map((item) => (
                               <li key={item.name} className="flex">
                                 <a href={item.href} className="text-gray-500">
@@ -263,10 +284,17 @@ export default function AquaDynamicProductComponent() {
                       </div>
                       <div className="grid grid-cols-1 gap-x-6 gap-y-10">
                         <div>
-                          <p id="mobile-collection-heading" className="font-medium text-gray-900">
+                          <p
+                            id="mobile-collection-heading"
+                            className="font-medium text-gray-900"
+                          >
                             Collection
                           </p>
-                          <ul role="list" aria-labelledby="mobile-collection-heading" className="mt-6 space-y-6">
+                          <ul
+                            role="list"
+                            aria-labelledby="mobile-collection-heading"
+                            className="mt-6 space-y-6"
+                          >
                             {category.collection.map((item) => (
                               <li key={item.name} className="flex">
                                 <a href={item.href} className="text-gray-500">
@@ -277,10 +305,17 @@ export default function AquaDynamicProductComponent() {
                           </ul>
                         </div>
                         <div>
-                          <p id="mobile-brand-heading" className="font-medium text-gray-900">
+                          <p
+                            id="mobile-brand-heading"
+                            className="font-medium text-gray-900"
+                          >
                             Brands
                           </p>
-                          <ul role="list" aria-labelledby="mobile-brand-heading" className="mt-6 space-y-6">
+                          <ul
+                            role="list"
+                            aria-labelledby="mobile-brand-heading"
+                            className="mt-6 space-y-6"
+                          >
                             {category.brands.map((item) => (
                               <li key={item.name} className="flex">
                                 <a href={item.href} className="text-gray-500">
@@ -300,7 +335,10 @@ export default function AquaDynamicProductComponent() {
             <div className="space-y-6 border-t border-gray-200 px-4 py-6">
               {navigation.pages.map((page) => (
                 <div key={page.name} className="flow-root">
-                  <a href={page.href} className="-m-2 block p-2 font-medium text-gray-900">
+                  <a
+                    href={page.href}
+                    className="-m-2 block p-2 font-medium text-gray-900"
+                  >
                     {page.name}
                   </a>
                 </div>
@@ -309,12 +347,18 @@ export default function AquaDynamicProductComponent() {
 
             <div className="space-y-6 border-t border-gray-200 px-4 py-6">
               <div className="flow-root">
-                <a href="#" className="-m-2 block p-2 font-medium text-gray-900">
+                <a
+                  href="#"
+                  className="-m-2 block p-2 font-medium text-gray-900"
+                >
                   Create an account
                 </a>
               </div>
               <div className="flow-root">
-                <a href="#" className="-m-2 block p-2 font-medium text-gray-900">
+                <a
+                  href="#"
+                  className="-m-2 block p-2 font-medium text-gray-900"
+                >
                   Sign in
                 </a>
               </div>
@@ -336,7 +380,10 @@ export default function AquaDynamicProductComponent() {
                       {/* Options */}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center">
-                      <ChevronDownIcon className="h-5 w-5 text-gray-500" aria-hidden="true" />
+                      <ChevronDownIcon
+                        className="h-5 w-5 text-gray-500"
+                        aria-hidden="true"
+                      />
                     </div>
                   </div>
                 </div>
@@ -346,9 +393,7 @@ export default function AquaDynamicProductComponent() {
         </div>
       </Dialog>
 
-      <AquaLayout>
-      
-      </AquaLayout>
+      <AquaLayout></AquaLayout>
     </div>
   );
 }

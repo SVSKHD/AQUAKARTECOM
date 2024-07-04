@@ -32,23 +32,23 @@ const AquaAllCategoriesComponent = () => {
   return (
     <>
       <AquaLayout>
-      <div className="bg-white">
-      <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
-      <div className="min-w-0 flex-1">
-        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-          Categories
-        </h2>
-      </div>
-
-        <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
-          {categories.map((category) => (
-            <div key={category} className="group relative">
-              <AquaCategoryCard category={category}/>
+        <div className="bg-white">
+          <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
+                Categories
+              </h2>
             </div>
-          ))}
+
+            <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
+              {categories.map((category) => (
+                <div key={category} className="group relative">
+                  <AquaCategoryCard category={category} />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
       </AquaLayout>
     </>
   );

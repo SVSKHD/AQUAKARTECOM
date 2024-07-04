@@ -1,9 +1,9 @@
-import AquaBlogComponnet from "@/pageComponents/blogs"
-const AquaBlogIndex = () =>{
-return(
+import AquaBlogComponnet from "@/pageComponents/blogs";
+const AquaBlogIndex = () => {
+  return (
     <>
-    <AquaBlogComponnet/>
+      <AquaBlogComponnet />
     </>
-)
-}
-export default AquaBlogIndex
+  );
+};
+export default AquaBlogIndex;

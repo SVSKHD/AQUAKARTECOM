@@ -1,9 +1,9 @@
-import AquaCheckoutComponent from "@/pageComponents/checkout"
-const AquaCheckoutIndex = () =>{
-return(
+import AquaCheckoutComponent from "@/pageComponents/checkout";
+const AquaCheckoutIndex = () => {
+  return (
     <>
-    <AquaCheckoutComponent/>
+      <AquaCheckoutComponent />
     </>
-)
-} 
-export default AquaCheckoutIndex
+  );
+};
+export default AquaCheckoutIndex;

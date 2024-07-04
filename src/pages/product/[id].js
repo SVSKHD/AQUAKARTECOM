@@ -1,9 +1,9 @@
-import AquaDyanmicProductComponent from "@/pageComponents/products/dynamicProduct"
-const AquaDyanmicProduct = () =>{
-return(
+import AquaDyanmicProductComponent from "@/pageComponents/products/dynamicProduct";
+const AquaDyanmicProduct = () => {
+  return (
     <>
-    <AquaDyanmicProductComponent/>
+      <AquaDyanmicProductComponent />
     </>
-)
-}
-export default AquaDyanmicProduct
+  );
+};
+export default AquaDyanmicProduct;

@@ -37,7 +37,9 @@ function classNames(...classes) {
 const AquaHeader = () => {
   const { openCartDrawer, openFavDrawer } = useCartDrawer();
   const { openAuthDialog } = useDialog();
-  const { userData , cartData, favData} = useSelector((state) => ({ ...state }));
+  const { userData, cartData, favData } = useSelector((state) => ({
+    ...state,
+  }));
   const router = useRouter();
 
   return (

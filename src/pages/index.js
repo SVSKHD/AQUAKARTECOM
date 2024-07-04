@@ -1,7 +1,5 @@
 import AquaHomeComponent from "@/pageComponents/home";
 
-
-
 const AquaHomePage = () => {
   return (
     <>

@@ -19,10 +19,6 @@ const store = createStore(persistedReducer);
 const persistor = persistStore(store);
 
 export default function App({ Component, pageProps }) {
-
- 
-
-
   const router = useRouter();
 
   useEffect(() => {
@@ -78,7 +74,6 @@ export default function App({ Component, pageProps }) {
     <Provider store={store}>
       <PersistGate persistor={persistor} loading={<div>Loading...</div>}>
         <Component {...pageProps} />
-        
       </PersistGate>
     </Provider>
   );

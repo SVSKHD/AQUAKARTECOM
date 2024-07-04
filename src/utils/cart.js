@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 // Function to calculate the total price
 const calculateTotal = (data) => {
