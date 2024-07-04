@@ -92,8 +92,6 @@ const navigation = {
   ],
 };
 
-
-
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -140,6 +138,7 @@ const ProductImages = ({ photos }) => {
 };
 
 export default function AquaDynamicProductComponent() {
+  const seo = { title: "product | Aquakart" };
   const [open, setOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -367,7 +366,7 @@ export default function AquaDynamicProductComponent() {
         </div>
       </Dialog>
 
-      <AquaLayout></AquaLayout>
+      <AquaLayout seo={seo}></AquaLayout>
     </div>
   );
 }
