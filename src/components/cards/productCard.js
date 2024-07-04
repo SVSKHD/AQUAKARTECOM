@@ -23,7 +23,7 @@ const AquaProductCard = ({ product }) => {
   }, [cartData, product?._id, favData]);
 
   return (
-    <div className="relative">
+    <div className="relative mb-5">
       <div className="relative h-72 w-full overflow-hidden rounded-lg">
         <img
           src={photos[0].secure_url}

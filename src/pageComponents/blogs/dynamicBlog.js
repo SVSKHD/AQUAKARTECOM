@@ -4,32 +4,28 @@ import { useRouter } from "next/router";
 import BlogServiceOperations from "@/services/blog";
 import { CameraIcon } from "@heroicons/react/20/solid";
 import Head from "next/head";
+import AquaProductCard from "@/components/cards/productCard";
 
 const AquaDynamicBlogComponent = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [product, setProduct] = useState({});
+  const [blog, setBlog] = useState({});
+  const [related, setRelated] = useState([]);
 
   useEffect(() => {
     if (id) {
       BlogServiceOperations.blogById(id).then((res) => {
-        setProduct(res.data.data);
+        setBlog(res.data.data);
+        setRelated(res.data.relatedProduct);
       });
     }
   }, [id]);
 
-  const stats = [
-    { label: "Founded", value: "2021" },
-    { label: "Employees", value: "37" },
-    { label: "Countries", value: "12" },
-    { label: "Raised", value: "$25M" },
-  ];
-
   const seoData = {
-    title: `${product.title || "Blog"} | Aquakart`,
+    title: `${blog.title || "Blog"} | Aquakart`,
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
-    image: product?.titleImages?.[0]?.secure_url || "",
-    keywords: `Aquakart Product | ${product.title || "Blog"}`,
+    image: blog?.titleImages?.[0]?.secure_url || "",
+    keywords: `Aquakart Product | ${blog.title || "Blog"}`,
   };
 
   return (
@@ -49,7 +45,7 @@ const AquaDynamicBlogComponent = () => {
                 Use Cases
               </h2>
               <h3 className="mt-2 text-3xl font-bold leading-8 tracking-tight text-gray-900 sm:text-4xl">
-                {product.title}
+                {blog.title}
               </h3>
             </div>
           </div>
@@ -94,7 +90,7 @@ const AquaDynamicBlogComponent = () => {
                     <img
                       className="rounded-lg object-cover object-center shadow-lg"
                       src={
-                        product?.titleImages?.[0]?.secure_url ||
+                        blog?.titleImages?.[0]?.secure_url ||
                         "/default-image.jpg"
                       }
                       alt="Aquakart"
@@ -112,10 +108,17 @@ const AquaDynamicBlogComponent = () => {
                 </figure>
               </div>
               <hr />
-              <h3>Hello</h3>
+              <h2 className="text-2xl font-bold leading-7 text-black mb-3 mt-3 sm:truncate sm:text-3xl sm:tracking-tight">
+                Related Products
+              </h2>
+              {related.map((r, i) => (
+                <div key={i}>
+                  <AquaProductCard product={r} />
+                </div>
+              ))}
             </div>
             <div className="mt-8 lg:mt-0">
-              <div dangerouslySetInnerHTML={{ __html: product.description }} />
+              <div dangerouslySetInnerHTML={{ __html: blog.description }} />
             </div>
           </div>
         </div>
