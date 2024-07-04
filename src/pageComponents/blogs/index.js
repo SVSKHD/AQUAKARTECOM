@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 const AquaBlogComponnet = () => {
-  const router = useRouter()
+  const router = useRouter();
   const [blogs, setBlogs] = useState([]);
   useEffect(() => {
     BlogServiceOperations.AllBlogs().then((res) => {
@@ -14,14 +14,14 @@ const AquaBlogComponnet = () => {
     });
   }, []);
 
-  const seoData = { 
+  const seoData = {
     title: "Aquakart | Compare Products",
     description:
       "Aquakart's product comparison tool empowers shoppers to make informed decisions by offering side-by-side comparisons of features, prices, and customer reviews. Easily evaluate multiple products, discover the best deals, and find the perfect fit for your needs.",
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
     image:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
-   };
+  };
   const posts = [
     {
       id: 1,

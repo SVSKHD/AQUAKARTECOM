@@ -1,9 +1,9 @@
-import AquaDynamicBlogComponent from "@/pageComponents/blogs/dynamicBlog"
-const AquaBlogIndex = () =>{
-return(
+import AquaDynamicBlogComponent from "@/pageComponents/blogs/dynamicBlog";
+const AquaBlogIndex = () => {
+  return (
     <>
-    <AquaDynamicBlogComponent/>
+      <AquaDynamicBlogComponent />
     </>
-)
-}
-export default AquaBlogIndex
+  );
+};
+export default AquaBlogIndex;
