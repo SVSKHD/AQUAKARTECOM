@@ -8,11 +8,14 @@ import {
   XMarkIcon,
 } from "@heroicons/react/20/solid";
 import useCurrency from "@/utils/currency";
+import useCart from "@/utils/cart";
+
 
 const AquaCartDrawer = () => {
   const { cartDrawer, cartData } = useSelector((state) => ({ ...state }));
   const { closeCartDrawer } = useDrawer();
   const { formatCurrencyINR } = useCurrency;
+  const {getTotalPrice} = useCart()
   return (
     <AquaReuseDrawer
       open={cartDrawer}
@@ -68,6 +71,32 @@ const AquaCartDrawer = () => {
           </div>
         </>
       )}
+
+     {cartData.length>0?(
+       <>
+       <div>
+       <div className="min-w-0 flex-1">
+        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
+           Total : <span className="text-green-900">{formatCurrencyINR(getTotalPrice(cartData))}</span>
+        </h2>
+      </div>
+       </div>
+       </>
+     ):("")}
+
+
+      {cartData.length>0?(
+        <>
+        <div className="mt-6">
+              <a
+                href="/checkout"
+                className="w-full rounded-md border border-transparent bg-indigo-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
+              >
+                Go To Cart
+              </a>
+            </div>
+        </>
+      ):("")}
     </AquaReuseDrawer>
   );
 };
