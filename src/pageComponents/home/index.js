@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import {
   Dialog,
   DialogBackdrop,
@@ -24,8 +24,23 @@ import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import AquaLayout from "@/components/Layout/Layout";
 import AquaProductCard from "@/components/cards/productCard";
 import { useRouter } from "next/router";
+import CategoryServiceOperations from "@/services/category";
+import ProductServiceOperations from "@/services/products";
+
+
 const AquaHomeComponent = () => {
+  const [categoryData , setCategoryData] = useState([])
+  const [productData, setProductData] = useState([])
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  useEffect(()=>{
+    CategoryServiceOperations.Allcategories().then((res)=>{
+     setCategoryData(res.data.data)      
+    })
+    ProductServiceOperations.AllProducts().then((res)=>{
+      setProductData(res.data.data)
+    })
+  },[])
+ 
   const router = useRouter();
   const SeoData = {
     title: "Aquakart | Online Shopping for Softeners purifiers and many more",
@@ -437,10 +452,10 @@ const AquaHomeComponent = () => {
                   <div className="-my-2">
                     <div className="relative box-content h-80 overflow-x-auto py-2 xl:overflow-visible">
                       <div className="absolute flex space-x-8 px-4 sm:px-6 lg:px-8 xl:relative xl:grid xl:grid-cols-5 xl:gap-x-8 xl:space-x-0 xl:px-0">
-                        {categories.map((category) => (
+                        {categoryData.map((category) => (
                           <a
-                            key={category.name}
-                            href={category.href}
+                            key={category.title}
+                            href={`/category/${category._id}`}
                             className="relative flex h-80 w-56 flex-col overflow-hidden rounded-lg p-6 hover:opacity-75 xl:w-auto"
                           >
                             <span
@@ -448,8 +463,8 @@ const AquaHomeComponent = () => {
                               className="absolute inset-0"
                             >
                               <img
-                                src={category.imageSrc}
-                                alt=""
+                                src={category.photos[0].secure_url}
+                                alt={category.title}
                                 className="h-full w-full object-cover object-center"
                               />
                             </span>
@@ -457,9 +472,9 @@ const AquaHomeComponent = () => {
                               aria-hidden="true"
                               className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-gray-800 opacity-50"
                             />
-                            <span className="relative mt-auto text-center text-xl font-bold text-white">
-                              {category.name}
-                            </span>
+                            <a href={`/category/${category._id}`} className="relative mt-auto text-center text-xl font-bold text-white">
+                              {category.title}
+                            </a>
                           </a>
                         ))}
                       </div>
