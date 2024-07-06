@@ -8,7 +8,7 @@ const cartTotal = (cart) => {
 // Custom hook to manage cart state
 const useCart = () => {
   const dispatch = useDispatch();
-  const {cartData} = useSelector((state) =>({...state})); // Select cart state from Redux
+  const { cartData } = useSelector((state) => ({ ...state })); // Select cart state from Redux
 
   // Function to add item to cart
   const addItemToCart = (item) => {

@@ -9,17 +9,16 @@ import {
 } from "@heroicons/react/20/solid";
 import { useSelector, useDispatch } from "react-redux";
 
-
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
-  const { cartData } = useSelector((state) => ({ ...state }));
-  const {formatCurrencyINR} = useCurrency
-  const {getTotalPrice, changeItemQuantity} = useCart()
+  const { cartData, userData } = useSelector((state) => ({ ...state }));
+  const { formatCurrencyINR } = useCurrency;
+  const { getTotalPrice, changeItemQuantity } = useCart();
   const seo = {
-    title:"Aquakart | Cart"
-  }
+    title: "Aquakart | Cart",
+  };
 
-  const handleQuantityChange = (event,id) => {
+  const handleQuantityChange = (event, id) => {
     const quantity = parseInt(event.target.value, 10);
     changeItemQuantity(id, quantity);
   };
@@ -86,7 +85,10 @@ const AquaCheckoutComponent = () => {
                           <select
                             id={`quantity-${productIdx}`}
                             name={`quantity-${productIdx}`}
-                            onChange={(e)=>handleQuantityChange(e,product._id)}
+                            value={product.quantity}
+                            onChange={(e) =>
+                              handleQuantityChange(e, product._id)
+                            }
                             className="max-w-full rounded-md border border-gray-300 py-1.5 text-left text-base font-medium leading-5 text-gray-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
                           >
                             <option value={1}>1</option>
@@ -151,7 +153,9 @@ const AquaCheckoutComponent = () => {
               <dl className="mt-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <dt className="text-sm text-gray-600">Subtotal</dt>
-                  <dd className="text-sm font-medium text-gray-900">{formatCurrencyINR(getTotalPrice())}</dd>
+                  <dd className="text-sm font-medium text-gray-900">
+                    {formatCurrencyINR(getTotalPrice())}
+                  </dd>
                 </div>
                 <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                   <dt className="flex items-center text-sm text-gray-600">
@@ -169,35 +173,63 @@ const AquaCheckoutComponent = () => {
                       />
                     </a>
                   </dt>
-                  <dd className="text-sm font-medium text-gray-900">{formatCurrencyINR(300)}</dd>
+                  <dd className="text-sm font-medium text-gray-900">
+                    {formatCurrencyINR(300)}
+                  </dd>
                 </div>
                 <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                   <dt className="text-base font-medium text-gray-900">
                     Order total
                   </dt>
                   <dd className="text-base font-medium text-gray-900">
-                    {formatCurrencyINR(getTotalPrice()+300)}
+                    {formatCurrencyINR(getTotalPrice() + 300)}
                   </dd>
                 </div>
               </dl>
+              {/* handle user */}
+              {!userData ? (
+                <>
+                  <button
+                   type="button"
+                    className="mt-2 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    onClick={() =>
+                      dispatch({
+                        type: "SET_AUTH_DIALOG_VISIBLE",
+                        payload: true,
+                      })
+                    }
+                  >
+                    Please Login
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setOpen(false)}
+                      className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+                    >
+                      Pay Now
+                    </button>
+                    <button
+                      type="button"
+                      data-autofocus
+                      onClick={() => setOpen(false)}
+                      className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
+                    >
+                      Cash On Delivery
+                    </button>
+                  </div>
 
-              <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-              >
-                Pay Now
-              </button>
-              <button
-                type="button"
-                data-autofocus
-                onClick={() => setOpen(false)}
-                className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
-              >
-                Cash On Delivery
-              </button>
-            </div>
+                  <button
+                    type="submit"
+                    className="mt-2 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  >
+                    Continue To Shop
+                  </button>
+                </>
+              )}
             </section>
           </form>
         </div>

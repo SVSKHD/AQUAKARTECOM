@@ -8,6 +8,7 @@ import { cartDataReducer } from "./reducers/cartDataReducer";
 import { userReducer } from "./reducers/userDataReducer";
 import { userStatusReducer } from "./reducers/userStatusReducer";
 import { toastReducer } from "./reducers/toastReducer";
+import { userDataDrawerReducer } from "./reducers/userDataUpdateDrawer";
 
 const rootReducer = combineReducers({
   toastNotify: toastReducer,
@@ -17,7 +18,8 @@ const rootReducer = combineReducers({
   favData: favDataReducer,
   cartData: cartDataReducer,
   userData: userReducer,
-  userStatus: userStatusReducer,
+  userSignupStatus: userStatusReducer,
+  userDataDrawer: userDataDrawerReducer,
 });
 
 export default rootReducer;

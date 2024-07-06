@@ -11,7 +11,7 @@ const AquaDynamicCategoryComponent = () => {
   const { id } = router.query;
 
   const seo = {
-    title: `Aquakart | ${category.title || 'Category'}`,
+    title: `Aquakart | ${category.title || "Category"}`,
   };
 
   useEffect(() => {
@@ -34,8 +34,13 @@ const AquaDynamicCategoryComponent = () => {
         <div className="bg-gray-50">
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
             <div className="sm:flex sm:items-baseline sm:justify-between">
-              <h2 className="text-2xl font-bold tracking-tight text-gray-900">Shop by Category</h2>
-              <a href="#" className="hidden text-sm font-semibold text-indigo-600 hover:text-indigo-500 sm:block">
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900">
+                Shop by Category
+              </h2>
+              <a
+                href="#"
+                className="hidden text-sm font-semibold text-indigo-600 hover:text-indigo-500 sm:block"
+              >
                 Browse all categories
                 <span aria-hidden="true"> &rarr;</span>
               </a>
@@ -49,7 +54,10 @@ const AquaDynamicCategoryComponent = () => {
                     src={category.photos[0].secure_url}
                     className="object-cover object-center group-hover:opacity-75"
                   />
-                  <div aria-hidden="true" className="bg-gradient-to-b from-transparent to-black opacity-50" />
+                  <div
+                    aria-hidden="true"
+                    className="bg-gradient-to-b from-transparent to-black opacity-50"
+                  />
                   <div className="flex items-end p-6">
                     <div>
                       <h3 className="font-semibold text-white">
@@ -63,13 +71,22 @@ const AquaDynamicCategoryComponent = () => {
                 </div>
               )}
               {related.map((r, i) => (
-                <div key={i} className="group aspect-h-1 aspect-w-2 overflow-hidden rounded-lg sm:aspect-none sm:relative sm:h-full">
+                <div
+                  key={i}
+                  className="group aspect-h-1 aspect-w-2 overflow-hidden rounded-lg sm:aspect-none sm:relative sm:h-full"
+                >
                   <img
                     alt={r.title}
-                    src={r?.photos?.[0]?.secure_url || "https://via.placeholder.com/300"}
+                    src={
+                      r?.photos?.[0]?.secure_url ||
+                      "https://via.placeholder.com/300"
+                    }
                     className="object-cover object-center group-hover:opacity-75 sm:absolute sm:inset-0 sm:h-full sm:w-full"
                   />
-                  <div aria-hidden="true" className="bg-gradient-to-b from-transparent to-black opacity-50 sm:absolute sm:inset-0" />
+                  <div
+                    aria-hidden="true"
+                    className="bg-gradient-to-b from-transparent to-black opacity-50 sm:absolute sm:inset-0"
+                  />
                   <div className="flex items-end p-6 sm:absolute sm:inset-0">
                     <div>
                       <h3 className="font-semibold text-white">
@@ -88,7 +105,10 @@ const AquaDynamicCategoryComponent = () => {
             </div>
 
             <div className="mt-6 sm:hidden">
-              <a href="#" className="block text-sm font-semibold text-indigo-600 hover:text-indigo-500">
+              <a
+                href="#"
+                className="block text-sm font-semibold text-indigo-600 hover:text-indigo-500"
+              >
                 Browse all categories
                 <span aria-hidden="true"> &rarr;</span>
               </a>

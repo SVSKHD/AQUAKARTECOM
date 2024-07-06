@@ -38,7 +38,6 @@ import { FaHeart, FaHeartBroken } from "react-icons/fa";
 import { FaCartArrowDown, FaCartShopping } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 
-
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -49,19 +48,23 @@ export default function AquaDynamicProductComponent() {
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [productData, setProductData] = useState(null);
-  const [related, setRelatedData] = useState([])
-  const [cart , setCart] = useState(false)
-  const [fav , setFav] = useState(false)
-  const {formatCurrencyINR} = useCurrency
-  const {AddAndRemoveCart , AddAndRemoveFav} = useProduct()
+  const [related, setRelatedData] = useState([]);
+  const [cart, setCart] = useState(false);
+  const [fav, setFav] = useState(false);
+  const { formatCurrencyINR } = useCurrency;
+  const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
 
   const router = useRouter();
   const { id } = router.query;
-  const {cartData , favData} = useSelector((state) =>({...state}))
+  const { cartData, favData } = useSelector((state) => ({ ...state }));
 
   useEffect(() => {
-    const isProductInCart = cartData.some((item) => item._id === productData?._id);
-    const isProductInFav = favData.some((item) => item._id === productData?._id);
+    const isProductInCart = cartData.some(
+      (item) => item._id === productData?._id,
+    );
+    const isProductInFav = favData.some(
+      (item) => item._id === productData?._id,
+    );
     setCart(isProductInCart);
     setFav(isProductInFav);
   }, [cartData, productData?._id, favData]);
@@ -76,7 +79,7 @@ export default function AquaDynamicProductComponent() {
         if (res.data.sizes && res.data.sizes.length > 0) {
           setSelectedSize(res.data.sizes[2] || res.data.sizes[0]);
         }
-        setRelatedData(res.data.related)
+        setRelatedData(res.data.related);
       });
     }
   }, [id]);
@@ -84,7 +87,6 @@ export default function AquaDynamicProductComponent() {
   if (!productData) {
     return <div>Loading...</div>;
   }
-
 
   const product = {
     name: "Zip Tote Basket",
@@ -145,7 +147,6 @@ export default function AquaDynamicProductComponent() {
     },
     // More products...
   ];
-
 
   return (
     <AquaLayout seo={seo}>
@@ -244,32 +245,32 @@ export default function AquaDynamicProductComponent() {
                     <button
                       type="submit"
                       className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
-                      onClick={()=>AddAndRemoveCart(productData, setCart)}
+                      onClick={() => AddAndRemoveCart(productData, setCart)}
                     >
-                  
                       {cart ? (
-              <FaCartArrowDown className="text-grey-700" size={25} />
-            ) : (
-              <FaCartShopping size={25} />
-            )}
+                        <FaCartArrowDown className="text-grey-700" size={25} />
+                      ) : (
+                        <FaCartShopping size={25} />
+                      )}
                     </button>
 
                     <button
                       type="button"
                       className="ml-4 flex items-center justify-center rounded-md px-3 py-3 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
-                      onClick={()=>AddAndRemoveFav(productData, setFav)}
+                      onClick={() => AddAndRemoveFav(productData, setFav)}
                     >
-                     {fav ? (
-              <FaHeart className="text-red-700" size={25} />
-            ) : (
-              <FaHeartBroken className="text-red-700" size={25} />
-            )}
-                    
+                      {fav ? (
+                        <FaHeart className="text-red-700" size={25} />
+                      ) : (
+                        <FaHeartBroken className="text-red-700" size={25} />
+                      )}
                     </button>
                   </div>
                   <div
                     className="space-y-6 text-base text-gray-700"
-                    dangerouslySetInnerHTML={{ __html: productData.description }}
+                    dangerouslySetInnerHTML={{
+                      __html: productData.description,
+                    }}
                   />
                 </div>
 
@@ -310,8 +311,6 @@ export default function AquaDynamicProductComponent() {
                       </RadioGroup>
                     </fieldset>
                   </div> */}
-
-               
                 </form>
 
                 {/* <section aria-labelledby="details-heading" className="mt-12">
@@ -392,8 +391,8 @@ export default function AquaDynamicProductComponent() {
                       </div>
                       <div className="relative mt-4">
                         <h3 className="text-sm font-medium text-gray-900">
-                            <a  href={`/product/${product._id}`}>
-                          {product.title}
+                          <a href={`/product/${product._id}`}>
+                            {product.title}
                           </a>
                         </h3>
                         <p className="mt-1 text-sm text-gray-500">
@@ -411,10 +410,7 @@ export default function AquaDynamicProductComponent() {
                       </div>
                     </div>
                     <div className="mt-6">
-                      <button
-                       
-                        className="relative flex items-center justify-center rounded-md border border-transparent bg-gray-100 px-8 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200"
-                      >
+                      <button className="relative flex items-center justify-center rounded-md border border-transparent bg-gray-100 px-8 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200">
                         Add to Cart
                         <span className="sr-only">, {product.title}</span>
                       </button>

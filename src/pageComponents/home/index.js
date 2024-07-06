@@ -27,20 +27,19 @@ import { useRouter } from "next/router";
 import CategoryServiceOperations from "@/services/category";
 import ProductServiceOperations from "@/services/products";
 
-
 const AquaHomeComponent = () => {
-  const [categoryData , setCategoryData] = useState([])
-  const [productData, setProductData] = useState([])
+  const [categoryData, setCategoryData] = useState([]);
+  const [productData, setProductData] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  useEffect(()=>{
-    CategoryServiceOperations.Allcategories().then((res)=>{
-     setCategoryData(res.data.data)      
-    })
-    ProductServiceOperations.AllProducts().then((res)=>{
-      setProductData(res.data.data)
-    })
-  },[])
- 
+  useEffect(() => {
+    CategoryServiceOperations.Allcategories().then((res) => {
+      setCategoryData(res.data.data);
+    });
+    ProductServiceOperations.AllProducts().then((res) => {
+      setProductData(res.data.data);
+    });
+  }, []);
+
   const router = useRouter();
   const SeoData = {
     title: "Aquakart | Online Shopping for Softeners purifiers and many more",
@@ -472,7 +471,10 @@ const AquaHomeComponent = () => {
                               aria-hidden="true"
                               className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-gray-800 opacity-50"
                             />
-                            <a href={`/category/${category._id}`} className="relative mt-auto text-center text-xl font-bold text-white">
+                            <a
+                              href={`/category/${category._id}`}
+                              className="relative mt-auto text-center text-xl font-bold text-white"
+                            >
                               {category.title}
                             </a>
                           </a>

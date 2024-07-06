@@ -1,9 +1,9 @@
-import AquaDynamicCategoryComponent from "@/pageComponents/categories/dynamicCategory"
-const DynamicAquaCategory = () =>{
-return(
+import AquaDynamicCategoryComponent from "@/pageComponents/categories/dynamicCategory";
+const DynamicAquaCategory = () => {
+  return (
     <>
-    <AquaDynamicCategoryComponent/>
+      <AquaDynamicCategoryComponent />
     </>
-)
-}
-export default DynamicAquaCategory
+  );
+};
+export default DynamicAquaCategory;
