@@ -22,6 +22,7 @@ import {
 import LW from "@/assests/logo-white.png";
 import Image from "next/image";
 import { useSelector } from "react-redux";
+import { FaUser } from "react-icons/fa"
 
 const navigation = [
   { name: "Shop", href: "/shop" },
@@ -117,7 +118,7 @@ const AquaHeader = () => {
                       <MenuButton className="p-2 relative flex rounded-full bg-gray-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                         <span className="absolute -inset-1.5" />
                         <span className="sr-only">Open user menu</span>
-                        UN
+                        <FaUser className="h-6 w-6" />
                       </MenuButton>
                     </div>
                     <Transition

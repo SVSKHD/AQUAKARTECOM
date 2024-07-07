@@ -1,15 +1,86 @@
+import UserServiceOperations from '@/services/user';
+import useDialog from '@/utils/dialog';
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+
 
 const AquaAuthMobileForm = ({ signup }) => {
   const [phone, setPhone] = useState('');
+  const [otpShow, setOtpShow] = useState(false);
+  const [otp, setOtp] = useState('');
+  const {closeDialog} = useDialog()
+  const dispatch = useDispatch();
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Add your signup/signin logic here
-    if (signup) {
-      console.log('Signing Up with phone:', phone);
+    const phoneFormat = Number(phone)
+    const otpFormat = Number(otp)
+    const data = { phone:phoneFormat, otp:otpFormat };
+    console.log(data);
+    UserServiceOperations.UserMobileVerify(data)
+      .then((res) => {
+        console.log(res.data);
+        dispatch({
+          type: 'SHOW_NOTIFICATION',
+          payload: {
+            message: 'Verification successful',
+            messageType: 'success',
+          },
+        });
+        dispatch({
+          type:"LOGGED_IN_USER",
+          payload:res
+        })
+        closeDialog()
+      })
+      .catch((err) => {
+        console.log(err);
+        dispatch({
+          type: 'SHOW_NOTIFICATION',
+          payload: {
+            message: 'Verification failed',
+            messageType: 'error',
+          },
+        });
+      });
+  };
+
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    setPhone(value);
+    if (value.length === 10) {
+      UserServiceOperations.UserMobileOtp({ phone: value })
+        .then((res) => {
+          setOtpShow(true);
+          dispatch({
+            type: 'SHOW_NOTIFICATION',
+            payload: {
+              message: 'Successfully sent OTP',
+              messageType: 'success',
+            },
+          });
+          dispatch({
+            type: 'SET_AUTH_STATUS_VISIBLE',
+            payload: !res.data.userExist,
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          setOtpShow(false);
+          dispatch({
+            type: 'SHOW_NOTIFICATION',
+            payload: {
+              message: 'Failed to send OTP',
+              messageType: 'error',
+            },
+          });
+          dispatch({
+            type: 'SET_AUTH_STATUS_VISIBLE',
+            payload: false,
+          });
+        });
     } else {
-      console.log('Signing In with phone:', phone);
+      setOtpShow(false);
     }
   };
 
@@ -37,13 +108,27 @@ const AquaAuthMobileForm = ({ signup }) => {
                 id="phone-number"
                 name="phone-number"
                 maxLength="10"
-                type="text"
+                type="number"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={handlePhoneChange}
                 placeholder="000-00-0000"
-                className="block w-full rounded-md border-0 py-1.5 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
+            {otpShow && (
+              <div className="relative mt-2 rounded-md shadow-sm">
+                <input
+                  id="otp"
+                  name="otp"
+                  maxLength="6"
+                  type="number"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Enter OTP"
+                  className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                />
+              </div>
+            )}
             <p className="mt-2 text-sm text-gray-500">
               Please ensure your phone number is associated with WhatsApp.
             </p>
@@ -52,7 +137,10 @@ const AquaAuthMobileForm = ({ signup }) => {
           <div>
             <button
               type="submit"
-              className="mt-2 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              className={`mt-2 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+                !otpShow ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
+              }`}
+              disabled={!otpShow}
             >
               {signup ? 'Sign Up' : 'Sign In'}
             </button>
