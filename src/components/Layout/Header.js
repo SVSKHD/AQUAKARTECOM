@@ -22,13 +22,8 @@ import {
 } from "@heroicons/react/24/outline";
 import LW from "@/assests/logo-white.png";
 import Image from "next/image";
-<<<<<<< Updated upstream
-import { useSelector } from "react-redux";
-import { FaUser } from "react-icons/fa";
-=======
 import { useDispatch, useSelector } from "react-redux";
 import { FaUser } from "react-icons/fa"
->>>>>>> Stashed changes
 
 const navigation = [
   { name: "Shop", href: "/shop" },

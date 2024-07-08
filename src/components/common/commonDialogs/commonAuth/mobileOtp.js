@@ -6,13 +6,8 @@ import { useDispatch } from "react-redux";
 const AquaAuthMobileForm = ({ signup }) => {
   const [phone, setPhone] = useState("");
   const [otpShow, setOtpShow] = useState(false);
-<<<<<<< Updated upstream
-  const [otp, setOtp] = useState("");
-  const { closeDialog } = useDialog();
-=======
   const [otp, setOtp] = useState('');
   const {closeAuthDialog} = useDialog()
->>>>>>> Stashed changes
   const dispatch = useDispatch();
 
   const handleSubmit = (event) => {
@@ -32,17 +27,10 @@ const AquaAuthMobileForm = ({ signup }) => {
           },
         });
         dispatch({
-<<<<<<< Updated upstream
-          type: "LOGGED_IN_USER",
-          payload: res,
-        });
-        closeDialog();
-=======
           type:"LOGGED_IN_USER",
           payload:res
         })
         closeAuthDialog()
->>>>>>> Stashed changes
       })
       .catch((err) => {
         console.log(err);
