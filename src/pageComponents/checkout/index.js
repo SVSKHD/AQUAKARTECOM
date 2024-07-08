@@ -10,12 +10,15 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import { nanoid } from "nanoid";
 import moment from "moment";
+import { useState } from "react";
 
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
   const { cartData, userData } = useSelector((state) => ({ ...state }));
   const { formatCurrencyINR } = useCurrency;
   const { getTotalPrice, changeItemQuantity } = useCart();
+  const [selectedAddress , setSelectedAddress] = useState()
+
   const seo = {
     title: "Aquakart | Cart",
   };
@@ -255,7 +258,7 @@ const AquaCheckoutComponent = () => {
                     <button
                       type="button"
                       data-autofocus
-                      onClick={() => setOpen(false)}
+                      onClick={handleCashOnDelivery}
                       className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
                     >
                       Cash On Delivery
