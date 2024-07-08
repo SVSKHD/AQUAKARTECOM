@@ -8,6 +8,8 @@ import {
   XMarkIcon,
 } from "@heroicons/react/20/solid";
 import { useSelector, useDispatch } from "react-redux";
+import { nanoid } from "nanoid";
+import moment from "moment";
 
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
@@ -22,6 +24,44 @@ const AquaCheckoutComponent = () => {
     const quantity = parseInt(event.target.value, 10);
     changeItemQuantity(id, quantity);
   };
+
+  const items = cartCount.map((item) => ({
+    productId: item.id,
+    name: item.name,
+    price: item.price,
+    quantity: item.quantity,
+  }));
+
+  const handleCashOnDelivery = () =>{
+    const cashTransactionId = `AQTR-COD${nanoid(5).toUpperCase()}D${moment(
+      new Date(),
+    ).format("DDMMYYYY")}`;
+    const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
+    const newOrder = {
+      user: user?.user?._id, // Safe access and also make sure user exists
+      orderType: "Cash On Delivery",
+      items: cartCount.map((item) => ({
+        productId: item._id,
+        name: item.title,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+      transactionId: cashTransactionId,
+      totalAmount: calculatedTotal,
+      orderId: orderId,
+      paymentMethod: "Cash On Delivery",
+      paymentStatus: "Pending",
+      currency: "INR",
+      billingAddress: user?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
+      shippingAddress: user?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
+      shippingMethod: "Standard",
+      shippingCost: 50, // Example fixed cost
+      estimatedDelivery: new Date(
+        new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
+      ).toISOString(), // Adding 7 days // Adding 7 days for delivery
+      orderStatus: "Processing",
+    };
+  }
   return (
     <AquaLayout seo={seo}>
       <div className="bg-white">
