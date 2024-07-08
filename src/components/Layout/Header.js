@@ -22,7 +22,7 @@ import {
 import LW from "@/assests/logo-white.png";
 import Image from "next/image";
 import { useSelector } from "react-redux";
-import { FaUser } from "react-icons/fa"
+import { FaUser } from "react-icons/fa";
 
 const navigation = [
   { name: "Shop", href: "/shop" },

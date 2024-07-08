@@ -1,15 +1,13 @@
-import AquaLayout from "@/components/Layout/Layout"
+import AquaLayout from "@/components/Layout/Layout";
 
-const AquaOrderComponent = () =>{
-const seo = {
-    title:"Aquakart | Orders"
-}
-    return(
+const AquaOrderComponent = () => {
+  const seo = {
+    title: "Aquakart | Orders",
+  };
+  return (
     <>
-    <AquaLayout seo={seo}>
-        
-    </AquaLayout>
+      <AquaLayout seo={seo}></AquaLayout>
     </>
-)
-}
-export default AquaOrderComponent
+  );
+};
+export default AquaOrderComponent;

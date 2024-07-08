@@ -1,10 +1,10 @@
-import AquaOrderComponent from "@/pageComponents/orders"
+import AquaOrderComponent from "@/pageComponents/orders";
 
-const AquaOrderIndex = () =>{
-    return(
-        <>
-        <AquaOrderComponent/>
-        </>
-    )
-}
-export default AquaOrderIndex
+const AquaOrderIndex = () => {
+  return (
+    <>
+      <AquaOrderComponent />
+    </>
+  );
+};
+export default AquaOrderIndex;
