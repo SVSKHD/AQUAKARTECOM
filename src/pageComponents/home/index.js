@@ -503,7 +503,7 @@ const AquaHomeComponent = () => {
                 <div className="relative overflow-hidden rounded-lg">
                   <div className="absolute inset-0">
                     <img
-                      src="https://tailwindui.com/img/ecommerce-images/home-page-01-feature-section-01.jpg"
+                      src="https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg"
                       alt=""
                       className="h-full w-full object-cover object-center"
                     />
@@ -514,21 +514,16 @@ const AquaHomeComponent = () => {
                         id="social-impact-heading"
                         className="text-3xl font-bold tracking-tight text-white sm:text-4xl"
                       >
-                        <span className="block sm:inline">Level up</span>
-                        <span className="block sm:inline">your desk</span>
+                        <span className="block sm:inline">Level up Water </span>
                       </h2>
                       <p className="mt-3 text-xl text-white">
-                        Make your desk beautiful and organized. Post a picture
-                        to social media and watch it get more likes than
-                        life-changing announcements. Reflect on the shallow
-                        nature of existence. At least you have a really nice
-                        desk setup.
+                      Softeners are chemical agents used to reduce the hardness of water by removing or neutralizing minerals such as calcium and magnesium. These minerals can cause scaling, buildup, and inefficiency in plumbing and appliances, as well as less effective cleaning with soaps and detergents. By replacing the hard minerals with sodium or potassium ions through a process called ion exchange, water softeners improve water quality,
                       </p>
                       <a
-                        href="#"
+                        href="/blogs"
                         className="mt-8 block w-full rounded-md border border-transparent bg-white px-8 py-3 text-base font-medium text-gray-900 hover:bg-gray-100 sm:w-auto"
                       >
-                        Shop Workspace
+                        Know More
                       </a>
                     </div>
                   </div>

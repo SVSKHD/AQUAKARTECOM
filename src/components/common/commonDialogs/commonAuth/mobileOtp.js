@@ -6,8 +6,13 @@ import { useDispatch } from "react-redux";
 const AquaAuthMobileForm = ({ signup }) => {
   const [phone, setPhone] = useState("");
   const [otpShow, setOtpShow] = useState(false);
+<<<<<<< Updated upstream
   const [otp, setOtp] = useState("");
   const { closeDialog } = useDialog();
+=======
+  const [otp, setOtp] = useState('');
+  const {closeAuthDialog} = useDialog()
+>>>>>>> Stashed changes
   const dispatch = useDispatch();
 
   const handleSubmit = (event) => {
@@ -27,10 +32,17 @@ const AquaAuthMobileForm = ({ signup }) => {
           },
         });
         dispatch({
+<<<<<<< Updated upstream
           type: "LOGGED_IN_USER",
           payload: res,
         });
         closeDialog();
+=======
+          type:"LOGGED_IN_USER",
+          payload:res
+        })
+        closeAuthDialog()
+>>>>>>> Stashed changes
       })
       .catch((err) => {
         console.log(err);
@@ -87,9 +99,9 @@ const AquaAuthMobileForm = ({ signup }) => {
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <img
-          alt="Your Company"
-          src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-          className="mx-auto h-10 w-auto"
+          alt="Aquakart"
+          src="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
+          className="mx-auto h-20 w-auto"
         />
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
           {signup ? "Sign up with phone" : "Sign in with phone"}
@@ -113,7 +125,7 @@ const AquaAuthMobileForm = ({ signup }) => {
                 type="number"
                 value={phone}
                 onChange={handlePhoneChange}
-                placeholder="000-00-0000"
+                placeholder="000-00-00000"
                 className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
