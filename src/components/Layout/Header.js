@@ -2,6 +2,7 @@ import useCartDrawer from "@/utils/drawer";
 import useDialog from "@/utils/dialog";
 import React from "react";
 import { useRouter } from "next/router";
+
 import {
   Disclosure,
   DisclosureButton,
@@ -21,8 +22,13 @@ import {
 } from "@heroicons/react/24/outline";
 import LW from "@/assests/logo-white.png";
 import Image from "next/image";
+<<<<<<< Updated upstream
 import { useSelector } from "react-redux";
 import { FaUser } from "react-icons/fa";
+=======
+import { useDispatch, useSelector } from "react-redux";
+import { FaUser } from "react-icons/fa"
+>>>>>>> Stashed changes
 
 const navigation = [
   { name: "Shop", href: "/shop" },
@@ -36,6 +42,7 @@ function classNames(...classes) {
 }
 
 const AquaHeader = () => {
+  const dispatch = useDispatch()
   const { openCartDrawer, openFavDrawer } = useCartDrawer();
   const { openAuthDialog } = useDialog();
   const { userData, cartData, favData } = useSelector((state) => ({
@@ -158,15 +165,18 @@ const AquaHeader = () => {
                         </MenuItem>
                         <MenuItem>
                           {({ focus }) => (
-                            <a
-                              href="#"
+                            <span
+                              onClick={()=>dispatch({
+                                type:"LOGOUT",
+                                payload:null   
+                              })}
                               className={classNames(
                                 focus ? "bg-gray-100" : "",
                                 "block px-4 py-2 text-sm text-gray-700",
                               )}
                             >
                               Sign out
-                            </a>
+                            </span>
                           )}
                         </MenuItem>
                       </MenuItems>
