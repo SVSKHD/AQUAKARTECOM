@@ -17,31 +17,18 @@ const user = {
 };
 const navigation = [
   { name: "Dashboard", href: "#", current: true },
-  { name: "Team", href: "#", current: false },
-  { name: "Projects", href: "#", current: false },
-  { name: "Calendar", href: "#", current: false },
-];
-const userNavigation = [
-  { name: "Your Profile", href: "#" },
-  { name: "Settings", href: "#" },
-  { name: "Sign out", href: "#" },
+  { name: "Orders", href: "/user/orders", current: false },
+  { name: "Cart", href: "/user/cart", current: false },
+  { name: "Favorites", href: "/user/fav", current: false },
 ];
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function AquaDashboardComponent() {
+export default function AquaDashboardComponent(props) {
   return (
     <>
-      {/*
-        This example requires updating your template:
-
-        ```
-        <html class="h-full">
-        <body class="h-full">
-        ```
-      */}
       <div className="min-h-full">
         <Disclosure as="nav" className="border-b border-gray-200 bg-white">
           {({ open }) => (
@@ -52,13 +39,13 @@ export default function AquaDashboardComponent() {
                     <div className="flex flex-shrink-0 items-center">
                       <img
                         className="block h-8 w-auto lg:hidden"
-                        src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                        alt="Your Company"
+                        alt="Aquakart"
+                        src="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
                       />
                       <img
                         className="hidden h-8 w-auto lg:block"
-                        src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                        alt="Your Company"
+                        alt="Aquakart"
+                        src="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
                       />
                     </div>
                     <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
@@ -102,26 +89,6 @@ export default function AquaDashboardComponent() {
                           />
                         </MenuButton>
                       </div>
-                      <MenuItems
-                        transition
-                        className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-200 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
-                      >
-                        {userNavigation.map((item) => (
-                          <MenuItem key={item.name}>
-                            {({ focus }) => (
-                              <a
-                                href={item.href}
-                                className={classNames(
-                                  focus ? "bg-gray-100" : "",
-                                  "block px-4 py-2 text-sm text-gray-700",
-                                )}
-                              >
-                                {item.name}
-                              </a>
-                            )}
-                          </MenuItem>
-                        ))}
-                      </MenuItems>
                     </Menu>
                   </div>
                   <div className="-mr-2 flex items-center sm:hidden">
@@ -190,34 +157,24 @@ export default function AquaDashboardComponent() {
                       <BellIcon className="h-6 w-6" aria-hidden="true" />
                     </button>
                   </div>
-                  <div className="mt-3 space-y-1">
-                    {userNavigation.map((item) => (
-                      <DisclosureButton
-                        key={item.name}
-                        as="a"
-                        href={item.href}
-                        className="block px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800"
-                      >
-                        {item.name}
-                      </DisclosureButton>
-                    ))}
-                  </div>
                 </div>
               </DisclosurePanel>
             </>
           )}
         </Disclosure>
 
-        <div className="py-10">
+        <div className="bg-white py-10">
           <header>
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
-                Dashboard
+                {props.title}
               </h1>
             </div>
           </header>
           <main>
-            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"></div>
+            <div className="bg-white mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+              {props.children}
+            </div>
           </main>
         </div>
       </div>

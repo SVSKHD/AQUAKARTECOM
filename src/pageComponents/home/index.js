@@ -517,7 +517,14 @@ const AquaHomeComponent = () => {
                         <span className="block sm:inline">Level up Water </span>
                       </h2>
                       <p className="mt-3 text-xl text-white">
-                      Softeners are chemical agents used to reduce the hardness of water by removing or neutralizing minerals such as calcium and magnesium. These minerals can cause scaling, buildup, and inefficiency in plumbing and appliances, as well as less effective cleaning with soaps and detergents. By replacing the hard minerals with sodium or potassium ions through a process called ion exchange, water softeners improve water quality,
+                        Softeners are chemical agents used to reduce the
+                        hardness of water by removing or neutralizing minerals
+                        such as calcium and magnesium. These minerals can cause
+                        scaling, buildup, and inefficiency in plumbing and
+                        appliances, as well as less effective cleaning with
+                        soaps and detergents. By replacing the hard minerals
+                        with sodium or potassium ions through a process called
+                        ion exchange, water softeners improve water quality,
                       </p>
                       <a
                         href="/blogs"

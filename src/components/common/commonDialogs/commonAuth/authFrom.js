@@ -17,7 +17,7 @@ const AquaAuthForm = ({ signup }) => {
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-      <img
+        <img
           alt="Aquakart"
           src="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
           className="mx-auto h-20 w-auto"

@@ -1,5 +1,5 @@
 import AquaDashboardComponent from "@/components/Layout/userDasboard/dahsboard";
 const AquaUserDashboard = () => {
-  return <AquaDashboardComponent />;
+  return <AquaDashboardComponent title={"Dashboard"} />;
 };
 export default AquaUserDashboard;

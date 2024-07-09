@@ -23,7 +23,7 @@ import {
 import LW from "@/assests/logo-white.png";
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
-import { FaUser } from "react-icons/fa"
+import { FaUser } from "react-icons/fa";
 
 const navigation = [
   { name: "Shop", href: "/shop" },
@@ -37,7 +37,7 @@ function classNames(...classes) {
 }
 
 const AquaHeader = () => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const { openCartDrawer, openFavDrawer } = useCartDrawer();
   const { openAuthDialog } = useDialog();
   const { userData, cartData, favData } = useSelector((state) => ({
@@ -161,10 +161,12 @@ const AquaHeader = () => {
                         <MenuItem>
                           {({ focus }) => (
                             <span
-                              onClick={()=>dispatch({
-                                type:"LOGOUT",
-                                payload:null   
-                              })}
+                              onClick={() =>
+                                dispatch({
+                                  type: "LOGOUT",
+                                  payload: null,
+                                })
+                              }
                               className={classNames(
                                 focus ? "bg-gray-100" : "",
                                 "block px-4 py-2 text-sm text-gray-700",
