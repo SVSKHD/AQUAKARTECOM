@@ -135,32 +135,19 @@ const AquaHeader = () => {
                         <MenuItem>
                           {({ focus }) => (
                             <a
-                              href="#"
+                              href="/user/dashboard"
                               className={classNames(
                                 focus ? "bg-gray-100" : "",
                                 "block px-4 py-2 text-sm text-gray-700",
                               )}
                             >
-                              Your Profile
+                              Dashboard
                             </a>
                           )}
                         </MenuItem>
                         <MenuItem>
                           {({ focus }) => (
                             <a
-                              href="#"
-                              className={classNames(
-                                focus ? "bg-gray-100" : "",
-                                "block px-4 py-2 text-sm text-gray-700",
-                              )}
-                            >
-                              Settings
-                            </a>
-                          )}
-                        </MenuItem>
-                        <MenuItem>
-                          {({ focus }) => (
-                            <span
                               onClick={() =>
                                 dispatch({
                                   type: "LOGOUT",
@@ -168,12 +155,12 @@ const AquaHeader = () => {
                                 })
                               }
                               className={classNames(
-                                focus ? "bg-gray-100" : "",
+                                focus ? "bg-red-100" : "",
                                 "block px-4 py-2 text-sm text-gray-700",
                               )}
                             >
                               Sign out
-                            </span>
+                            </a>
                           )}
                         </MenuItem>
                       </MenuItems>

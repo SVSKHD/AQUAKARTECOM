@@ -8,6 +8,8 @@ import {
   MenuItems,
 } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useSelector } from "react-redux";
+import { useRouter } from "next/router";
 
 const user = {
   name: "Tom Cook",
@@ -16,7 +18,7 @@ const user = {
     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
 };
 const navigation = [
-  { name: "Dashboard", href: "#", current: true },
+  { name: "Dashboard", href: "/", current: true },
   { name: "Orders", href: "/user/orders", current: false },
   { name: "Cart", href: "/user/cart", current: false },
   { name: "Favorites", href: "/user/fav", current: false },
@@ -26,7 +28,26 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
+const getFirstLettersFromEmail = (email) => {
+  if (!email || typeof email !== "string") {
+    throw new Error("Invalid email");
+  }
+
+  const [username, domain] = email.split("@");
+  if (!username || !domain) {
+    throw new Error("Invalid email format");
+  }
+
+  const firstLetterUsername = username.charAt(0);
+  const firstLetterDomain = domain.charAt(0);
+
+  return firstLetterUsername + firstLetterDomain;
+};
+
 export default function AquaDashboardComponent(props) {
+  const { userData } = useSelector((state) => ({ ...state }));
+  const router = useRouter();
+
   return (
     <>
       <div className="min-h-full">
@@ -54,12 +75,14 @@ export default function AquaDashboardComponent(props) {
                           key={item.name}
                           href={item.href}
                           className={classNames(
-                            item.current
+                            router.pathname === item.href
                               ? "border-indigo-500 text-gray-900"
                               : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700",
                             "inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium",
                           )}
-                          aria-current={item.current ? "page" : undefined}
+                          aria-current={
+                            router.pathname === item.href ? "page" : undefined
+                          }
                         >
                           {item.name}
                         </a>
@@ -82,11 +105,11 @@ export default function AquaDashboardComponent(props) {
                         <MenuButton className="relative flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                           <span className="absolute -inset-1.5" />
                           <span className="sr-only">Open user menu</span>
-                          <img
-                            className="h-8 w-8 rounded-full"
-                            src={user.imageUrl}
-                            alt=""
-                          />
+                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-500">
+                            <span className="text-sm font-medium leading-none text-white">
+                              AQ
+                            </span>
+                          </span>
                         </MenuButton>
                       </div>
                     </Menu>
@@ -120,12 +143,14 @@ export default function AquaDashboardComponent(props) {
                       as="a"
                       href={item.href}
                       className={classNames(
-                        item.current
+                        router.pathname === item.href
                           ? "border-indigo-500 bg-indigo-50 text-indigo-700"
                           : "border-transparent text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800",
                         "block border-l-4 py-2 pl-3 pr-4 text-base font-medium",
                       )}
-                      aria-current={item.current ? "page" : undefined}
+                      aria-current={
+                        router.pathname === item.href ? "page" : undefined
+                      }
                     >
                       {item.name}
                     </DisclosureButton>
