@@ -28,8 +28,6 @@ const AquaCheckoutComponent = () => {
     changeItemQuantity(id, quantity);
   };
 
-
-
   const handleCashOnDelivery = () => {
     const cashTransactionId = `AQTR-COD${nanoid(5).toUpperCase()}D${moment(
       new Date(),
@@ -74,8 +72,22 @@ const AquaCheckoutComponent = () => {
                 Items in your shopping cart
               </h2>
               <div>
-                <h4>user Addresses here </h4>
-                <div>
+                <h4 className="text-2xl mb-3 font-bold">User Addresses</h4>
+                {userData.length > 0 ? (
+                  <>
+                    <h5>Address Exist</h5>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mb-5"
+                    >
+                      Add Address
+                    </button>
+                  </>
+                )}
+                {/* <div>
                   <fieldset>
                     <legend className="sr-only">Notifications</legend>
                     <div className="space-y-5">
@@ -155,7 +167,7 @@ const AquaCheckoutComponent = () => {
                       </div>
                     </div>
                   </fieldset>
-                </div>
+                </div> */}
               </div>
               <ul
                 role="list"

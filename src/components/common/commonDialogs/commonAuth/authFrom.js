@@ -47,7 +47,7 @@ const AquaAuthMobileForm = ({ signup }) => {
     setEmail(value);
     // Assuming some condition to trigger OTP request
     if (value.includes("@")) {
-      console.log("value", value)
+      console.log("value", value);
       UserServiceOperations.UserEmailOtp({ email: value })
         .then((res) => {
           setOtpShow(true);
