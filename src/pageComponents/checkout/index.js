@@ -28,12 +28,7 @@ const AquaCheckoutComponent = () => {
     changeItemQuantity(id, quantity);
   };
 
-  const items = cartData.map((item) => ({
-    productId: item.id,
-    name: item.name,
-    price: item.price,
-    quantity: item.quantity,
-  }));
+
 
   const handleCashOnDelivery = () => {
     const cashTransactionId = `AQTR-COD${nanoid(5).toUpperCase()}D${moment(
@@ -43,7 +38,7 @@ const AquaCheckoutComponent = () => {
     const newOrder = {
       user: user?.user?._id, // Safe access and also make sure user exists
       orderType: "Cash On Delivery",
-      items: cartCount.map((item) => ({
+      items: cartData.map((item) => ({
         productId: item._id,
         name: item.title,
         price: item.price,

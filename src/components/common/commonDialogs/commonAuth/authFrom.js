@@ -1,16 +1,85 @@
+import UserServiceOperations from "@/services/user";
+import useDialog from "@/utils/dialog";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 
-const AquaAuthForm = ({ signup }) => {
+const AquaAuthMobileForm = ({ signup }) => {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [otpShow, setOtpShow] = useState(false);
+  const [otp, setOtp] = useState("");
+  const { closeAuthDialog } = useDialog();
+  const dispatch = useDispatch();
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Add your signup/signin logic here
-    if (signup) {
-      console.log("Signing Up with:", email, password);
+    const data = { email, otp: Number(otp) };
+    console.log(data);
+    UserServiceOperations.UserEmailVerify(data)
+      .then((res) => {
+        console.log(res.data);
+        dispatch({
+          type: "SHOW_NOTIFICATION",
+          payload: {
+            message: "Verification successful",
+            messageType: "success",
+          },
+        });
+        dispatch({
+          type: "LOGGED_IN_USER",
+          payload: res,
+        });
+        closeAuthDialog();
+      })
+      .catch((err) => {
+        console.log(err);
+        dispatch({
+          type: "SHOW_NOTIFICATION",
+          payload: {
+            message: "Verification failed",
+            messageType: "error",
+          },
+        });
+      });
+  };
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    // Assuming some condition to trigger OTP request
+    if (value.includes("@")) {
+      console.log("value", value)
+      UserServiceOperations.UserEmailOtp({ email: value })
+        .then((res) => {
+          setOtpShow(true);
+          dispatch({
+            type: "SHOW_NOTIFICATION",
+            payload: {
+              message: "Successfully sent OTP",
+              messageType: "success",
+            },
+          });
+          dispatch({
+            type: "SET_AUTH_STATUS_VISIBLE",
+            payload: !res.data.userExist,
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          setOtpShow(false);
+          dispatch({
+            type: "SHOW_NOTIFICATION",
+            payload: {
+              message: "Failed to send OTP",
+              messageType: "error",
+            },
+          });
+          dispatch({
+            type: "SET_AUTH_STATUS_VISIBLE",
+            payload: false,
+          });
+        });
     } else {
-      console.log("Signing In with:", email, password);
+      setOtpShow(false);
     }
   };
 
@@ -23,70 +92,58 @@ const AquaAuthForm = ({ signup }) => {
           className="mx-auto h-20 w-auto"
         />
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          {signup ? "Sign up for your account" : "Sign in to your account"}
+          {signup ? "Sign up with email" : "Sign in with email"}
         </h2>
       </div>
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-sm">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
-              htmlFor="email"
+              htmlFor="email-address"
               className="block text-sm font-medium leading-6 text-gray-900"
             >
-              Email address
+              Email Address
             </label>
-            <div className="mt-2">
+            <div className="relative mt-2 rounded-md shadow-sm">
               <input
-                id="email"
-                name="email"
+                id="email-address"
+                name="email-address"
                 type="email"
-                required
-                autoComplete="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="block w-full p-4 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                onChange={handleEmailChange}
+                placeholder="example@example.com"
+                className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
-                Password
-              </label>
-              {!signup && (
-                <div className="text-sm">
-                  <a
-                    href="#"
-                    className="font-semibold text-indigo-600 hover:text-indigo-500"
-                  >
-                    Forgot password?
-                  </a>
-                </div>
-              )}
-            </div>
-            <div className="mt-2">
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block w-full p-4 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
-            </div>
+            {otpShow && (
+              <div className="relative mt-2 rounded-md shadow-sm">
+                <input
+                  id="otp"
+                  name="otp"
+                  maxLength="6"
+                  type="number"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Enter OTP"
+                  className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                />
+              </div>
+            )}
+            <p className="mt-2 text-sm text-gray-500">
+              Please enter your email address.
+            </p>
           </div>
 
           <div>
             <button
               type="submit"
-              className="mt-2 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              className={`mt-2 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+                !otpShow
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
+              disabled={!otpShow}
             >
               {signup ? "Sign Up" : "Sign In"}
             </button>
@@ -97,4 +154,4 @@ const AquaAuthForm = ({ signup }) => {
   );
 };
 
-export default AquaAuthForm;
+export default AquaAuthMobileForm;

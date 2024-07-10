@@ -6,8 +6,8 @@ const UserMobileOtp = async (phone) =>
   await axios.post(`${BASE}/phone/login`, phone);
 const UserMobileVerify = async (data) =>
   await axios.post(`${BASE}/verify/phone/otp`, data);
-const UserEmailOtp = async (id) => await axios.get(`${BASE}/categtory/${id}`);
-const UserEmailVerify = async () => await axios.post(`${BASE}/categtory/${id}`);
+const UserEmailOtp = async (email) => await axios.post(`${BASE}/email/login`, email);
+const UserEmailVerify = async (data) => await axios.post(`${BASE}/verify/email/otp`,data);
 
 const UserServiceOperations = {
   UserMobileOtp,
