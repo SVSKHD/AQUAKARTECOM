@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import {
   Dialog,
   DialogBackdrop,
@@ -22,6 +22,12 @@ import {
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import AquaLayout from "@/components/Layout/Layout";
+import { useRouter } from "next/router";
+import orderServiceOperations from "@/services/order";
+import useCurrency from "@/utils/currency";
+import moment from "moment";
+
+
 
 const currencies = ["CAD", "USD", "AUD", "EUR", "GBP"];
 const navigation = {
@@ -161,6 +167,19 @@ function classNames(...classes) {
 }
 
 export default function Example() {
+  const router = useRouter()
+  const {id} = router.query
+  const [order, setOrder] = useState({})
+  const { formatCurrencyINR } = useCurrency;
+  const formattedDate = moment(order.createdAt).format("DD MMM YYYY")
+  useEffect(()=>{
+       orderServiceOperations.getOrder(id).then((res)=>{
+        setOrder(res.data.data)
+       })
+       .catch(()=>{
+        console.log("err")
+       })
+  },[id])
   const Seo = {
     title: "Aquakart | orders",
   };
@@ -375,8 +394,9 @@ export default function Example() {
           <div className="space-y-2 px-4 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
             <div className="flex sm:items-baseline sm:space-x-4">
               <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-                Order #54879
+                Order #{order.orderId} - {order.orderType==="Cash On Delivery"?"Cash On Delivery":"Online Payment"}
               </h1>
+              {/* {JSON.stringify(order)} */}
               <a
                 href="#"
                 className="hidden text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:block"
@@ -388,7 +408,7 @@ export default function Example() {
             <p className="text-sm text-gray-600">
               Order placed{" "}
               <time dateTime="2021-03-22" className="font-medium text-gray-900">
-                March 22, 2021
+                {formattedDate}
               </time>
             </p>
             <a
@@ -400,34 +420,29 @@ export default function Example() {
             </a>
           </div>
 
+
           {/* Products */}
           <section aria-labelledby="products-heading" className="mt-6">
             <h2 id="products-heading" className="sr-only">
               Products purchased
             </h2>
+            {JSON.stringify(order)}
 
             <div className="space-y-8">
-              {products.map((product) => (
+              {order?.items?.map((product) => (
                 <div
                   key={product.id}
                   className="border-b border-t border-gray-200 bg-white shadow-sm sm:rounded-lg sm:border"
                 >
                   <div className="px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
                     <div className="sm:flex lg:col-span-7">
-                      <div className="aspect-h-1 aspect-w-1 w-full flex-shrink-0 overflow-hidden rounded-lg sm:aspect-none sm:h-40 sm:w-40">
-                        <img
-                          alt={product.imageAlt}
-                          src={product.imageSrc}
-                          className="h-full w-full object-cover object-center sm:h-full sm:w-full"
-                        />
-                      </div>
 
                       <div className="mt-6 sm:ml-6 sm:mt-0">
                         <h3 className="text-base font-medium text-gray-900">
-                          <a href={product.href}>{product.name}</a>
+                          <a href={`/product/${product.productId}`}>{product.name}</a>
                         </h3>
-                        <p className="mt-2 text-sm font-medium text-gray-900">
-                          ${product.price}
+                        <p className="mt-2 text-sm font-medium text-green-900">
+                          {formatCurrencyINR(product.price)}
                         </p>
                         <p className="mt-3 text-sm text-gray-500">
                           {product.description}
@@ -441,11 +456,6 @@ export default function Example() {
                           <dt className="font-medium text-gray-900">
                             Delivery address
                           </dt>
-                          <dd className="mt-3 text-gray-500">
-                            <span className="block">{product.address[0]}</span>
-                            <span className="block">{product.address[1]}</span>
-                            <span className="block">{product.address[2]}</span>
-                          </dd>
                         </div>
                         <div>
                           <dt className="font-medium text-gray-900">
@@ -515,8 +525,14 @@ export default function Example() {
             </div>
           </section>
 
+          <h1 className="mt-3 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+               {order.orderType==="Cash On Delivery"?"Cash On Delivery":"Online Payment"}
+              <span className="text-green-700">{formatCurrencyINR(order.totalAmount)}</span>
+          </h1>
+
           {/* Billing */}
-          <section aria-labelledby="summary-heading" className="mt-16">
+          {order.orderType==="Cash On Delivery"?(""):(
+            <section aria-labelledby="summary-heading" className="mt-16">
             <h2 id="summary-heading" className="sr-only">
               Billing Summary
             </h2>
@@ -580,6 +596,8 @@ export default function Example() {
               </dl>
             </div>
           </section>
+          )}
+          
         </main>
       </AquaLayout>
     </div>

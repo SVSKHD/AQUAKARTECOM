@@ -11,9 +11,13 @@ import { useSelector, useDispatch } from "react-redux";
 import { nanoid } from "nanoid";
 import moment from "moment";
 import { useState } from "react";
+import orderServiceOperations from "@/services/order";
+import { useRouter } from "next/router";
+
 
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
+  const router = useRouter()
   const { cartData, userData } = useSelector((state) => ({ ...state }));
   const { formatCurrencyINR } = useCurrency;
   const { getTotalPrice, changeItemQuantity } = useCart();
@@ -58,6 +62,14 @@ const AquaCheckoutComponent = () => {
       orderStatus: "Processing",
     };
    console.log("order", newOrder)
+   orderServiceOperations.createCodOrder(newOrder).then((res)=>{
+    // console.log("order", res.data.data._id)
+    router.push(`/order/${res.data.data._id}`)
+   })
+   .catch((err)=>{
+    console.log("order", err)
+   })
+
   };
   return (
     <AquaLayout seo={seo}>
