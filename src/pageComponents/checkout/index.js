@@ -29,12 +29,12 @@ const AquaCheckoutComponent = () => {
   };
 
   const handleCashOnDelivery = () => {
-    const cashTransactionId = `AQTR-COD${nanoid(5).toUpperCase()}D${moment(
+    const cashTransactionId = `AQTR-COD-${nanoid(5).toUpperCase()}D${moment(
       new Date(),
     ).format("DDMMYYYY")}`;
     const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
     const newOrder = {
-      user: user?.user?._id, // Safe access and also make sure user exists
+      user: userData?.data?.user?._id, // Safe access and also make sure user exists
       orderType: "Cash On Delivery",
       items: cartData.map((item) => ({
         productId: item._id,
@@ -43,13 +43,13 @@ const AquaCheckoutComponent = () => {
         quantity: item.quantity,
       })),
       transactionId: cashTransactionId,
-      totalAmount: calculatedTotal,
+      totalAmount: getTotalPrice(),
       orderId: orderId,
       paymentMethod: "Cash On Delivery",
       paymentStatus: "Pending",
       currency: "INR",
-      billingAddress: user?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
-      shippingAddress: user?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
+      billingAddress: userData?.data?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
+      shippingAddress: userData?.data?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
       shippingMethod: "Standard",
       shippingCost: 50, // Example fixed cost
       estimatedDelivery: new Date(
@@ -57,6 +57,7 @@ const AquaCheckoutComponent = () => {
       ).toISOString(), // Adding 7 days // Adding 7 days for delivery
       orderStatus: "Processing",
     };
+   console.log("order", newOrder)
   };
   return (
     <AquaLayout seo={seo}>
@@ -64,6 +65,7 @@ const AquaCheckoutComponent = () => {
         <div className="mx-auto max-w-2xl px-4 pb-24 pt-16 sm:px-6 lg:max-w-7xl lg:px-8">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             Shopping Cart
+            {JSON.stringify(userData)}
           </h1>
 
           <form className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
@@ -359,7 +361,7 @@ const AquaCheckoutComponent = () => {
                   <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                     <button
                       type="button"
-                      onClick={() => setOpen(false)}
+                      // onClick={h}
                       className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
                     >
                       Pay Now
