@@ -37,6 +37,7 @@ import useProduct from "@/utils/product";
 import { FaHeart, FaHeartBroken } from "react-icons/fa";
 import { FaCartArrowDown, FaCartShopping } from "react-icons/fa6";
 import { useSelector } from "react-redux";
+import AquaProductCard from "@/components/cards/productCard";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -247,11 +248,7 @@ export default function AquaDynamicProductComponent() {
                       className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
                       onClick={() => AddAndRemoveCart(productData, setCart)}
                     >
-                      {cart ? (
-                        <FaCartArrowDown className="text-grey-700" size={25} />
-                      ) : (
-                        <FaCartShopping size={25} />
-                      )}
+                      {cart ? <h4>Added to Cart</h4> : <h4>Add to Cart</h4>}
                     </button>
 
                     <button
@@ -260,9 +257,9 @@ export default function AquaDynamicProductComponent() {
                       onClick={() => AddAndRemoveFav(productData, setFav)}
                     >
                       {fav ? (
-                        <FaHeart className="text-red-700" size={25} />
+                        <h4 className="text-red-700">Added to WishList</h4>
                       ) : (
-                        <FaHeartBroken className="text-red-700" size={25} />
+                        <h4 className="text-red-400">Add to WishList</h4>
                       )}
                     </button>
                   </div>
@@ -381,40 +378,7 @@ export default function AquaDynamicProductComponent() {
               <div className="mt-8 grid grid-cols-1 gap-y-12 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
                 {related.map((product) => (
                   <div key={product.id}>
-                    <div className="relative">
-                      <div className="relative h-72 w-full overflow-hidden rounded-lg">
-                        <img
-                          src={product.photos[0].secure_url}
-                          alt={product.title}
-                          className="h-full w-full object-cover object-center"
-                        />
-                      </div>
-                      <div className="relative mt-4">
-                        <h3 className="text-sm font-medium text-gray-900">
-                          <a href={`/product/${product._id}`}>
-                            {product.title}
-                          </a>
-                        </h3>
-                        <p className="mt-1 text-sm text-gray-500">
-                          {product.color}
-                        </p>
-                      </div>
-                      <div className="absolute inset-x-0 top-0 flex h-72 items-end justify-end overflow-hidden rounded-lg p-4">
-                        <div
-                          aria-hidden="true"
-                          className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black opacity-50"
-                        />
-                        <p className="relative text-lg font-semibold text-white">
-                          {product.price}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-6">
-                      <button className="relative flex items-center justify-center rounded-md border border-transparent bg-gray-100 px-8 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200">
-                        Add to Cart
-                        <span className="sr-only">, {product.title}</span>
-                      </button>
-                    </div>
+                    <AquaProductCard product={product} />
                   </div>
                 ))}
               </div>

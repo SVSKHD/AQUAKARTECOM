@@ -9,6 +9,7 @@ import { userReducer } from "./reducers/userDataReducer";
 import { userStatusReducer } from "./reducers/userStatusReducer";
 import { toastReducer } from "./reducers/toastReducer";
 import { userDataDrawerReducer } from "./reducers/userDataUpdateDrawer";
+import { addressDialog } from "./reducers/addressDialogReducer";
 
 const rootReducer = combineReducers({
   toastNotify: toastReducer,
@@ -20,6 +21,7 @@ const rootReducer = combineReducers({
   userData: userReducer,
   userSignupStatus: userStatusReducer,
   userDataDrawer: userDataDrawerReducer,
+  addressDialog: addressDialog,
 });
 
 export default rootReducer;

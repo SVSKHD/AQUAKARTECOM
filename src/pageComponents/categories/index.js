@@ -4,6 +4,9 @@ import CategoryServiceOperations from "@/services/category";
 import { useEffect, useState } from "react";
 
 const AquaAllCategoriesComponent = () => {
+  const seo = {
+    title: "Aquakart | shop by categories",
+  };
   const [categories, setCategories] = useState([]);
   useEffect(() => {
     CategoryServiceOperations.Allcategories().then((res) => {
@@ -31,7 +34,7 @@ const AquaAllCategoriesComponent = () => {
   ];
   return (
     <>
-      <AquaLayout>
+      <AquaLayout seo={seo}>
         <div className="bg-white">
           <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
             <div className="min-w-0 flex-1">

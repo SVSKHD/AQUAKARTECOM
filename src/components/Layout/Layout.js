@@ -7,11 +7,13 @@ import AquaHeader from "./Header";
 import AquaSeo from "./seo/seo";
 import AquaUserDataDrawer from "../common/commonDrawers/userDataDrawer";
 import AquaUserAuthDialog from "../common/commonDialogs/authDialog";
+import AquaCartAddressDialog from "../common/commonDialogs/cartAddress";
 
 const AquaLayout = (props) => {
   return (
     <>
       <AquaSeo seo={props.seo} />
+      <AquaCartAddressDialog />
       <AquaUserDataDrawer />
       <AquaUserAuthDialog />
       <AquaHeader />

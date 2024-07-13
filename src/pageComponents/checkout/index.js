@@ -73,15 +73,33 @@ const AquaCheckoutComponent = () => {
               </h2>
               <div>
                 <h4 className="text-2xl mb-3 font-bold">User Addresses</h4>
-                {userData.length > 0 ? (
+                {userData.length > 0 || null ? (
                   <>
                     <h5>Address Exist</h5>
+                    <button
+                      type="button"
+                      className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mb-5"
+                      onClick={() =>
+                        dispatch({
+                          type: "SET_ADDRESS_DIALOG",
+                          payload: true,
+                        })
+                      }
+                    >
+                      Add Address
+                    </button>
                   </>
                 ) : (
                   <>
                     <button
                       type="button"
                       className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mb-5"
+                      onClick={() =>
+                        dispatch({
+                          type: "SET_ADDRESS_DIALOG",
+                          payload: true,
+                        })
+                      }
                     >
                       Add Address
                     </button>
