@@ -525,13 +525,17 @@ export default function Example() {
             </div>
           </section>
 
-          <h1 className="mt-3 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-               {order.orderType==="Cash On Delivery"?"Cash On Delivery":"Online Payment"}
-              <span className="text-green-700">{formatCurrencyINR(order.totalAmount)}</span>
-          </h1>
+       
 
           {/* Billing */}
-          {order.orderType==="Cash On Delivery"?(""):(
+          {order.orderType==="Cash On Delivery"?(
+               <dl className="space-y-6 border-t border-gray-200 pt-10 text-sm">
+               <div className="flex justify-between">
+                 <dt className="font-medium text-gray-900">Total</dt>
+                 <dd className="text-gray-900 font-bold text-green-600">{formatCurrencyINR(order.totalAmount)}</dd>
+               </div>
+             </dl>
+          ):(
             <section aria-labelledby="summary-heading" className="mt-16">
             <h2 id="summary-heading" className="sr-only">
               Billing Summary
