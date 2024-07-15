@@ -106,6 +106,7 @@ const AquaCheckoutComponent = () => {
       window.location.href = res.data.url;
     })
   }
+  console.log("token", userData.data.token)
   return (
     <AquaLayout seo={seo}>
       <div className="bg-white">
@@ -113,7 +114,7 @@ const AquaCheckoutComponent = () => {
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             Shopping Cart
           </h1>
-
+{JSON.stringify(userData.data.user)}
           <form className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
             <section aria-labelledby="cart-heading" className="lg:col-span-7">
               <h2 id="cart-heading" className="sr-only">
@@ -121,7 +122,7 @@ const AquaCheckoutComponent = () => {
               </h2>
               <div>
                 <h4 className="text-2xl mb-3 font-bold">User Addresses</h4>
-                {userData.length > 0 || null ? (
+                {userData.data.user.addresses.length > 0 || null ? (
                   <>
                     <h5>Address Exist</h5>
                     <button
