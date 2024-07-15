@@ -62,7 +62,6 @@ const AquaCheckoutComponent = () => {
       orderStatus: "Processing",
     };
    orderServiceOperations.createCodOrder(newOrder).then((res)=>{
-    // console.log("order", res.data.data._id)
     router.push(`/order/${res.data.data._id}`)
    })
    .catch((err)=>{

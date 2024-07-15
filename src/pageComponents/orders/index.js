@@ -426,8 +426,7 @@ export default function Example() {
             <h2 id="products-heading" className="sr-only">
               Products purchased
             </h2>
-            {JSON.stringify(order)}
-
+      
             <div className="space-y-8">
               {order?.items?.map((product) => (
                 <div
