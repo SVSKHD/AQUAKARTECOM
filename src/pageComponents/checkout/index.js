@@ -61,7 +61,6 @@ const AquaCheckoutComponent = () => {
       ).toISOString(), // Adding 7 days // Adding 7 days for delivery
       orderStatus: "Processing",
     };
-   console.log("order", newOrder)
    orderServiceOperations.createCodOrder(newOrder).then((res)=>{
     // console.log("order", res.data.data._id)
     router.push(`/order/${res.data.data._id}`)
@@ -71,6 +70,43 @@ const AquaCheckoutComponent = () => {
    })
 
   };
+
+
+  const handlePhonePayment = () =>{
+    const transactionId = `AQTR-${nanoid(5).toUpperCase()}D${moment(
+      new Date(),
+    ).format("DDMMYYYY")}`;
+    const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
+    const newOrder = {
+      user: userData?.data?.user?._id, // Safe access and also make sure user exists
+      transactionId: transactionId,
+      orderType: "Payment Method(Phone Pe Gateway)",
+      orderId: orderId,
+      items: cartData.map((item) => ({
+        productId: item.id,
+        name: item.title,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+      totalAmount: getTotalPrice()  ,
+      paymentMethod: "OTHER THAN CASH ON DELIVERY",
+      paymentStatus: "Pending",
+      currency: "INR",
+      billingAddress: userData?.data?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
+      shippingAddress: userData?.data?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
+      shippingMethod: "Standard",
+      shippingCost: 50, // Example fixed cost
+      estimatedDelivery: new Date(
+        new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
+      ).toISOString(), // Adding 7 days
+      orderStatus: "Processing",
+    };
+    console.log("new order", newOrder)
+    orderServiceOperations.createPhonePePayOrder(newOrder).then((res)=>{
+      console.log("res", res.data)
+      window.location.href = res.data.url;
+    })
+  }
   return (
     <AquaLayout seo={seo}>
       <div className="bg-white">
@@ -372,7 +408,7 @@ const AquaCheckoutComponent = () => {
                   <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                     <button
                       type="button"
-                      // onClick={h}
+                      onClick={handlePhonePayment}
                       className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
                     >
                       Pay Now
