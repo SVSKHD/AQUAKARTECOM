@@ -6,6 +6,8 @@ import {
   ClockIcon,
   QuestionMarkCircleIcon,
   XMarkIcon,
+  PencilIcon,
+  TrashIcon,
 } from "@heroicons/react/20/solid";
 import { useSelector, useDispatch } from "react-redux";
 import { nanoid } from "nanoid";
@@ -13,15 +15,15 @@ import moment from "moment";
 import { useState } from "react";
 import orderServiceOperations from "@/services/order";
 import { useRouter } from "next/router";
-
+import AquaToast from "@/components/reusables/react-toastify";
 
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
-  const router = useRouter()
+  const router = useRouter();
   const { cartData, userData } = useSelector((state) => ({ ...state }));
   const { formatCurrencyINR } = useCurrency;
   const { getTotalPrice, changeItemQuantity } = useCart();
-  const [selectedAddress, setSelectedAddress] = useState();
+  const [selectedAddress, setSelectedAddress] = useState(false);
 
   const seo = {
     title: "Aquakart | Cart",
@@ -61,17 +63,17 @@ const AquaCheckoutComponent = () => {
       ).toISOString(), // Adding 7 days // Adding 7 days for delivery
       orderStatus: "Processing",
     };
-   orderServiceOperations.createCodOrder(newOrder).then((res)=>{
-    router.push(`/order/${res.data.data._id}`)
-   })
-   .catch((err)=>{
-    console.log("order", err)
-   })
-
+    orderServiceOperations
+      .createCodOrder(newOrder)
+      .then((res) => {
+        router.push(`/order/${res.data.data._id}`);
+      })
+      .catch((err) => {
+        console.log("order", err);
+      });
   };
 
-
-  const handlePhonePayment = () =>{
+  const handlePhonePayment = () => {
     const transactionId = `AQTR-${nanoid(5).toUpperCase()}D${moment(
       new Date(),
     ).format("DDMMYYYY")}`;
@@ -87,7 +89,7 @@ const AquaCheckoutComponent = () => {
         price: item.price,
         quantity: item.quantity,
       })),
-      totalAmount: getTotalPrice()  ,
+      totalAmount: getTotalPrice(),
       paymentMethod: "OTHER THAN CASH ON DELIVERY",
       paymentStatus: "Pending",
       currency: "INR",
@@ -100,13 +102,20 @@ const AquaCheckoutComponent = () => {
       ).toISOString(), // Adding 7 days
       orderStatus: "Processing",
     };
-    console.log("new order", newOrder)
-    orderServiceOperations.createPhonePePayOrder(newOrder).then((res)=>{
-      console.log("res", res.data)
+    console.log("new order", newOrder);
+    // if(!selectedAddress){
+    //    AquaToast("please select")
+    // }else{
+    orderServiceOperations.createPhonePePayOrder(newOrder).then((res) => {
+      console.log("res", res.data);
       window.location.href = res.data.url;
-    })
-  }
-  console.log("token", userData.data.token)
+    });
+  };
+
+  const handleEditDialog = () => {
+    console.log("edit");
+  };
+  const handleDeleteAddress = () => {};
   return (
     <AquaLayout seo={seo}>
       <div className="bg-white">
@@ -114,7 +123,6 @@ const AquaCheckoutComponent = () => {
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             Shopping Cart
           </h1>
-{JSON.stringify(userData.data.user)}
           <form className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
             <section aria-labelledby="cart-heading" className="lg:col-span-7">
               <h2 id="cart-heading" className="sr-only">
@@ -124,7 +132,56 @@ const AquaCheckoutComponent = () => {
                 <h4 className="text-2xl mb-3 font-bold">User Addresses</h4>
                 {userData.data.user.addresses.length > 0 || null ? (
                   <>
-                    <h5>Address Exist</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {userData.data.user.addresses.map((r, i) => (
+                        <div
+                          key={i}
+                          className="m-3 overflow-hidden rounded-lg bg-white shadow"
+                        >
+                          <div className="px-4 py-5 sm:p-6">
+                            <div className="flex items-center">
+                              <input
+                                type="radio"
+                                name="selectedAddress"
+                                checked={selectedAddress === r}
+                                onChange={() => handleSelectAddress(r)}
+                                className="form-radio h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
+                              />
+                              <h3 className="ml-3 mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600">
+                                <span className="absolute inset-0" />
+                                City: {r.city}
+                              </h3>
+                            </div>
+                            <div className="mt-4">
+                              <h4 className="text-md font-medium text-gray-700">
+                                Billing Address
+                              </h4>
+                              <p className="mt-1 text-gray-500">Floyd Miles</p>
+                              <p className="text-gray-500">7363 Cynthia Pass</p>
+                              <p className="text-gray-500">
+                                Toronto, ON N3Y 4H8
+                              </p>
+                            </div>
+                            <div className="mt-4 flex space-x-4">
+                              <button className="flex items-center text-blue-500 hover:text-blue-700">
+                                <PencilIcon
+                                  className="h-5 w-5 mr-1"
+                                  aria-hidden="true"
+                                />
+                                Edit
+                              </button>
+                              <button className="flex items-center text-red-500 hover:text-red-700">
+                                <TrashIcon
+                                  className="h-5 w-5 mr-1"
+                                  aria-hidden="true"
+                                />
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                     <button
                       type="button"
                       className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mb-5"

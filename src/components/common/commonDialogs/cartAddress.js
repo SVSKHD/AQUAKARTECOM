@@ -22,7 +22,7 @@ const AquaAddressDialog = () => {
   const handleAddressAdd = () => {
     console.log("add", address);
   };
-  
+
   return (
     <>
       <AquaResponsiveDialog

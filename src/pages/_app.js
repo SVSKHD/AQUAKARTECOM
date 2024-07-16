@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Provider } from "react-redux";
 import { createStore } from "redux";
 import rootReducer from "@/store";
+import { Toaster } from "react-hot-toast";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import { PersistGate } from "redux-persist/integration/react";
@@ -74,6 +75,7 @@ export default function App({ Component, pageProps }) {
     <Provider store={store}>
       <PersistGate persistor={persistor} loading={<div>Loading...</div>}>
         <Component {...pageProps} />
+        <Toaster position="top-center" />
       </PersistGate>
     </Provider>
   );

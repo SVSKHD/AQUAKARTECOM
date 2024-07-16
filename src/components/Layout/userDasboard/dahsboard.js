@@ -7,7 +7,12 @@ import {
   MenuItem,
   MenuItems,
 } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon, HomeIcon } from "@heroicons/react/24/outline";
+import {
+  Bars3Icon,
+  BellIcon,
+  XMarkIcon,
+  HomeIcon,
+} from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
 
