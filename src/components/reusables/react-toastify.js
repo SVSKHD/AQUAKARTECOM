@@ -3,7 +3,7 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   InformationCircleIcon,
-} from "@heroicons/react/solid";
+} from "@heroicons/react/20/solid";
 
 const AquaToast = ({ message, type }) => {
   const getIcon = () => {

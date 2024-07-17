@@ -2,6 +2,7 @@ import UserServiceOperations from "@/services/user";
 import useDialog from "@/utils/dialog";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
+import AquaToast from "@/components/reusables/react-toastify";
 
 const AquaAuthMobileForm = ({ signup }) => {
   const [email, setEmail] = useState("");
@@ -17,12 +18,9 @@ const AquaAuthMobileForm = ({ signup }) => {
     UserServiceOperations.UserEmailVerify(data)
       .then((res) => {
         console.log(res.data);
-        dispatch({
-          type: "SHOW_NOTIFICATION",
-          payload: {
-            message: "Verification successful",
-            messageType: "success",
-          },
+        AquaToast({
+          message: "Verification successful",
+          type: "success",
         });
         dispatch({
           type: "LOGGED_IN_USER",
@@ -32,12 +30,9 @@ const AquaAuthMobileForm = ({ signup }) => {
       })
       .catch((err) => {
         console.log(err);
-        dispatch({
-          type: "SHOW_NOTIFICATION",
-          payload: {
-            message: "Verification failed",
-            messageType: "error",
-          },
+        AquaToast({
+          message: "Verification failed",
+          type: "error",
         });
       });
   };

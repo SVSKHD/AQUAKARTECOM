@@ -25,6 +25,11 @@ const AquaCheckoutComponent = () => {
   const { getTotalPrice, changeItemQuantity } = useCart();
   const [selectedAddress, setSelectedAddress] = useState(false);
 
+  const handleAddressChange = (address) => {
+    setSelectedAddress(address);
+    AquaToast({ message: "Succesfully selected the address", type: "success" });
+  };
+
   const seo = {
     title: "Aquakart | Cart",
   };
@@ -33,6 +38,13 @@ const AquaCheckoutComponent = () => {
     const quantity = parseInt(event.target.value, 10);
     changeItemQuantity(id, quantity);
   };
+
+  const handleEditAddress = (e, r) => {
+    e.preventDefault();
+    console.log(r);
+  };
+
+  const hanldeDeleteAddress = () => {};
 
   const handleCashOnDelivery = () => {
     const cashTransactionId = `AQTR-COD-${nanoid(5).toUpperCase()}D${moment(
@@ -63,14 +75,18 @@ const AquaCheckoutComponent = () => {
       ).toISOString(), // Adding 7 days // Adding 7 days for delivery
       orderStatus: "Processing",
     };
-    orderServiceOperations
-      .createCodOrder(newOrder)
-      .then((res) => {
-        router.push(`/order/${res.data.data._id}`);
-      })
-      .catch((err) => {
-        console.log("order", err);
-      });
+    if (!selectedAddress) {
+      AquaToast({ message: "Please select an address", type: "error" });
+    } else {
+      orderServiceOperations
+        .createCodOrder(newOrder)
+        .then((res) => {
+          router.push(`/order/${res.data.data._id}`);
+        })
+        .catch((err) => {
+          console.log("order", err);
+        });
+    }
   };
 
   const handlePhonePayment = () => {
@@ -103,13 +119,14 @@ const AquaCheckoutComponent = () => {
       orderStatus: "Processing",
     };
     console.log("new order", newOrder);
-    // if(!selectedAddress){
-    //    AquaToast("please select")
-    // }else{
-    orderServiceOperations.createPhonePePayOrder(newOrder).then((res) => {
-      console.log("res", res.data);
-      window.location.href = res.data.url;
-    });
+    if (!selectedAddress) {
+      AquaToast({ message: "Please select an address", type: "error" });
+    } else {
+      orderServiceOperations.createPhonePePayOrder(newOrder).then((res) => {
+        console.log("res", res.data);
+        window.location.href = res.data.url;
+      });
+    }
   };
 
   const handleEditDialog = () => {
@@ -123,175 +140,66 @@ const AquaCheckoutComponent = () => {
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             Shopping Cart
           </h1>
+
           <form className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
             <section aria-labelledby="cart-heading" className="lg:col-span-7">
               <h2 id="cart-heading" className="sr-only">
                 Items in your shopping cart
               </h2>
-              <div>
-                <h4 className="text-2xl mb-3 font-bold">User Addresses</h4>
-                {userData.data.user.addresses.length > 0 || null ? (
+              <h1 className="text-xl mt-10 font-bold tracking-tight text-gray-500 sm:text-xl">
+                User Addresses
+              </h1>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {userData.data.user.addresses.map((r, i) => (
                   <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {userData.data.user.addresses.map((r, i) => (
-                        <div
-                          key={i}
-                          className="m-3 overflow-hidden rounded-lg bg-white shadow"
-                        >
-                          <div className="px-4 py-5 sm:p-6">
-                            <div className="flex items-center">
-                              <input
-                                type="radio"
-                                name="selectedAddress"
-                                checked={selectedAddress === r}
-                                onChange={() => handleSelectAddress(r)}
-                                className="form-radio h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
-                              />
-                              <h3 className="ml-3 mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600">
-                                <span className="absolute inset-0" />
-                                City: {r.city}
-                              </h3>
-                            </div>
-                            <div className="mt-4">
-                              <h4 className="text-md font-medium text-gray-700">
-                                Billing Address
-                              </h4>
-                              <p className="mt-1 text-gray-500">Floyd Miles</p>
-                              <p className="text-gray-500">7363 Cynthia Pass</p>
-                              <p className="text-gray-500">
-                                Toronto, ON N3Y 4H8
-                              </p>
-                            </div>
-                            <div className="mt-4 flex space-x-4">
-                              <button className="flex items-center text-blue-500 hover:text-blue-700">
-                                <PencilIcon
-                                  className="h-5 w-5 mr-1"
-                                  aria-hidden="true"
-                                />
-                                Edit
-                              </button>
-                              <button className="flex items-center text-red-500 hover:text-red-700">
-                                <TrashIcon
-                                  className="h-5 w-5 mr-1"
-                                  aria-hidden="true"
-                                />
-                                Delete
-                              </button>
-                            </div>
+                    <div className="m-2 overflow-hidden rounded-lg bg-white shadow">
+                      <div className="px-4 py-5 sm:p-6">
+                        <div className="mt-4">
+                          <div className="flex items-center">
+                            <input
+                              value={r.street}
+                              name="notification-method"
+                              type="radio"
+                              onChange={() => handleAddressChange(r.street)}
+                              checked={selectedAddress === r.street}
+                              className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                            />
+                            <label className="text-md ml-3 block text-sm font-medium leading-6 text-gray-900">
+                              Billing Address
+                            </label>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mb-5"
-                      onClick={() =>
-                        dispatch({
-                          type: "SET_ADDRESS_DIALOG",
-                          payload: true,
-                        })
-                      }
-                    >
-                      Add Address
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mb-5"
-                      onClick={() =>
-                        dispatch({
-                          type: "SET_ADDRESS_DIALOG",
-                          payload: true,
-                        })
-                      }
-                    >
-                      Add Address
-                    </button>
-                  </>
-                )}
-                {/* <div>
-                  <fieldset>
-                    <legend className="sr-only">Notifications</legend>
-                    <div className="space-y-5">
-                      <div className="relative flex items-start">
-                        <div className="flex h-6 items-center">
-                          <input
-                            id="comments"
-                            name="comments"
-                            type="checkbox"
-                            aria-describedby="comments-description"
-                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                          />
-                        </div>
-                        <div className="ml-3 text-sm leading-6">
-                          <label
-                            htmlFor="comments"
-                            className="font-medium text-gray-900"
-                          >
-                            Comments
-                          </label>
-                          <p
-                            id="comments-description"
-                            className="text-gray-500"
-                          >
-                            Get notified when someones posts a comment on a
-                            posting.
+                          <p className="mt-1 text-gray-500">{r.street}</p>
+                          <p className="text-gray-500">{r.state}</p>
+                          <p className="text-gray-500">
+                            {r.city}-{r.postalCode}
                           </p>
                         </div>
-                      </div>
-                      <div className="relative flex items-start">
-                        <div className="flex h-6 items-center">
-                          <input
-                            id="candidates"
-                            name="candidates"
-                            type="checkbox"
-                            aria-describedby="candidates-description"
-                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                          />
-                        </div>
-                        <div className="ml-3 text-sm leading-6">
-                          <label
-                            htmlFor="candidates"
-                            className="font-medium text-gray-900"
+                        <div className="mt-4 flex space-x-4">
+                          <button
+                            className="flex items-center text-blue-500 hover:text-blue-700"
+                            onClick={(e) => handleEditAddress(e, r)}
                           >
-                            Candidates
-                          </label>
-                          <p
-                            id="candidates-description"
-                            className="text-gray-500"
+                            <PencilIcon
+                              className="h-5 w-5 mr-1"
+                              aria-hidden="true"
+                            />
+                            Edit
+                          </button>
+                          <button
+                            className="flex items-center text-red-500 hover:text-red-700"
+                            onClick={handleDeleteAddress}
                           >
-                            Get notified when a candidate applies for a job.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="relative flex items-start">
-                        <div className="flex h-6 items-center">
-                          <input
-                            id="offers"
-                            name="offers"
-                            type="checkbox"
-                            aria-describedby="offers-description"
-                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                          />
-                        </div>
-                        <div className="ml-3 text-sm leading-6">
-                          <label
-                            htmlFor="offers"
-                            className="font-medium text-gray-900"
-                          >
-                            Offers
-                          </label>
-                          <p id="offers-description" className="text-gray-500">
-                            Get notified when a candidate accepts or rejects an
-                            offer.
-                          </p>
+                            <TrashIcon
+                              className="h-5 w-5 mr-1"
+                              aria-hidden="true"
+                            />
+                            Delete
+                          </button>
                         </div>
                       </div>
                     </div>
-                  </fieldset>
-                </div> */}
+                  </>
+                ))}
               </div>
               <ul
                 role="list"
@@ -462,30 +370,31 @@ const AquaCheckoutComponent = () => {
                 </>
               ) : (
                 <>
-                  <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-                    <button
-                      type="button"
-                      onClick={handlePhonePayment}
-                      className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-                    >
-                      Pay Now
-                    </button>
-                    <button
-                      type="button"
-                      data-autofocus
-                      onClick={handleCashOnDelivery}
-                      className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
-                    >
-                      Cash On Delivery
-                    </button>
-                  </div>
+                  <>
+                    <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+                      <button
+                        type="button"
+                        onClick={handlePhonePayment}
+                        className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+                      >
+                        Pay Now
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCashOnDelivery}
+                        className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
+                      >
+                        Cash On Delivery
+                      </button>
+                    </div>
 
-                  <button
-                    type="submit"
-                    className="mt-2 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  >
-                    Continue To Shop
-                  </button>
+                    <button
+                      type="button"
+                      className="mt-2 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                      Continue To Shop
+                    </button>
+                  </>
                 </>
               )}
             </section>
