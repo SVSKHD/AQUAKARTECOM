@@ -422,12 +422,12 @@ const AquaHomeComponent = () => {
                   latest options from our summer small-batch release while
                   they're still in stock.
                 </p>
-                <a
+                <Link
                   href="#"
                   className="mt-8 inline-block rounded-md border border-transparent bg-white px-8 py-3 text-base font-medium text-gray-900 hover:bg-gray-100"
                 >
                   Shop New Arrivals
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -444,13 +444,13 @@ const AquaHomeComponent = () => {
                   >
                     Shop by Category
                   </h2>
-                  <a
+                  <Link
                     href="/categories"
                     className="hidden text-sm font-semibold text-indigo-600 hover:text-indigo-500 sm:block"
                   >
                     Browse all categories
                     <span aria-hidden="true"> &rarr;</span>
-                  </a>
+                  </Link>
                 </div>
 
                 <div className="mt-4 flow-root">
@@ -467,9 +467,11 @@ const AquaHomeComponent = () => {
                               aria-hidden="true"
                               className="absolute inset-0"
                             >
-                              <img
+                              <Image
                                 src={category.photos[0].secure_url}
                                 alt={category.title}
+                                height={100}
+                                width={100}
                                 className="h-full w-full object-cover object-center"
                               />
                             </span>

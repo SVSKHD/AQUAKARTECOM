@@ -4,6 +4,7 @@ import BlogServiceOperations from "@/services/blog";
 import AQ from "@/assests/logo-white.png";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const AquaBlogComponnet = () => {
   const router = useRouter();
@@ -59,7 +60,7 @@ const AquaBlogComponnet = () => {
                 key={post.id}
                 className="relative isolate flex flex-col justify-end overflow-hidden rounded-2xl bg-gray-900 px-8 pb-8 pt-80 sm:pt-48 lg:pt-80"
               >
-                <img
+                <Image
                   src={post.photos[0].secure_url}
                   alt=""
                   className="absolute inset-0 -z-10 h-full w-full object-cover"
@@ -82,6 +83,8 @@ const AquaBlogComponnet = () => {
                       <Image
                         src={AQ}
                         alt=""
+                        height={100}
+                        width={100}
                         className="h-6 w-6 flex-none rounded-full bg-white/10"
                       />
                       Aquakart
@@ -89,10 +92,10 @@ const AquaBlogComponnet = () => {
                   </div>
                 </div>
                 <h3 className="mt-3 text-lg font-semibold leading-6 text-white">
-                  <a href={`/blog/${post._id}`}>
+                  <Link href={`/blog/${post._id}`}>
                     <span className="absolute inset-0" />
                     {post.title}
-                  </a>
+                  </Link>
                 </h3>
               </article>
             ))}
