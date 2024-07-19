@@ -27,8 +27,8 @@ import { FaUser } from "react-icons/fa";
 
 const navigation = [
   { name: "Shop", href: "/shop" },
-  { name: "Compare", href: "/compare" },
-  { name: "About", href: "/about" },
+  // { name: "Compare", href: "/compare" },
+  // { name: "About", href: "/about" },
   { name: "Know More", href: "/blogs" },
 ];
 
@@ -65,7 +65,9 @@ const AquaHeader = () => {
               </div>
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex flex-shrink-0 items-center">
+                  <a href="/">
                   <Image className="h-8 w-auto" src={LW} alt="Aquakart" />
+                  </a>
                 </div>
                 <div className="hidden sm:ml-6 sm:block">
                   <div className="flex space-x-4">

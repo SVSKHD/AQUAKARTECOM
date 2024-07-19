@@ -8,6 +8,9 @@ module.exports = {
     fontFamily: {
       sans: ["Inter var", ...defaultTheme.fontFamily.sans],
     },
+    animation: {
+      'spin-slow': 'spin 3s linear infinite',
+    },
     fontSize: {
       xs: ["0.75rem", { lineHeight: "1rem" }],
       sm: ["0.875rem", { lineHeight: "1.5rem" }],

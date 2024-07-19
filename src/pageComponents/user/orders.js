@@ -10,6 +10,7 @@ const AquaOrderComponent = () => {
   const [orders, setOrders] = useState([]);
   const { userData } = useSelector((state) => ({ ...state }));
   const { formatCurrencyINR } = useCurrency;
+
   useEffect(() => {
     setLoading(true);
     orderServiceOperations
@@ -25,7 +26,8 @@ const AquaOrderComponent = () => {
           error: "error",
         });
       });
-  });
+  }, []); // Added empty dependency array
+
   const getStatusBadge = (orderStatus) => {
     const statusClasses = {
       Pending: "bg-gray-100 text-gray-800",
@@ -52,49 +54,46 @@ const AquaOrderComponent = () => {
           {orders.length > 0 ? (
             <>
               {orders.map((r, i) => (
-                <>
-                  <div
-                    key={i}
-                    className="overflow-hidden rounded-lg bg-white shadow"
-                  >
-                    <div className="px-4 py-5 sm:p-6">
-                      <h4 className="text-xl font-bold text-gray-600 mb-4">
-                        #{r.orderId} - {getStatusBadge(r.orderStatus)}
-                      </h4>
-                      <p className="font-bold">
-                        Transaction-Id :{" "}
-                        <span className="text-gray-500">{r.transactionId}</span>
-                      </p>
-                      {r.paymentMethod === "Cash On Delivery" ? (
-                        <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">
-                          COD
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                          Payment Method
-                        </span>
-                      )}
-                      <div>
-                        <h5 className="mt-5 font-bold text-l">Items Ordered</h5>
-                        <ul>
-                          {r.items.map((r, i) => (
-                            <li>
-                              {r.name} - quantity:{r.quantity}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <h3 className="text-l font-bold">
-                        Total Amount :{" "}
-                        <span className="text-green-600">
-                          {formatCurrencyINR(r.totalAmount)}
-                        </span>
-                      </h3>
-                      {/* {JSON.stringify(r)} */}
+                <div
+                  key={i}
+                  className="overflow-hidden rounded-lg bg-white shadow"
+                >
+                  <div className="px-4 py-5 sm:p-6">
+                    <h4 className="text-xl font-bold text-gray-600 mb-4">
+                      #{r.orderId} - {getStatusBadge(r.orderStatus)}
+                    </h4>
+                    <p className="font-bold">
+                      Transaction-Id :{" "}
+                      <span className="text-gray-500">{r.transactionId}</span>
+                    </p>
+                    {r.paymentMethod === "Cash On Delivery" ? (
+                      <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">
+                        COD
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                        Payment Method
+                      </span>
+                    )}
+                    <div>
+                      <h5 className="mt-5 font-bold text-l">Items Ordered</h5>
+                      <ul>
+                        {r.items.map((r, i) => (
+                          <li key={i}>
+                            {r.name} - quantity:{r.quantity}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <div className="bg-gray-50 px-4 py-4 sm:px-6"></div>
+                    <h3 className="text-l font-bold">
+                      Total Amount :{" "}
+                      <span className="text-green-600">
+                        {formatCurrencyINR(r.totalAmount)}
+                      </span>
+                    </h3>
                   </div>
-                </>
+                  <div className="bg-gray-50 px-4 py-4 sm:px-6"></div>
+                </div>
               ))}
             </>
           ) : (
@@ -105,4 +104,5 @@ const AquaOrderComponent = () => {
     </>
   );
 };
+
 export default AquaOrderComponent;
