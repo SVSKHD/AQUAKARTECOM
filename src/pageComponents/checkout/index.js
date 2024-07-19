@@ -16,6 +16,7 @@ import { useState } from "react";
 import orderServiceOperations from "@/services/order";
 import { useRouter } from "next/router";
 import AquaToast from "@/components/reusables/react-toastify";
+import Image from "next/image";
 
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
@@ -208,10 +209,12 @@ const AquaCheckoutComponent = () => {
                 {cartData.map((product, productIdx) => (
                   <li key={product.id} className="flex py-6 sm:py-10">
                     <div className="flex-shrink-0">
-                      <img
+                      <Image
                         src={product.photos[0].secure_url}
                         alt={product.title}
                         className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
+                        widht={300}
+                        height={400}
                       />
                     </div>
 

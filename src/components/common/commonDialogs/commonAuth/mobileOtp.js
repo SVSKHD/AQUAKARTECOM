@@ -2,6 +2,7 @@ import UserServiceOperations from "@/services/user";
 import useDialog from "@/utils/dialog";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
+import Image from "next/image";
 
 const AquaAuthMobileForm = ({ signup }) => {
   const [phone, setPhone] = useState("");
@@ -86,10 +87,12 @@ const AquaAuthMobileForm = ({ signup }) => {
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <img
+        <Image
           alt="Aquakart"
           src="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
           className="mx-auto h-20 w-auto"
+          width={100}
+          height={100}
         />
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
           {signup ? "Sign up with phone" : "Sign in with phone"}

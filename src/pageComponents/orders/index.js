@@ -26,6 +26,7 @@ import { useRouter } from "next/router";
 import orderServiceOperations from "@/services/order";
 import useCurrency from "@/utils/currency";
 import moment from "moment";
+import Link from "next/link";
 
 const currencies = ["CAD", "USD", "AUD", "EUR", "GBP"];
 const navigation = {
@@ -400,13 +401,13 @@ export default function Example() {
                   : "Online Payment"}
               </h1>
               {/* {JSON.stringify(order)} */}
-              <a
+              <Link
                 href="#"
                 className="hidden text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:block"
               >
                 View invoice
                 <span aria-hidden="true"> &rarr;</span>
-              </a>
+              </Link>
             </div>
             <p className="text-sm text-gray-600">
               Order placed{" "}
@@ -439,9 +440,9 @@ export default function Example() {
                     <div className="sm:flex lg:col-span-7">
                       <div className="mt-6 sm:ml-6 sm:mt-0">
                         <h3 className="text-base font-medium text-gray-900">
-                          <a href={`/product/${product.productId}`}>
+                          <Link href={`/product/${product.productId}`}>
                             {product.name}
-                          </a>
+                          </Link>
                         </h3>
                         <p className="mt-2 text-sm font-medium text-green-900">
                           {formatCurrencyINR(product.price)}

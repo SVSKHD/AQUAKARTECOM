@@ -38,6 +38,7 @@ import { FaHeart, FaHeartBroken } from "react-icons/fa";
 import { FaCartArrowDown, FaCartShopping } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 import AquaProductCard from "@/components/cards/productCard";
+import Image from "next/image";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -195,10 +196,12 @@ export default function AquaDynamicProductComponent() {
                 <TabPanels className="aspect-h-1 aspect-w-1 w-full">
                   {productData.photos.map((image) => (
                     <TabPanel key={image.id}>
-                      <img
+                      <Image
                         src={image.secure_url}
                         alt={image.alt}
                         className="h-full w-full object-cover object-center sm:rounded-lg"
+                        height={150}
+                        width={100}
                       />
                     </TabPanel>
                   ))}

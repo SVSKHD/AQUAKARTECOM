@@ -5,6 +5,7 @@ import useProduct from "@/utils/product";
 import { FaHeart, FaHeartBroken } from "react-icons/fa";
 import { FaCartArrowDown, FaCartShopping } from "react-icons/fa6";
 import { useSelector } from "react-redux";
+import Image from "next/image";
 
 const AquaProductCard = ({ product }) => {
   const [loading, setLoading] = useState(false);
@@ -25,10 +26,12 @@ const AquaProductCard = ({ product }) => {
   return (
     <div className="relative mb-5">
       <div className="relative h-72 w-full overflow-hidden rounded-lg">
-        <img
+        <Image
           src={photos[0].secure_url}
           alt={title}
           className="h-full w-full object-cover object-center"
+          width={100}
+          height={100}
         />
       </div>
       <div className="relative mt-4">

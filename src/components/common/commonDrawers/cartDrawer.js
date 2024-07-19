@@ -9,6 +9,7 @@ import {
 } from "@heroicons/react/20/solid";
 import useCurrency from "@/utils/currency";
 import useCart from "@/utils/cart";
+import Image from "next/image";
 
 const AquaCartDrawer = () => {
   const { cartDrawer, cartData } = useSelector((state) => ({ ...state }));
@@ -25,9 +26,11 @@ const AquaCartDrawer = () => {
         cartData.map((product, productIdx) => (
           <li key={product.id} className="flex py-6 sm:py-10">
             <div className="flex-shrink-0">
-              <img
+              <Image
                 src={product.photos[0].secure_url}
                 alt={product.imageAlt}
+                height={100}
+                width={100}
                 className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
               />
             </div>
