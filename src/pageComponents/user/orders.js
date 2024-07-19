@@ -26,7 +26,7 @@ const AquaOrderComponent = () => {
           error: "error",
         });
       });
-  }, []); // Added empty dependency array
+  }, [userData.data.user._id, userData.data.user.token]); // Added empty dependency array
 
   const getStatusBadge = (orderStatus) => {
     const statusClasses = {

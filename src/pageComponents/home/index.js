@@ -26,6 +26,8 @@ import AquaProductCard from "@/components/cards/productCard";
 import { useRouter } from "next/router";
 import CategoryServiceOperations from "@/services/category";
 import ProductServiceOperations from "@/services/products";
+import Image from "next/image";
+import Link from "next/link";
 
 const AquaHomeComponent = () => {
   const [categoryData, setCategoryData] = useState([]);
@@ -294,9 +296,11 @@ const AquaHomeComponent = () => {
                             {category.featured.map((item) => (
                               <div key={item.name} className="group relative">
                                 <div className="aspect-h-1 aspect-w-1 overflow-hidden rounded-md bg-gray-100 group-hover:opacity-75">
-                                  <img
+                                  <Image
                                     src={item.imageSrc}
                                     alt={item.imageAlt}
+                                    height={100}
+                                    width={100}
                                     className="object-cover object-center"
                                   />
                                 </div>
@@ -394,7 +398,9 @@ const AquaHomeComponent = () => {
                 aria-hidden="true"
                 className="absolute inset-0 overflow-hidden"
               >
-                <img
+                <Image
+                  height={100}
+                  widht={100}
                   src="https://tailwindui.com/img/ecommerce-images/home-page-01-hero-full-width.jpg"
                   alt=""
                   className="h-full w-full object-cover object-center"
@@ -452,7 +458,7 @@ const AquaHomeComponent = () => {
                     <div className="relative box-content h-80 overflow-x-auto py-2 xl:overflow-visible">
                       <div className="absolute flex space-x-8 px-4 sm:px-6 lg:px-8 xl:relative xl:grid xl:grid-cols-5 xl:gap-x-8 xl:space-x-0 xl:px-0">
                         {categoryData.map((category) => (
-                          <a
+                          <Link
                             key={category.title}
                             href={`/category/${category._id}`}
                             className="relative flex h-80 w-56 flex-col overflow-hidden rounded-lg p-6 hover:opacity-75 xl:w-auto"
@@ -471,13 +477,13 @@ const AquaHomeComponent = () => {
                               aria-hidden="true"
                               className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-gray-800 opacity-50"
                             />
-                            <a
+                            <Link
                               href={`/category/${category._id}`}
                               className="relative mt-auto text-center text-xl font-bold text-white"
                             >
                               {category.title}
-                            </a>
-                          </a>
+                            </Link>
+                          </Link>
                         ))}
                       </div>
                     </div>
@@ -502,7 +508,9 @@ const AquaHomeComponent = () => {
               >
                 <div className="relative overflow-hidden rounded-lg">
                   <div className="absolute inset-0">
-                    <img
+                    <Image
+                      height={100}
+                      width={100}
                       src="https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg"
                       alt=""
                       className="h-full w-full object-cover object-center"
@@ -526,12 +534,12 @@ const AquaHomeComponent = () => {
                         with sodium or potassium ions through a process called
                         ion exchange, water softeners improve water quality,
                       </p>
-                      <a
+                      <Link
                         href="/blogs"
                         className="mt-8 block w-full rounded-md border border-transparent bg-white px-8 py-3 text-base font-medium text-gray-900 hover:bg-gray-100 sm:w-auto"
                       >
                         Know More
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </div>

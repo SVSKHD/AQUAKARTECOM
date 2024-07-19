@@ -63,23 +63,19 @@ export default function AquaDashboardComponent(props) {
                 <div className="flex h-16 justify-between">
                   <div className="flex">
                     <div className="flex flex-shrink-0 items-center">
-                      <a
-                      href="/"
-                      >
-                      <img
-                        className="block h-8 w-auto lg:hidden"
-                        alt="Aquakart"
-                        src="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
-                      />
+                      <a href="/">
+                        <img
+                          className="block h-8 w-auto lg:hidden"
+                          alt="Aquakart"
+                          src="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
+                        />
                       </a>
-                      <a
-                      href="/"
-                      >
-                      <img
-                        className="hidden h-8 w-auto lg:block"
-                        alt="Aquakart"
-                        src="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
-                      />
+                      <a href="/">
+                        <img
+                          className="hidden h-8 w-auto lg:block"
+                          alt="Aquakart"
+                          src="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
+                        />
                       </a>
                     </div>
                     <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">

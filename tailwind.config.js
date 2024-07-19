@@ -9,7 +9,7 @@ module.exports = {
       sans: ["Inter var", ...defaultTheme.fontFamily.sans],
     },
     animation: {
-      'spin-slow': 'spin 3s linear infinite',
+      "spin-slow": "spin 3s linear infinite",
     },
     fontSize: {
       xs: ["0.75rem", { lineHeight: "1rem" }],

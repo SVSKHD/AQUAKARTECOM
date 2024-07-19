@@ -171,9 +171,11 @@ export default function AquaDynamicProductComponent() {
                           <>
                             <span className="sr-only">{image.id}</span>
                             <span className="absolute inset-0 overflow-hidden rounded-md">
-                              <img
+                              <Image
                                 src={image.secure_url}
                                 alt=""
+                                height={100}
+                                width={100}
                                 className="h-full w-full object-cover object-center"
                               />
                             </span>

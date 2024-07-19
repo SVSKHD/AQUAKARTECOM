@@ -1,7 +1,5 @@
 import AquaDashboardPageComponent from "@/pageComponents/user/dashboard";
 const AquaUserDashboard = () => {
-  return(
-    <AquaDashboardPageComponent/>
-  )
+  return <AquaDashboardPageComponent />;
 };
 export default AquaUserDashboard;
