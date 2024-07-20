@@ -1,4 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
+import AquaToast from "@/components/reusables/react-toastify";
 
 const useProduct = () => {
   const dispatch = useDispatch();
@@ -15,13 +16,10 @@ const useProduct = () => {
         payload: { ...productData, quantity: 1 },
       });
 
-      dispatch({
-        type: "SHOW_NOTIFICATION",
-        payload: {
+      AquaToast({
           message: "Successfully Added to Cart",
-          messageType: "success",
-        },
-      });
+          type: "success"
+        });
       setCartAdd(true);
     } else {
       dispatch({
@@ -29,13 +27,11 @@ const useProduct = () => {
         payload: productData?._id,
       });
 
-      dispatch({
-        type: "SHOW_NOTIFICATION",
-        payload: {
+      AquaToast({
           message: "Successfully removed from cart",
-          messageType: "info",
-        },
-      });
+          type: "info",
+        })
+      
       setCartAdd(false);
     }
   };
@@ -50,25 +46,19 @@ const useProduct = () => {
         type: "ADD_TO_FAV",
         payload: productData,
       });
-      dispatch({
-        type: "SHOW_NOTIFICATION",
-        payload: {
+      AquaToast({
           message: "Successfully added from Favourites",
-          messageType: "success",
-        },
-      });
+          type: "success",
+        })
       setAddFav(true);
     } else {
       dispatch({
         type: "REMOVE_FROM_FAV",
         payload: productData?._id,
       });
-      dispatch({
-        type: "SHOW_NOTIFICATION",
-        payload: {
+      AquaToast({
           message: "Successfully removed from Favourites",
-          messageType: "info",
-        },
+          type: "info",
       });
       setAddFav(false);
     }
