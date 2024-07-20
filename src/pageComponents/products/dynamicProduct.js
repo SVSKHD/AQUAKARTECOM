@@ -39,13 +39,14 @@ import { FaCartArrowDown, FaCartShopping } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 import AquaProductCard from "@/components/cards/productCard";
 import Image from "next/image";
+import LOGO from "../../assests/Default.png"
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
 export default function AquaDynamicProductComponent() {
-  const seo = { title: "product | Aquakart" };
+  
   const [open, setOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -55,6 +56,8 @@ export default function AquaDynamicProductComponent() {
   const [fav, setFav] = useState(false);
   const { formatCurrencyINR } = useCurrency;
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
+
+  
 
   const router = useRouter();
   const { id } = router.query;
@@ -90,65 +93,13 @@ export default function AquaDynamicProductComponent() {
     return <div>Loading...</div>;
   }
 
-  const product = {
-    name: "Zip Tote Basket",
-    price: "$140",
-    rating: 4,
-    images: [
-      {
-        id: 1,
-        name: "Angled view",
-        src: "https://tailwindui.com/img/ecommerce-images/product-page-03-product-01.jpg",
-        alt: "Angled front view with bag zipped and handles upright.",
-      },
-      // More images...
-    ],
-    colors: [
-      {
-        name: "Washed Black",
-        bgColor: "bg-gray-700",
-        selectedColor: "ring-gray-700",
-      },
-      { name: "White", bgColor: "bg-white", selectedColor: "ring-gray-400" },
-      {
-        name: "Washed Gray",
-        bgColor: "bg-gray-500",
-        selectedColor: "ring-gray-500",
-      },
-    ],
-    description: `
-      <p>The Zip Tote Basket is the perfect midpoint between shopping tote and comfy backpack. With convertible straps, you can hand carry, should sling, or backpack this convenient and spacious bag. The zip top and durable canvas construction keeps your goods protected for all-day use.</p>
-    `,
-    details: [
-      {
-        name: "Features",
-        items: [
-          "Multiple strap configurations",
-          "Spacious interior with top zip",
-          "Leather handle and tabs",
-          "Interior dividers",
-          "Stainless strap loops",
-          "Double stitched construction",
-          "Water-resistant",
-        ],
-      },
-      // More sections...
-    ],
-  };
-  const relatedProducts = [
-    {
-      id: 1,
-      name: "Zip Tote Basket",
-      color: "White and black",
-      href: "#",
-      imageSrc:
-        "https://tailwindui.com/img/ecommerce-images/product-page-03-related-product-01.jpg",
-      imageAlt:
-        "Front of zip tote bag with white canvas, black canvas straps and handle, and black zipper pulls.",
-      price: "$140",
-    },
-    // More products...
-  ];
+  const seo = { 
+    title: `Aquakart | ${productData.title}` ,
+    image: `${productData?.photos ? productData?.photos[0].secure_url : LOGO}`,
+    keywords: `Aquakart Products ${productData?.keywords}`,
+    canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
+};
+
 
   return (
     <AquaLayout seo={seo}>

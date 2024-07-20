@@ -50,30 +50,42 @@ const AquaProductCard = ({ product }) => {
         </p>
       </div>
       <div className="mt-6">
-        <span className="isolate inline-flex rounded-md shadow-sm">
-          <button
-            type="button"
-            className="relative inline-flex items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:z-10"
-            onClick={() => AddAndRemoveCart(product, setAddCart)}
-          >
-            {cart ? (
-              <FaCartArrowDown className="text-green-700" size={25} />
-            ) : (
-              <FaCartShopping size={25} />
-            )}
-          </button>
-          <button
-            type="button"
-            className="relative -ml-px inline-flex items-center bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:z-10"
-            onClick={() => AddAndRemoveFav(product, setAddFav)}
-          >
-            {fav ? (
-              <FaHeart className="text-red-700" size={25} />
-            ) : (
-              <FaHeartBroken className="text-red-700" size={25} />
-            )}
-          </button>
-        </span>
+      <span className="isolate inline-flex rounded-md shadow-sm">
+      <button
+        type="button"
+        className="relative inline-flex items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:z-10"
+        onClick={() => AddAndRemoveCart(product, setAddCart)}
+      >
+        {cart ? (
+          <>
+            <span>Added To Cart</span>
+            <FaCartArrowDown className="text-green-700" size={25} />
+          </>
+        ) : (
+          <>
+            <span>Add To Cart</span>
+            <FaCartShopping size={25} />
+          </>
+        )}
+      </button>
+      <button
+        type="button"
+        className="relative -ml-px inline-flex items-center bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:z-10"
+        onClick={() => AddAndRemoveFav(product, setAddFav)}
+      >
+        {fav ? (
+          <>
+            <span>Added to WishList</span>
+            <FaHeart className="text-red-700" size={25} />
+          </>
+        ) : (
+          <>
+            <span>Add to WishList</span>
+            <FaHeartBroken className="text-red-700" size={25} />
+          </>
+        )}
+      </button>
+    </span>
       </div>
     </div>
   );
