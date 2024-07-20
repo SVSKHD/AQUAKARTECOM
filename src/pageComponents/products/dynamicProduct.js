@@ -253,7 +253,11 @@ export default function AquaDynamicProductComponent() {
                       className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
                       onClick={() => AddAndRemoveCart(productData, setCart)}
                     >
-                      {cart ? <h4 className="font-bold text-xl">Added to Cart</h4> : <h4 className="font-bold text-xl">Add to Cart</h4>}
+                      {cart ? (
+                        <h4 className="font-bold text-xl">Added to Cart</h4>
+                      ) : (
+                        <h4 className="font-bold text-xl">Add to Cart</h4>
+                      )}
                     </button>
 
                     <button
@@ -262,14 +266,17 @@ export default function AquaDynamicProductComponent() {
                       onClick={() => AddAndRemoveFav(productData, setFav)}
                     >
                       {fav ? (
-                        <h4 className="text-red-700 font-bold text-xl">Added to WishList</h4>
+                        <h4 className="text-red-700 font-bold text-xl">
+                          Added to WishList
+                        </h4>
                       ) : (
-                        <h4 className="text-red-400 font-bold text-xl">Add to WishList</h4>
+                        <h4 className="text-red-400 font-bold text-xl">
+                          Add to WishList
+                        </h4>
                       )}
                     </button>
                   </div>
                   <a
-                  
                     href="/checkout"
                     className="flex w-full p-4 font-bold text-xl mb-5 justify-center rounded-md bg-indigo-600 px-3 py-13 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   >
