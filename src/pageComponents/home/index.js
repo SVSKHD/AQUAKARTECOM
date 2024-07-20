@@ -400,9 +400,9 @@ const AquaHomeComponent = () => {
               >
                 <Image
                   height={100}
-                  widht={100}
+                  width={100}
                   src="https://tailwindui.com/img/ecommerce-images/home-page-01-hero-full-width.jpg"
-                  alt=""
+                  alt="Aquakart"
                   className="h-full w-full object-cover object-center"
                 />
               </div>
