@@ -39,14 +39,13 @@ import { FaCartArrowDown, FaCartShopping } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 import AquaProductCard from "@/components/cards/productCard";
 import Image from "next/image";
-import LOGO from "../../assests/Default.png"
+import LOGO from "../../assests/Default.png";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
 export default function AquaDynamicProductComponent() {
-  
   const [open, setOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -56,8 +55,6 @@ export default function AquaDynamicProductComponent() {
   const [fav, setFav] = useState(false);
   const { formatCurrencyINR } = useCurrency;
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
-
-  
 
   const router = useRouter();
   const { id } = router.query;
@@ -93,13 +90,12 @@ export default function AquaDynamicProductComponent() {
     return <div>Loading...</div>;
   }
 
-  const seo = { 
-    title: `Aquakart | ${productData.title}` ,
+  const seo = {
+    title: `Aquakart | ${productData.title}`,
     image: `${productData?.photos ? productData?.photos[0].secure_url : LOGO}`,
     keywords: `Aquakart Products ${productData?.keywords}`,
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
-};
-
+  };
 
   return (
     <AquaLayout seo={seo}>

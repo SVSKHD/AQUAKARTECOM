@@ -17,9 +17,9 @@ const useProduct = () => {
       });
 
       AquaToast({
-          message: "Successfully Added to Cart",
-          type: "success"
-        });
+        message: "Successfully Added to Cart",
+        type: "success",
+      });
       setCartAdd(true);
     } else {
       dispatch({
@@ -28,10 +28,10 @@ const useProduct = () => {
       });
 
       AquaToast({
-          message: "Successfully removed from cart",
-          type: "info",
-        })
-      
+        message: "Successfully removed from cart",
+        type: "info",
+      });
+
       setCartAdd(false);
     }
   };
@@ -47,9 +47,9 @@ const useProduct = () => {
         payload: productData,
       });
       AquaToast({
-          message: "Successfully added from Favourites",
-          type: "success",
-        })
+        message: "Successfully added from Favourites",
+        type: "success",
+      });
       setAddFav(true);
     } else {
       dispatch({
@@ -57,8 +57,8 @@ const useProduct = () => {
         payload: productData?._id,
       });
       AquaToast({
-          message: "Successfully removed from Favourites",
-          type: "info",
+        message: "Successfully removed from Favourites",
+        type: "info",
       });
       setAddFav(false);
     }
