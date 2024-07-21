@@ -29,12 +29,6 @@ const AquaUserAuthDialog = () => {
 
         <p className="mt-10 text-center text-sm text-gray-500">
           Not a member?{" "}
-          <span
-            href="#"
-            className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"
-          >
-            Signup Now
-          </span>
           <span className="mx-2">or</span>
           <span
             onClick={() => setMobile(!mobile)}
