@@ -121,8 +121,8 @@ export default function AquaDynamicProductComponent() {
                               <Image
                                 src={image.secure_url}
                                 alt=""
-                                height={100}
-                                width={100}
+                                height={600}
+                                width={400}
                                 className="h-full w-full object-cover object-center"
                               />
                             </span>
@@ -149,8 +149,8 @@ export default function AquaDynamicProductComponent() {
                         src={image.secure_url}
                         alt={image.alt}
                         className="h-full w-full object-cover object-center sm:rounded-lg"
-                        height={150}
-                        width={100}
+                        height={450}
+                        width={300}
                       />
                     </TabPanel>
                   ))}
