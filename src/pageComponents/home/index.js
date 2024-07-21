@@ -399,8 +399,8 @@ const AquaHomeComponent = () => {
                 className="absolute inset-0 overflow-hidden"
               >
                 <Image
-                  height={100}
-                  width={100}
+                  height={1200}
+                  width={728}
                   src="https://tailwindui.com/img/ecommerce-images/home-page-01-hero-full-width.jpg"
                   alt="Aquakart"
                   className="h-full w-full object-cover object-center"
@@ -511,8 +511,8 @@ const AquaHomeComponent = () => {
                 <div className="relative overflow-hidden rounded-lg">
                   <div className="absolute inset-0">
                     <Image
-                      height={100}
-                      width={100}
+                      height={1200}
+                      width={728}
                       src="https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg"
                       alt=""
                       className="h-full w-full object-cover object-center"
