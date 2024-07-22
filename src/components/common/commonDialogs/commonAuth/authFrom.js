@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import AquaToast from "@/components/reusables/react-toastify";
 import Image from "next/image";
 
+
 const AquaAuthMobileForm = ({ signup }) => {
   const [email, setEmail] = useState("");
   const [otpShow, setOtpShow] = useState(false);
@@ -47,13 +48,10 @@ const AquaAuthMobileForm = ({ signup }) => {
       UserServiceOperations.UserEmailOtp({ email: value })
         .then((res) => {
           setOtpShow(true);
-          dispatch({
-            type: "SHOW_NOTIFICATION",
-            payload: {
+        AquaToast({
               message: "Successfully sent OTP",
-              messageType: "success",
-            },
-          });
+              type: "success",
+            })
           dispatch({
             type: "SET_AUTH_STATUS_VISIBLE",
             payload: !res.data.userExist,
@@ -62,13 +60,11 @@ const AquaAuthMobileForm = ({ signup }) => {
         .catch((err) => {
           console.log(err);
           setOtpShow(false);
-          dispatch({
-            type: "SHOW_NOTIFICATION",
-            payload: {
+         AquaToast({
               message: "Failed to send OTP",
-              messageType: "error",
-            },
-          });
+             type: "error",
+            })
+          
           dispatch({
             type: "SET_AUTH_STATUS_VISIBLE",
             payload: false,
