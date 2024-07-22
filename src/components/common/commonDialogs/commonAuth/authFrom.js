@@ -40,18 +40,19 @@ const AquaAuthMobileForm = ({ signup }) => {
   };
 
   const handleEmailChange = (e) => {
-    const value = e.target.value;
-    setEmail(value);
-    // Assuming some condition to trigger OTP request
-    if (value.includes("@")) {
-      console.log("value", value);
-      UserServiceOperations.UserEmailOtp({ email: value })
+    setEmail(e.target.value);
+  };
+
+  const handleEmailBlur = () => {
+    if (email.includes("@")) {
+      console.log("email", email);
+      UserServiceOperations.UserEmailOtp({ email })
         .then((res) => {
           setOtpShow(true);
-        AquaToast({
-              message: "Successfully sent OTP",
-              type: "success",
-            })
+          AquaToast({
+            message: "Successfully sent OTP",
+            type: "success",
+          });
           dispatch({
             type: "SET_AUTH_STATUS_VISIBLE",
             payload: !res.data.userExist,
@@ -60,11 +61,10 @@ const AquaAuthMobileForm = ({ signup }) => {
         .catch((err) => {
           console.log(err);
           setOtpShow(false);
-         AquaToast({
-              message: "Failed to send OTP",
-             type: "error",
-            })
-          
+          AquaToast({
+            message: "Failed to send OTP",
+            type: "error",
+          });
           dispatch({
             type: "SET_AUTH_STATUS_VISIBLE",
             payload: false,
@@ -106,6 +106,7 @@ const AquaAuthMobileForm = ({ signup }) => {
                 type="email"
                 value={email}
                 onChange={handleEmailChange}
+                onBlur={handleEmailBlur}
                 placeholder="example@example.com"
                 className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
