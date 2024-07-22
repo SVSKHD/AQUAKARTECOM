@@ -3,6 +3,7 @@ import useDialog from "@/utils/dialog";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import Image from "next/image";
+import AquaToast from "@/components/reusables/react-toastify";
 
 const AquaAuthMobileForm = ({ signup }) => {
   const [phone, setPhone] = useState("");
@@ -20,13 +21,10 @@ const AquaAuthMobileForm = ({ signup }) => {
     UserServiceOperations.UserMobileVerify(data)
       .then((res) => {
         console.log(res.data);
-        dispatch({
-          type: "SHOW_NOTIFICATION",
-          payload: {
+         AquaToast({
             message: "Verification successful",
-            messageType: "success",
-          },
-        });
+            type: "success",
+          })
         dispatch({
           type: "LOGGED_IN_USER",
           payload: res,
@@ -35,13 +33,10 @@ const AquaAuthMobileForm = ({ signup }) => {
       })
       .catch((err) => {
         console.log(err);
-        dispatch({
-          type: "SHOW_NOTIFICATION",
-          payload: {
+       AquaToast({
             message: "Verification failed",
-            messageType: "error",
-          },
-        });
+            type: "error",
+          })
       });
   };
 
