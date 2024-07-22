@@ -2,12 +2,11 @@ import UserServiceOperations from "@/services/user";
 import useDialog from "@/utils/dialog";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import AquaToast from "@/components/reusables/react-toastify";
 import Image from "next/image";
-
+import AquaToast from "@/components/reusables/react-toastify";
 
 const AquaAuthMobileForm = ({ signup }) => {
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [otpShow, setOtpShow] = useState(false);
   const [otp, setOtp] = useState("");
   const { closeAuthDialog } = useDialog();
@@ -15,9 +14,11 @@ const AquaAuthMobileForm = ({ signup }) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const data = { email, otp: Number(otp) };
+    const phoneFormat = Number(phone);
+    const otpFormat = Number(otp);
+    const data = { phone: phoneFormat, otp: otpFormat };
     console.log(data);
-    UserServiceOperations.UserEmailVerify(data)
+    UserServiceOperations.UserMobileVerify(data)
       .then((res) => {
         console.log(res.data);
         AquaToast({
@@ -39,20 +40,20 @@ const AquaAuthMobileForm = ({ signup }) => {
       });
   };
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    setPhone(value);
   };
 
-  const handleEmailBlur = () => {
-    if (email.includes("@")) {
-      console.log("email", email);
-      UserServiceOperations.UserEmailOtp({ email })
+  const handlePhoneBlur = () => {
+    if (phone.length === 10) {
+      UserServiceOperations.UserMobileOtp({ phone })
         .then((res) => {
           setOtpShow(true);
           AquaToast({
-            message: "Successfully sent OTP",
-            type: "success",
-          });
+              message: "Successfully sent OTP",
+              messageType: "success",
+            })
           dispatch({
             type: "SET_AUTH_STATUS_VISIBLE",
             payload: !res.data.userExist,
@@ -62,9 +63,10 @@ const AquaAuthMobileForm = ({ signup }) => {
           console.log(err);
           setOtpShow(false);
           AquaToast({
-            message: "Failed to send OTP",
-            type: "error",
-          });
+              message: "Failed to send OTP",
+              type: "error",
+            })
+          
           dispatch({
             type: "SET_AUTH_STATUS_VISIBLE",
             payload: false,
@@ -86,7 +88,7 @@ const AquaAuthMobileForm = ({ signup }) => {
           height={100}
         />
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          {signup ? "Sign up with email" : "Sign in with email"}
+          {signup ? "Sign up with phone" : "Sign in with phone"}
         </h2>
       </div>
 
@@ -94,20 +96,21 @@ const AquaAuthMobileForm = ({ signup }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
-              htmlFor="email-address"
+              htmlFor="phone-number"
               className="block text-sm font-medium leading-6 text-gray-900"
             >
-              Email Address
+              Phone No
             </label>
             <div className="relative mt-2 rounded-md shadow-sm">
               <input
-                id="email-address"
-                name="email-address"
-                type="email"
-                value={email}
-                onChange={handleEmailChange}
-                onBlur={handleEmailBlur}
-                placeholder="example@example.com"
+                id="phone-number"
+                name="phone-number"
+                maxLength="10"
+                type="number"
+                value={phone}
+                onChange={handlePhoneChange}
+                onBlur={handlePhoneBlur}
+                placeholder="000-00-00000"
                 className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
@@ -121,12 +124,12 @@ const AquaAuthMobileForm = ({ signup }) => {
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   placeholder="Enter OTP"
-                  className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
               </div>
             )}
             <p className="mt-2 text-sm text-gray-500">
-              Please enter your email address.
+              Please ensure your phone number is associated with WhatsApp.
             </p>
           </div>
 
