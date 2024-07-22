@@ -2,11 +2,12 @@ import UserServiceOperations from "@/services/user";
 import useDialog from "@/utils/dialog";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import Image from "next/image";
 import AquaToast from "@/components/reusables/react-toastify";
+import Image from "next/image";
+
 
 const AquaAuthMobileForm = ({ signup }) => {
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [otpShow, setOtpShow] = useState(false);
   const [otp, setOtp] = useState("");
   const { closeAuthDialog } = useDialog();
@@ -14,17 +15,15 @@ const AquaAuthMobileForm = ({ signup }) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const phoneFormat = Number(phone);
-    const otpFormat = Number(otp);
-    const data = { phone: phoneFormat, otp: otpFormat };
+    const data = { email, otp: Number(otp) };
     console.log(data);
-    UserServiceOperations.UserMobileVerify(data)
+    UserServiceOperations.UserEmailVerify(data)
       .then((res) => {
         console.log(res.data);
-         AquaToast({
-            message: "Verification successful",
-            type: "success",
-          })
+        AquaToast({
+          message: "Verification successful",
+          type: "success",
+        });
         dispatch({
           type: "LOGGED_IN_USER",
           payload: res,
@@ -33,26 +32,26 @@ const AquaAuthMobileForm = ({ signup }) => {
       })
       .catch((err) => {
         console.log(err);
-       AquaToast({
-            message: "Verification failed",
-            type: "error",
-          })
+        AquaToast({
+          message: "Verification failed",
+          type: "error",
+        });
       });
   };
 
-  const handlePhoneChange = (e) => {
-    const value = e.target.value;
-    setPhone(value);
-    if (value.length === 10) {
-      UserServiceOperations.UserMobileOtp({ phone: value })
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+  };
+
+  const handleEmailBlur = () => {
+    if (email.includes("@")) {
+      console.log("email", email);
+      UserServiceOperations.UserEmailOtp({ email })
         .then((res) => {
           setOtpShow(true);
-          dispatch({
-            type: "SHOW_NOTIFICATION",
-            payload: {
-              message: "Successfully sent OTP",
-              messageType: "success",
-            },
+          AquaToast({
+            message: "Successfully sent OTP",
+            type: "success",
           });
           dispatch({
             type: "SET_AUTH_STATUS_VISIBLE",
@@ -62,12 +61,9 @@ const AquaAuthMobileForm = ({ signup }) => {
         .catch((err) => {
           console.log(err);
           setOtpShow(false);
-          dispatch({
-            type: "SHOW_NOTIFICATION",
-            payload: {
-              message: "Failed to send OTP",
-              messageType: "error",
-            },
+          AquaToast({
+            message: "Failed to send OTP",
+            type: "error",
           });
           dispatch({
             type: "SET_AUTH_STATUS_VISIBLE",
@@ -90,7 +86,7 @@ const AquaAuthMobileForm = ({ signup }) => {
           height={100}
         />
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          {signup ? "Sign up with phone" : "Sign in with phone"}
+          {signup ? "Sign up with email" : "Sign in with email"}
         </h2>
       </div>
 
@@ -98,20 +94,20 @@ const AquaAuthMobileForm = ({ signup }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
-              htmlFor="phone-number"
+              htmlFor="email-address"
               className="block text-sm font-medium leading-6 text-gray-900"
             >
-              Phone No
+              Email Address
             </label>
             <div className="relative mt-2 rounded-md shadow-sm">
               <input
-                id="phone-number"
-                name="phone-number"
-                maxLength="10"
-                type="number"
-                value={phone}
-                onChange={handlePhoneChange}
-                placeholder="000-00-00000"
+                id="email-address"
+                name="email-address"
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+                onBlur={handleEmailBlur}
+                placeholder="example@example.com"
                 className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
@@ -125,12 +121,12 @@ const AquaAuthMobileForm = ({ signup }) => {
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   placeholder="Enter OTP"
-                  className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
               </div>
             )}
             <p className="mt-2 text-sm text-gray-500">
-              Please ensure your phone number is associated with WhatsApp.
+              Please enter your email address.
             </p>
           </div>
 
