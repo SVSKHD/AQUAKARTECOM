@@ -131,7 +131,7 @@ const AquaCheckoutComponent = () => {
         window.location.href = res.data.url;
       });
     }
-  };
+  };  
 
   const handleEditDialog = () => {
     console.log("edit");
@@ -229,7 +229,7 @@ const AquaCheckoutComponent = () => {
                           src={product.photos[0].secure_url}
                           alt={product.title}
                           className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
-                          widht={300}
+                          width={300}
                           height={400}
                         />
                       </div>
@@ -268,21 +268,18 @@ const AquaCheckoutComponent = () => {
                               Quantity, {product.name}
                             </label>
                             <select
-                              id={`quantity-${productIdx}`}
-                              name={`quantity-${productIdx}`}
-                              value={product.quantity}
-                              onChange={(e) =>
-                                handleQuantityChange(e, product._id)
-                              }
-                              className="max-w-full rounded-md border border-gray-300 py-1.5 text-left text-base font-medium leading-5 text-gray-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
-                            >
-                              <option value={1}>1</option>
-                              <option value={2}>2</option>
-                              <option value={3}>3</option>
-                              <option value={4}>4</option>
-                              <option value={5}>5</option>
-                            </select>
-
+  id={`quantity-${productIdx}`}
+  name={`quantity-${productIdx}`}
+  value={product.quantity}
+  onChange={(e) => handleQuantityChange(e, product._id)}
+  className="max-w-full rounded-md border border-gray-300 py-1.5 text-left text-base font-medium leading-5 bg-white text-gray-600 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+>
+  <option value={1}>1</option>
+  <option value={2}>2</option>
+  <option value={3}>3</option>
+  <option value={4}>4</option>
+  <option value={5}>5</option>
+</select>
                             <div className="absolute right-0 top-0">
                               <button
                                 type="button"
