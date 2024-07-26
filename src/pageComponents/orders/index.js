@@ -27,6 +27,7 @@ import orderServiceOperations from "@/services/order";
 import useCurrency from "@/utils/currency";
 import moment from "moment";
 import Link from "next/link";
+import { useSelector } from "react-redux";
 
 const currencies = ["CAD", "USD", "AUD", "EUR", "GBP"];
 const navigation = {
@@ -103,10 +104,12 @@ export default function Example() {
   const { id } = router.query;
   const [order, setOrder] = useState({});
   const { formatCurrencyINR } = useCurrency;
-  const formattedDate = moment(order.createdAt).format("DD MMM YYYY");
+  const formattedDate = moment(order?.createdAt).format("DD MMM YYYY");
+  const {userData} = useSelector((state)=>({...state}))
+  console.log("user", userData.data.token)
   useEffect(() => {
     orderServiceOperations
-      .getOrder(id)
+      .getOrdersByTransactionId(id, userData.data.token)
       .then((res) => {
         setOrder(res.data.data);
       })
@@ -328,8 +331,8 @@ export default function Example() {
           <div className="space-y-2 px-4 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
             <div className="flex sm:items-baseline sm:space-x-4">
               <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-                Order #{order.orderId} -{" "}
-                {order.orderType === "Cash On Delivery"
+                Order #{order?.orderId} -{" "}
+                {order?.orderType === "Cash On Delivery"
                   ? "Cash On Delivery"
                   : "Online Payment"}
               </h1>
@@ -462,7 +465,7 @@ export default function Example() {
           </section>
 
           {/* Billing */}
-          {order.orderType === "Cash On Delivery" ? (
+          {order?.orderType === "Cash On Delivery" ? (
             <dl className="space-y-6 border-t border-gray-200 pt-10 text-sm">
               <div className="flex justify-between">
                 <dt className="font-medium text-gray-900">Total</dt>

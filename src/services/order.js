@@ -10,12 +10,20 @@ const getOrdersByUserId = (id, token) => {
     },
   });
 };
+const getOrdersByTransactionId = (id, token) => {
+  return axios.get(`${BASE}/order/transaction-id/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
 const createPhonePePayOrder = (data) => axios.post(`${BASE}/order/pay`, data);
 
 const orderServiceOperations = {
   createCodOrder,
   createPhonePePayOrder,
   getOrdersByUserId,
+  getOrdersByTransactionId
 };
 
 export default orderServiceOperations;
