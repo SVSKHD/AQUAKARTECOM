@@ -116,7 +116,7 @@ export default function Example() {
       .catch(() => {
         console.log("err");
       });
-  }, [id]);
+  }, [id, userData]);
   const Seo = {
     title: "Aquakart | orders",
   };
