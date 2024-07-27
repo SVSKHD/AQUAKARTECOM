@@ -68,13 +68,22 @@ const useProduct = () => {
   const AddToFav = () => {};
 
   const RemoveFromFav = () => {};
-
+  const EmptyCart = () => {
+    dispatch({
+      type: "EMPTY_CART",
+    });
+    AquaToast({
+      message: "Cart emptied successfully",
+      type: "info",
+    });
+  };
   return {
     AddAndRemoveCart,
     AddAndRemoveFav,
     UpdateCart,
     AddToFav,
     RemoveFromFav,
+    EmptyCart,
   };
 };
 

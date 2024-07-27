@@ -5,7 +5,6 @@ import { useDispatch } from "react-redux";
 import AquaToast from "@/components/reusables/react-toastify";
 import Image from "next/image";
 
-
 const AquaAuthMobileForm = ({ signup }) => {
   const [email, setEmail] = useState("");
   const [otpShow, setOtpShow] = useState(false);

@@ -51,9 +51,9 @@ const AquaAuthMobileForm = ({ signup }) => {
         .then((res) => {
           setOtpShow(true);
           AquaToast({
-              message: "Successfully sent OTP",
-              messageType: "success",
-            })
+            message: "Successfully sent OTP",
+            messageType: "success",
+          });
           dispatch({
             type: "SET_AUTH_STATUS_VISIBLE",
             payload: !res.data.userExist,
@@ -63,10 +63,10 @@ const AquaAuthMobileForm = ({ signup }) => {
           console.log(err);
           setOtpShow(false);
           AquaToast({
-              message: "Failed to send OTP",
-              type: "error",
-            })
-          
+            message: "Failed to send OTP",
+            type: "error",
+          });
+
           dispatch({
             type: "SET_AUTH_STATUS_VISIBLE",
             payload: false,

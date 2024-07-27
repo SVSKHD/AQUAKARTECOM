@@ -23,7 +23,7 @@ const orderServiceOperations = {
   createCodOrder,
   createPhonePePayOrder,
   getOrdersByUserId,
-  getOrdersByTransactionId
+  getOrdersByTransactionId,
 };
 
 export default orderServiceOperations;

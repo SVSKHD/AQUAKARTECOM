@@ -13,26 +13,35 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import { nanoid } from "nanoid";
 import moment from "moment";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import orderServiceOperations from "@/services/order";
 import { useRouter } from "next/router";
 import AquaToast from "@/components/reusables/react-toastify";
 import Image from "next/image";
 import useDialog from "@/utils/dialog";
+import useCartDrawer from "../../utils/drawer";
+import useProduct from "@/utils/product";
 
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { cartData, userData } = useSelector((state) => ({ ...state }));
   const { formatCurrencyINR } = useCurrency;
+
   const { getTotalPrice, changeItemQuantity } = useCart();
   const [selectedAddress, setSelectedAddress] = useState(false);
   const { openAuthDialog } = useDialog();
-
+  const { closeCartDrawer } = useCartDrawer();
+  const { EmptyCart } = useProduct();
   const handleAddressChange = (address) => {
     setSelectedAddress(address);
     AquaToast({ message: "Succesfully selected the address", type: "success" });
   };
+
+  //especially to not open cart drawer in checkout page.
+  useEffect(() => {
+    closeCartDrawer();
+  });
 
   const seo = {
     title: "Aquakart | Cart",
@@ -46,6 +55,25 @@ const AquaCheckoutComponent = () => {
   const handleEditAddress = (e, r) => {
     e.preventDefault();
     console.log(r);
+    dispatch({
+      type: "SET_ADDRESS_DIALOG",
+      payload: true,
+    });
+    dispatch({
+      type: "SET_ADDRESS_DATA",
+      payload: r,
+    });
+  };
+
+  const handleAddAddress = () => {
+    dispatch({
+      type: "SET_ADDRESS_DIALOG",
+      payload: true,
+    });
+    dispatch({
+      type: "SET_ADDRESS_DATA",
+      payload: null,
+    });
   };
 
   const hanldeDeleteAddress = () => {};
@@ -94,47 +122,58 @@ const AquaCheckoutComponent = () => {
   };
 
   const handlePhonePayment = () => {
-    const transactionId = `AQTR-${nanoid(5).toUpperCase()}D${moment(
-      new Date(),
-    ).format("DDMMYYYY")}`;
-    const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
-    const newOrder = {
-      user: userData?.data?.user?._id, // Safe access and also make sure user exists
-      transactionId: transactionId,
-      orderType: "Payment Method(Phone Pe Gateway)",
-      orderId: orderId,
-      items: cartData.map((item) => ({
-        productId: item.id,
-        name: item.title,
-        price: item.price,
-        quantity: item.quantity,
-      })),
-      totalAmount: getTotalPrice(),
-      paymentMethod: "OTHER THAN CASH ON DELIVERY",
-      paymentStatus: "Pending",
-      currency: "INR",
-      billingAddress: userData?.data?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
-      shippingAddress: userData?.data?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
-      shippingMethod: "Standard",
-      shippingCost: 50, // Example fixed cost
-      estimatedDelivery: new Date(
-        new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
-      ).toISOString(), // Adding 7 days
-      orderStatus: "Processing",
-    };
-    console.log("new order", newOrder);
-    if (!selectedAddress) {
-      AquaToast({ message: "Please select an address", type: "error" });
+    if (cartData.length <= 0) {
+      AquaToast({ message: "Please add products to cart", type: "info" });
     } else {
-      orderServiceOperations.createPhonePePayOrder(newOrder).then((res) => {
-        console.log("res", res.data);
-        window.location.href = res.data.url;
-      });
+      const transactionId = `AQTR-${nanoid(5).toUpperCase()}D${moment(
+        new Date(),
+      ).format("DDMMYYYY")}`;
+      const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
+      const newOrder = {
+        user: userData?.data?.user?._id, // Safe access and also make sure user exists
+        transactionId: transactionId,
+        orderType: "Payment Method(Phone Pe Gateway)",
+        orderId: orderId,
+        items: cartData.map((item) => ({
+          productId: item.id,
+          name: item.title,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+        totalAmount: getTotalPrice(),
+        paymentMethod: "OTHER THAN CASH ON DELIVERY",
+        paymentStatus: "Pending",
+        currency: "INR",
+        billingAddress: userData?.data?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
+        shippingAddress: userData?.data?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
+        shippingMethod: "Standard",
+        shippingCost: 50, // Example fixed cost
+        estimatedDelivery: new Date(
+          new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
+        ).toISOString(), // Adding 7 days
+        orderStatus: "Processing",
+      };
+      if (!selectedAddress) {
+        AquaToast({ message: "Please select an address", type: "error" });
+      } else {
+        orderServiceOperations.createPhonePePayOrder(newOrder).then((res) => {
+          console.log("res", res.data);
+          window.location.href = res.data.url;
+        });
+      }
     }
-  };  
+  };
 
   const handleEditDialog = () => {
     console.log("edit");
+    dispatch({
+      type: "SET_ADDRESS_DIALOG",
+      payload: true,
+    });
+    dispatch({
+      type: "SET_ADDRESS_DATA",
+      payload: null,
+    });
   };
   const handleDeleteAddress = () => {};
   return (
@@ -179,7 +218,7 @@ const AquaCheckoutComponent = () => {
                                 type="radio"
                                 onChange={() => handleAddressChange(r.street)}
                                 checked={selectedAddress === r.street}
-                                className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                className={`h-4 w-4 border-gray-300 focus:ring-indigo-600 ${selectedAddress === r.street ? "bg-indigo-600 text-white" : "bg-white text-gray-800"}`}
                               />
                               <label className="text-md ml-3 block text-sm font-medium leading-6 text-gray-900">
                                 Billing Address
@@ -218,106 +257,139 @@ const AquaCheckoutComponent = () => {
                     </>
                   ))}
                 </div>
-                <ul
-                  role="list"
-                  className="divide-y divide-gray-200 border-b border-t border-gray-200"
+                <button
+                  onClick={() => handleAddAddress()}
+                  type="button"
+                  className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
-                  {cartData.map((product, productIdx) => (
-                    <li key={product.id} className="flex py-6 sm:py-10">
-                      <div className="flex-shrink-0">
-                        <Image
-                          src={product.photos[0].secure_url}
-                          alt={product.title}
-                          className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
-                          width={300}
-                          height={400}
-                        />
-                      </div>
+                  Add Address
+                </button>
+                {cartData.length > 0 ? (
+                  <button
+                    type="button"
+                    className="rounded-md bg-red-600 m-4 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                    onClick={() => EmptyCart()}
+                  >
+                    Remove All
+                  </button>
+                ) : (
+                  ""
+                )}
 
-                      <div className="ml-4 flex flex-1 flex-col justify-between sm:ml-6">
-                        <div className="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
-                          <div>
-                            <div className="flex justify-between">
-                              <h3 className="text-sm">
-                                <a
-                                  href={product.href}
-                                  className="font-medium text-gray-700 hover:text-gray-800"
-                                >
-                                  {product.title}
-                                </a>
-                              </h3>
-                            </div>
-                            <div className="mt-1 flex text-sm">
-                              <p className="text-gray-500">{product.color}</p>
-                              {product.size ? (
-                                <p className="ml-4 border-l border-gray-200 pl-4 text-gray-500">
-                                  {product.size}
-                                </p>
-                              ) : null}
-                            </div>
-                            <p className="mt-1 text-sm font-medium text-gray-900">
-                              {formatCurrencyINR(product.price)}
-                            </p>
+                {cartData.length <= 0 ? (
+                  <>
+                    <h1 className="font-bold text-xl text-gray-500 mt-5">
+                      Cart is Empty
+                    </h1>
+                  </>
+                ) : (
+                  <>
+                    <ul
+                      role="list"
+                      className="divide-y divide-gray-200 border-b border-t border-gray-200"
+                    >
+                      {cartData.map((product, productIdx) => (
+                        <li key={product.id} className="flex py-6 sm:py-10">
+                          <div className="flex-shrink-0">
+                            <Image
+                              src={product.photos[0].secure_url}
+                              alt={product.title}
+                              className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
+                              width={300}
+                              height={400}
+                            />
                           </div>
 
-                          <div className="mt-4 sm:mt-0 sm:pr-9">
-                            <label
-                              htmlFor={`quantity-${productIdx}`}
-                              className="sr-only"
-                            >
-                              Quantity, {product.name}
-                            </label>
-                            <select
-  id={`quantity-${productIdx}`}
-  name={`quantity-${productIdx}`}
-  value={product.quantity}
-  onChange={(e) => handleQuantityChange(e, product._id)}
-  className="max-w-full rounded-md border border-gray-300 py-1.5 text-left text-base font-medium leading-5 bg-white text-gray-600 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
->
-  <option value={1}>1</option>
-  <option value={2}>2</option>
-  <option value={3}>3</option>
-  <option value={4}>4</option>
-  <option value={5}>5</option>
-</select>
-                            <div className="absolute right-0 top-0">
-                              <button
-                                type="button"
-                                className="-m-2 inline-flex p-2 text-gray-400 hover:text-gray-500"
-                              >
-                                <span className="sr-only">Remove</span>
-                                <XMarkIcon
-                                  className="h-5 w-5"
+                          <div className="ml-4 flex flex-1 flex-col justify-between sm:ml-6">
+                            <div className="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
+                              <div>
+                                <div className="flex justify-between">
+                                  <h3 className="text-sm">
+                                    <a
+                                      href={product.href}
+                                      className="font-medium text-gray-700 hover:text-gray-800"
+                                    >
+                                      {product.title}
+                                    </a>
+                                  </h3>
+                                </div>
+                                <div className="mt-1 flex text-sm">
+                                  <p className="text-gray-500">
+                                    {product.color}
+                                  </p>
+                                  {product.size ? (
+                                    <p className="ml-4 border-l border-gray-200 pl-4 text-gray-500">
+                                      {product.size}
+                                    </p>
+                                  ) : null}
+                                </div>
+                                <p className="mt-1 text-sm font-medium text-gray-900">
+                                  {formatCurrencyINR(product.price)}
+                                </p>
+                              </div>
+
+                              <div className="mt-4 sm:mt-0 sm:pr-9">
+                                <label
+                                  htmlFor={`quantity-${productIdx}`}
+                                  className="sr-only"
+                                >
+                                  Quantity, {product.name}
+                                </label>
+                                <select
+                                  id={`quantity-${productIdx}`}
+                                  name={`quantity-${productIdx}`}
+                                  value={product.quantity}
+                                  onChange={(e) =>
+                                    handleQuantityChange(e, product._id)
+                                  }
+                                  className="max-w-full rounded-md border border-gray-300 py-1.5 text-left text-base font-medium leading-5 bg-white text-gray-600 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                                >
+                                  <option value={1}>1</option>
+                                  <option value={2}>2</option>
+                                  <option value={3}>3</option>
+                                  <option value={4}>4</option>
+                                  <option value={5}>5</option>
+                                </select>
+                                <div className="absolute right-0 top-0">
+                                  <button
+                                    type="button"
+                                    className="-m-2 inline-flex p-2 text-gray-400 hover:text-gray-500"
+                                  >
+                                    <span className="sr-only">Remove</span>
+                                    <XMarkIcon
+                                      className="h-5 w-5"
+                                      aria-hidden="true"
+                                    />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+
+                            <p className="mt-4 flex space-x-2 text-sm text-gray-700">
+                              {product.inStock ? (
+                                <CheckIcon
+                                  className="h-5 w-5 flex-shrink-0 text-green-500"
                                   aria-hidden="true"
                                 />
-                              </button>
-                            </div>
+                              ) : (
+                                <ClockIcon
+                                  className="h-5 w-5 flex-shrink-0 text-gray-300"
+                                  aria-hidden="true"
+                                />
+                              )}
+
+                              <span>
+                                {product.stock
+                                  ? "In stock"
+                                  : `Ships in ${product.leadTime}`}
+                              </span>
+                            </p>
                           </div>
-                        </div>
-
-                        <p className="mt-4 flex space-x-2 text-sm text-gray-700">
-                          {product.inStock ? (
-                            <CheckIcon
-                              className="h-5 w-5 flex-shrink-0 text-green-500"
-                              aria-hidden="true"
-                            />
-                          ) : (
-                            <ClockIcon
-                              className="h-5 w-5 flex-shrink-0 text-gray-300"
-                              aria-hidden="true"
-                            />
-                          )}
-
-                          <span>
-                            {product.stock
-                              ? "In stock"
-                              : `Ships in ${product.leadTime}`}
-                          </span>
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </section>
 
               {/* Order summary */}

@@ -105,8 +105,8 @@ export default function Example() {
   const [order, setOrder] = useState({});
   const { formatCurrencyINR } = useCurrency;
   const formattedDate = moment(order?.createdAt).format("DD MMM YYYY");
-  const {userData} = useSelector((state)=>({...state}))
-  console.log("user", userData.data.token)
+  const { userData } = useSelector((state) => ({ ...state }));
+  console.log("user", userData.data.token);
   useEffect(() => {
     orderServiceOperations
       .getOrdersByTransactionId(id, userData.data.token)
