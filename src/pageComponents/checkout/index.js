@@ -29,7 +29,9 @@ const AquaCheckoutComponent = () => {
   const { formatCurrencyINR } = useCurrency;
 
   const { getTotalPrice, changeItemQuantity } = useCart();
-  const [selectedAddress, setSelectedAddress] = useState(userData.data.user.selectedAddress);
+  const [selectedAddress, setSelectedAddress] = useState(
+    userData?.data?.user?.selectedAddress,
+  );
   const { openAuthDialog } = useDialog();
   const { closeCartDrawer } = useCartDrawer();
   const { EmptyCart, removeFromCart } = useProduct();
@@ -76,14 +78,11 @@ const AquaCheckoutComponent = () => {
     });
   };
 
-
-
   const hanldeDeleteAddress = () => {};
 
-
-  const handleRemoveProduct =(r) =>{
-    removeFromCart(r._id)
-  }
+  const handleRemoveProduct = (r) => {
+    removeFromCart(r._id);
+  };
 
   const handleCashOnDelivery = () => {
     const cashTransactionId = `AQTR-COD-${nanoid(5).toUpperCase()}D${moment(
@@ -120,7 +119,7 @@ const AquaCheckoutComponent = () => {
       orderServiceOperations
         .createCodOrder(newOrder)
         .then((res) => {
-          router.push(`/order/${res.data.data._id}`);
+          router.push(`/order/${res.data.data.transactionId}`);
         })
         .catch((err) => {
           console.log("order", err);
@@ -221,7 +220,7 @@ const AquaCheckoutComponent = () => {
                                 name="notification-method"
                                 type="radio"
                                 onChange={() => handleAddressChange(r.street)}
-                                checked={selectedAddress.street === r.street}
+                                checked={selectedAddress?.street === r?.street}
                                 className={`h-4 w-4 border-gray-300 focus:ring-indigo-600 ${selectedAddress === r.street ? "bg-indigo-600 text-white" : "bg-white text-gray-800"}`}
                               />
                               <label className="text-md ml-3 block text-sm font-medium leading-6 text-gray-900">
@@ -353,11 +352,13 @@ const AquaCheckoutComponent = () => {
                                     type="button"
                                     className="-m-2 inline-flex p-2 text-gray-400 hover:text-gray-500"
                                   >
-                                    <span  className="sr-only">Remove</span>
+                                    <span className="sr-only">Remove</span>
                                     <XMarkIcon
                                       className="h-5 w-5"
                                       aria-hidden="true"
-                                      onClick={()=>handleRemoveProduct(product)}
+                                      onClick={() =>
+                                        handleRemoveProduct(product)
+                                      }
                                     />
                                   </button>
                                 </div>

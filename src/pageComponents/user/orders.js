@@ -13,11 +13,13 @@ const AquaOrderComponent = () => {
 
   useEffect(() => {
     setLoading(true);
+    // console.log("token", userData.data.token)
     orderServiceOperations
-      .getOrdersByUserId(userData.data.user._id, userData.data.user.token)
+      .getOrdersByUserId(userData.data.user._id, userData.data.token)
       .then((res) => {
         setLoading(false);
         setOrders(res.data.data);
+        console.log("res", res.data.data);
       })
       .catch((err) => {
         setLoading(false);
@@ -28,6 +30,9 @@ const AquaOrderComponent = () => {
       });
   }, [userData.data.user._id, userData.data.user.token]); // Added empty dependency array
 
+  const sortedOrders = orders.sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+  );
   const getStatusBadge = (orderStatus) => {
     const statusClasses = {
       Pending: "bg-gray-100 text-gray-800",
@@ -51,7 +56,7 @@ const AquaOrderComponent = () => {
     <>
       <AquaDashboardComponent title={"Orders"}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {orders.length > 0 ? (
+          {sortedOrders.length > 0 ? (
             <>
               {orders.map((r, i) => (
                 <div

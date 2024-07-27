@@ -1,9 +1,10 @@
 import UserServiceOperations from "@/services/user";
 import useDialog from "@/utils/dialog";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import AquaToast from "@/components/reusables/react-toastify";
 import Image from "next/image";
+import debounce from "lodash.debounce";
 
 const AquaAuthMobileForm = ({ signup }) => {
   const [email, setEmail] = useState("");
@@ -38,40 +39,51 @@ const AquaAuthMobileForm = ({ signup }) => {
       });
   };
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
-  const handleEmailBlur = () => {
-    if (email.includes("@")) {
-      console.log("email", email);
-      UserServiceOperations.UserEmailOtp({ email })
-        .then((res) => {
-          setOtpShow(true);
-          AquaToast({
-            message: "Successfully sent OTP",
-            type: "success",
+  const requestOtp = useCallback(
+    debounce((newEmail) => {
+      if (isValidEmail(newEmail)) {
+        console.log("Valid email:", newEmail);
+        UserServiceOperations.UserEmailOtp({ email: newEmail })
+          .then((res) => {
+            setOtpShow(true);
+            AquaToast({
+              message: "Successfully sent OTP",
+              type: "success",
+            });
+            dispatch({
+              type: "SET_AUTH_STATUS_VISIBLE",
+              payload: !res.data.userExist,
+            });
+          })
+          .catch((err) => {
+            console.log(err);
+            setOtpShow(false);
+            AquaToast({
+              message: "Failed to send OTP",
+              type: "error",
+            });
+            dispatch({
+              type: "SET_AUTH_STATUS_VISIBLE",
+              payload: false,
+            });
           });
-          dispatch({
-            type: "SET_AUTH_STATUS_VISIBLE",
-            payload: !res.data.userExist,
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-          setOtpShow(false);
-          AquaToast({
-            message: "Failed to send OTP",
-            type: "error",
-          });
-          dispatch({
-            type: "SET_AUTH_STATUS_VISIBLE",
-            payload: false,
-          });
-        });
-    } else {
-      setOtpShow(false);
-    }
+      } else {
+        console.log("Invalid email:", newEmail);
+        setOtpShow(false);
+      }
+    }, 300), // Adjust debounce delay as needed
+    [],
+  );
+
+  const handleEmailChange = (e) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    requestOtp(newEmail);
   };
 
   return (
@@ -105,7 +117,6 @@ const AquaAuthMobileForm = ({ signup }) => {
                 type="email"
                 value={email}
                 onChange={handleEmailChange}
-                onBlur={handleEmailBlur}
                 placeholder="example@example.com"
                 className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
@@ -132,7 +143,7 @@ const AquaAuthMobileForm = ({ signup }) => {
           <div>
             <button
               type="submit"
-              className={`mt-2 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+              className={`mt-2 flex w-full items-center justify-center rounded-md border border-transparent px-8 py-3 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
                 !otpShow
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-indigo-600 hover:bg-indigo-700"

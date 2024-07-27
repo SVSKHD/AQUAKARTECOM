@@ -122,6 +122,85 @@ export default function Example() {
   };
   const [open, setOpen] = useState(false);
 
+  const getOrderStep = (orderStatus) => {
+    switch (orderStatus) {
+      case "Pending":
+        return 0;
+      case "Processing":
+        return 1;
+      case "Shipped":
+        return 2;
+      case "Delivered":
+        return 3;
+      case "Completed":
+        return 4;
+      case "Cancelled":
+        return -1; // Optional: handle cancelled status separately if needed
+      default:
+        return 0;
+    }
+  };
+
+  const AquaOrderTimeline = ({ order }) => {
+    const currentStep = getOrderStep(order.orderStatus);
+
+    return (
+      <div className="border-t border-gray-200 px-4 py-6 sm:px-6 lg:p-8">
+        <h4 className="sr-only">Status</h4>
+        <p className="text-sm font-medium text-gray-900">
+          {order.orderStatus} on{" "}
+          <time dateTime={order.updatedAt}>
+            {new Date(order.updatedAt).toLocaleDateString()}
+          </time>
+        </p>
+        <div aria-hidden="true" className="mt-6">
+          <div className="overflow-hidden rounded-full bg-gray-200">
+            <div
+              style={{
+                width: `calc((${currentStep} * 2 + 1) / 8 * 100%)`,
+              }}
+              className="h-2 rounded-full bg-indigo-600"
+            />
+          </div>
+          <div className="mt-6 hidden grid-cols-4 text-sm font-medium text-gray-600 sm:grid">
+            <div
+              className={classNames(
+                "text-center",
+                currentStep >= 0 && "text-indigo-600",
+              )}
+            >
+              Order placed
+            </div>
+            <div
+              className={classNames(
+                "text-center",
+                currentStep >= 1 && "text-indigo-600",
+              )}
+            >
+              Processing
+            </div>
+            <div
+              className={classNames(
+                "text-center",
+                currentStep >= 2 && "text-indigo-600",
+              )}
+            >
+              Shipped
+            </div>
+            <div
+              className={classNames(
+                "text-right",
+                currentStep >= 3 && "text-indigo-600",
+              )}
+            >
+              Delivered
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="bg-gray-50">
       {/* Mobile menu */}
@@ -395,14 +474,22 @@ export default function Example() {
                           <dt className="font-medium text-gray-900">
                             Delivery address
                           </dt>
+                          <dd className="mt-3 text-gray-500">
+                            <p>{order.shippingAddress.street}</p>
+                            <p>
+                              {order.shippingAddress.city},{" "}
+                              {order.shippingAddress.state}
+                            </p>
+                            <p>{order.shippingAddress.postalCode}</p>
+                          </dd>
                         </div>
                         <div>
                           <dt className="font-medium text-gray-900">
                             Shipping updates
                           </dt>
                           <dd className="mt-3 space-y-3 text-gray-500">
-                            <p>{product.email}</p>
-                            <p>{product.phone}</p>
+                            <p>{order.email}</p>
+                            <p>{order.phone}</p>
                             <button
                               type="button"
                               className="font-medium text-indigo-600 hover:text-indigo-500"
@@ -415,50 +502,7 @@ export default function Example() {
                     </div>
                   </div>
 
-                  <div className="border-t border-gray-200 px-4 py-6 sm:px-6 lg:p-8">
-                    <h4 className="sr-only">Status</h4>
-                    <p className="text-sm font-medium text-gray-900">
-                      {product.status} on{" "}
-                      <time dateTime={product.datetime}>{product.date}</time>
-                    </p>
-                    <div aria-hidden="true" className="mt-6">
-                      <div className="overflow-hidden rounded-full bg-gray-200">
-                        <div
-                          style={{
-                            width: `calc((${product.step} * 2 + 1) / 8 * 100%)`,
-                          }}
-                          className="h-2 rounded-full bg-indigo-600"
-                        />
-                      </div>
-                      <div className="mt-6 hidden grid-cols-4 text-sm font-medium text-gray-600 sm:grid">
-                        <div className="text-indigo-600">Order placed</div>
-                        <div
-                          className={classNames(
-                            product.step > 0 ? "text-indigo-600" : "",
-                            "text-center",
-                          )}
-                        >
-                          Processing
-                        </div>
-                        <div
-                          className={classNames(
-                            product.step > 1 ? "text-indigo-600" : "",
-                            "text-center",
-                          )}
-                        >
-                          Shipped
-                        </div>
-                        <div
-                          className={classNames(
-                            product.step > 2 ? "text-indigo-600" : "",
-                            "text-right",
-                          )}
-                        >
-                          Delivered
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  {AquaOrderTimeline({ order })}
                 </div>
               ))}
             </div>
@@ -466,22 +510,24 @@ export default function Example() {
 
           {/* Billing */}
           {order?.orderType === "Cash On Delivery" ? (
-            <dl className="space-y-6 border-t border-gray-200 pt-10 text-sm">
-              <div className="flex justify-between">
-                <dt className="font-medium text-gray-900">Total</dt>
-                <dd className="text-gray-900 font-bold text-green-600">
-                  {formatCurrencyINR(order.totalAmount)}
-                </dd>
-              </div>
-            </dl>
+            <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+              <dl className="space-y-6 border-t border-gray-200 pt-10 text-lg">
+                <div className="flex justify-between items-center">
+                  <dt className="font-medium text-gray-900 text-xl">Total</dt>
+                  <dd className="text-gray-900 font-bold text-2xl text-green-600">
+                    {formatCurrencyINR(order.totalAmount)}
+                  </dd>
+                </div>
+              </dl>
+            </div>
           ) : (
             <section aria-labelledby="summary-heading" className="mt-16">
               <h2 id="summary-heading" className="sr-only">
                 Billing Summary
               </h2>
 
-              <div className="bg-gray-100 px-4 py-6 sm:rounded-lg sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8 lg:py-8">
-                <dl className="grid grid-cols-2 gap-6 text-sm sm:grid-cols-2 md:gap-x-8 lg:col-span-7">
+              <div className="bg-white rounded-lg shadow-md p-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8 lg:py-8">
+                <dl className="grid grid-cols-2 gap-6 text-lg sm:grid-cols-2 md:gap-x-8 lg:col-span-7">
                   <div>
                     <dt className="font-medium text-gray-900">
                       Billing address
@@ -521,7 +567,7 @@ export default function Example() {
                   </div>
                 </dl>
 
-                <dl className="mt-8 divide-y divide-gray-200 text-sm lg:col-span-5 lg:mt-0">
+                <dl className="mt-8 divide-y divide-gray-200 text-lg lg:col-span-5 lg:mt-0">
                   <div className="flex items-center justify-between pb-4">
                     <dt className="text-gray-600">Subtotal</dt>
                     <dd className="font-medium text-gray-900">$72</dd>

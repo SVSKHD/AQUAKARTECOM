@@ -86,17 +86,17 @@ const useProduct = () => {
       });
       return;
     }
-  
+
     // Check if the product is in the cart
     const isProductInCart = cartData.some((item) => item._id === productId);
-  
+
     if (isProductInCart) {
       // Dispatch action to remove the product from the cart
       dispatch({
         type: "REMOVE_FROM_CART",
         payload: productId,
       });
-  
+
       // Show toast notification for successful removal
       AquaToast({
         message: "Successfully removed from cart",
@@ -117,7 +117,7 @@ const useProduct = () => {
     AddToFav,
     RemoveFromFav,
     EmptyCart,
-    removeFromCart
+    removeFromCart,
   };
 };
 

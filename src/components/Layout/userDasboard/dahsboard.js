@@ -56,7 +56,7 @@ export default function AquaDashboardComponent(props) {
 
   return (
     <>
-    <AquaCartAddressDialog/>
+      <AquaCartAddressDialog />
       <div className="min-h-full">
         <Disclosure as="nav" className="border-b border-gray-200 bg-white">
           {({ open }) => (

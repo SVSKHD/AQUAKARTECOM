@@ -1,9 +1,10 @@
 import UserServiceOperations from "@/services/user";
 import useDialog from "@/utils/dialog";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import Image from "next/image";
 import AquaToast from "@/components/reusables/react-toastify";
+import debounce from "lodash.debounce";
 
 const AquaAuthMobileForm = ({ signup }) => {
   const [phone, setPhone] = useState("");
@@ -40,41 +41,52 @@ const AquaAuthMobileForm = ({ signup }) => {
       });
   };
 
-  const handlePhoneChange = (e) => {
-    const value = e.target.value;
-    setPhone(value);
+  const isValidPhone = (phone) => {
+    const phoneRegex = /^\d{10}$/;
+    return phoneRegex.test(phone);
   };
 
-  const handlePhoneBlur = () => {
-    if (phone.length === 10) {
-      UserServiceOperations.UserMobileOtp({ phone })
-        .then((res) => {
-          setOtpShow(true);
-          AquaToast({
-            message: "Successfully sent OTP",
-            messageType: "success",
-          });
-          dispatch({
-            type: "SET_AUTH_STATUS_VISIBLE",
-            payload: !res.data.userExist,
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-          setOtpShow(false);
-          AquaToast({
-            message: "Failed to send OTP",
-            type: "error",
-          });
+  const requestOtp = useCallback(
+    debounce((newPhone) => {
+      if (isValidPhone(newPhone)) {
+        console.log("Valid phone:", newPhone);
+        UserServiceOperations.UserMobileOtp({ phone: newPhone })
+          .then((res) => {
+            setOtpShow(true);
+            AquaToast({
+              message: "Successfully sent OTP",
+              type: "success",
+            });
+            dispatch({
+              type: "SET_AUTH_STATUS_VISIBLE",
+              payload: !res.data.userExist,
+            });
+          })
+          .catch((err) => {
+            console.log(err);
+            setOtpShow(false);
+            AquaToast({
+              message: "Failed to send OTP",
+              type: "error",
+            });
 
-          dispatch({
-            type: "SET_AUTH_STATUS_VISIBLE",
-            payload: false,
+            dispatch({
+              type: "SET_AUTH_STATUS_VISIBLE",
+              payload: false,
+            });
           });
-        });
-    } else {
-      setOtpShow(false);
-    }
+      } else {
+        console.log("Invalid phone:", newPhone);
+        setOtpShow(false);
+      }
+    }, 300), // Adjust debounce delay as needed
+    [],
+  );
+
+  const handlePhoneChange = (e) => {
+    const newPhone = e.target.value;
+    setPhone(newPhone);
+    requestOtp(newPhone);
   };
 
   return (
@@ -106,10 +118,9 @@ const AquaAuthMobileForm = ({ signup }) => {
                 id="phone-number"
                 name="phone-number"
                 maxLength="10"
-                type="number"
+                type="text"
                 value={phone}
                 onChange={handlePhoneChange}
-                onBlur={handlePhoneBlur}
                 placeholder="000-00-00000"
                 className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
