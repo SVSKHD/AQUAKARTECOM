@@ -15,6 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
+import AquaCartAddressDialog from "../../common/commonDialogs/cartAddress";
 
 const user = {
   name: "Tom Cook",
@@ -55,6 +56,7 @@ export default function AquaDashboardComponent(props) {
 
   return (
     <>
+    <AquaCartAddressDialog/>
       <div className="min-h-full">
         <Disclosure as="nav" className="border-b border-gray-200 bg-white">
           {({ open }) => (

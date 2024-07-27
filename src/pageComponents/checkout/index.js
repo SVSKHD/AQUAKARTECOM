@@ -29,10 +29,10 @@ const AquaCheckoutComponent = () => {
   const { formatCurrencyINR } = useCurrency;
 
   const { getTotalPrice, changeItemQuantity } = useCart();
-  const [selectedAddress, setSelectedAddress] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(userData.data.user.selectedAddress);
   const { openAuthDialog } = useDialog();
   const { closeCartDrawer } = useCartDrawer();
-  const { EmptyCart } = useProduct();
+  const { EmptyCart, removeFromCart } = useProduct();
   const handleAddressChange = (address) => {
     setSelectedAddress(address);
     AquaToast({ message: "Succesfully selected the address", type: "success" });
@@ -76,7 +76,14 @@ const AquaCheckoutComponent = () => {
     });
   };
 
+
+
   const hanldeDeleteAddress = () => {};
+
+
+  const handleRemoveProduct =(r) =>{
+    removeFromCart(r._id)
+  }
 
   const handleCashOnDelivery = () => {
     const cashTransactionId = `AQTR-COD-${nanoid(5).toUpperCase()}D${moment(
@@ -164,18 +171,8 @@ const AquaCheckoutComponent = () => {
     }
   };
 
-  const handleEditDialog = () => {
-    console.log("edit");
-    dispatch({
-      type: "SET_ADDRESS_DIALOG",
-      payload: true,
-    });
-    dispatch({
-      type: "SET_ADDRESS_DATA",
-      payload: null,
-    });
-  };
   const handleDeleteAddress = () => {};
+
   return (
     <AquaLayout seo={seo}>
       {!userData || userData === null ? (
@@ -205,6 +202,13 @@ const AquaCheckoutComponent = () => {
                 <h1 className="text-xl mt-10 font-bold tracking-tight text-gray-500 sm:text-xl">
                   User Addresses
                 </h1>
+                <button
+                  onClick={() => handleAddAddress()}
+                  type="button"
+                  className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                >
+                  Add Address
+                </button>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {userData.data.user.addresses.map((r, i) => (
                     <>
@@ -217,7 +221,7 @@ const AquaCheckoutComponent = () => {
                                 name="notification-method"
                                 type="radio"
                                 onChange={() => handleAddressChange(r.street)}
-                                checked={selectedAddress === r.street}
+                                checked={selectedAddress.street === r.street}
                                 className={`h-4 w-4 border-gray-300 focus:ring-indigo-600 ${selectedAddress === r.street ? "bg-indigo-600 text-white" : "bg-white text-gray-800"}`}
                               />
                               <label className="text-md ml-3 block text-sm font-medium leading-6 text-gray-900">
@@ -257,20 +261,14 @@ const AquaCheckoutComponent = () => {
                     </>
                   ))}
                 </div>
-                <button
-                  onClick={() => handleAddAddress()}
-                  type="button"
-                  className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                >
-                  Add Address
-                </button>
+
                 {cartData.length > 0 ? (
                   <button
                     type="button"
                     className="rounded-md bg-red-600 m-4 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
                     onClick={() => EmptyCart()}
                   >
-                    Remove All
+                    Remove All Products
                   </button>
                 ) : (
                   ""
@@ -355,10 +353,11 @@ const AquaCheckoutComponent = () => {
                                     type="button"
                                     className="-m-2 inline-flex p-2 text-gray-400 hover:text-gray-500"
                                   >
-                                    <span className="sr-only">Remove</span>
+                                    <span  className="sr-only">Remove</span>
                                     <XMarkIcon
                                       className="h-5 w-5"
                                       aria-hidden="true"
+                                      onClick={()=>handleRemoveProduct(product)}
                                     />
                                   </button>
                                 </div>

@@ -77,6 +77,39 @@ const useProduct = () => {
       type: "info",
     });
   };
+  const removeFromCart = (productId) => {
+    // Check if productId is provided
+    if (!productId) {
+      AquaToast({
+        message: "Product ID is required",
+        type: "error",
+      });
+      return;
+    }
+  
+    // Check if the product is in the cart
+    const isProductInCart = cartData.some((item) => item._id === productId);
+  
+    if (isProductInCart) {
+      // Dispatch action to remove the product from the cart
+      dispatch({
+        type: "REMOVE_FROM_CART",
+        payload: productId,
+      });
+  
+      // Show toast notification for successful removal
+      AquaToast({
+        message: "Successfully removed from cart",
+        type: "info",
+      });
+    } else {
+      // Show toast notification if the product was not found in the cart
+      AquaToast({
+        message: "Product not found in cart",
+        type: "error",
+      });
+    }
+  };
   return {
     AddAndRemoveCart,
     AddAndRemoveFav,
@@ -84,6 +117,7 @@ const useProduct = () => {
     AddToFav,
     RemoveFromFav,
     EmptyCart,
+    removeFromCart
   };
 };
 
