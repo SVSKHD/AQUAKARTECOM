@@ -415,7 +415,6 @@ export default function Example() {
                   ? "Cash On Delivery"
                   : "Online Payment"}
               </h1>
-              {/* {JSON.stringify(order)} */}
               <Link
                 href="#"
                 className="hidden text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:block"
