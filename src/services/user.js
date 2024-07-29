@@ -10,8 +10,8 @@ const UserEmailOtp = async (email) =>
   await axios.post(`${BASE}/email/login`, email);
 const UserEmailVerify = async (data) =>
   await axios.post(`${BASE}/verify/email/otp`, data);
-const UserUpdateDetails = async (data, token) =>
-  await axios.post(`${BASE}/user/update-details`, data, {
+const UserUpdateDetails = async (id,data, token) =>
+  await axios.post(`${BASE}/user/update-details/${id}`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

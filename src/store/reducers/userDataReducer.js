@@ -11,14 +11,17 @@ export const userReducer = (state = null, action) => {
           ...action.payload,
         },
       };
-    case "UPDATE_SELECTED_ADDRESS":
-      return {
-        ...state,
-        user: {
-          ...state.user,
-          selectedAddress: action.payload.selectedAddress,
-        },
-      };
+      case "UPDATE_SELECTED_ADDRESS":
+        const newState = {
+          ...state,
+          user: {
+            ...state.user,
+            selectedAddress: action.payload.selectedAddress,
+          },
+        };
+        console.log("Updated state", newState);
+        return newState;
+      
     case "UPDATE_USER_ADDRESSES":
       return {
         ...state,

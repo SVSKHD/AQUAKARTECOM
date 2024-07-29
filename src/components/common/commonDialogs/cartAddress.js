@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import AquaResponsiveDialog from "@/components/reusables/dialog";
 import { useSelector, useDispatch } from "react-redux";
+import UserServiceOperations from "@/services/user";
 
 const AquaAddressDialog = ({ editData }) => {
   const [address, setAddress] = useState({
@@ -10,7 +11,7 @@ const AquaAddressDialog = ({ editData }) => {
     postalCode: "",
   });
   const dispatch = useDispatch();
-  const { addressDialog, addressData } = useSelector((state) => ({
+  const { addressDialog, addressData ,userData} = useSelector((state) => ({
     ...state,
   }));
   useEffect(() => {
@@ -32,8 +33,48 @@ const AquaAddressDialog = ({ editData }) => {
   };
 
   const handleAddressAdd = () => {
-    console.log("add", address);
-    // Call the API to add the address
+    const userAddress = userData.data.user.addresses;
+  
+    // Check if the address already exists in the array
+    const addressExists = userAddress.some(
+      (addr) =>
+        addr.street === address.street &&
+        addr.city === address.city &&
+        addr.state === address.state &&
+        addr.postalCode === address.postalCode
+    );
+  
+    // If the address does not exist, add it to the array
+    if (!addressExists) {
+      userAddress.push(address);
+      console.log("modified-address", userAddress, userData.data.token);
+      
+      // Prepare the payload
+      const payload = {
+        newDetails: {
+          addresses: userAddress
+        }
+      };
+  
+      // Call the API to update the user details
+      UserServiceOperations.UserUpdateDetails(userData.data.user._id, payload, userData.data.token).then((res) => {
+        console.log(res.data);
+        
+        // Dispatch the action to update the user details in the store
+        dispatch({
+          type: "UPDATE_USER_ADDRESSES",
+          payload: {
+            addresses: res.data.addresses
+          }
+        });
+        dispatch({
+          type: "SET_ADDRESS_DIALOG",
+          payload: false,
+        });
+      });
+    } else {
+      console.log("Address already exists in the array.");
+    }
   };
 
   const handleAddressEdit = () => {

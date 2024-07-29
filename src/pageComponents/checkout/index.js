@@ -21,6 +21,9 @@ import Image from "next/image";
 import useDialog from "@/utils/dialog";
 import useCartDrawer from "../../utils/drawer";
 import useProduct from "@/utils/product";
+import AquaProductCard from "@/components/cards/productCard";
+import AquaPromptDialog from "@/components/common/promptDialogs/promtDialog";
+import UserServiceOperations from "@/services/user";
 
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
@@ -30,15 +33,36 @@ const AquaCheckoutComponent = () => {
 
   const { getTotalPrice, changeItemQuantity } = useCart();
   const [selectedAddress, setSelectedAddress] = useState(
-    userData?.data?.user?.selectedAddress,
+    userData?.user?.selectedAddress,
   );
   const { openAuthDialog } = useDialog();
+  const [prompt, setPromt] = useState(false)
+  const [selectedtAddressChange, setSelectedAddressChange] =useState({}) 
   const { closeCartDrawer } = useCartDrawer();
   const { EmptyCart, removeFromCart } = useProduct();
-  const handleAddressChange = (address) => {
-    setSelectedAddress(address);
-    AquaToast({ message: "Succesfully selected the address", type: "success" });
-  };
+
+
+const handleAddressChange = (address) => {
+  setSelectedAddress(address);
+  
+  UserServiceOperations.UserUpdateDetails(
+    userData.data.user._id,
+    { newDetails: { selectedAddress: address } },
+    userData.data.token
+  )
+    .then((res) => {
+      AquaToast({ message: "Successfully selected the address", type: "success" });
+      console.log("Updated selected address:", res.data.selectedAddress);
+      dispatch({
+        type: "UPDATE_SELECTED_ADDRESS",
+        payload: { selectedAddress: address },
+      });
+    })
+    .catch((err) => {
+      console.error("Error updating selected address:", err);
+      AquaToast({ message: "Failed to update address", type: "error" });
+    });
+};
 
   //especially to not open cart drawer in checkout page.
   useEffect(() => {
@@ -104,8 +128,8 @@ const AquaCheckoutComponent = () => {
       paymentMethod: "Cash On Delivery",
       paymentStatus: "Pending",
       currency: "INR",
-      billingAddress: userData?.data?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
-      shippingAddress: userData?.data?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
+      billingAddress: selectedAddress, // Ensure this is correctly assigned using safe access
+      shippingAddress: selectedAddress, // Ensure this is correctly assigned using safe access
       shippingMethod: "Standard",
       shippingCost: 50, // Example fixed cost
       estimatedDelivery: new Date(
@@ -113,6 +137,7 @@ const AquaCheckoutComponent = () => {
       ).toISOString(), // Adding 7 days // Adding 7 days for delivery
       orderStatus: "Processing",
     };
+    console.log("data check",newOrder)
     if (!selectedAddress) {
       AquaToast({ message: "Please select an address", type: "error" });
     } else {
@@ -170,10 +195,19 @@ const AquaCheckoutComponent = () => {
     }
   };
 
-  const handleDeleteAddress = () => {};
+  const handleDeleteAddress = (e,r) => {
+    e.preventDefault()
+    setPromt(true)
+    setSelectedAddressChange(r)
+    if(selectedtAddressChange){
+      setPromt(!prompt)
+      console.log("selected address",selectedtAddressChange)
+    }
+  };
 
   return (
     <AquaLayout seo={seo}>
+      <AquaPromptDialog open={prompt} close={()=>setPromt(!prompt)} title={"Delete Confirmation"} handleCancel={()=>setPromt(!prompt)} handleOk={(e)=>handleDeleteAddress(e,selectedtAddressChange)}/>
       {!userData || userData === null ? (
         <>
           <div className="bg-white p-40 justify-center text-center">
@@ -187,12 +221,14 @@ const AquaCheckoutComponent = () => {
           </div>
         </>
       ) : (
+        
         <div className="bg-white">
+          {JSON.stringify(userData.data.user.addresses)}
+          {JSON.stringify(userData.data.user.selectedAddress)}
           <div className="mx-auto max-w-2xl px-4 pb-24 pt-16 sm:px-6 lg:max-w-7xl lg:px-8">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
               Shopping Cart
             </h1>
-
             <form className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
               <section aria-labelledby="cart-heading" className="lg:col-span-7">
                 <h2 id="cart-heading" className="sr-only">
@@ -219,8 +255,8 @@ const AquaCheckoutComponent = () => {
                                 value={r.street}
                                 name="notification-method"
                                 type="radio"
-                                onChange={() => handleAddressChange(r.street)}
-                                checked={selectedAddress?.street === r?.street}
+                                onChange={() => handleAddressChange(r)}
+                                checked={JSON.stringify(selectedAddress) === JSON.stringify(r)}
                                 className={`h-4 w-4 border-gray-300 focus:ring-indigo-600 ${selectedAddress === r.street ? "bg-indigo-600 text-white" : "bg-white text-gray-800"}`}
                               />
                               <label className="text-md ml-3 block text-sm font-medium leading-6 text-gray-900">
@@ -246,7 +282,7 @@ const AquaCheckoutComponent = () => {
                             </button>
                             <button
                               className="flex items-center text-red-500 hover:text-red-700"
-                              onClick={handleDeleteAddress}
+                              onClick={(e)=>handleDeleteAddress(e,r)}
                             >
                               <TrashIcon
                                 className="h-5 w-5 mr-1"
