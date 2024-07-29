@@ -401,7 +401,7 @@ const AquaHomeComponent = () => {
                 <Image
                   height={1200}
                   width={728}
-                  src="https://tailwindui.com/img/ecommerce-images/home-page-01-hero-full-width.jpg"
+                  src="https://res.cloudinary.com/aquakartproducts/image/upload/v1707838737/products/jbtrssziykp98iiklslk.jpg"
                   alt="Aquakart"
                   className="h-full w-full object-cover object-center"
                 />
@@ -419,11 +419,10 @@ const AquaHomeComponent = () => {
                 </h1>
                 <p className="mt-4 text-xl text-white">
                   The new arrivals have, well, newly arrived. Check out the
-                  latest options from our summer small-batch release while
-                  they're still in stock.
+                  latest options
                 </p>
                 <Link
-                  href="#"
+                  href="/shop"
                   className="mt-8 inline-block rounded-md border border-transparent bg-white px-8 py-3 text-base font-medium text-gray-900 hover:bg-gray-100"
                 >
                   Shop New Arrivals
