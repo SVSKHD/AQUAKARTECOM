@@ -185,14 +185,14 @@ const handleAddressChange = (address) => {
         orderStatus: "Processing",
       };
       console.log("data", newOrder)
-      // if (!selectedAddress) {
-      //   AquaToast({ message: "Please select an address", type: "error" });
-      // } else {
-      //   orderServiceOperations.createPhonePePayOrder(newOrder).then((res) => {
-      //     console.log("res", res.data);
-      //     window.location.href = res.data.url;
-      //   });
-      // }
+      if (!selectedAddress) {
+        AquaToast({ message: "Please select an address", type: "error" });
+      } else {
+        orderServiceOperations.createPhonePePayOrder(newOrder).then((res) => {
+          console.log("res", res.data);
+          window.location.href = res.data.url;
+        });
+      }
     }
   };
 
