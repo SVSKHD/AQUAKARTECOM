@@ -175,8 +175,8 @@ const handleAddressChange = (address) => {
         paymentMethod: "OTHER THAN CASH ON DELIVERY",
         paymentStatus: "Pending",
         currency: "INR",
-        billingAddress: userData?.data?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
-        shippingAddress: userData?.data?.user?.selectedAddress, // Ensure this is correctly assigned using safe access
+        billingAddress: selectedAddress, // Ensure this is correctly assigned using safe access
+        shippingAddress: selectedAddress, // Ensure this is correctly assigned using safe access
         shippingMethod: "Standard",
         shippingCost: 50, // Example fixed cost
         estimatedDelivery: new Date(
@@ -184,14 +184,15 @@ const handleAddressChange = (address) => {
         ).toISOString(), // Adding 7 days
         orderStatus: "Processing",
       };
-      if (!selectedAddress) {
-        AquaToast({ message: "Please select an address", type: "error" });
-      } else {
-        orderServiceOperations.createPhonePePayOrder(newOrder).then((res) => {
-          console.log("res", res.data);
-          window.location.href = res.data.url;
-        });
-      }
+      console.log("data", newOrder)
+      // if (!selectedAddress) {
+      //   AquaToast({ message: "Please select an address", type: "error" });
+      // } else {
+      //   orderServiceOperations.createPhonePePayOrder(newOrder).then((res) => {
+      //     console.log("res", res.data);
+      //     window.location.href = res.data.url;
+      //   });
+      // }
     }
   };
 
@@ -223,8 +224,8 @@ const handleAddressChange = (address) => {
       ) : (
         
         <div className="bg-white">
-          {JSON.stringify(userData.data.user.addresses)}
-          {JSON.stringify(userData.data.user.selectedAddress)}
+          {/* {JSON.stringify(userData.data.user.addresses)} */}
+          {/* {JSON.stringify(userData.data.user.selectedAddress)} */}
           <div className="mx-auto max-w-2xl px-4 pb-24 pt-16 sm:px-6 lg:max-w-7xl lg:px-8">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
               Shopping Cart
