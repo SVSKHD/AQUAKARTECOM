@@ -20,7 +20,7 @@ const getOrdersByTransactionId = (id, token) => {
 const createPhonePePayOrder = (data) => axios.post(`${BASE}/order/pay`, data);
 
 const verifyPayment = (id, token) => {
-  return axios.get(`${BASE}/order/phonepe-verify/${id}`, {
+  return axios.post(`${BASE}/phonepe-verify/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

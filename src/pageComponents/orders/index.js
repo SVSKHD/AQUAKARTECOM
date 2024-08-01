@@ -28,6 +28,7 @@ import useCurrency from "@/utils/currency";
 import moment from "moment";
 import Link from "next/link";
 import { useSelector } from "react-redux";
+import AquaToast from "@/components/reusables/react-toastify";
 
 const currencies = ["CAD", "USD", "AUD", "EUR", "GBP"];
 const navigation = {
@@ -113,7 +114,12 @@ export default function Example() {
     if (id) {
       const paymentMode = id.includes('PGPP');
       const CODMode = id.includes('COD');
-      orderServiceOperations.verifyPayment(id,userData.data.token)
+      orderServiceOperations.verifyPayment(id,userData.data.token).then((res)=>{
+        setOrder(res.data.data)
+      })
+      .catch(()=>{
+        AquaToast({message:"Opps! something has gone wrong.",type:"error"})
+      })
       if (paymentMode) {
         console.log("id", id);
         setMode((mode) => ({ ...mode, payment: true }));
@@ -124,7 +130,7 @@ export default function Example() {
             setOrder(res.data.data);
           })
           .catch(() => {
-            console.log("err");
+            AquaToast({message:"Opps! something has gone wrong.",type:"error"})
           });
         setMode((mode) => ({ ...mode, COD: true }));
       }
