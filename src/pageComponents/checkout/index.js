@@ -156,7 +156,7 @@ const handleAddressChange = (address) => {
     if (cartData.length <= 0) {
       AquaToast({ message: "Please add products to cart", type: "info" });
     } else {
-      const transactionId = `AQTR-${nanoid(5).toUpperCase()}D${moment(
+      const transactionId = `AQTR-PGPP${nanoid(5).toUpperCase()}D${moment(
         new Date(),
       ).format("DDMMYYYY")}`;
       const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
