@@ -189,8 +189,8 @@ const handleAddressChange = (address) => {
         AquaToast({ message: "Please select an address", type: "error" });
       } else {
         orderServiceOperations.createPhonePePayOrder(newOrder).then((res) => {
-          console.log("res", res.data);
-          window.location.href = res.data.url;
+          console.log("res", res.url);
+          window.location.href = res.url;
         });
       }
     }
