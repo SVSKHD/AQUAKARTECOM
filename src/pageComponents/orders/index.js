@@ -103,19 +103,32 @@ export default function Example() {
   const router = useRouter();
   const { id } = router.query;
   const [order, setOrder] = useState({});
+  const [mode, setMode] = useState({COD:false, payment:false})
   const { formatCurrencyINR } = useCurrency;
   const formattedDate = moment(order?.createdAt).format("DD MMM YYYY");
   const { userData } = useSelector((state) => ({ ...state }));
+  
   console.log("user", userData.data.token);
   useEffect(() => {
-    orderServiceOperations
-      .getOrdersByTransactionId(id, userData.data.token)
-      .then((res) => {
-        setOrder(res.data.data);
-      })
-      .catch(() => {
-        console.log("err");
-      });
+    if (id) {
+      const paymentMode = id.includes('PGPP');
+      const CODMode = id.includes('COD');
+      
+      if (paymentMode) {
+        console.log("id", id);
+        setMode((mode) => ({ ...mode, payment: true }));
+      } else if (CODMode) {
+        orderServiceOperations
+          .getOrdersByTransactionId(id, userData.data.token)
+          .then((res) => {
+            setOrder(res.data.data);
+          })
+          .catch(() => {
+            console.log("err");
+          });
+        setMode((mode) => ({ ...mode, COD: true }));
+      }
+    }
   }, [id, userData]);
   const Seo = {
     title: "Aquakart | orders",
