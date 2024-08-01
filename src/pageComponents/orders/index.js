@@ -113,7 +113,7 @@ export default function Example() {
     if (id) {
       const paymentMode = id.includes('PGPP');
       const CODMode = id.includes('COD');
-      
+      orderServiceOperations.verifyPayment(id,userData.data.token)
       if (paymentMode) {
         console.log("id", id);
         setMode((mode) => ({ ...mode, payment: true }));
