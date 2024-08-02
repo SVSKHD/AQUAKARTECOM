@@ -223,12 +223,15 @@ export default function AquaDynamicProductComponent() {
                       )}
                     </button>
                   </div>
-                  <a
-                    href="/checkout"
-                    className="flex w-full p-4 font-bold text-xl mb-5 justify-center rounded-md bg-indigo-600 px-3 py-13 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  >
-                    Buy Now
-                  </a>
+                  {cart && (
+                    <a
+                      href="/checkout"
+                      className="flex w-full p-4 font-bold text-xl mb-5 justify-center rounded-md bg-indigo-600 px-3 py-13 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    >
+                      Buy Now
+                    </a>
+                  )}
+
                   <div
                     className="space-y-6 text-base text-gray-700"
                     dangerouslySetInnerHTML={{

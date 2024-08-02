@@ -33,7 +33,9 @@ const getOrdersByTransactionId = async (id, token) => {
     });
     return response.data;
   } catch (error) {
-    throw new Error(`Error fetching orders by transaction ID: ${error.message}`);
+    throw new Error(
+      `Error fetching orders by transaction ID: ${error.message}`,
+    );
   }
 };
 
@@ -48,11 +50,15 @@ const createPhonePePayOrder = async (data) => {
 
 const verifyPayment = async (id, token) => {
   try {
-    const response = await axios.post(`${BASE}/phonepe-verify/${id}`, {}, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+    const response = await axios.post(
+      `${BASE}/phonepe-verify/${id}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
     return response.data;
   } catch (error) {
     throw new Error(`Error verifying payment: ${error.message}`);

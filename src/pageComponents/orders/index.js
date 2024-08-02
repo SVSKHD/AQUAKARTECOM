@@ -33,8 +33,6 @@ import AquaBadge from "@/components/reusables/badge";
 import AquaPaymentDetails from "@/components/utils/paymentTypeDetails";
 import useProduct from "@/utils/product";
 
-
-
 const currencies = ["CAD", "USD", "AUD", "EUR", "GBP"];
 const navigation = {
   categories: [
@@ -107,29 +105,34 @@ function classNames(...classes) {
 
 export default function Example() {
   const { EmptyCart } = useProduct();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const router = useRouter();
   const { id } = router.query;
   const [order, setOrder] = useState({});
-  const [mode, setMode] = useState({COD:false, payment:false})
+  const [mode, setMode] = useState({ COD: false, payment: false });
   const { formatCurrencyINR } = useCurrency;
   const formattedDate = moment(order?.createdAt).format("DD MMM YYYY");
   const { userData } = useSelector((state) => ({ ...state }));
-  
+
   useEffect(() => {
     if (id) {
-      const paymentMode = id.includes('PGPP');
-      const CODMode = id.includes('COD');
-      orderServiceOperations.verifyPayment(id,userData.data.token).then((res)=>{
-        console.log(res.order)
-        setOrder(res.order)
-        dispatch({
-          type: "EMPTY_CART",
+      const paymentMode = id.includes("PGPP");
+      const CODMode = id.includes("COD");
+      orderServiceOperations
+        .verifyPayment(id, userData.data.token)
+        .then((res) => {
+          console.log(res.order);
+          setOrder(res.order);
+          dispatch({
+            type: "EMPTY_CART",
+          });
+        })
+        .catch(() => {
+          AquaToast({
+            message: "Opps! something has gone wrong.",
+            type: "error",
+          });
         });
-      })
-      .catch(()=>{
-        AquaToast({message:"Opps! something has gone wrong.",type:"error"})
-      })
       if (paymentMode) {
         console.log("id", id);
         setMode((mode) => ({ ...mode, payment: true }));
@@ -143,7 +146,10 @@ export default function Example() {
             });
           })
           .catch(() => {
-            AquaToast({message:"Opps! something has gone wrong.",type:"error"})
+            AquaToast({
+              message: "Opps! something has gone wrong.",
+              type: "error",
+            });
           });
         setMode((mode) => ({ ...mode, COD: true }));
       }
@@ -235,17 +241,16 @@ export default function Example() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Failed':
-        return 'red';
-      case 'Paid':
-        return 'green';
-      case 'Pending':
-        return 'yellow';
+      case "Failed":
+        return "red";
+      case "Paid":
+        return "green";
+      case "Pending":
+        return "yellow";
       default:
-        return 'gray';
+        return "gray";
     }
   };
-  
 
   return (
     <div className="bg-gray-50">
@@ -455,245 +460,266 @@ export default function Example() {
         <main className="mx-auto max-w-2xl pb-24 pt-8 sm:px-6 sm:pt-16 lg:max-w-7xl lg:px-8">
           {mode.COD && (
             <>
-            <div className="space-y-2 px-4 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
-            <div className="flex sm:items-baseline sm:space-x-4">
-              <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-                Order #{order?.orderId} -{" "}
-                {order?.orderType === "Cash On Delivery"
-                  ? "Cash On Delivery"
-                  : "Online Payment"}
-              </h1>
-              <Link
-                href="#"
-                className="hidden text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:block"
-              >
-                View invoice
-                <span aria-hidden="true"> &rarr;</span>
-              </Link>
-            </div>
-            <p className="text-sm text-gray-600">
-              Order placed{" "}
-              <time dateTime="2021-03-22" className="font-medium text-gray-900">
-                {formattedDate}
-              </time>
-            </p>
-            <a
-              href="#"
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:hidden"
-            >
-              View invoice
-              <span aria-hidden="true"> &rarr;</span>
-            </a>
-          </div>
-
-          {/* Products */}
-          <section aria-labelledby="products-heading" className="mt-6">
-            <h2 id="products-heading" className="sr-only">
-              Products purchased
-            </h2>
-
-            <div className="space-y-8">
-              {order?.items?.map((product) => (
-                <div
-                  key={product.id}
-                  className="border-b border-t border-gray-200 bg-white shadow-sm sm:rounded-lg sm:border"
+              <div className="space-y-2 px-4 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
+                <div className="flex sm:items-baseline sm:space-x-4">
+                  <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+                    Order #{order?.orderId} -{" "}
+                    {order?.orderType === "Cash On Delivery"
+                      ? "Cash On Delivery"
+                      : "Online Payment"}
+                  </h1>
+                  <Link
+                    href="#"
+                    className="hidden text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:block"
+                  >
+                    View invoice
+                    <span aria-hidden="true"> &rarr;</span>
+                  </Link>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Order placed{" "}
+                  <time
+                    dateTime="2021-03-22"
+                    className="font-medium text-gray-900"
+                  >
+                    {formattedDate}
+                  </time>
+                </p>
+                <a
+                  href="#"
+                  className="text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:hidden"
                 >
-                  <div className="px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
-                    <div className="sm:flex lg:col-span-7">
-                      <div className="mt-6 sm:ml-6 sm:mt-0">
-                        <h3 className="text-base font-medium text-gray-900">
-                          <Link href={`/product/${product.productId}`}>
-                            {product.name}
-                          </Link>
-                        </h3>
-                        <p className="mt-2 text-sm font-medium text-green-900">
-                          {formatCurrencyINR(product.price)}
-                        </p>
-                        <p className="mt-3 text-sm text-gray-500">
-                          {product.description}
-                        </p>
-                      </div>
-                    </div>
+                  View invoice
+                  <span aria-hidden="true"> &rarr;</span>
+                </a>
+              </div>
 
-                    <div className="mt-6 lg:col-span-5 lg:mt-0">
-                      <dl className="grid grid-cols-2 gap-x-6 text-sm">
-                        <div>
-                          <dt className="font-medium text-gray-900">
-                            Delivery address
-                          </dt>
-                          <dd className="mt-3 text-gray-500">
-                            <p>{order.shippingAddress.street}</p>
-                            <p>
-                              {order.shippingAddress.city},{" "}
-                              {order.shippingAddress.state}
+              {/* Products */}
+              <section aria-labelledby="products-heading" className="mt-6">
+                <h2 id="products-heading" className="sr-only">
+                  Products purchased
+                </h2>
+
+                <div className="space-y-8">
+                  {order?.items?.map((product) => (
+                    <div
+                      key={product.id}
+                      className="border-b border-t border-gray-200 bg-white shadow-sm sm:rounded-lg sm:border"
+                    >
+                      <div className="px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
+                        <div className="sm:flex lg:col-span-7">
+                          <div className="mt-6 sm:ml-6 sm:mt-0">
+                            <h3 className="text-base font-medium text-gray-900">
+                              <Link href={`/product/${product.productId}`}>
+                                {product.name}
+                              </Link>
+                            </h3>
+                            <p className="mt-2 text-sm font-medium text-green-900">
+                              {formatCurrencyINR(product.price)}
                             </p>
-                            <p>{order.shippingAddress.postalCode}</p>
-                          </dd>
+                            <p className="mt-3 text-sm text-gray-500">
+                              {product.description}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <dt className="font-medium text-gray-900">
-                            Shipping updates
-                          </dt>
-                          <dd className="mt-3 space-y-3 text-gray-500">
-                            <p>{order.email}</p>
-                            <p>{order.phone}</p>
-                            <button
-                              type="button"
-                              className="font-medium text-indigo-600 hover:text-indigo-500"
-                            >
-                              Edit
-                            </button>
-                          </dd>
+
+                        <div className="mt-6 lg:col-span-5 lg:mt-0">
+                          <dl className="grid grid-cols-2 gap-x-6 text-sm">
+                            <div>
+                              <dt className="font-medium text-gray-900">
+                                Delivery address
+                              </dt>
+                              <dd className="mt-3 text-gray-500">
+                                <p>{order.shippingAddress.street}</p>
+                                <p>
+                                  {order.shippingAddress.city},{" "}
+                                  {order.shippingAddress.state}
+                                </p>
+                                <p>{order.shippingAddress.postalCode}</p>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="font-medium text-gray-900">
+                                Shipping updates
+                              </dt>
+                              <dd className="mt-3 space-y-3 text-gray-500">
+                                <p>{order.email}</p>
+                                <p>{order.phone}</p>
+                                <button
+                                  type="button"
+                                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                                >
+                                  Edit
+                                </button>
+                              </dd>
+                            </div>
+                          </dl>
                         </div>
-                      </dl>
+                      </div>
+
+                      {AquaOrderTimeline({ order })}
                     </div>
-                  </div>
-
-                  {AquaOrderTimeline({ order })}
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
+              </section>
 
-          {/* Billing */}
-          {order?.orderType === "Cash On Delivery" ? (
-            <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-              <dl className="space-y-6 border-t border-gray-200 pt-10 text-lg">
-                <div className="flex justify-between items-center">
-                  <dt className="font-medium text-gray-900 text-xl">Total</dt>
-                  <dd className="text-gray-900 font-bold text-2xl text-green-600">
-                    {formatCurrencyINR(order.totalAmount)}
-                  </dd>
+              {/* Billing */}
+              {order?.orderType === "Cash On Delivery" ? (
+                <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+                  <dl className="space-y-6 border-t border-gray-200 pt-10 text-lg">
+                    <div className="flex justify-between items-center">
+                      <dt className="font-medium text-gray-900 text-xl">
+                        Total
+                      </dt>
+                      <dd className="text-gray-900 font-bold text-2xl text-green-600">
+                        {formatCurrencyINR(order.totalAmount)}
+                      </dd>
+                    </div>
+                  </dl>
                 </div>
-              </dl>
-            </div>
-          ) : (
-          ""
+              ) : (
+                ""
+              )}
+            </>
           )}
-        </>
-          )}
-          {mode.payment &&(
+          {mode.payment && (
             <>
-            <div className="space-y-2 px-4 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
-            <div className="flex sm:items-baseline sm:space-x-4">
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-      Order #{order?.orderId} -{' '}
-      {order?.orderType === 'Cash On Delivery' ? 'Cash On Delivery' : 'Online Payment'}--
-      <AquaBadge
+              <div className="space-y-2 px-4 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
+                <div className="flex sm:items-baseline sm:space-x-4">
+                  <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+                    Order #{order?.orderId} -{" "}
+                    {order?.orderType === "Cash On Delivery"
+                      ? "Cash On Delivery"
+                      : "Online Payment"}
+                    --
+                    <AquaBadge
                       text={order?.paymentStatus}
                       color={getStatusColor(order?.paymentStatus)}
                       size="large" // Adjust size as needed
                     />
-    </h1>
-            </div>
-            <p className="text-sm text-gray-600">
-              Order placed{" "}
-              <time dateTime="2021-03-22" className="font-medium text-gray-900">
-                {formattedDate}
-              </time>
-            </p>
-            <a
-              href="#"
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:hidden"
-            >
-              View invoice
-              <span aria-hidden="true"> &rarr;</span>
-            </a>
-          </div>
-             {/* Products */}
-             <section aria-labelledby="products-heading" className="mt-6">
-            <h2 id="products-heading" className="sr-only">
-              Products purchased
-            </h2>
-
-            <div className="space-y-8">
-              {order?.items?.map((product) => (
-                <div
-                  key={product.id}
-                  className="border-b border-t border-gray-200 bg-white shadow-sm sm:rounded-lg sm:border"
-                >
-                  <div className="px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
-                    <div className="sm:flex lg:col-span-7">
-                      <div className="mt-6 sm:ml-6 sm:mt-0">
-                        <h3 className="text-base font-medium text-gray-900">
-                          <Link href={`/product/${product.productId}`}>
-                            {product.name}
-                          </Link>
-                        </h3>
-                        <p className="mt-2 text-sm font-medium text-green-900">
-                          {formatCurrencyINR(product.price)}
-                        </p>
-                        <p className="mt-3 text-sm text-gray-500">
-                          Qunatity Placed : {product.quantity}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 lg:col-span-5 lg:mt-0">
-                      <dl className="grid grid-cols-2 gap-x-6 text-sm">
-                        <div>
-                          <dt className="font-medium text-gray-900">
-                            Delivery address
-                          </dt>
-                          <dd className="mt-3 text-gray-500">
-                            <p>{order.shippingAddress.street}</p>
-                            <p>
-                              {order.shippingAddress.city},{" "}
-                              {order.shippingAddress.state}
-                            </p>
-                            <p>{order.shippingAddress.postalCode}</p>
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="font-medium text-gray-900">
-                            Shipping updates
-                          </dt>
-                          <dd className="mt-3 space-y-3 text-gray-500">
-                            <p>{order.email}</p>
-                            <p>{order.phone}</p>
-                          </dd>
-                        </div>
-                      </dl>
-                    </div>
-                  </div>
-
-                  {AquaOrderTimeline({ order })}
+                  </h1>
                 </div>
-              ))}
-            </div>
-          </section>
-           <section aria-labelledby="summary-heading" className="mt-16">
-<h2 id="summary-heading" className="sr-only">
-  Billing Summary
-</h2>
+                <p className="text-sm text-gray-600">
+                  Order placed{" "}
+                  <time
+                    dateTime="2021-03-22"
+                    className="font-medium text-gray-900"
+                  >
+                    {formattedDate}
+                  </time>
+                </p>
+                <a
+                  href="#"
+                  className="text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:hidden"
+                >
+                  View invoice
+                  <span aria-hidden="true"> &rarr;</span>
+                </a>
+              </div>
+              {/* Products */}
+              <section aria-labelledby="products-heading" className="mt-6">
+                <h2 id="products-heading" className="sr-only">
+                  Products purchased
+                </h2>
 
-<div className="bg-white rounded-lg shadow-md p-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8 lg:py-8">
-  <dl className="grid grid-cols-2 gap-6 text-lg sm:grid-cols-2 md:gap-x-8 lg:col-span-7">
-    <div>
-      <dt className="font-medium text-gray-900">
-        Billing address
-      </dt>
-      <dd className="mt-3 text-gray-500">
-        <span className="block">{order?.shippingAddress?.street}</span>
-        <span className="block">{order?.shippingAddress?.city}</span>
-        <span className="block">{order?.shippingAddress?.state}</span>
-        <span className="block">{order?.shippingAddress?.postalCode}</span>
-      </dd>
-    </div>
-    <div>
-      <dt className="font-medium text-gray-900">
-        Payment information
-      </dt>
-      <dd className="-ml-4 -mt-1 flex flex-wrap">
-        <div className="ml-4 mt-4">
-          <AquaPaymentDetails paymentInstrument={order.paymentInstrument}/>
-        </div>
-      </dd>
-    </div>
-  </dl>
+                <div className="space-y-8">
+                  {order?.items?.map((product) => (
+                    <div
+                      key={product.id}
+                      className="border-b border-t border-gray-200 bg-white shadow-sm sm:rounded-lg sm:border"
+                    >
+                      <div className="px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
+                        <div className="sm:flex lg:col-span-7">
+                          <div className="mt-6 sm:ml-6 sm:mt-0">
+                            <h3 className="text-base font-medium text-gray-900">
+                              <Link href={`/product/${product.productId}`}>
+                                {product.name}
+                              </Link>
+                            </h3>
+                            <p className="mt-2 text-sm font-medium text-green-900">
+                              {formatCurrencyINR(product.price)}
+                            </p>
+                            <p className="mt-3 text-sm text-gray-500">
+                              Qunatity Placed : {product.quantity}
+                            </p>
+                          </div>
+                        </div>
 
-  <dl className="mt-8 divide-y divide-gray-200 text-lg lg:col-span-5 lg:mt-0">
-    {/* <div className="flex items-center justify-between pb-4">
+                        <div className="mt-6 lg:col-span-5 lg:mt-0">
+                          <dl className="grid grid-cols-2 gap-x-6 text-sm">
+                            <div>
+                              <dt className="font-medium text-gray-900">
+                                Delivery address
+                              </dt>
+                              <dd className="mt-3 text-gray-500">
+                                <p>{order.shippingAddress.street}</p>
+                                <p>
+                                  {order.shippingAddress.city},{" "}
+                                  {order.shippingAddress.state}
+                                </p>
+                                <p>{order.shippingAddress.postalCode}</p>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="font-medium text-gray-900">
+                                Shipping updates
+                              </dt>
+                              <dd className="mt-3 space-y-3 text-gray-500">
+                                <p>{order.email}</p>
+                                <p>{order.phone}</p>
+                              </dd>
+                            </div>
+                          </dl>
+                        </div>
+                      </div>
+
+                      {AquaOrderTimeline({ order })}
+                    </div>
+                  ))}
+                </div>
+              </section>
+              <section aria-labelledby="summary-heading" className="mt-16">
+                <h2 id="summary-heading" className="sr-only">
+                  Billing Summary
+                </h2>
+
+                <div className="bg-white rounded-lg shadow-md p-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8 lg:py-8">
+                  <dl className="grid grid-cols-2 gap-6 text-lg sm:grid-cols-2 md:gap-x-8 lg:col-span-7">
+                    <div>
+                      <dt className="font-medium text-gray-900">
+                        Billing address
+                      </dt>
+                      <dd className="mt-3 text-gray-500">
+                        <span className="block">
+                          {order?.shippingAddress?.street}
+                        </span>
+                        <span className="block">
+                          {order?.shippingAddress?.city}
+                        </span>
+                        <span className="block">
+                          {order?.shippingAddress?.state}
+                        </span>
+                        <span className="block">
+                          {order?.shippingAddress?.postalCode}
+                        </span>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="font-medium text-gray-900">
+                        Payment information
+                      </dt>
+                      <dd className="-ml-4 -mt-1 flex flex-wrap">
+                        <div className="ml-4 mt-4">
+                          <AquaPaymentDetails
+                            paymentInstrument={order.paymentInstrument}
+                          />
+                        </div>
+                      </dd>
+                    </div>
+                  </dl>
+
+                  <dl className="mt-8 divide-y divide-gray-200 text-lg lg:col-span-5 lg:mt-0">
+                    {/* <div className="flex items-center justify-between pb-4">
       <dt className="text-gray-600">Subtotal</dt>
       <dd className="font-medium text-gray-900">$72</dd>
     </div>
@@ -705,20 +731,21 @@ export default function Example() {
       <dt className="text-gray-600">Tax</dt>
       <dd className="font-medium text-gray-900">$6.16</dd>
     </div> */}
-    <div className="flex items-center justify-between pt-4">
-      <dt className="font-medium text-gray-900">Order total</dt>
-      {/* {JSON.stringify(order)} */}
-      <dd className="font-medium text-indigo-600">{formatCurrencyINR(order.totalAmount)}</dd>
-    </div>
-  </dl>
-</div>
-</section> 
-          </>
+                    <div className="flex items-center justify-between pt-4">
+                      <dt className="font-medium text-gray-900">Order total</dt>
+                      {/* {JSON.stringify(order)} */}
+                      <dd className="font-medium text-indigo-600">
+                        {formatCurrencyINR(order.totalAmount)}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              </section>
+            </>
           )}
         </main>
       </AquaLayout>
     </div>
-    
   );
 }
 

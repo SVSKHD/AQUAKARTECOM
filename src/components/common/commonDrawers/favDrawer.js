@@ -2,11 +2,15 @@ import { useSelector } from "react-redux";
 import AquaReuseDrawer from "../../reusables/drawer";
 import useDrawer from "@/utils/drawer";
 import useCurrency from "@/utils/currency";
+import { useState } from "react";
+import useProduct from "@/utils/product";
 
 const AquafavDrawer = () => {
   const { openFavDrawer, closeFavDrawer } = useDrawer();
   const { favDrawer, favData } = useSelector((state) => ({ ...state }));
   const { formatCurrencyINR } = useCurrency;
+  const [cart, setCart] = useState(false);
+  const { AddAndRemoveCart } = useProduct();
   return (
     <AquaReuseDrawer
       open={favDrawer}
@@ -50,13 +54,20 @@ const AquafavDrawer = () => {
                   </p>
                 </div>
               </div>
+              <button
+                type="button"
+                className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                onClick={() => AddAndRemoveCart(product, setCart)}
+              >
+                {cart ? "Remove From Cart" : "Add To Cart"}
+              </button>
             </div>
           </li>
         ))
       ) : (
         <>
           <div className="min-w-0 flex-1 text-center">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
+            <h2 className="text-xl font-bold leading-7 text-gray-900 sm:truncate sm:text-2xl sm:tracking-tight">
               No Products In Favorites Yet...
             </h2>
           </div>
