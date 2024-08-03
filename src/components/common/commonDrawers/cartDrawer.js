@@ -1,28 +1,25 @@
 import { useSelector } from "react-redux";
 import AquaReuseDrawer from "../../reusables/drawer";
 import useDrawer from "@/utils/drawer";
-import {
-  CheckIcon,
-  ClockIcon,
-  QuestionMarkCircleIcon,
-  XMarkIcon,
-} from "@heroicons/react/20/solid";
 import useCurrency from "@/utils/currency";
 import useCart from "@/utils/cart";
 import Image from "next/image";
 import { useState } from "react";
+import useProduct from "@/utils/product";
 
 const AquaCartDrawer = () => {
   const { cartDrawer, cartData } = useSelector((state) => ({ ...state }));
   const { closeCartDrawer } = useDrawer();
   const { formatCurrencyINR } = useCurrency;
   const { getTotalPrice, changeItemQuantity } = useCart();
+  const { EmptyCart, removeFromCart } = useProduct();
   const [cart, setCart] = useState(false);
 
   const handleQuantityChange = (event, id) => {
     const quantity = parseInt(event.target.value, 10);
     changeItemQuantity(id, quantity);
   };
+
   return (
     <AquaReuseDrawer
       open={cartDrawer}
@@ -93,6 +90,13 @@ const AquaCartDrawer = () => {
                 </div>
               </div>
             </li>
+            <button
+              type="button"
+              className="mb-5 w-full rounded-md bg-red-400 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+              onClick={() => removeFromCart(product._id)}
+            >
+              Remove From Cart
+            </button>
           </>
         ))
       ) : (
@@ -107,6 +111,13 @@ const AquaCartDrawer = () => {
 
       {cartData.length > 0 ? (
         <>
+          <button
+            type="button"
+            className="mt-5 mb-5 w-full rounded-md bg-red-500 px-2.5 py-1.5 text-lg font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+            onClick={() => EmptyCart()}
+          >
+            Empty Cart
+          </button>
           <div>
             <div className="min-w-0 flex-1">
               <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
@@ -117,13 +128,6 @@ const AquaCartDrawer = () => {
               </h2>
             </div>
           </div>
-        </>
-      ) : (
-        ""
-      )}
-
-      {cartData.length > 0 ? (
-        <>
           <div className="mt-6">
             <a
               href="/checkout"

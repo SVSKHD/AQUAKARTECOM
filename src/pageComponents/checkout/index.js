@@ -24,6 +24,7 @@ import useProduct from "@/utils/product";
 import AquaProductCard from "@/components/cards/productCard";
 import AquaPromptDialog from "@/components/common/promptDialogs/promtDialog";
 import UserServiceOperations from "@/services/user";
+// import AquaAccordion from "@/components/common/Accordion";
 
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
@@ -142,6 +143,8 @@ const AquaCheckoutComponent = () => {
     console.log("data check", newOrder);
     if (!selectedAddress) {
       AquaToast({ message: "Please select an address", type: "error" });
+    } else if (userData.data.user.addresses.length < 0) {
+      AquaToast({ message: "Please Add An Address", type: "error" });
     } else {
       orderServiceOperations
         .createCodOrder(newOrder)
@@ -187,7 +190,9 @@ const AquaCheckoutComponent = () => {
         orderStatus: "Processing",
       };
       console.log("data", newOrder);
-      if (!selectedAddress) {
+      if (userData.data.user.addresses.length < 0) {
+        AquaToast({ message: "Please Add An Address", type: "error" });
+      } else if (!selectedAddress) {
         AquaToast({ message: "Please select an address", type: "error" });
       } else {
         orderServiceOperations.createPhonePePayOrder(newOrder).then((res) => {
@@ -208,6 +213,13 @@ const AquaCheckoutComponent = () => {
     }
   };
 
+  const items = [
+    {
+      title: "Item 1",
+      content: "This is the content of item 1.",
+    },
+  ];
+
   return (
     <AquaLayout seo={seo}>
       <AquaPromptDialog
@@ -217,6 +229,7 @@ const AquaCheckoutComponent = () => {
         handleCancel={() => setPromt(!prompt)}
         handleOk={(e) => handleDeleteAddress(e, selectedtAddressChange)}
       />
+
       {!userData || userData === null ? (
         <>
           <div className="bg-white p-40 justify-center text-center">
@@ -241,8 +254,9 @@ const AquaCheckoutComponent = () => {
                   Items in your shopping cart
                 </h2>
                 <h1 className="text-xl mt-10 font-bold tracking-tight text-gray-500 sm:text-xl">
-                  User Addresses
+                  Add Address
                 </h1>
+
                 <button
                   onClick={() => handleAddAddress()}
                   type="button"
