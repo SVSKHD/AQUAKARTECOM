@@ -6,16 +6,19 @@ import AquaInput from "@/components/common/input";
 import UserServiceOperations from "@/services/user";
 
 const AquaDashboardPageComponent = () => {
+  const { userData } = useSelector((state) => ({ ...state }));
   const dispatch = useDispatch();
+
   const [details, setDetails] = useState({});
+  const [title, setTitle] = useState("");
   const [updateDetails, setUpdateDetails] = useState(false);
   const [updatePassword, setUpdatePassword] = useState(false);
   const [bulkUpdate, setBulkUpdate] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    dob: "",
+    firstName: userData.data.user.firstName,
+    lastName: userData.data.user.lastName,
+    email: userData.data.user.email,
+    phone: userData.data.user.phone,
+    dob: userData.data.user.dob,
   });
 
   const handleChange = (e) => {
@@ -29,18 +32,24 @@ const AquaDashboardPageComponent = () => {
   const handleUpdateDetails = () => {
     const newDetails = { ...bulkUpdate };
     console.log("update", newDetails);
+
     const id = userData.data.user._id;
     const token = userData.data.token;
-    UserServiceOperations.UserUpdateDetails(id, newDetails, token)
+
+    const payload = { newDetails };
+
+    UserServiceOperations.UserUpdateDetails(id, payload, token)
       .then((res) => {
-        console.log("data", res.data);
+        dispatch({
+          type: "UPDATE_USER_DETAILS",
+          paylaod: res.data,
+        });
       })
       .catch((err) => {
         console.log("err", err);
       });
   };
 
-  const { userData } = useSelector((state) => ({ ...state }));
   const [selectedAddress, setSelectedAddress] = useState(
     userData.data.user.selectedAddress,
   );
@@ -75,8 +84,23 @@ const AquaDashboardPageComponent = () => {
       setUpdatePassword(false);
     }
   }, [updatePassword, updateDetails]);
+
+  const titleGenerate = (user) => {
+    if (user?.firstName) {
+      setTitle(`Welcome back "${user.firstName}" Here is your dashboard`);
+    } else {
+      setTitle("Dashboard");
+    }
+  };
+
+  useEffect(() => {
+    if (userData) {
+      titleGenerate(userData.data.user);
+    }
+  }, [userData]);
+
   return (
-    <AquaDashboardComponent title={"Dasboard"}>
+    <AquaDashboardComponent title={title}>
       <button
         type="button"
         className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"

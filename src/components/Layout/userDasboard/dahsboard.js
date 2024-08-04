@@ -1,11 +1,10 @@
+import React from "react";
 import {
   Disclosure,
   DisclosureButton,
   DisclosurePanel,
   Menu,
   MenuButton,
-  MenuItem,
-  MenuItems,
 } from "@headlessui/react";
 import {
   Bars3Icon,
@@ -53,6 +52,17 @@ const getFirstLettersFromEmail = (email) => {
 export default function AquaDashboardComponent(props) {
   const { userData } = useSelector((state) => ({ ...state }));
   const router = useRouter();
+
+  const getTitleParts = () => {
+    const parts = props.title.split('"');
+    return {
+      beforeName: parts[0],
+      userName: parts[1],
+      afterName: parts[2],
+    };
+  };
+
+  const { beforeName, userName, afterName } = getTitleParts();
 
   return (
     <>
@@ -119,7 +129,10 @@ export default function AquaDashboardComponent(props) {
                           <span className="sr-only">Open user menu</span>
                           <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-500">
                             <span className="text-sm font-medium leading-none text-white">
-                              AQ
+                              {userData &&
+                                getFirstLettersFromEmail(
+                                  userData.data.user.email,
+                                )}
                             </span>
                           </span>
                         </MenuButton>
@@ -204,7 +217,9 @@ export default function AquaDashboardComponent(props) {
           <header>
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
-                {props.title}
+                {beforeName}
+                <span className="text-red-500 font-bold">{userName}</span>
+                {afterName}
               </h1>
             </div>
           </header>

@@ -30,7 +30,7 @@ const AquaOrderComponent = () => {
       });
   }, [userData.data.user._id, userData.data.user.token]); // Added empty dependency array
 
-  const sortedOrders = orders.sort(
+  const sortedOrders = orders?.sort(
     (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
   );
   const getStatusBadge = (orderStatus) => {
@@ -56,7 +56,7 @@ const AquaOrderComponent = () => {
     <>
       <AquaDashboardComponent title={"Orders"}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedOrders.length > 0 ? (
+          {sortedOrders?.length > 0 ? (
             <>
               {orders.map((r, i) => (
                 <div
