@@ -3,6 +3,7 @@ import AquaDashboardComponent from "@/components/Layout/userDasboard/dahsboard";
 import { useDispatch, useSelector } from "react-redux";
 import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 import AquaInput from "@/components/common/input";
+import UserServiceOperations from "@/services/user";
 
 const AquaDashboardPageComponent = () => {
   const dispatch = useDispatch();
@@ -14,6 +15,7 @@ const AquaDashboardPageComponent = () => {
     lastName: "",
     email: "",
     phone: "",
+    dob: "",
   });
 
   const handleChange = (e) => {
@@ -25,8 +27,19 @@ const AquaDashboardPageComponent = () => {
   };
 
   const handleUpdateDetails = () => {
-    console.log("update", bulkUpdate);
+    const newDetails = { ...bulkUpdate };
+    console.log("update", newDetails);
+    const id = userData.data.user._id;
+    const token = userData.data.token;
+    UserServiceOperations.UserUpdateDetails(id, newDetails, token)
+      .then((res) => {
+        console.log("data", res.data);
+      })
+      .catch((err) => {
+        console.log("err", err);
+      });
   };
+
   const { userData } = useSelector((state) => ({ ...state }));
   const [selectedAddress, setSelectedAddress] = useState(
     userData.data.user.selectedAddress,
@@ -109,7 +122,7 @@ const AquaDashboardPageComponent = () => {
                 />
               </div>
 
-              <div className="sm:col-span-4">
+              <div className="sm:col-span-3">
                 <AquaInput
                   id="email"
                   name="email"
@@ -118,6 +131,19 @@ const AquaDashboardPageComponent = () => {
                   value={bulkUpdate.email}
                   onChange={handleChange}
                   label="Email"
+                  placeholder="Enter your email"
+                />
+              </div>
+              <div className="sm:col-span-3">
+                <AquaInput
+                  id="phone"
+                  name="phone"
+                  type="number"
+                  autoComplete="given-name"
+                  value={bulkUpdate.phone}
+                  onChange={handleChange}
+                  maxLength={10}
+                  label="Phone"
                   placeholder="Enter your email"
                 />
               </div>
