@@ -24,7 +24,7 @@ import useProduct from "@/utils/product";
 import AquaProductCard from "@/components/cards/productCard";
 import AquaPromptDialog from "@/components/common/promptDialogs/promtDialog";
 import UserServiceOperations from "@/services/user";
-// import AquaAccordion from "@/components/common/Accordion";
+import AquaSpinner from "@/components/common/spinner";
 
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
@@ -38,6 +38,7 @@ const AquaCheckoutComponent = () => {
   );
   const { openAuthDialog } = useDialog();
   const [prompt, setPromt] = useState(false);
+  const [loading, setLoading] = useState({cod:false, gateway:true})
   const [selectedtAddressChange, setSelectedAddressChange] = useState({});
   const { closeCartDrawer } = useCartDrawer();
   const { EmptyCart, removeFromCart } = useProduct();
@@ -146,10 +147,22 @@ const AquaCheckoutComponent = () => {
     } else if (userData.data.user.addresses.length < 0) {
       AquaToast({ message: "Please Add An Address", type: "error" });
     } else {
+      setLoading(prevState => ({
+        ...prevState,
+        cod: true
+      }));
+      
       orderServiceOperations
         .createCodOrder(newOrder)
         .then((res) => {
-          router.push(`/order/${res.data.data.transactionId}`);
+          setTimeout(() => {
+            setLoading(prevState => ({
+              ...prevState,
+              cod: false
+            }));
+            console.log("data",res.data)
+            router.push(`/order/${res.data.transactionId}`);
+          }, 4000); // Delay of 4000 ms (4 seconds)
         })
         .catch((err) => {
           console.log("order", err);
@@ -189,14 +202,20 @@ const AquaCheckoutComponent = () => {
         ).toISOString(), // Adding 7 days
         orderStatus: "Processing",
       };
-      console.log("data", newOrder);
       if (userData.data.user.addresses.length < 0) {
         AquaToast({ message: "Please Add An Address", type: "error" });
       } else if (!selectedAddress) {
         AquaToast({ message: "Please select an address", type: "error" });
       } else {
+        setLoading(prevState => ({
+          ...prevState,
+          gateway: true
+        }));
         orderServiceOperations.createPhonePePayOrder(newOrder).then((res) => {
-          console.log("res", res.url);
+          setLoading(prevState => ({
+            ...prevState,
+            gateway: false
+          }));
           window.location.href = res.url;
         });
       }
@@ -531,7 +550,7 @@ const AquaCheckoutComponent = () => {
                           onClick={handleCashOnDelivery}
                           className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
                         >
-                          Cash On Delivery
+                          {loading.cod ? <AquaSpinner color="gray"/> : "Cash On Delivery" }
                         </button>
                       </div>
 

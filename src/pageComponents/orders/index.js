@@ -464,9 +464,7 @@ export default function Example() {
                 <div className="flex sm:items-baseline sm:space-x-4">
                   <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
                     Order #{order?.orderId} -{" "}
-                    {order?.orderType === "Cash On Delivery"
-                      ? "Cash On Delivery"
-                      : "Online Payment"}
+                      Cash On Delivery
                   </h1>
                   <Link
                     href="#"
