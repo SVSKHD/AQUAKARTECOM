@@ -15,7 +15,7 @@ const AquaOrderComponent = () => {
     setLoading(true);
     // console.log("token", userData.data.token)
     orderServiceOperations
-      .getOrdersByUserId(userData.data.user._id, userData.data.token)
+      .getOrdersByUserId(userData.user._id, userData.token)
       .then((res) => {
         setLoading(false);
         setOrders(res.data);
@@ -27,7 +27,7 @@ const AquaOrderComponent = () => {
           error: "error",
         });
       });
-  }, [userData.data.user._id, userData.data.user.token]); // Added empty dependency array
+  }, [userData.user._id, userData.user.token]); // Added empty dependency array
 
   const sortedOrders = orders?.sort(
     (a, b) => new Date(b.createdAt) - new Date(a.createdAt),

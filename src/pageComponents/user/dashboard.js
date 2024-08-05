@@ -15,11 +15,11 @@ const AquaDashboardPageComponent = () => {
   const [updateDetails, setUpdateDetails] = useState(false);
   const [updatePassword, setUpdatePassword] = useState(false);
   const [bulkUpdate, setBulkUpdate] = useState({
-    firstName: userData.data.user.firstName,
-    lastName: userData.data.user.lastName,
-    email: userData.data.user.email,
-    phone: userData.data.user.phone,
-    dob: userData.data.user.dob,
+    firstName: userData?.user.firstName,
+    lastName: userData?.user.lastName,
+    email: userData?.user.email,
+    phone: userData?.user.phone,
+    dob: userData?.user.dob,
   });
 
   const handleChange = (e) => {
@@ -30,20 +30,21 @@ const AquaDashboardPageComponent = () => {
     }));
   };
 
-  const handleUpdateDetails = () => {
+  const handleUpdateDetails = async () => {
     const newDetails = { ...bulkUpdate };
     console.log("update", newDetails);
 
-    const id = userData.data.user._id;
-    const token = userData.data.token;
+    const id = userData.user._id;
+    const token = userData.token;
 
     const payload = { newDetails };
 
-    UserServiceOperations.UserUpdateDetails(id, payload, token)
+    await UserServiceOperations.UserUpdateDetails(id, payload, token)
       .then((res) => {
+        console.log("apiu", res.data);
         dispatch({
           type: "UPDATE_USER_DETAILS",
-          paylaod: res.data,
+          payload: res.data,
         });
         AquaToast({ message: "Successfully Updated details", type: "success" });
         setUpdateDetails(!updateDetails);
@@ -54,7 +55,7 @@ const AquaDashboardPageComponent = () => {
   };
 
   const [selectedAddress, setSelectedAddress] = useState(
-    userData.data.user.selectedAddress,
+    userData.user.selectedAddress,
   );
 
   const handleEditAddress = (e, r) => {
@@ -98,28 +99,75 @@ const AquaDashboardPageComponent = () => {
 
   useEffect(() => {
     if (userData) {
-      titleGenerate(userData.data.user);
+      titleGenerate(userData.user);
     }
   }, [userData]);
 
   return (
     <AquaDashboardComponent title={title}>
-      <button
-        type="button"
-        className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        onClick={() => setUpdateDetails(!updateDetails)}
-      >
-        Update Profile
-      </button>
+      <div className="mt-5"></div>
 
+      <div className="mx-auto max-w-2xl space-y-16 sm:space-y-20 lg:mx-0 lg:max-w-none mb-5">
+        <div>
+          <h2 className="text-base font-semibold leading-7 text-gray-900">
+            Profile
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-gray-500">
+            This information will be displayed publicly so be careful what you
+            share.
+          </p>
+
+          <dl className="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm leading-6">
+            <div className="pt-6 sm:flex">
+              <dt className="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
+                Full name
+              </dt>
+              <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
+                <div className="text-gray-900">{userData?.user.firstName}</div>
+              </dd>
+            </div>
+            <div className="pt-6 sm:flex">
+              <dt className="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
+                Last Name
+              </dt>
+              <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
+                <div className="text-gray-900">{userData?.user.lastName}</div>
+              </dd>
+            </div>
+            <div className="pt-6 sm:flex">
+              <dt className="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
+                Email address
+              </dt>
+              <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
+                <div className="text-gray-900">{userData?.user.email}</div>
+              </dd>
+            </div>
+            <div className="pt-6 sm:flex">
+              <dt className="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
+                Contact
+              </dt>
+              <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
+                <div className="text-gray-900">{userData?.user.phone}</div>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
       <div className="mt-5">
+        <button
+          type="button"
+          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          onClick={() => setUpdateDetails(!updateDetails)}
+        >
+          Update Profile
+        </button>
         {updateDetails ? (
           <div className="border-b border-gray-900/10 pb-12">
             <h2 className="text-base font-semibold leading-7 text-gray-900">
               Personal Information
             </h2>
             <p className="mt-1 text-sm leading-6 text-gray-600">
-              Use a permanent address where you can receive mail.
+              Use a valid email address where you can receive mail.
             </p>
 
             <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
@@ -186,35 +234,11 @@ const AquaDashboardPageComponent = () => {
         ) : (
           ""
         )}
-        {updatePassword ? (
-          <>
-            <form className="mt-5 sm:flex sm:items-center">
-              <div className="w-full sm:max-w-xs">
-                <label htmlFor="email" className="sr-only">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  className="block w-full p-4 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
-              <button
-                type="submit"
-                className="mt-3 inline-flex w-full items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:ml-3 sm:mt-0 sm:w-auto"
-              >
-                Save
-              </button>
-            </form>
-          </>
-        ) : (
-          ""
-        )}
       </div>
 
-      <h3 className="font-bold text-2xl">Addresses</h3>
+      <h3 className="font-bold text-gray-400 text-2xl mt-5">
+        Existing Addresses
+      </h3>
       <button
         onClick={() => handleAddAddress()}
         type="button"
@@ -222,11 +246,8 @@ const AquaDashboardPageComponent = () => {
       >
         Add Address
       </button>
-      <h3 className="font-bold text-gray-400 text-2xl mt-5">
-        Existing Addresses
-      </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-1">
-        {userData.data.user.addresses.map((r, i) => (
+        {userData.user.addresses.map((r, i) => (
           <>
             <div className="m-2 overflow-hidden rounded-lg bg-white shadow">
               <div className="px-4 py-5 sm:p-6">

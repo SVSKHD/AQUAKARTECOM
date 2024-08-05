@@ -47,9 +47,9 @@ const AquaCheckoutComponent = () => {
     setSelectedAddress(address);
 
     UserServiceOperations.UserUpdateDetails(
-      userData.data.user._id,
+      userData.user._id,
       { newDetails: { selectedAddress: address } },
-      userData.data.token,
+      userData.token,
     )
       .then((res) => {
         AquaToast({
@@ -284,7 +284,7 @@ const AquaCheckoutComponent = () => {
                   Add Address
                 </button>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {userData.data.user.addresses.map((r, i) => (
+                  {userData.user.addresses.map((r, i) => (
                     <>
                       <div className="m-2 overflow-hidden rounded-lg bg-white shadow">
                         <div className="px-4 py-5 sm:p-6">
@@ -339,18 +339,6 @@ const AquaCheckoutComponent = () => {
                   ))}
                 </div>
 
-                {cartData.length > 0 ? (
-                  <button
-                    type="button"
-                    className="rounded-md bg-red-600 m-4 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-                    onClick={() => EmptyCart()}
-                  >
-                    Remove All Products
-                  </button>
-                ) : (
-                  ""
-                )}
-
                 {cartData.length <= 0 ? (
                   <>
                     <h1 className="font-bold text-xl text-gray-500 mt-5">
@@ -359,6 +347,17 @@ const AquaCheckoutComponent = () => {
                   </>
                 ) : (
                   <>
+                    {cartData.length > 0 ? (
+                      <button
+                        type="button"
+                        className="rounded-md bg-red-600 m-4 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                        onClick={() => EmptyCart()}
+                      >
+                        Remove All Products
+                      </button>
+                    ) : (
+                      ""
+                    )}
                     <ul
                       role="list"
                       className="divide-y divide-gray-200 border-b border-t border-gray-200"

@@ -130,9 +130,7 @@ export default function AquaDashboardComponent(props) {
                           <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-500">
                             <span className="text-sm font-medium leading-none text-white">
                               {userData &&
-                                getFirstLettersFromEmail(
-                                  userData.data.user.email,
-                                )}
+                                getFirstLettersFromEmail(userData.user.email)}
                             </span>
                           </span>
                         </MenuButton>

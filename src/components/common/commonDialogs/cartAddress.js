@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import AquaResponsiveDialog from "@/components/reusables/dialog";
 import { useSelector, useDispatch } from "react-redux";
 import UserServiceOperations from "@/services/user";
+import AquaToast from "@/components/reusables/react-toastify";
 
 const AquaAddressDialog = ({ editData }) => {
   const [address, setAddress] = useState({
@@ -33,7 +34,7 @@ const AquaAddressDialog = ({ editData }) => {
   };
 
   const handleAddressAdd = () => {
-    const userAddress = userData.data.user.addresses;
+    const userAddress = userData.user.addresses;
 
     // Check if the address already exists in the array
     const addressExists = userAddress.some(
@@ -47,7 +48,7 @@ const AquaAddressDialog = ({ editData }) => {
     // If the address does not exist, add it to the array
     if (!addressExists) {
       userAddress.push(address);
-      console.log("modified-address", userAddress, userData.data.token);
+      console.log("modified-address", userAddress, userData.token);
 
       // Prepare the payload
       const payload = {
@@ -58,12 +59,10 @@ const AquaAddressDialog = ({ editData }) => {
 
       // Call the API to update the user details
       UserServiceOperations.UserUpdateDetails(
-        userData.data.user._id,
+        userData.user._id,
         payload,
-        userData.data.token,
+        userData.token,
       ).then((res) => {
-        console.log(res.data);
-
         // Dispatch the action to update the user details in the store
         dispatch({
           type: "UPDATE_USER_ADDRESSES",
@@ -77,7 +76,7 @@ const AquaAddressDialog = ({ editData }) => {
         });
       });
     } else {
-      console.log("Address already exists in the array.");
+      AquaToast({ message: "Address already exists.", type: "error" });
     }
   };
 

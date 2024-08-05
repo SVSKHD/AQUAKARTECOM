@@ -19,19 +19,17 @@ const AquaAuthMobileForm = ({ signup }) => {
     console.log(data);
     UserServiceOperations.UserEmailVerify(data)
       .then((res) => {
-        console.log(res.data);
         AquaToast({
           message: "Verification successful",
           type: "success",
         });
         dispatch({
           type: "LOGGED_IN_USER",
-          payload: res,
+          payload: res.data,
         });
         closeAuthDialog();
       })
       .catch((err) => {
-        console.log(err);
         AquaToast({
           message: "Verification failed",
           type: "error",

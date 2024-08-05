@@ -4,6 +4,7 @@ export const userReducer = (state = null, action) => {
     case "LOGOUT":
       return action.payload;
     case "UPDATE_USER_DETAILS":
+      console.log("state", state.user, action.payload);
       return {
         ...state,
         user: {
