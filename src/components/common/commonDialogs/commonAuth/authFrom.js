@@ -61,7 +61,6 @@ const AquaAuthMobileForm = ({ signup }) => {
             });
           })
           .catch((err) => {
-            console.log(err);
             setOtpShow(false);
             AquaToast({
               message: "Failed to send OTP",
