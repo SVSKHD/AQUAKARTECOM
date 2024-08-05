@@ -45,8 +45,8 @@ const AquaDashboardPageComponent = () => {
           type: "UPDATE_USER_DETAILS",
           paylaod: res.data,
         });
-        AquaToast({message:"Successfully Updated details", type:"success"})
-        setUpdateDetails(!updateDetails)
+        AquaToast({ message: "Successfully Updated details", type: "success" });
+        setUpdateDetails(!updateDetails);
       })
       .catch((err) => {
         console.log("err", err);

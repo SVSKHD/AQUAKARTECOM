@@ -4,23 +4,23 @@ import SubCategoryServiceOperations from "@/services/subcategory";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 const navigation = {
-  solutions: [
-    { name: "Marketing", href: "#" },
-    { name: "Analytics", href: "#" },
-    { name: "Commerce", href: "#" },
-    { name: "Insights", href: "#" },
-  ],
-  company: [
-    { name: "About", href: "#" },
-    { name: "Blog", href: "#" },
-    { name: "Jobs", href: "#" },
-    { name: "Press", href: "#" },
-    { name: "Partners", href: "#" },
-  ],
-  legal: [
-    { name: "Claim", href: "#" },
+  // solutions: [
+  //   { name: "Marketing", href: "#" },
+  //   { name: "Analytics", href: "#" },
+  //   { name: "Commerce", href: "#" },
+  //   { name: "Insights", href: "#" },
+  // ],
+  // company: [
+  //   { name: "About", href: "#" },
+  //   { name: "Blog", href: "#" },
+  //   { name: "Jobs", href: "#" },
+  //   { name: "Press", href: "#" },
+  //   { name: "Partners", href: "#" },
+  // ],
+  Policy: [
+    { name: "Shipping-policy", href: "#" },
     { name: "Privacy", href: "#" },
-    { name: "Terms", href: "#" },
+    { name: "Terms & Condtitions", href: "#" },
   ],
   social: [
     {
@@ -122,42 +122,6 @@ const AquaFooter = () => {
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
                 <h3 className="text-sm font-semibold leading-6 text-white">
-                  Solutions
-                </h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {navigation.solutions.map((item) => (
-                    <li key={item.name}>
-                      <a
-                        href={item.href}
-                        className="text-sm leading-6 text-gray-300 hover:text-white"
-                      >
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-10 md:mt-0">
-                <h3 className="text-sm font-semibold leading-6 text-white">
-                  Categories
-                </h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {categories.map((item) => (
-                    <li key={item.name}>
-                      <a
-                        href={`/category/${item.title}`}
-                        className="text-sm leading-6 text-gray-300 hover:text-white"
-                      >
-                        {item.title}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm font-semibold leading-6 text-white">
                   SubCategories
                 </h3>
                 <ul role="list" className="mt-6 space-y-4">
@@ -173,18 +137,38 @@ const AquaFooter = () => {
                   ))}
                 </ul>
               </div>
+
               <div className="mt-10 md:mt-0">
                 <h3 className="text-sm font-semibold leading-6 text-white">
-                  Legal
+                  Policy
                 </h3>
                 <ul role="list" className="mt-6 space-y-4">
-                  {navigation.legal.map((item) => (
+                  {navigation.Policy.map((item) => (
                     <li key={item.name}>
                       <a
                         href={item.href}
                         className="text-sm leading-6 text-gray-300 hover:text-white"
                       >
                         {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="md:grid md:grid-cols-2 md:gap-8">
+              <div>
+                <h3 className="text-sm font-semibold leading-6 text-white">
+                  Categories
+                </h3>
+                <ul role="list" className="mt-6 space-y-4">
+                  {categories.map((item) => (
+                    <li key={item.name}>
+                      <a
+                        href={`/category/${item._id}`}
+                        className="text-sm leading-6 text-gray-300 hover:text-white"
+                      >
+                        {item.title}
                       </a>
                     </li>
                   ))}

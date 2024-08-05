@@ -18,8 +18,7 @@ const AquaOrderComponent = () => {
       .getOrdersByUserId(userData.data.user._id, userData.data.token)
       .then((res) => {
         setLoading(false);
-        setOrders(res.data.data);
-        console.log("res", res.data.data);
+        setOrders(res.data);
       })
       .catch((err) => {
         setLoading(false);
