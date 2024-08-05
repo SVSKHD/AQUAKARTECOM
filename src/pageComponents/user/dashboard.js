@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 import AquaInput from "@/components/common/input";
 import UserServiceOperations from "@/services/user";
+import AquaToast from "@/components/reusables/react-toastify";
 
 const AquaDashboardPageComponent = () => {
   const { userData } = useSelector((state) => ({ ...state }));
@@ -44,6 +45,8 @@ const AquaDashboardPageComponent = () => {
           type: "UPDATE_USER_DETAILS",
           paylaod: res.data,
         });
+        AquaToast({message:"Successfully Updated details", type:"success"})
+        setUpdateDetails(!updateDetails)
       })
       .catch((err) => {
         console.log("err", err);
@@ -87,7 +90,7 @@ const AquaDashboardPageComponent = () => {
 
   const titleGenerate = (user) => {
     if (user?.firstName) {
-      setTitle(`Welcome back "${user.firstName}" Here is your dashboard`);
+      setTitle(`Welcome back "${user.firstName}" Here is your Dashboard`);
     } else {
       setTitle("Dashboard");
     }
@@ -234,7 +237,7 @@ const AquaDashboardPageComponent = () => {
                       name="notification-method"
                       type="radio"
                       onChange={() => handleAddressChange(r.street)}
-                      checked={r.street === selectedAddress.street}
+                      checked={r.street === selectedAddress?.street}
                       className={`h-4 w-4 border-gray-300 focus:ring-indigo-600 ${selectedAddress === r.street ? "bg-indigo-600 text-white" : "bg-white text-gray-800"}`}
                     />
                     <label className="text-md ml-3 block text-sm font-medium leading-6 text-gray-900">

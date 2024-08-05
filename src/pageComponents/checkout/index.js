@@ -38,7 +38,7 @@ const AquaCheckoutComponent = () => {
   );
   const { openAuthDialog } = useDialog();
   const [prompt, setPromt] = useState(false);
-  const [loading, setLoading] = useState({cod:false, gateway:true})
+  const [loading, setLoading] = useState({ cod: false, gateway: true });
   const [selectedtAddressChange, setSelectedAddressChange] = useState({});
   const { closeCartDrawer } = useCartDrawer();
   const { EmptyCart, removeFromCart } = useProduct();
@@ -147,20 +147,20 @@ const AquaCheckoutComponent = () => {
     } else if (userData.data.user.addresses.length < 0) {
       AquaToast({ message: "Please Add An Address", type: "error" });
     } else {
-      setLoading(prevState => ({
+      setLoading((prevState) => ({
         ...prevState,
-        cod: true
+        cod: true,
       }));
-      
+
       orderServiceOperations
         .createCodOrder(newOrder)
         .then((res) => {
           setTimeout(() => {
-            setLoading(prevState => ({
+            setLoading((prevState) => ({
               ...prevState,
-              cod: false
+              cod: false,
             }));
-            console.log("data",res.data)
+            console.log("data", res.data);
             router.push(`/order/${res.data.transactionId}`);
           }, 4000); // Delay of 4000 ms (4 seconds)
         })
@@ -207,14 +207,14 @@ const AquaCheckoutComponent = () => {
       } else if (!selectedAddress) {
         AquaToast({ message: "Please select an address", type: "error" });
       } else {
-        setLoading(prevState => ({
+        setLoading((prevState) => ({
           ...prevState,
-          gateway: true
+          gateway: true,
         }));
         orderServiceOperations.createPhonePePayOrder(newOrder).then((res) => {
-          setLoading(prevState => ({
+          setLoading((prevState) => ({
             ...prevState,
-            gateway: false
+            gateway: false,
           }));
           window.location.href = res.url;
         });
@@ -550,7 +550,11 @@ const AquaCheckoutComponent = () => {
                           onClick={handleCashOnDelivery}
                           className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
                         >
-                          {loading.cod ? <AquaSpinner color="gray"/> : "Cash On Delivery" }
+                          {loading.cod ? (
+                            <AquaSpinner color="gray" />
+                          ) : (
+                            "Cash On Delivery"
+                          )}
                         </button>
                       </div>
 

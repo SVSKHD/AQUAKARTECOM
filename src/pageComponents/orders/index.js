@@ -463,8 +463,7 @@ export default function Example() {
               <div className="space-y-2 px-4 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
                 <div className="flex sm:items-baseline sm:space-x-4">
                   <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-                    Order #{order?.orderId} -{" "}
-                      Cash On Delivery
+                    Order #{order?.orderId} - Cash On Delivery
                   </h1>
                   <Link
                     href="#"

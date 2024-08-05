@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
 const AquaSpinner = ({ color }) => {
   const colorClass = `border-t-2 border-b-2 border-${color}-500`;
@@ -16,7 +16,7 @@ AquaSpinner.propTypes = {
 };
 
 AquaSpinner.defaultProps = {
-  color: 'blue',
+  color: "blue",
 };
 
 export default AquaSpinner;
