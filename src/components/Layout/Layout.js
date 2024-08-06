@@ -20,7 +20,7 @@ const AquaLayout = (props) => {
       <AquaCartDrawer />
       <AquafavDrawer />
       <AquaToast />
-      <main>{props.children}</main>
+      <main className="bg-white">{props.children}</main>
       <AquaFooter />
     </>
   );

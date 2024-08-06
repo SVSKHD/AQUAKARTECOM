@@ -222,22 +222,14 @@ const AquaCheckoutComponent = () => {
     }
   };
 
-  const handleDeleteAddress = (e, r) => {
+  const handleDeleteAddressDialog = (e, r) => {
     e.preventDefault();
     setPromt(true);
-    setSelectedAddressChange(r);
-    if (selectedtAddressChange) {
-      setPromt(!prompt);
-      console.log("selected address", selectedtAddressChange);
-    }
   };
 
-  const items = [
-    {
-      title: "Item 1",
-      content: "This is the content of item 1.",
-    },
-  ];
+  const handleAddressDelete = () => {
+    const addresses = userData.user.addresses;
+  };
 
   return (
     <AquaLayout seo={seo}>

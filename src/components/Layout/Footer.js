@@ -18,9 +18,9 @@ const navigation = {
   //   { name: "Partners", href: "#" },
   // ],
   Policy: [
-    { name: "Shipping-policy", href: "#" },
-    { name: "Privacy", href: "#" },
-    { name: "Terms & Condtitions", href: "#" },
+    { name: "Shipping-policy", href: "/shipping-policy" },
+    { name: "Privacy", href: "/privacy-policy" },
+    { name: "Terms & Condtitions", href: "/terms-and-conditions" },
   ],
   social: [
     {
