@@ -151,6 +151,8 @@ const AquaCheckoutComponent = () => {
     removeFromCart(r._id);
   };
 
+
+
   const handleCashOnDelivery = () => {
     const cashTransactionId = `AQTR-COD-${nanoid(5).toUpperCase()}D${moment(
       new Date(),
@@ -180,8 +182,11 @@ const AquaCheckoutComponent = () => {
       ).toISOString(), // Adding 7 days // Adding 7 days for delivery
       orderStatus: "Processing",
     };
-    console.log("data check", newOrder);
-    if (!selectedAddress) {
+    if(!userData.user.email || !userData.user.phone){
+      AquaToast({ message: "Please Update Details To Proceed Further", type: "error" });
+    }else if (userData.data.user.addresses.length < 0) {
+      AquaToast({ message: "Please Add An Address", type: "error" });
+    }else if (!selectedAddress) {
       AquaToast({ message: "Please select an address", type: "error" });
     } else if (userData.data.user.addresses.length < 0) {
       AquaToast({ message: "Please Add An Address", type: "error" });
@@ -241,10 +246,14 @@ const AquaCheckoutComponent = () => {
         ).toISOString(), // Adding 7 days
         orderStatus: "Processing",
       };
-      if (userData.data.user.addresses.length < 0) {
+      if(!userData.user.email || !userData.user.phone){
+        AquaToast({ message: "Please Update Details To Proceed Further", type: "error" });
+      }else if (userData.data.user.addresses.length < 0) {
         AquaToast({ message: "Please Add An Address", type: "error" });
-      } else if (!selectedAddress) {
+      }else if (!selectedAddress) {
         AquaToast({ message: "Please select an address", type: "error" });
+      } else if (userData.data.user.addresses.length < 0) {
+        AquaToast({ message: "Please Add An Address", type: "error" });
       } else {
         setLoading((prevState) => ({
           ...prevState,
