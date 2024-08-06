@@ -8,7 +8,6 @@ import {
   XMarkIcon,
   PencilIcon,
   TrashIcon,
-  UserIcon,
 } from "@heroicons/react/20/solid";
 import { useSelector, useDispatch } from "react-redux";
 import { nanoid } from "nanoid";
@@ -21,10 +20,10 @@ import Image from "next/image";
 import useDialog from "@/utils/dialog";
 import useCartDrawer from "../../utils/drawer";
 import useProduct from "@/utils/product";
-import AquaProductCard from "@/components/cards/productCard";
 import AquaPromptDialog from "@/components/common/promptDialogs/promtDialog";
 import UserServiceOperations from "@/services/user";
 import AquaSpinner from "@/components/common/spinner";
+import AquaInput from "@/components/common/input";
 
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
@@ -38,6 +37,14 @@ const AquaCheckoutComponent = () => {
   );
   const { openAuthDialog } = useDialog();
   const [prompt, setPromt] = useState(false);
+  const [updateDialog, setUpdateDialog] = useState(false);
+  const [bulkUpdate, setBulkUpdate] = useState({
+    firstName: userData?.user.firstName,
+    lastName: userData?.user.lastName,
+    email: userData?.user.email,
+    phone: userData?.user.phone,
+    dob: userData?.user.dob,
+  });
   const [loading, setLoading] = useState({ cod: false, gateway: true });
   const [selectedtAddressChange, setSelectedAddressChange] = useState({});
   const { closeCartDrawer } = useCartDrawer();
@@ -80,6 +87,38 @@ const AquaCheckoutComponent = () => {
   const handleQuantityChange = (event, id) => {
     const quantity = parseInt(event.target.value, 10);
     changeItemQuantity(id, quantity);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setBulkUpdate((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleUpdateDetails = async () => {
+    const newDetails = { ...bulkUpdate };
+    console.log("update", newDetails);
+
+    const id = userData.user._id;
+    const token = userData.token;
+
+    const payload = { newDetails };
+
+    await UserServiceOperations.UserUpdateDetails(id, payload, token)
+      .then((res) => {
+        console.log("apiu", res.data);
+        dispatch({
+          type: "UPDATE_USER_DETAILS",
+          payload: res.data,
+        });
+        AquaToast({ message: "Successfully Updated details", type: "success" });
+        setUpdateDetails(!updateDetails);
+      })
+      .catch((err) => {
+        console.log("err", err);
+      });
   };
 
   const handleEditAddress = (e, r) => {
@@ -264,6 +303,97 @@ const AquaCheckoutComponent = () => {
                 <h2 id="cart-heading" className="sr-only">
                   Items in your shopping cart
                 </h2>
+
+                {!userData.user.email || !userData.user.phone ? (
+                  <>
+                    <button
+                      onClick={() => setUpdateDialog(!updateDialog)}
+                      type="button"
+                      className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    >
+                      Update Details
+                    </button>
+                    {updateDialog ? (
+                      <>
+                        <div className="border-b border-gray-900/10 pb-12">
+                          <h2 className="text-base font-semibold leading-7 text-gray-900">
+                            Personal Information
+                          </h2>
+                          <p className="mt-1 text-sm leading-6 text-gray-600">
+                            Use a valid email address where you can receive
+                            mail.
+                          </p>
+
+                          <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                            <div className="sm:col-span-3">
+                              <AquaInput
+                                id="first-name"
+                                name="firstName"
+                                type="text"
+                                autoComplete="given-name"
+                                value={bulkUpdate.firstName}
+                                onChange={handleChange}
+                                label="First name"
+                                placeholder="Enter your first name"
+                              />
+                            </div>
+
+                            <div className="sm:col-span-3">
+                              <AquaInput
+                                id="last-name"
+                                name="lastName"
+                                type="text"
+                                autoComplete="given-name"
+                                value={bulkUpdate.lastName}
+                                onChange={handleChange}
+                                label="last name"
+                                placeholder="Enter your last name"
+                              />
+                            </div>
+
+                            <div className="sm:col-span-3">
+                              <AquaInput
+                                id="email"
+                                name="email"
+                                type="text"
+                                autoComplete="given-name"
+                                value={bulkUpdate.email}
+                                onChange={handleChange}
+                                label="Email"
+                                placeholder="Enter your email"
+                              />
+                            </div>
+                            <div className="sm:col-span-3">
+                              <AquaInput
+                                id="phone"
+                                name="phone"
+                                type="number"
+                                autoComplete="given-name"
+                                value={bulkUpdate.phone}
+                                onChange={handleChange}
+                                maxLength={10}
+                                label="Phone"
+                                placeholder="Enter your email"
+                              />
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="rounded-md mt-5 bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                            onClick={handleUpdateDetails}
+                          >
+                            Update Details
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      ""
+                    )}
+                  </>
+                ) : (
+                  <></>
+                )}
+
                 <h1 className="text-xl mt-10 font-bold tracking-tight text-gray-500 sm:text-xl">
                   Add Address
                 </h1>
