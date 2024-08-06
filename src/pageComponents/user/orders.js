@@ -4,6 +4,7 @@ import orderServiceOperations from "@/services/order";
 import { useSelector } from "react-redux";
 import AquaToast from "@/components/reusables/react-toastify";
 import useCurrency from "@/utils/currency";
+import AquaSpinner from "@/components/common/spinner";
 
 const AquaOrderComponent = () => {
   const [loading, setLoading] = useState(false);
@@ -13,21 +14,25 @@ const AquaOrderComponent = () => {
 
   useEffect(() => {
     setLoading(true);
-    // console.log("token", userData.data.token)
+
     orderServiceOperations
       .getOrdersByUserId(userData.user._id, userData.token)
       .then((res) => {
-        setLoading(false);
-        setOrders(res.data);
+        setTimeout(() => {
+          setLoading(false);
+          setOrders(res.data);
+        }, 4000); // Delay of 4000ms (4 seconds)
       })
       .catch((err) => {
-        setLoading(false);
-        AquaToast({
-          message: "Sorry problem in fetching orders",
-          error: "error",
-        });
+        setTimeout(() => {
+          setLoading(false);
+          AquaToast({
+            message: "Sorry, problem in fetching orders",
+            error: "error",
+          });
+        }, 4000); // Delay of 4000ms (4 seconds)
       });
-  }, [userData.user._id, userData.user.token]); // Added empty dependency array
+  }, [userData.user._id, userData.token]);
 
   const sortedOrders = orders?.sort(
     (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
@@ -54,7 +59,7 @@ const AquaOrderComponent = () => {
   return (
     <>
       <AquaDashboardComponent title={"Orders"}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loading?<AquaSpinner color="green"/>:( <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sortedOrders?.length > 0 ? (
             <>
               {orders.map((r, i) => (
@@ -103,7 +108,8 @@ const AquaOrderComponent = () => {
           ) : (
             <h2 className="text-2xl font-bold">No Orders Yet</h2>
           )}
-        </div>
+        </div>)}
+       
       </AquaDashboardComponent>
     </>
   );

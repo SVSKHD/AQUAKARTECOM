@@ -44,9 +44,7 @@ const getFirstLettersFromEmail = (email) => {
   }
 
   const firstLetterUsername = username.charAt(0);
-  const firstLetterDomain = domain.charAt(0);
-
-  return firstLetterUsername + firstLetterDomain;
+  return firstLetterUsername;
 };
 
 export default function AquaDashboardComponent(props) {
@@ -179,31 +177,33 @@ export default function AquaDashboardComponent(props) {
                     </DisclosureButton>
                   ))}
                 </div>
+                {/* // mobile user profile */}
                 <div className="border-t border-gray-200 pb-3 pt-4">
                   <div className="flex items-center px-4">
                     <div className="flex-shrink-0">
-                      <img
-                        className="h-10 w-10 rounded-full"
-                        src={user.imageUrl}
-                        alt=""
-                      />
+                      <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-gray-500">
+                        <span className="text-lg font-medium leading-none text-white">
+                          {" "}
+                          {userData &&
+                            getFirstLettersFromEmail(userData.user.email)}
+                        </span>
+                      </span>
                     </div>
                     <div className="ml-3">
                       <div className="text-base font-medium text-gray-800">
-                        {user.name}
+                        {userData?.user?.firstName}
                       </div>
-                      <div className="text-sm font-medium text-gray-500">
-                        {user.email}
-                      </div>
+                      <div className="text-sm font-medium text-gray-500"></div>
                     </div>
-                    <button
+                    <a
                       type="button"
                       className="relative ml-auto flex-shrink-0 rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                      href="/"
                     >
                       <span className="absolute -inset-1.5" />
                       <span className="sr-only">View notifications</span>
-                      <BellIcon className="h-6 w-6" aria-hidden="true" />
-                    </button>
+                      <HomeIcon className="h-6 w-6" aria-hidden="true" />
+                    </a>
                   </div>
                 </div>
               </DisclosurePanel>
@@ -221,7 +221,7 @@ export default function AquaDashboardComponent(props) {
               </h1>
             </div>
           </header>
-          <main>
+          <main className="min-h-screen">
             <div className="bg-white mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
               {props.children}
             </div>

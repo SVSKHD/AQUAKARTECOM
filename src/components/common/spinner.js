@@ -2,7 +2,15 @@ import React from "react";
 import PropTypes from "prop-types";
 
 const AquaSpinner = ({ color }) => {
-  const colorClass = `border-t-2 border-b-2 border-${color}-500`;
+  const colorClasses = {
+    blue: "border-t-2 border-b-2 border-blue-500",
+    red: "border-t-2 border-b-2 border-red-500",
+    green: "border-t-2 border-b-2 border-green-500",
+    yellow: "border-t-2 border-b-2 border-yellow-500",
+    // Add more colors as needed
+  };
+
+  const colorClass = colorClasses[color] || colorClasses.blue;
 
   return (
     <div className="flex items-center justify-center">
@@ -12,7 +20,7 @@ const AquaSpinner = ({ color }) => {
 };
 
 AquaSpinner.propTypes = {
-  color: PropTypes.string,
+  color: PropTypes.oneOf(["blue", "red", "green", "yellow"]), // Add more colors as needed
 };
 
 AquaSpinner.defaultProps = {

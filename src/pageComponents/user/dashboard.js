@@ -91,7 +91,7 @@ const AquaDashboardPageComponent = () => {
 
   const titleGenerate = (user) => {
     if (user?.firstName) {
-      setTitle(`Welcome back "${user.firstName}" Here is your Dashboard`);
+      setTitle(`Welcome back "${user.firstName}"`);
     } else {
       setTitle("Dashboard");
     }
