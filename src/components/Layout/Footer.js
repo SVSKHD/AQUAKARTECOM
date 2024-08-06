@@ -19,7 +19,7 @@ const navigation = {
   // ],
   Policy: [
     { name: "Shipping-policy", href: "/shipping-policy" },
-    { name: "Privacy", href: "/privacy-policy" },
+    { name: "Privacy-policy", href: "/privacy-policy" },
     { name: "Terms & Condtitions", href: "/terms-and-conditions" },
   ],
   social: [
