@@ -23,12 +23,12 @@ import { useRouter } from "next/router";
         {
           title: "Shipping & Delivery out of Hyderabad",
           description:
-            "For shipments outside of Hyderabad, our delivery process involves a more extensive logistics network. While we strive to meet delivery timelines, the complexity of inter-city or inter-state transportation can sometimes lead to variations in delivery schedules. We work closely with our shipping partners to minimize delays and ensure your order reaches you as swiftly as possible. Our commitment to transparency means we'll keep you informed every step of the way, from dispatch to delivery, <b class='text-danger'>for example : estimated + 2 days </b>",
+            "For shipments outside of Hyderabad, our delivery process involves a more extensive logistics network. While we strive to meet delivery timelines, the complexity of inter-city or inter-state transportation can sometimes lead to variations in delivery schedules. We work closely with our shipping partners to minimize delays and ensure your order reaches you as swiftly as possible. Our commitment to transparency means we'll keep you informed every step of the way, from dispatch to delivery, for example : estimated + 2 days",
         },
         {
           title: "Shipping & Delivery out of Telangana",
           description:
-            "Orders from Telangana will be dispatched within <b>5-10</b> days. Please allow this time frame for shipping. We appreciate your patience and look forward to serving you!",
+            "Orders from Telangana will be dispatched within 5-10 days. Please allow this time frame for shipping. We appreciate your patience and look forward to serving you!",
         },
         {
           title: "Packing and Contents",
