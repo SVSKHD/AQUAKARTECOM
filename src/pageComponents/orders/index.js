@@ -608,26 +608,12 @@ export default function Example() {
                         Payment information
                       </dt>
                       <dd className="-ml-4 -mt-1 flex flex-wrap">
-                        <div className="ml-4 mt-4">
-                          COD
-                        </div>
+                        <div className="ml-4 mt-4">COD</div>
                       </dd>
                     </div>
                   </dl>
 
                   <dl className="mt-8 divide-y divide-gray-200 text-lg lg:col-span-5 lg:mt-0">
-                    {/* <div className="flex items-center justify-between pb-4">
-      <dt className="text-gray-600">Subtotal</dt>
-      <dd className="font-medium text-gray-900">$72</dd>
-    </div>
-    <div className="flex items-center justify-between py-4">
-      <dt className="text-gray-600">Shipping</dt>
-      <dd className="font-medium text-gray-900">$5</dd>
-    </div>
-    <div className="flex items-center justify-between py-4">
-      <dt className="text-gray-600">Tax</dt>
-      <dd className="font-medium text-gray-900">$6.16</dd>
-    </div> */}
                     <div className="flex items-center justify-between pt-4">
                       <dt className="font-medium text-gray-900">Order total</dt>
                       {/* {JSON.stringify(order)} */}
