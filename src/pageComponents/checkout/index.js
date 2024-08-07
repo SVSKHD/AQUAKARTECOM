@@ -159,7 +159,7 @@ const AquaCheckoutComponent = () => {
     ).format("DDMMYYYY")}`;
     const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
     const newOrder = {
-      user: userData?.data?.user?._id, // Safe access and also make sure user exists
+      user: userData?.user?._id, // Safe access and also make sure user exists
       orderType: "Cash On Delivery",
       items: cartData.map((item) => ({
         productId: item._id,
@@ -184,12 +184,10 @@ const AquaCheckoutComponent = () => {
     };
     if(!userData.user.email || !userData.user.phone){
       AquaToast({ message: "Please Update Details To Proceed Further", type: "error" });
-    }else if (userData.data.user.addresses.length < 0) {
+    }else if (userData.user.addresses.length < 0) {
       AquaToast({ message: "Please Add An Address", type: "error" });
     }else if (!selectedAddress) {
       AquaToast({ message: "Please select an address", type: "error" });
-    } else if (userData.data.user.addresses.length < 0) {
-      AquaToast({ message: "Please Add An Address", type: "error" });
     } else {
       setLoading((prevState) => ({
         ...prevState,
@@ -248,11 +246,11 @@ const AquaCheckoutComponent = () => {
       };
       if(!userData.user.email || !userData.user.phone){
         AquaToast({ message: "Please Update Details To Proceed Further", type: "error" });
-      }else if (userData.data.user.addresses.length < 0) {
+      }else if (userData.user.addresses.length < 0) {
         AquaToast({ message: "Please Add An Address", type: "error" });
       }else if (!selectedAddress) {
         AquaToast({ message: "Please select an address", type: "error" });
-      } else if (userData.data.user.addresses.length < 0) {
+      } else if (userData.user.addresses.length < 0) {
         AquaToast({ message: "Please Add An Address", type: "error" });
       } else {
         setLoading((prevState) => ({
@@ -286,7 +284,7 @@ const AquaCheckoutComponent = () => {
         close={() => setPromt(!prompt)}
         title={"Delete Confirmation"}
         handleCancel={() => setPromt(!prompt)}
-        handleOk={(e) => handleDeleteAddress(e, selectedtAddressChange)}
+        handleOk={(e) => handleDeleteAddressDialog(e, selectedtAddressChange)}
       />
 
       {!userData || userData === null ? (

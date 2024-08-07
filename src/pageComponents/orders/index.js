@@ -119,7 +119,7 @@ export default function Example() {
       const paymentMode = id.includes("PGPP");
       const CODMode = id.includes("COD");
       orderServiceOperations
-        .verifyPayment(id, userData.data.token)
+        .verifyPayment(id, userData.token)
         .then((res) => {
           console.log(res.order);
           setOrder(res.order);
@@ -138,7 +138,7 @@ export default function Example() {
         setMode((mode) => ({ ...mode, payment: true }));
       } else if (CODMode) {
         orderServiceOperations
-          .getOrdersByTransactionId(id, userData.data.token)
+          .getOrdersByTransactionId(id, userData.token)
           .then((res) => {
             setOrder(res.data.data);
             dispatch({
@@ -569,7 +569,7 @@ export default function Example() {
                         Total
                       </dt>
                       <dd className="text-gray-900 font-bold text-2xl text-green-600">
-                        {formatCurrencyINR(order.totalAmount)}
+                        {formatCurrencyINR(order?.totalAmount)}
                       </dd>
                     </div>
                   </dl>
@@ -577,6 +577,67 @@ export default function Example() {
               ) : (
                 ""
               )}
+              <section aria-labelledby="summary-heading" className="mt-16">
+                <h2 id="summary-heading" className="sr-only">
+                  Billing Summary
+                </h2>
+
+                <div className="bg-white rounded-lg shadow-md p-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8 lg:py-8">
+                  <dl className="grid grid-cols-2 gap-6 text-lg sm:grid-cols-2 md:gap-x-8 lg:col-span-7">
+                    <div>
+                      <dt className="font-medium text-gray-900">
+                        Billing address
+                      </dt>
+                      <dd className="mt-3 text-gray-500">
+                        <span className="block">
+                          {order?.shippingAddress?.street}
+                        </span>
+                        <span className="block">
+                          {order?.shippingAddress?.city}
+                        </span>
+                        <span className="block">
+                          {order?.shippingAddress?.state}
+                        </span>
+                        <span className="block">
+                          {order?.shippingAddress?.postalCode}
+                        </span>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="font-medium text-gray-900">
+                        Payment information
+                      </dt>
+                      <dd className="-ml-4 -mt-1 flex flex-wrap">
+                        <div className="ml-4 mt-4">
+                          COD
+                        </div>
+                      </dd>
+                    </div>
+                  </dl>
+
+                  <dl className="mt-8 divide-y divide-gray-200 text-lg lg:col-span-5 lg:mt-0">
+                    {/* <div className="flex items-center justify-between pb-4">
+      <dt className="text-gray-600">Subtotal</dt>
+      <dd className="font-medium text-gray-900">$72</dd>
+    </div>
+    <div className="flex items-center justify-between py-4">
+      <dt className="text-gray-600">Shipping</dt>
+      <dd className="font-medium text-gray-900">$5</dd>
+    </div>
+    <div className="flex items-center justify-between py-4">
+      <dt className="text-gray-600">Tax</dt>
+      <dd className="font-medium text-gray-900">$6.16</dd>
+    </div> */}
+                    <div className="flex items-center justify-between pt-4">
+                      <dt className="font-medium text-gray-900">Order total</dt>
+                      {/* {JSON.stringify(order)} */}
+                      <dd className="font-medium text-indigo-600">
+                        {formatCurrencyINR(order?.totalAmount)}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              </section>
             </>
           )}
           {mode.payment && (
