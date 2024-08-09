@@ -3,26 +3,16 @@ import {
   Dialog,
   DialogBackdrop,
   DialogPanel,
-  Popover,
-  PopoverButton,
-  PopoverGroup,
-  PopoverPanel,
   Tab,
   TabGroup,
   TabList,
   TabPanel,
   TabPanels,
 } from "@headlessui/react";
-import {
-  Bars3Icon,
-  MagnifyingGlassIcon,
-  QuestionMarkCircleIcon,
-  ShoppingBagIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import AquaLayout from "@/components/Layout/Layout";
-import AquaProductCard from "@/components/cards/productCard";
+import AquaSpinner from "@/components/common/spinner";
 import { useRouter } from "next/router";
 import CategoryServiceOperations from "@/services/category";
 import ProductServiceOperations from "@/services/products";
@@ -33,13 +23,32 @@ const AquaHomeComponent = () => {
   const [categoryData, setCategoryData] = useState([]);
   const [productData, setProductData] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loading, setLoading] = useState({
+    category: false,
+    subcategory: false,
+    product: false,
+  });
+
   useEffect(() => {
+    // Set category loading to true after 3000ms delay
+    const timer = setTimeout(() => {
+      setLoading((prevData) => ({ ...prevData, category: true }));
+    }, 3000);
+
+    // Fetch category data
     CategoryServiceOperations.Allcategories().then((res) => {
       setCategoryData(res.data.data);
+      setLoading((prevData) => ({ ...prevData, category: false }));
     });
+
+    // Fetch product data
     ProductServiceOperations.AllProducts().then((res) => {
       setProductData(res.data.data);
+      setLoading((prevData) => ({ ...prevData, product: false }));
     });
+
+    // Cleanup the timeout if the component unmounts before the delay
+    return () => clearTimeout(timer);
   }, []);
 
   const router = useRouter();
@@ -201,7 +210,6 @@ const AquaHomeComponent = () => {
         "Be more productive than enterprise project managers with a single piece of paper.",
     },
   ];
-
 
   function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -429,36 +437,48 @@ const AquaHomeComponent = () => {
                   <div className="-my-2">
                     <div className="relative box-content h-80 overflow-x-auto py-2 xl:overflow-visible">
                       <div className="absolute flex space-x-8 px-4 sm:px-6 lg:px-8 xl:relative xl:grid xl:grid-cols-5 xl:gap-x-8 xl:space-x-0 xl:px-0">
-                        {categoryData.map((category) => (
-                          <Link
-                            key={category.title}
-                            href={`/category/${category._id}`}
-                            className="relative flex h-80 w-56 flex-col overflow-hidden rounded-lg p-6 hover:opacity-75 xl:w-auto"
-                          >
-                            <span
-                              aria-hidden="true"
-                              className="absolute inset-0"
-                            >
-                              <Image
-                                src={category.photos[0].secure_url}
-                                alt={category.title}
-                                height={100}
-                                width={100}
-                                className="h-full w-full object-cover object-center"
-                              />
-                            </span>
-                            <span
-                              aria-hidden="true"
-                              className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-gray-800 opacity-50"
-                            />
-                            <Link
-                              href={`/category/${category._id}`}
-                              className="relative mt-auto text-center text-xl font-bold text-white"
-                            >
-                              {category.title}
-                            </Link>
-                          </Link>
-                        ))}
+                        {loading.category ? (
+                          <>
+                            <div className="flex items-center justify-center">
+                              <div className="text-center">
+                                <AquaSpinner color="blue" />
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {categoryData.map((category) => (
+                              <Link
+                                key={category.title}
+                                href={`/category/${category._id}`}
+                                className="relative flex h-80 w-56 flex-col overflow-hidden rounded-lg p-6 hover:opacity-75 xl:w-auto"
+                              >
+                                <span
+                                  aria-hidden="true"
+                                  className="absolute inset-0"
+                                >
+                                  <Image
+                                    src={category.photos[0].secure_url}
+                                    alt={category.title}
+                                    height={100}
+                                    width={100}
+                                    className="h-full w-full object-cover object-center"
+                                  />
+                                </span>
+                                <span
+                                  aria-hidden="true"
+                                  className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-gray-800 opacity-50"
+                                />
+                                <Link
+                                  href={`/category/${category._id}`}
+                                  className="relative mt-auto text-center text-xl font-bold text-white"
+                                >
+                                  {category.title}
+                                </Link>
+                              </Link>
+                            ))}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

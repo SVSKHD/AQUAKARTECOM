@@ -12,10 +12,10 @@ const AquaDynamicCategoryComponent = () => {
 
   const seo = {
     title: `Aquakart | ${category.title || "Category"}`,
-    description:`Aquakart - ${category.description}`,
-    image:`${category?.photos?.[0]?.secure_url}`,
+    description: `Aquakart - ${category.description}`,
+    image: `${category?.photos?.[0]?.secure_url}`,
     keywords: `${category.keywords}`,
-    canonical:`${process.env.NEXT_PUBLIC_URL}${router.asPath} `
+    canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath} `,
   };
 
   useEffect(() => {
