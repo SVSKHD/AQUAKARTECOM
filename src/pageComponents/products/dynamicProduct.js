@@ -332,8 +332,7 @@ export default function AquaDynamicProductComponent() {
                 </section> */}
               </div>
             </div>
-
-            <section
+            {related.length>0?( <section
               aria-labelledby="related-heading"
               className="mt-10 border-t border-gray-200 px-4 py-16 sm:px-0"
             >
@@ -351,7 +350,8 @@ export default function AquaDynamicProductComponent() {
                   </div>
                 ))}
               </div>
-            </section>
+            </section>):""}
+           
           </div>
         </main>
       </div>
