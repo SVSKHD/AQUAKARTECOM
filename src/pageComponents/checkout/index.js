@@ -151,65 +151,74 @@ const AquaCheckoutComponent = () => {
     removeFromCart(r._id);
   };
 
-  const handleCashOnDelivery = () => {
-    const cashTransactionId = `AQTR-COD-${nanoid(5).toUpperCase()}D${moment(
-      new Date(),
-    ).format("DDMMYYYY")}`;
-    const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
-    const newOrder = {
-      user: userData?.user?._id, // Safe access and also make sure user exists
-      orderType: "Cash On Delivery",
-      items: cartData.map((item) => ({
-        productId: item._id,
-        name: item.title,
-        price: item.price,
-        quantity: item.quantity,
-      })),
-      transactionId: cashTransactionId,
-      totalAmount: getTotalPrice(),
-      orderId: orderId,
-      paymentMethod: "Cash On Delivery",
-      paymentStatus: "Pending",
-      currency: "INR",
-      billingAddress: selectedAddress, // Ensure this is correctly assigned using safe access
-      shippingAddress: selectedAddress, // Ensure this is correctly assigned using safe access
-      shippingMethod: "Standard",
-      shippingCost: 50, // Example fixed cost
-      estimatedDelivery: new Date(
-        new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
-      ).toISOString(), // Adding 7 days // Adding 7 days for delivery
-      orderStatus: "Processing",
-    };
-    if (!userData.user.email || !userData.user.phone) {
-      AquaToast({
-        message: "Please Update Details To Proceed Further",
-        type: "error",
-      });
-    } else if (userData.user.addresses.length < 0) {
-      AquaToast({ message: "Please Add An Address", type: "error" });
-    } else if (!selectedAddress) {
-      AquaToast({ message: "Please select an address", type: "error" });
-    } else {
-      setLoading((prevState) => ({
-        ...prevState,
-        cod: true,
-      }));
+  const productData = (data) => {
+    return data.map((item) => ({
+      productId: item._id,
+      name: item.title,
+      price: item.price,
+      quantity: item.quantity,
+    }));
+  };
 
-      orderServiceOperations
-        .createCodOrder(newOrder)
-        .then((res) => {
-          setTimeout(() => {
-            setLoading((prevState) => ({
-              ...prevState,
-              cod: false,
-            }));
-            console.log("data", res.data);
-            router.push(`/order/${res.data.transactionId}`);
-          }, 4000); // Delay of 4000 ms (4 seconds)
-        })
-        .catch((err) => {
-          console.log("order", err);
+  const handleCashOnDelivery = () => {
+    if (cartData.length <= 0) {
+      AquaToast({ message: "Please add products to cart", type: "info" });
+    } else {
+      const cashTransactionId = `AQTR-COD-${nanoid(5).toUpperCase()}D${moment(
+        new Date(),
+      ).format("DDMMYYYY")}`;
+      const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
+      const newOrder = {
+        user: userData?.user?._id, // Safe access and also make sure user exists
+        orderType: "Cash On Delivery",
+        items: productData(cartData),
+        transactionId: cashTransactionId,
+        totalAmount: getTotalPrice(),
+        orderId: orderId,
+        paymentMethod: "Cash On Delivery",
+        paymentStatus: "Pending",
+        currency: "INR",
+        billingAddress: selectedAddress, // Ensure this is correctly assigned using safe access
+        shippingAddress: selectedAddress, // Ensure this is correctly assigned using safe access
+        shippingMethod: "Standard",
+        shippingCost: 50, // Example fixed cost
+        estimatedDelivery: new Date(
+          new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
+        ).toISOString(), // Adding 7 days for delivery
+        orderStatus: "Processing",
+      };
+
+      if (!userData?.user?.email || !userData?.user?.phone) {
+        AquaToast({
+          message: "Please Update Details To Proceed Further",
+          type: "error",
         });
+      } else if (!userData?.user?.addresses?.length) {
+        AquaToast({ message: "Please Add An Address", type: "error" });
+      } else if (!selectedAddress) {
+        AquaToast({ message: "Please select an address", type: "error" });
+      } else {
+        setLoading((prevState) => ({
+          ...prevState,
+          cod: true,
+        }));
+
+        orderServiceOperations
+          .createCodOrder(newOrder)
+          .then((res) => {
+            setTimeout(() => {
+              setLoading((prevState) => ({
+                ...prevState,
+                cod: false,
+              }));
+              console.log("data", res.data);
+              router.push(`/order/${res.data.transactionId}`);
+            }, 4000); // Delay of 4000 ms (4 seconds)
+          })
+          .catch((err) => {
+            console.log("order", err);
+          });
+      }
     }
   };
 

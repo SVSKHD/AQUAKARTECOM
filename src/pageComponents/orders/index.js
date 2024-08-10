@@ -115,46 +115,37 @@ export default function Example() {
   const { userData } = useSelector((state) => ({ ...state }));
 
   useEffect(() => {
-    if (id) {
+    if (id && userData?.token) {
+      // Determine mode before making API call
       const paymentMode = id.includes("PGPP");
       const CODMode = id.includes("COD");
-      orderServiceOperations
-        .verifyPayment(id, userData.token)
+
+      // Make a single API call based on the mode
+      const fetchOrder = paymentMode
+        ? orderServiceOperations.verifyPayment(id, userData.token)
+        : orderServiceOperations.getOrdersByTransactionId(id, userData.token);
+
+      fetchOrder
         .then((res) => {
-          console.log(res.order);
-          setOrder(res.order);
+          const orderData = paymentMode ? res.order : res.order;
+          setOrder(orderData);
           dispatch({
             type: "EMPTY_CART",
           });
+          setMode((prevMode) => ({
+            ...prevMode,
+            payment: paymentMode,
+            COD: CODMode,
+          }));
         })
         .catch(() => {
           AquaToast({
-            message: "Opps! something has gone wrong.",
+            message: "Oops! Something has gone wrong.",
             type: "error",
           });
         });
-      if (paymentMode) {
-        console.log("id", id);
-        setMode((mode) => ({ ...mode, payment: true }));
-      } else if (CODMode) {
-        orderServiceOperations
-          .getOrdersByTransactionId(id, userData.token)
-          .then((res) => {
-            setOrder(res.data.data);
-            dispatch({
-              type: "EMPTY_CART",
-            });
-          })
-          .catch(() => {
-            AquaToast({
-              message: "Opps! something has gone wrong.",
-              type: "error",
-            });
-          });
-        setMode((mode) => ({ ...mode, COD: true }));
-      }
     }
-  }, [id, userData]);
+  }, [id, userData, dispatch]);
   const Seo = {
     title: "Aquakart | orders",
   };

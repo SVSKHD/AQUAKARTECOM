@@ -66,7 +66,6 @@ const AquaHomeComponent = () => {
     fetchData();
   }, []);
 
-
   const router = useRouter();
   const SeoData = {
     title: "Aquakart | Online Shopping for Softeners purifiers and many more",
