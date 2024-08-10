@@ -30,26 +30,42 @@ const AquaHomeComponent = () => {
   });
 
   useEffect(() => {
-    // Set category loading to true after 3000ms delay
-    const timer = setTimeout(() => {
-      setLoading((prevData) => ({ ...prevData, category: true }));
-    }, 3000);
+    const fetchData = async () => {
+      try {
+        // Set category loading to true after 3000ms delay
+        const timer = setTimeout(() => {
+          setLoading((prevData) => ({ ...prevData, category: true }));
+        }, 3000);
 
-    // Fetch category data
-    CategoryServiceOperations.Allcategories().then((res) => {
-      setCategoryData(res.data.data);
-      setLoading((prevData) => ({ ...prevData, category: false }));
-    });
+        // Fetch category data
+        const categoryRes = await CategoryServiceOperations.Allcategories();
+        setCategoryData(categoryRes.data.data);
 
-    // Fetch product data
-    ProductServiceOperations.AllProducts().then((res) => {
-      setProductData(res.data.data);
-      setLoading((prevData) => ({ ...prevData, product: false }));
-    });
+        // Fetch product data
+        const productRes = await ProductServiceOperations.AllProducts();
+        setProductData(productRes.data.data);
 
-    // Cleanup the timeout if the component unmounts before the delay
-    return () => clearTimeout(timer);
+        // Clear timeout and update loading states
+        clearTimeout(timer);
+        setLoading((prevData) => ({
+          ...prevData,
+          category: false,
+          product: false,
+        }));
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        // Optionally set loading states to false in case of an error
+        setLoading((prevData) => ({
+          ...prevData,
+          category: false,
+          product: false,
+        }));
+      }
+    };
+
+    fetchData();
   }, []);
+
 
   const router = useRouter();
   const SeoData = {
@@ -65,151 +81,6 @@ const AquaHomeComponent = () => {
   };
 
   const currencies = ["CAD", "USD", "AUD", "EUR", "GBP"];
-  const navigation = {
-    categories: [
-      {
-        name: "Women",
-        featured: [
-          {
-            name: "New Arrivals",
-            href: "#",
-            imageSrc:
-              "https://tailwindui.com/img/ecommerce-images/mega-menu-category-01.jpg",
-            imageAlt:
-              "Models sitting back to back, wearing Basic Tee in black and bone.",
-          },
-          {
-            name: "Basic Tees",
-            href: "#",
-            imageSrc:
-              "https://tailwindui.com/img/ecommerce-images/mega-menu-category-02.jpg",
-            imageAlt:
-              "Close up of Basic Tee fall bundle with off-white, ochre, olive, and black tees.",
-          },
-          {
-            name: "Accessories",
-            href: "#",
-            imageSrc:
-              "https://tailwindui.com/img/ecommerce-images/mega-menu-category-03.jpg",
-            imageAlt:
-              "Model wearing minimalist watch with black wristband and white watch face.",
-          },
-          {
-            name: "Carry",
-            href: "#",
-            imageSrc:
-              "https://tailwindui.com/img/ecommerce-images/mega-menu-category-04.jpg",
-            imageAlt:
-              "Model opening tan leather long wallet with credit card pockets and cash pouch.",
-          },
-        ],
-      },
-      {
-        name: "Men",
-        featured: [
-          {
-            name: "New Arrivals",
-            href: "#",
-            imageSrc:
-              "https://tailwindui.com/img/ecommerce-images/mega-menu-01-men-category-01.jpg",
-            imageAlt:
-              "Hats and sweaters on wood shelves next to various colors of t-shirts on hangers.",
-          },
-          {
-            name: "Basic Tees",
-            href: "#",
-            imageSrc:
-              "https://tailwindui.com/img/ecommerce-images/mega-menu-01-men-category-02.jpg",
-            imageAlt: "Model wearing light heather gray t-shirt.",
-          },
-          {
-            name: "Accessories",
-            href: "#",
-            imageSrc:
-              "https://tailwindui.com/img/ecommerce-images/mega-menu-01-men-category-03.jpg",
-            imageAlt:
-              "Grey 6-panel baseball hat with black brim, black mountain graphic on front, and light heather gray body.",
-          },
-          {
-            name: "Carry",
-            href: "#",
-            imageSrc:
-              "https://tailwindui.com/img/ecommerce-images/mega-menu-01-men-category-04.jpg",
-            imageAlt:
-              "Model putting folded cash into slim card holder olive leather wallet with hand stitching.",
-          },
-        ],
-      },
-    ],
-    pages: [
-      { name: "Company", href: "#" },
-      { name: "Stores", href: "#" },
-    ],
-  };
-  const categories = [
-    {
-      name: "New Arrivals",
-      href: "#",
-      imageSrc:
-        "https://tailwindui.com/img/ecommerce-images/home-page-01-category-01.jpg",
-    },
-    {
-      name: "Productivity",
-      href: "#",
-      imageSrc:
-        "https://tailwindui.com/img/ecommerce-images/home-page-01-category-02.jpg",
-    },
-    {
-      name: "Workspace",
-      href: "#",
-      imageSrc:
-        "https://tailwindui.com/img/ecommerce-images/home-page-01-category-04.jpg",
-    },
-    {
-      name: "Accessories",
-      href: "#",
-      imageSrc:
-        "https://tailwindui.com/img/ecommerce-images/home-page-01-category-05.jpg",
-    },
-    {
-      name: "Sale",
-      href: "#",
-      imageSrc:
-        "https://tailwindui.com/img/ecommerce-images/home-page-01-category-03.jpg",
-    },
-  ];
-  const collections = [
-    {
-      name: "Handcrafted Collection",
-      href: "#",
-      imageSrc:
-        "https://tailwindui.com/img/ecommerce-images/home-page-01-collection-01.jpg",
-      imageAlt:
-        "Brown leather key ring with brass metal loops and rivets on wood table.",
-      description:
-        "Keep your phone, keys, and wallet together, so you can lose everything at once.",
-    },
-    {
-      name: "Organized Desk Collection",
-      href: "#",
-      imageSrc:
-        "https://tailwindui.com/img/ecommerce-images/home-page-01-collection-02.jpg",
-      imageAlt:
-        "Natural leather mouse pad on white desk next to porcelain mug and keyboard.",
-      description:
-        "The rest of the house will still be a mess, but your desk will look great.",
-    },
-    {
-      name: "Focus Collection",
-      href: "#",
-      imageSrc:
-        "https://tailwindui.com/img/ecommerce-images/home-page-01-collection-03.jpg",
-      imageAlt:
-        "Person placing task list card into walnut card holder next to felt carrying case on leather desk pad.",
-      description:
-        "Be more productive than enterprise project managers with a single piece of paper.",
-    },
-  ];
 
   function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -248,32 +119,13 @@ const AquaHomeComponent = () => {
 
                   {/* Links */}
                   <TabGroup className="mt-2">
-                    <div className="border-b border-gray-200">
-                      <TabList className="-mb-px flex space-x-8 px-4">
-                        {navigation.categories.map((category) => (
-                          <Tab
-                            key={category.name}
-                            className={({ selected }) =>
-                              classNames(
-                                selected
-                                  ? "border-indigo-600 text-indigo-600"
-                                  : "border-transparent text-gray-900",
-                                "flex-1 whitespace-nowrap border-b-2 px-1 py-4 text-base font-medium",
-                              )
-                            }
-                          >
-                            {category.name}
-                          </Tab>
-                        ))}
-                      </TabList>
-                    </div>
                     <TabPanels as={Fragment}>
-                      {navigation.categories.map((category) => (
+                      {categoryData.map((category) => (
                         <TabPanel
                           key={category.name}
                           className="space-y-12 px-4 py-6"
                         >
-                          <div className="grid grid-cols-2 gap-x-4 gap-y-10">
+                          {/* <div className="grid grid-cols-2 gap-x-4 gap-y-10">
                             {category.featured.map((item) => (
                               <div key={item.name} className="group relative">
                                 <div className="aspect-h-1 aspect-w-1 overflow-hidden rounded-md bg-gray-100 group-hover:opacity-75">
@@ -303,13 +155,13 @@ const AquaHomeComponent = () => {
                                 </p>
                               </div>
                             ))}
-                          </div>
+                          </div> */}
                         </TabPanel>
                       ))}
                     </TabPanels>
                   </TabGroup>
 
-                  <div className="space-y-6 border-t border-gray-200 px-4 py-6">
+                  {/* <div className="space-y-6 border-t border-gray-200 px-4 py-6">
                     {navigation.pages.map((page) => (
                       <div key={page.name} className="flow-root">
                         <a
@@ -320,7 +172,7 @@ const AquaHomeComponent = () => {
                         </a>
                       </div>
                     ))}
-                  </div>
+                  </div> */}
 
                   <div className="space-y-6 border-t border-gray-200 px-4 py-6">
                     <div className="flow-root">
