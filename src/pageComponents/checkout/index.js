@@ -123,15 +123,16 @@ const AquaCheckoutComponent = () => {
 
   const handleEditAddress = (e, r) => {
     e.preventDefault();
-    console.log(r);
-    dispatch({
-      type: "SET_ADDRESS_DIALOG",
-      payload: true,
-    });
-    dispatch({
-      type: "SET_ADDRESS_DATA",
-      payload: r,
-    });
+    const addresses = userData;
+    console.log(r, addresses);
+    // dispatch({
+    //   type: "SET_ADDRESS_DIALOG",
+    //   payload: true,
+    // });
+    // dispatch({
+    //   type: "SET_ADDRESS_DATA",
+    //   payload: r,
+    // });
   };
 
   const handleAddAddress = () => {
@@ -145,7 +146,9 @@ const AquaCheckoutComponent = () => {
     });
   };
 
-  const hanldeDeleteAddress = () => {};
+  const handleDeleteAddress = (r) => {
+    console.log(r._id);
+  };
 
   const handleRemoveProduct = (r) => {
     removeFromCart(r._id);
@@ -466,7 +469,7 @@ const AquaCheckoutComponent = () => {
                             </button>
                             <button
                               className="flex items-center text-red-500 hover:text-red-700"
-                              onClick={(e) => handleDeleteAddress(e, r)}
+                              onClick={() => handleDeleteAddress(r)}
                             >
                               <TrashIcon
                                 className="h-5 w-5 mr-1"
