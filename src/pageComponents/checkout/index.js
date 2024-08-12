@@ -36,7 +36,8 @@ const AquaCheckoutComponent = () => {
     userData?.user?.selectedAddress,
   );
   const { openAuthDialog } = useDialog();
-  const [prompt, setPromt] = useState(false);
+  const [prompt, setPrompt] = useState(false);
+  const [deleteId, setDeleteId] = useState("")
   const [updateDialog, setUpdateDialog] = useState(false);
   const [bulkUpdate, setBulkUpdate] = useState({
     firstName: userData?.user.firstName,
@@ -96,73 +97,8 @@ const AquaCheckoutComponent = () => {
       [name]: value,
     }));
   };
-
-  const handleUpdateDetails = async () => {
-    const newDetails = { ...bulkUpdate };
-    console.log("update", newDetails);
-
-    const id = userData.user._id;
-    const token = userData.token;
-
-    const payload = { newDetails };
-
-    await UserServiceOperations.UserUpdateDetails(id, payload, token)
-      .then((res) => {
-        console.log("apiu", res.data);
-        dispatch({
-          type: "UPDATE_USER_DETAILS",
-          payload: res.data,
-        });
-        AquaToast({ message: "Successfully Updated details", type: "success" });
-        setUpdateDetails(!updateDetails);
-      })
-      .catch((err) => {
-        console.log("err", err);
-      });
-  };
-
-  const handleEditAddress = (e, r) => {
-    e.preventDefault();
-    const addresses = userData;
-    console.log(r, addresses);
-    // dispatch({
-    //   type: "SET_ADDRESS_DIALOG",
-    //   payload: true,
-    // });
-    // dispatch({
-    //   type: "SET_ADDRESS_DATA",
-    //   payload: r,
-    // });
-  };
-
-  const handleAddAddress = () => {
-    dispatch({
-      type: "SET_ADDRESS_DIALOG",
-      payload: true,
-    });
-    dispatch({
-      type: "SET_ADDRESS_DATA",
-      payload: null,
-    });
-  };
-
-  const handleDeleteAddress = (r) => {
-    console.log(r._id);
-  };
-
-  const handleRemoveProduct = (r) => {
-    removeFromCart(r._id);
-  };
-
-  const productData = (data) => {
-    return data.map((item) => ({
-      productId: item._id,
-      name: item.title,
-      price: item.price,
-      quantity: item.quantity,
-    }));
-  };
-
+  
+  // payment functions
   const handleCashOnDelivery = () => {
     if (cartData.length <= 0) {
       AquaToast({ message: "Please add products to cart", type: "info" });
@@ -284,9 +220,106 @@ const AquaCheckoutComponent = () => {
     }
   };
 
+  const handleUpdateDetails = async () => {
+    const newDetails = { ...bulkUpdate };
+    console.log("update", newDetails);
+
+    const id = userData.user._id;
+    const token = userData.token;
+
+    const payload = { newDetails };
+
+    await UserServiceOperations.UserUpdateDetails(id, payload, token)
+      .then((res) => {
+        console.log("apiu", res.data);
+        dispatch({
+          type: "UPDATE_USER_DETAILS",
+          payload: res.data,
+        });
+        AquaToast({ message: "Successfully Updated details", type: "success" });
+        setUpdateDetails(!updateDetails);
+      })
+      .catch((err) => {
+        console.log("err", err);
+      });
+  };
+
+  const handleEditAddress = (e, r) => {
+    e.preventDefault();
+    dispatch({
+      type: "SET_ADDRESS_DIALOG",
+      payload: true,
+    });
+    dispatch({
+      type: "SET_ADDRESS_DATA",
+      payload: r,
+    });
+  };
+
+  const handleAddAddress = () => {
+    dispatch({
+      type: "SET_ADDRESS_DIALOG",
+      payload: true,
+    });
+    dispatch({
+      type: "SET_ADDRESS_DATA",
+      payload: null,
+    });
+  };
+
+  const handleDeleteAddress = (e,r) => {
+    e.preventDefault()
+    setPrompt(true)
+   
+    setDeleteId(r._id)
+    console.log(deleteId);
+  };
+
+  const handleRemoveProduct = (r) => {
+    removeFromCart(r._id);
+  };
+
+  const productData = (data) => {
+    return data.map((item) => ({
+      productId: item._id,
+      name: item.title,
+      price: item.price,
+      quantity: item.quantity,
+    }));
+  };
+
+
+
   const handleDeleteAddressDialog = (e, r) => {
     e.preventDefault();
-    setPromt(true);
+    const addresses = userData.user.addresses.filter((r)=>r._id!==deleteId)
+    const payload={
+      newDetails:{
+        addresses
+      }
+    }
+    UserServiceOperations.UserUpdateDetails(
+      userData.user._id,
+      payload,
+      userData.token
+    ).then((res)=>{
+     
+      dispatch({
+        type: "UPDATE_USER_ADDRESSES",
+        payload: {
+          addresses: res.data.addresses,
+        },
+      });
+      dispatch({
+        type: "SET_ADDRESS_DIALOG",
+        payload: false,
+      })
+      setPrompt(false)
+      AquaToast({message:"successfully updated address", type:"success"})
+    })
+    .catch((err)=>{
+      AquaToast({message:"Please try adding new address", type:"error"})
+    })
   };
 
   const handleAddressDelete = () => {
@@ -297,10 +330,10 @@ const AquaCheckoutComponent = () => {
     <AquaLayout seo={seo}>
       <AquaPromptDialog
         open={prompt}
-        close={() => setPromt(!prompt)}
+        close={() => setPrompt(!prompt)}
         title={"Delete Confirmation"}
-        handleCancel={() => setPromt(!prompt)}
-        handleOk={(e) => handleDeleteAddressDialog(e, selectedtAddressChange)}
+        handleCancel={() => setPrompt(!prompt)}
+        handleOk={(e) => handleDeleteAddressDialog(e,deleteId)}
       />
 
       {!userData || userData === null ? (
@@ -469,7 +502,7 @@ const AquaCheckoutComponent = () => {
                             </button>
                             <button
                               className="flex items-center text-red-500 hover:text-red-700"
-                              onClick={() => handleDeleteAddress(r)}
+                              onClick={(e) => handleDeleteAddress(e,r)}
                             >
                               <TrashIcon
                                 className="h-5 w-5 mr-1"
