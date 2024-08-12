@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from "react-redux";
 import UserServiceOperations from "@/services/user";
 import AquaToast from "@/components/reusables/react-toastify";
 
-
 const AquaAddressDialog = ({ editData }) => {
   const [address, setAddress] = useState({
     street: "",
@@ -83,40 +82,47 @@ const AquaAddressDialog = ({ editData }) => {
 
   const handleAddressEdit = () => {
     // Create a new array with the updated address
-    const updatedAddresses = userData.user.addresses.map((r) => 
-      r._id === address._id ? address : r
+    const updatedAddresses = userData.user.addresses.map((r) =>
+      r._id === address._id ? address : r,
     );
-  
+
     if (updatedAddresses) {
-      const newDetails={addresses:updatedAddresses}
-      const payload={
-        newDetails
-      }
-      console.log("address",payload)
+      const newDetails = { addresses: updatedAddresses };
+      const payload = {
+        newDetails,
+      };
+      console.log("address", payload);
       UserServiceOperations.UserUpdateDetails(
         userData.user._id,
         payload,
-        userData.token
-      ).then((res)=>{
-        AquaToast({message:"successfully updated address", type:"success"})
-        dispatch({
-          type: "UPDATE_USER_ADDRESSES",
-          payload: {
-            addresses: res.data.addresses,
-          },
-        });
-        dispatch({
-          type: "SET_ADDRESS_DIALOG",
-          payload: false,
+        userData.token,
+      )
+        .then((res) => {
+          AquaToast({
+            message: "successfully updated address",
+            type: "success",
+          });
+          dispatch({
+            type: "UPDATE_USER_ADDRESSES",
+            payload: {
+              addresses: res.data.addresses,
+            },
+          });
+          dispatch({
+            type: "SET_ADDRESS_DIALOG",
+            payload: false,
+          });
         })
-      })
-      .catch((err)=>{
-        AquaToast({message:"Please try adding new address", type:"error"})
-      })
+        .catch((err) => {
+          AquaToast({
+            message: "Please try adding new address",
+            type: "error",
+          });
+        });
     }
-  
+
     // Update the userData object with the new addresses array
-  
+
     // Call the API to edit the address
   };
 

@@ -5,6 +5,7 @@ import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 import AquaInput from "@/components/common/input";
 import UserServiceOperations from "@/services/user";
 import AquaToast from "@/components/reusables/react-toastify";
+import AquaPromptDialog from "@/components/common/promptDialogs/promtDialog";
 
 const AquaDashboardPageComponent = () => {
   const { userData } = useSelector((state) => ({ ...state }));
@@ -14,6 +15,8 @@ const AquaDashboardPageComponent = () => {
   const [title, setTitle] = useState("");
   const [updateDetails, setUpdateDetails] = useState(false);
   const [updatePassword, setUpdatePassword] = useState(false);
+  const [prompt, setPrompt] = useState(false);
+  const [deleteId, setDeleteId] = useState("");
   const [bulkUpdate, setBulkUpdate] = useState({
     firstName: userData?.user.firstName,
     lastName: userData?.user.lastName,
@@ -32,8 +35,6 @@ const AquaDashboardPageComponent = () => {
 
   const handleUpdateDetails = async () => {
     const newDetails = { ...bulkUpdate };
-    console.log("update", newDetails);
-
     const id = userData.user._id;
     const token = userData.token;
 
@@ -103,8 +104,53 @@ const AquaDashboardPageComponent = () => {
     }
   }, [userData]);
 
+  const handleDeleteAddress = (e, r) => {
+    e.preventDefault();
+    const addresses = userData.user.addresses.filter((r) => r._id !== deleteId);
+    const payload = {
+      newDetails: {
+        addresses,
+      },
+    };
+    UserServiceOperations.UserUpdateDetails(
+      userData.user._id,
+      payload,
+      userData.token,
+    )
+      .then((res) => {
+        dispatch({
+          type: "UPDATE_USER_ADDRESSES",
+          payload: {
+            addresses: res.data.addresses,
+          },
+        });
+        dispatch({
+          type: "SET_ADDRESS_DIALOG",
+          payload: false,
+        });
+        setPrompt(false);
+        AquaToast({ message: "successfully updated address", type: "success" });
+      })
+      .catch((err) => {
+        AquaToast({ message: "Please try adding new address", type: "error" });
+      });
+  };
+
+  const handleDeleteAddressDialog = (e, r) => {
+    e.preventDefault();
+    setPrompt(true);
+    setDeleteId(r._id);
+  };
+
   return (
     <AquaDashboardComponent title={title}>
+      <AquaPromptDialog
+        open={prompt}
+        close={() => setPrompt(!prompt)}
+        title={"Address Delete Confirmation"}
+        handleCancel={() => setPrompt(!prompt)}
+        handleOk={(e) => handleDeleteAddress(e, deleteId)}
+      />
       <div className="mt-5"></div>
 
       <div className="mx-auto max-w-2xl space-y-16 sm:space-y-20 lg:mx-0 lg:max-w-none mb-5">
@@ -279,7 +325,10 @@ const AquaDashboardPageComponent = () => {
                     <PencilIcon className="h-5 w-5 mr-1" aria-hidden="true" />
                     Edit
                   </button>
-                  <button className="flex items-center text-red-500 hover:text-red-700">
+                  <button
+                    className="flex items-center text-red-500 hover:text-red-700"
+                    onClick={(e) => handleDeleteAddressDialog(e, r)}
+                  >
                     <TrashIcon className="h-5 w-5 mr-1" aria-hidden="true" />
                     Delete
                   </button>

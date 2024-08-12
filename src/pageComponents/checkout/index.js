@@ -37,7 +37,7 @@ const AquaCheckoutComponent = () => {
   );
   const { openAuthDialog } = useDialog();
   const [prompt, setPrompt] = useState(false);
-  const [deleteId, setDeleteId] = useState("")
+  const [deleteId, setDeleteId] = useState("");
   const [updateDialog, setUpdateDialog] = useState(false);
   const [bulkUpdate, setBulkUpdate] = useState({
     firstName: userData?.user.firstName,
@@ -97,7 +97,7 @@ const AquaCheckoutComponent = () => {
       [name]: value,
     }));
   };
-  
+
   // payment functions
   const handleCashOnDelivery = () => {
     if (cartData.length <= 0) {
@@ -267,11 +267,11 @@ const AquaCheckoutComponent = () => {
     });
   };
 
-  const handleDeleteAddress = (e,r) => {
-    e.preventDefault()
-    setPrompt(true)
-   
-    setDeleteId(r._id)
+  const handleDeleteAddress = (e, r) => {
+    e.preventDefault();
+    setPrompt(true);
+
+    setDeleteId(r._id);
     console.log(deleteId);
   };
 
@@ -288,38 +288,36 @@ const AquaCheckoutComponent = () => {
     }));
   };
 
-
-
   const handleDeleteAddressDialog = (e, r) => {
     e.preventDefault();
-    const addresses = userData.user.addresses.filter((r)=>r._id!==deleteId)
-    const payload={
-      newDetails:{
-        addresses
-      }
-    }
+    const addresses = userData.user.addresses.filter((r) => r._id !== deleteId);
+    const payload = {
+      newDetails: {
+        addresses,
+      },
+    };
     UserServiceOperations.UserUpdateDetails(
       userData.user._id,
       payload,
-      userData.token
-    ).then((res)=>{
-     
-      dispatch({
-        type: "UPDATE_USER_ADDRESSES",
-        payload: {
-          addresses: res.data.addresses,
-        },
-      });
-      dispatch({
-        type: "SET_ADDRESS_DIALOG",
-        payload: false,
+      userData.token,
+    )
+      .then((res) => {
+        dispatch({
+          type: "UPDATE_USER_ADDRESSES",
+          payload: {
+            addresses: res.data.addresses,
+          },
+        });
+        dispatch({
+          type: "SET_ADDRESS_DIALOG",
+          payload: false,
+        });
+        setPrompt(false);
+        AquaToast({ message: "successfully updated address", type: "success" });
       })
-      setPrompt(false)
-      AquaToast({message:"successfully updated address", type:"success"})
-    })
-    .catch((err)=>{
-      AquaToast({message:"Please try adding new address", type:"error"})
-    })
+      .catch((err) => {
+        AquaToast({ message: "Please try adding new address", type: "error" });
+      });
   };
 
   const handleAddressDelete = () => {
@@ -331,9 +329,9 @@ const AquaCheckoutComponent = () => {
       <AquaPromptDialog
         open={prompt}
         close={() => setPrompt(!prompt)}
-        title={"Delete Confirmation"}
+        title={"Address Delete Confirmation"}
         handleCancel={() => setPrompt(!prompt)}
-        handleOk={(e) => handleDeleteAddressDialog(e,deleteId)}
+        handleOk={(e) => handleDeleteAddressDialog(e, deleteId)}
       />
 
       {!userData || userData === null ? (
@@ -502,7 +500,7 @@ const AquaCheckoutComponent = () => {
                             </button>
                             <button
                               className="flex items-center text-red-500 hover:text-red-700"
-                              onClick={(e) => handleDeleteAddress(e,r)}
+                              onClick={(e) => handleDeleteAddress(e, r)}
                             >
                               <TrashIcon
                                 className="h-5 w-5 mr-1"
