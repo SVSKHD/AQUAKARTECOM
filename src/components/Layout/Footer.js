@@ -21,6 +21,7 @@ const navigation = {
     { name: "Shipping-policy", href: "/shipping-policy" },
     { name: "Privacy-policy", href: "/privacy-policy" },
     { name: "Terms & Condtitions", href: "/terms-and-conditions" },
+    { name: "contact-us", href: "/contact-us" },
   ],
   social: [
     {

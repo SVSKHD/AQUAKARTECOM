@@ -8,7 +8,7 @@ const AquaSeo = ({ seo }) => {
     canonical,
     image,
     product,
-    noindex
+    noindex,
   } = seo;
 
   return (
@@ -20,7 +20,10 @@ const AquaSeo = ({ seo }) => {
         <meta name="description" content={description} />
         <meta name="keywords" content={keywords} />
         <meta name="keyphrases" content={keyphrases} />
-        <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+        <meta
+          name="robots"
+          content={noindex ? "noindex, nofollow" : "index, follow"}
+        />
 
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
