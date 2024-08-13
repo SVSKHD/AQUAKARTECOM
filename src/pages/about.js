@@ -1,4 +1,10 @@
-const AquaAbout = () => {
-  return <h1>hello</h1>;
-};
-export default AquaAbout;
+import AquaAboutComponent from "@/pageComponents/about"
+
+const AquaAbout = () =>{
+return(
+  <>
+  <AquaAboutComponent/>
+  </>
+)
+}
+export default AquaAbout
