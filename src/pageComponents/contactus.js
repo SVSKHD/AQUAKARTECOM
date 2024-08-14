@@ -115,8 +115,9 @@ const AquaContactComponent = () => {
                   Locations
                 </h2>
                 <p className="mt-4 leading-7 text-gray-600">
-  At Present we deliver and offer our services at <strong>Telangana</strong> and <strong>Andhra Pradesh</strong>
-</p>
+                  At Present we deliver and offer our services at{" "}
+                  <strong>Telangana</strong> and <strong>Andhra Pradesh</strong>
+                </p>
               </div>
               {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:col-span-2 lg:gap-8">
                 <div className="rounded-2xl bg-gray-50 p-10">

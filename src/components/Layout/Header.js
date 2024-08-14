@@ -28,7 +28,7 @@ import { FaUser } from "react-icons/fa";
 const navigation = [
   { name: "Shop", href: "/shop" },
   // { name: "Compare", href: "/compare" },
-  { name: "About", href: "/about" },
+  // { name: "About", href: "/about" },
   { name: "Know More", href: "/blogs" },
 ];
 
