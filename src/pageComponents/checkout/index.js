@@ -170,7 +170,7 @@ const AquaCheckoutComponent = () => {
       ).format("DDMMYYYY")}`;
       const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
       const newOrder = {
-        user: userData?.data?.user?._id, // Safe access and also make sure user exists
+        user: userData?.user?._id, // Safe access and also make sure user exists
         transactionId: transactionId,
         orderType: "Payment Method(Phone Pe Gateway)",
         orderId: orderId,
