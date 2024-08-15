@@ -67,6 +67,7 @@ const AquaFooter = () => {
   const { userData } = useSelector((state) => ({ ...state }));
   const [categories, setCategories] = useState([]);
   const [subactegories, setSubCategories] = useState([]);
+  const [email, setEmail] = useState("");
   useEffect(() => {
     const fetchCategories = () => {
       CategoryServiceOperations.Allcategories().then((res) => {
@@ -81,6 +82,9 @@ const AquaFooter = () => {
     fetchCategories();
     fetchSubCategories();
   }, []); // Only run once, when the component mounts
+
+  const handleSubmitEmail = () => {};
+
   return (
     <footer className="bg-gray-900" aria-labelledby="footer-heading">
       <h2 id="footer-heading" className="sr-only">
@@ -174,6 +178,8 @@ const AquaFooter = () => {
               <input
                 type="email"
                 name="email-address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 id="email-address"
                 autoComplete="email"
                 required
@@ -182,6 +188,7 @@ const AquaFooter = () => {
               />
               <div className="mt-4 sm:ml-4 sm:mt-0 sm:flex-shrink-0">
                 <button
+                  onClick={handleSubmitEmail}
                   type="submit"
                   className="flex w-full items-center justify-center rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
                 >
