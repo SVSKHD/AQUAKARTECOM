@@ -70,13 +70,21 @@ const AquafavDrawer = () => {
                   </p>
                 </div>
               </div>
+              {}
               <button
                 type="button"
-                className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                className={`rounded-md px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 
+    ${
+      isProductInCart(product.id)
+        ? "bg-gray-400 cursor-not-allowed"
+        : "bg-indigo-600 hover:bg-indigo-500 focus-visible:outline-indigo-600"
+    }
+  `}
                 onClick={() => handleAddToCart(product)}
+                disabled={isProductInCart(product.id)}
               >
                 {isProductInCart(product.id)
-                  ? "Remove From Cart"
+                  ? "Already in Cart"
                   : "Add To Cart"}
               </button>
             </div>
