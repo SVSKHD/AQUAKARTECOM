@@ -1,4 +1,4 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import AquaReuseDrawer from "../../reusables/drawer";
 import useDrawer from "@/utils/drawer";
 import useCurrency from "@/utils/currency";
@@ -6,6 +6,7 @@ import { useState } from "react";
 import useProduct from "@/utils/product";
 
 const AquafavDrawer = () => {
+  const dispatch = useDispatch();
   const { openFavDrawer, closeFavDrawer } = useDrawer();
   const { favDrawer, favData, cartData } = useSelector((state) => ({
     favDrawer: state.favDrawer,
@@ -19,6 +20,13 @@ const AquafavDrawer = () => {
     return cartData.some((item) => item.id === productId);
   };
 
+  const handleAddToCart = (product) => {
+    AddAndRemoveCartFromFavourites(product);
+    dispatch({
+      type: "REMOVE_FROM_FAV",
+      payload: product._id,
+    });
+  };
   return (
     <AquaReuseDrawer
       open={favDrawer}
@@ -65,7 +73,7 @@ const AquafavDrawer = () => {
               <button
                 type="button"
                 className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                onClick={() => AddAndRemoveCartFromFavourites(product)}
+                onClick={() => handleAddToCart(product)}
               >
                 {isProductInCart(product.id)
                   ? "Remove From Cart"

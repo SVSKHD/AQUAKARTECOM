@@ -1,4 +1,5 @@
 import AquaLayout from "@/components/Layout/Layout";
+import AquaProductCard from "@/components/cards/productCard";
 import CategoryServiceOperations from "@/services/category";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -50,9 +51,10 @@ const AquaDynamicCategoryComponent = () => {
               </a>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:grid-rows-2 sm:gap-x-6 lg:gap-8">
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-6 lg:gap-8">
+              {/* Category Image */}
               {category?.photos?.[0]?.secure_url && (
-                <div className="group aspect-h-1 aspect-w-2 overflow-hidden rounded-lg sm:aspect-h-1 sm:aspect-w-1 sm:row-span-2">
+                <div className="group aspect-h-1 aspect-w-2 overflow-hidden rounded-lg sm:aspect-h-1 sm:aspect-w-1 sm:col-span-1 sm:row-span-2">
                   <img
                     alt={category?.title}
                     src={category.photos[0].secure_url}
@@ -74,38 +76,54 @@ const AquaDynamicCategoryComponent = () => {
                   </div>
                 </div>
               )}
-              {related.map((r, i) => (
-                <div
-                  key={i}
-                  className="group aspect-h-1 aspect-w-2 overflow-hidden rounded-lg sm:aspect-none sm:relative sm:h-full"
-                >
-                  <img
-                    alt={r.title}
-                    src={
-                      r?.photos?.[0]?.secure_url ||
-                      "https://via.placeholder.com/300"
-                    }
-                    className="object-cover object-center group-hover:opacity-75 sm:absolute sm:inset-0 sm:h-full sm:w-full"
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="bg-gradient-to-b from-transparent to-black opacity-50 sm:absolute sm:inset-0"
-                  />
-                  <div className="flex items-end p-6 sm:absolute sm:inset-0">
-                    <div>
-                      <h3 className="font-semibold text-white">
-                        <a href={`/product/${r._id}`}>
-                          <span className="absolute inset-0" />
-                          {r.title}
-                        </a>
-                      </h3>
-                      <p aria-hidden="true" className="mt-1 text-sm text-white">
-                        Shop now
-                      </p>
-                    </div>
-                  </div>
+
+              {/* Related Products */}
+              <div className="sm:col-span-2">
+                <h1 className="text-xl font-bold tracking-tight text-gray-900 mb-4">
+                  Related Products
+                </h1>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {related.map((r, i) => (
+                    <>
+                      <div key={i}>
+                        <AquaProductCard product={r} />
+                      </div>
+
+                      {/* <div
+          key={i}
+          className="group aspect-h-1 aspect-w-2 overflow-hidden rounded-lg sm:aspect-none sm:relative sm:h-full"
+        >
+          <img
+            alt={r.title}
+            src={
+              r?.photos?.[0]?.secure_url ||
+              "https://via.placeholder.com/300"
+            }
+            className="object-cover object-center group-hover:opacity-75 sm:absolute sm:inset-0 sm:h-full sm:w-full"
+          />
+          <div
+            aria-hidden="true"
+            className="bg-gradient-to-b from-transparent to-black opacity-50 sm:absolute sm:inset-0"
+          />
+          <div className="flex items-end p-6 sm:absolute sm:inset-0">
+            <div>
+              <h3 className="font-semibold text-white">
+                <a href={`/product/${r._id}`}>
+                  <span className="absolute inset-0" />
+                  {r.title}
+                </a>
+              </h3>
+              <p aria-hidden="true" className="mt-1 text-sm text-white">
+                Shop now
+              </p>
+            </div>
+          </div>
+        </div> */}
+                    </>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
 
             <div className="mt-6 sm:hidden">
