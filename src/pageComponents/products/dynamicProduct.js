@@ -1,33 +1,5 @@
 import { Fragment, useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogPanel,
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-  Popover,
-  PopoverButton,
-  PopoverGroup,
-  PopoverPanel,
-  Radio,
-  RadioGroup,
-  Tab,
-  TabGroup,
-  TabList,
-  TabPanel,
-  TabPanels,
-} from "@headlessui/react";
-import {
-  Bars3Icon,
-  HeartIcon,
-  MagnifyingGlassIcon,
-  MinusIcon,
-  PlusIcon,
-  ShoppingBagIcon,
-  UserIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { ChevronDownIcon, StarIcon } from "@heroicons/react/20/solid";
 import AquaLayout from "@/components/Layout/Layout";
 import { useRouter } from "next/router";
@@ -40,6 +12,7 @@ import { useSelector } from "react-redux";
 import AquaProductCard from "@/components/cards/productCard";
 import Image from "next/image";
 import LOGO from "../../assests/Default.png";
+import useScreenSize from "@/utils/screenSizer"; // Import the useScreenSize hook
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -55,6 +28,7 @@ export default function AquaDynamicProductComponent() {
   const [fav, setFav] = useState(false);
   const { formatCurrencyINR } = useCurrency;
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
+  const screenSize = useScreenSize(); // Use the useScreenSize hook
 
   const router = useRouter();
   const { id } = router.query;
@@ -104,7 +78,7 @@ export default function AquaDynamicProductComponent() {
           <div className="mx-auto max-w-2xl lg:max-w-none">
             <div className="lg:grid lg:grid-cols-2 lg:gap-x-8 lg:items-start">
               {/* Image gallery */}
-              <div className="sticky top-0">
+              <div className={screenSize.width >= 1024 ? "sticky top-0" : ""}>
                 <TabGroup className="flex flex-col-reverse">
                   <div className="mx-auto mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
                     <TabList className="grid grid-cols-4 gap-6">
@@ -155,6 +129,43 @@ export default function AquaDynamicProductComponent() {
                     ))}
                   </TabPanels>
                 </TabGroup>
+                <div className="mt-10 mb-5 flex">
+                  <button
+                    type="submit"
+                    className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
+                    onClick={() => AddAndRemoveCart(productData, setCart)}
+                  >
+                    {cart ? (
+                      <h4 className="font-bold text-xl">Added to Cart</h4>
+                    ) : (
+                      <h4 className="font-bold text-xl">Add to Cart</h4>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="ml-4 flex items-center justify-center rounded-md px-3 py-3 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
+                    onClick={() => AddAndRemoveFav(productData, setFav)}
+                  >
+                    {fav ? (
+                      <h4 className="text-red-700 font-bold text-xl">
+                        Added to WishList
+                      </h4>
+                    ) : (
+                      <h4 className="text-red-400 font-bold text-xl">
+                        Add to WishList
+                      </h4>
+                    )}
+                  </button>
+                </div>
+                {cart && (
+                  <a
+                    href="/checkout"
+                    className="flex w-full p-4 font-bold text-xl mb-5 justify-center rounded-md bg-indigo-600 px-3 py-13 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
+                    Buy Now
+                  </a>
+                )}
               </div>
 
               {/* Product info */}
@@ -171,44 +182,6 @@ export default function AquaDynamicProductComponent() {
                 </div>
 
                 <div className="mt-6">
-                  <div className="mt-10 mb-5 flex">
-                    <button
-                      type="submit"
-                      className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
-                      onClick={() => AddAndRemoveCart(productData, setCart)}
-                    >
-                      {cart ? (
-                        <h4 className="font-bold text-xl">Added to Cart</h4>
-                      ) : (
-                        <h4 className="font-bold text-xl">Add to Cart</h4>
-                      )}
-                    </button>
-
-                    <button
-                      type="button"
-                      className="ml-4 flex items-center justify-center rounded-md px-3 py-3 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
-                      onClick={() => AddAndRemoveFav(productData, setFav)}
-                    >
-                      {fav ? (
-                        <h4 className="text-red-700 font-bold text-xl">
-                          Added to WishList
-                        </h4>
-                      ) : (
-                        <h4 className="text-red-400 font-bold text-xl">
-                          Add to WishList
-                        </h4>
-                      )}
-                    </button>
-                  </div>
-                  {cart && (
-                    <a
-                      href="/checkout"
-                      className="flex w-full p-4 font-bold text-xl mb-5 justify-center rounded-md bg-indigo-600 px-3 py-13 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                    >
-                      Buy Now
-                    </a>
-                  )}
-
                   <div
                     className="space-y-6 text-base text-gray-700"
                     dangerouslySetInnerHTML={{
