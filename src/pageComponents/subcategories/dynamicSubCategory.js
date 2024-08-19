@@ -27,7 +27,6 @@ const AquaDynamicSubCategoryComponent = () => {
         .then((res) => {
           setCategory(res.data.data);
           setRelated(res.data.relatedProducts);
-          console.log(res);
         })
         .catch((err) => {
           console.error("Error fetching category:", err);
@@ -42,7 +41,7 @@ const AquaDynamicSubCategoryComponent = () => {
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
             <div className="sm:flex sm:items-baseline sm:justify-between">
               <h2 className="text-2xl font-bold tracking-tight text-gray-900">
-                Shop by Category
+                Shop by Sub-Category
               </h2>
               <a
                 href="/categories"
@@ -86,7 +85,7 @@ const AquaDynamicSubCategoryComponent = () => {
                 </h1>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {related.map((r, i) => (
+                  {related?.map((r, i) => (
                     <>
                       <div key={i}>
                         <AquaProductCard product={r} />

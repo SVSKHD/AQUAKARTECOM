@@ -21,7 +21,7 @@ const AquaDynamicCategoryComponent = () => {
 
   useEffect(() => {
     if (id) {
-      CategoryServiceOperations.CategoryById(id)
+      CategoryServiceOperations.CategoyByTitle(id)
         .then((res) => {
           setCategory(res.data.data);
           setRelated(res.data.relatedProducts);
