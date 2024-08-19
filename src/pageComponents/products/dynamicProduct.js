@@ -170,13 +170,13 @@ export default function AquaDynamicProductComponent() {
 
               {/* Product info */}
               <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0 lg:ml-8 lg:max-h-[calc(100vh-20px)] lg:overflow-y-auto no-scrollbar">
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                <h1 className="text-3xl font-medium tracking-tight text-gray-900">
                   {productData.title}
                 </h1>
 
                 <div className="mt-3">
                   <h2 className="sr-only">Product information</h2>
-                  <p className="text-3xl tracking-tight text-green-600 font-bold">
+                  <p className="text-3xl tracking-tight text-gray-900 font-semibold">
                     {formatCurrencyINR(productData.price)}
                   </p>
                 </div>

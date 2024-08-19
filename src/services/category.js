@@ -4,7 +4,7 @@ const BASE = process.env.NEXT_PUBLIC_API_URL;
 
 const Allcategories = () => axios.get(`${BASE}/allcategories`);
 const CategoryById = (id) => axios.get(`${BASE}/category/${id}`);
-const CategoyByTitle = (title) => axios.get(`${BASE}/category/title/${title}`);
+const CategoyByTitle = (title) => axios.get(`${BASE}/category-title/${title}`);
 
 const CategoryServiceOperations = {
   Allcategories,
