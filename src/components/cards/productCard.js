@@ -36,7 +36,7 @@ const AquaProductCard = ({ product }) => {
       </div>
       <div className="relative mt-4">
         <h3 className="text-lg font-medium text-gray-900">
-          <a href={`/product/${product._id}`}>{title}</a>
+          <a href={`/product/${title}`}>{title}</a>
         </h3>
         <p className="mt-1 text-sm text-gray-500">{color}</p>
       </div>

@@ -47,7 +47,7 @@ export default function AquaDynamicProductComponent() {
 
   useEffect(() => {
     if (id) {
-      ProductServiceOperations.ProductById(id).then((res) => {
+      ProductServiceOperations.ProductByTitle(id).then((res) => {
         setProductData(res.data.data);
         if (res.data.colors && res.data.colors.length > 0) {
           setSelectedColor(res.data.colors[0]);
