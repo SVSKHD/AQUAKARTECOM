@@ -1,6 +1,6 @@
 import AquaLayout from "@/components/Layout/Layout";
 import { useRouter } from "next/router";
-import { FaInstagram } from "react-icons/fa";
+import { FaInstagram, FaPhone } from "react-icons/fa";
 
 const AquaContactComponent = () => {
   const router = useRouter();
@@ -64,6 +64,29 @@ const AquaContactComponent = () => {
                           className="font-semibold text-indigo-600"
                         >
                           <FaInstagram size={20} />
+                        </a>
+                      </dd>
+                    </div>
+                    {/* <div className="mt-1">
+                      <dt className="sr-only">Phone number</dt>
+                      <dd>+1 (555) 905-3456</dd>
+                    </div> */}
+                  </dl>
+                </div>
+                <div className="rounded-2xl bg-gray-50 p-10">
+                  <h3 className="text-base font-semibold leading-7 text-gray-900">
+                    Call us at
+                  </h3>
+                  <dl className="mt-3 space-y-1 text-sm leading-6 text-gray-600">
+                    <div>
+                      <dt className="sr-only">Email</dt>
+                      <dd>
+                        <a
+                          href="tel:+919014774667"
+                          target="_blank"
+                          className="font-semibold text-indigo-600"
+                        >
+                          <FaPhone size={20} />
                         </a>
                       </dd>
                     </div>
