@@ -121,7 +121,7 @@ const AquaFooter = () => {
 
               <div>
                 <h3 className="text-sm font-semibold leading-6 text-white">
-                  SubCategories
+                  Categories
                 </h3>
                 <ul role="list" className="mt-6 space-y-4">
                   {categories.map((item) => (

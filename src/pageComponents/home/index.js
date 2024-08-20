@@ -301,7 +301,7 @@ const AquaHomeComponent = () => {
                             {categoryData.map((category) => (
                               <Link
                                 key={category.title}
-                                href={`/category/${category._id}`}
+                                href={`/category/${category.title}`}
                                 className="relative flex h-80 w-56 flex-col overflow-hidden rounded-lg p-6 hover:opacity-75 xl:w-auto"
                               >
                                 <span
