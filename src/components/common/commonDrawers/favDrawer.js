@@ -7,7 +7,7 @@ import useProduct from "@/utils/product";
 
 const AquafavDrawer = () => {
   const dispatch = useDispatch();
-  const { openFavDrawer, closeFavDrawer } = useDrawer();
+  const { closeFavDrawer } = useDrawer();
   const { favDrawer, favData, cartData } = useSelector((state) => ({
     favDrawer: state.favDrawer,
     favData: state.favData,
@@ -17,15 +17,11 @@ const AquafavDrawer = () => {
   const { AddAndRemoveCartFromFavourites } = useProduct();
 
   const isProductInCart = (productId) => {
-    return cartData.some((item) => item.id === productId);
+    return cartData.some((item) => item._id === productId);
   };
 
   const handleAddToCart = (product) => {
     AddAndRemoveCartFromFavourites(product);
-    dispatch({
-      type: "REMOVE_FROM_FAV",
-      payload: product._id,
-    });
   };
   return (
     <AquaReuseDrawer

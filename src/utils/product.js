@@ -46,20 +46,14 @@ const useProduct = () => {
         type: "ADD_TO_CART",
         payload: { ...productData, quantity: 1 },
       });
-
-      AquaToast({
-        message: "Successfully Added to Cart",
-        type: "success",
-      });
-    } else {
       dispatch({
-        type: "REMOVE_FROM_CART",
+        type: "REMOVE_FROM_FAV",
         payload: productData?._id,
       });
 
       AquaToast({
-        message: "Successfully removed from cart",
-        type: "info",
+        message: "Successfully Added to Cart",
+        type: "success",
       });
     }
   };

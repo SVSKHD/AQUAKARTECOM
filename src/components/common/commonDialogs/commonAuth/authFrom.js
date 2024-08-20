@@ -16,7 +16,6 @@ const AquaAuthMobileForm = ({ signup }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = { email, otp: Number(otp) };
-    console.log(data);
     UserServiceOperations.UserEmailVerify(data)
       .then((res) => {
         AquaToast({
@@ -45,12 +44,15 @@ const AquaAuthMobileForm = ({ signup }) => {
   const requestOtp = useCallback(
     debounce((newEmail) => {
       if (isValidEmail(newEmail)) {
-        console.log("Valid email:", newEmail);
+        AquaToast({
+          message: "Otp in Air Please wait.....",
+          type: "info",
+        });
         UserServiceOperations.UserEmailOtp({ email: newEmail })
           .then((res) => {
             setOtpShow(true);
             AquaToast({
-              message: "Successfully sent OTP",
+              message: "Successfully sent Otp",
               type: "success",
             });
             dispatch({
@@ -70,7 +72,6 @@ const AquaAuthMobileForm = ({ signup }) => {
             });
           });
       } else {
-        console.log("Invalid email:", newEmail);
         setOtpShow(false);
       }
     }, 300), // Adjust debounce delay as needed

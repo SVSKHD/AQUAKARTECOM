@@ -18,7 +18,6 @@ const AquaAuthMobileForm = ({ signup }) => {
     const phoneFormat = Number(phone);
     const otpFormat = Number(otp);
     const data = { phone: phoneFormat, otp: otpFormat };
-    console.log(data);
     UserServiceOperations.UserMobileVerify(data)
       .then((res) => {
         AquaToast({
@@ -47,12 +46,15 @@ const AquaAuthMobileForm = ({ signup }) => {
   const requestOtp = useCallback(
     debounce((newPhone) => {
       if (isValidPhone(newPhone)) {
-        console.log("Valid phone:", newPhone);
+        AquaToast({
+          message: "Otp in Air Please wait.....",
+          type: "info",
+        });
         UserServiceOperations.UserMobileOtp({ phone: newPhone })
           .then((res) => {
             setOtpShow(true);
             AquaToast({
-              message: "Successfully sent OTP",
+              message: "Successfully sent Otp",
               type: "success",
             });
             dispatch({
@@ -61,7 +63,6 @@ const AquaAuthMobileForm = ({ signup }) => {
             });
           })
           .catch((err) => {
-            console.log(err);
             setOtpShow(false);
             AquaToast({
               message: "Failed to send OTP",
@@ -74,7 +75,6 @@ const AquaAuthMobileForm = ({ signup }) => {
             });
           });
       } else {
-        console.log("Invalid phone:", newPhone);
         setOtpShow(false);
       }
     }, 300), // Adjust debounce delay as needed

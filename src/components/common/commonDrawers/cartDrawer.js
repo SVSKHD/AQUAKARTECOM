@@ -29,13 +29,11 @@ const AquaCartDrawer = () => {
       {cartData.length > 0 ? (
         cartData.map((product, productIdx) => (
           <>
-            <li key={product.id} className="flex py-6 sm:py-10">
+            <li key={product._id} className="flex py-6 sm:py-10">
               <div className="flex-shrink-0">
-                <Image
-                  src={product.photos[0].secure_url}
+                <img
+                  src={product?.photos[0]?.secure_url}
                   alt={product.imageAlt}
-                  height={100}
-                  width={100}
                   className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
                 />
               </div>

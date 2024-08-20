@@ -76,7 +76,7 @@ export default function App({ Component, pageProps }) {
     <Provider store={store}>
       <PersistGate persistor={persistor} loading={<div>Loading...</div>}>
         <Component {...pageProps} />
-        <ToastContainer position="top-center" draggable />
+        <ToastContainer position="top-center" draggable limit={4} />
       </PersistGate>
     </Provider>
   );
