@@ -18,6 +18,7 @@ import CategoryServiceOperations from "@/services/category";
 import ProductServiceOperations from "@/services/products";
 import Image from "next/image";
 import Link from "next/link";
+import AquaProducts from "./products";
 
 const AquaHomeComponent = () => {
   const [categoryData, setCategoryData] = useState([]);
@@ -263,10 +264,10 @@ const AquaHomeComponent = () => {
             </div>
 
             <main>
-              {/* Category section */}
+              <AquaProducts />
               <section
                 aria-labelledby="category-heading"
-                className="pt-24 sm:pt-32 xl:mx-auto xl:max-w-7xl xl:px-8"
+                className="pt-2 sm:pt-2 xl:mx-auto xl:max-w-7xl xl:px-8"
               >
                 <div className="px-4 sm:flex sm:items-center sm:justify-between sm:px-6 lg:px-8 xl:px-0">
                   <h2
