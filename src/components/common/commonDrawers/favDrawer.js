@@ -23,6 +23,7 @@ const AquafavDrawer = () => {
   const handleAddToCart = (product) => {
     AddAndRemoveCartFromFavourites(product);
   };
+
   return (
     <AquaReuseDrawer
       open={favDrawer}
@@ -31,7 +32,7 @@ const AquafavDrawer = () => {
     >
       {favData.length > 0 ? (
         favData.map((product) => (
-          <li key={product.id} className="flex py-6 sm:py-10">
+          <li key={product._id} className="flex py-6 sm:py-10">
             <div className="flex-shrink-0">
               <img
                 src={product.photos[0].secure_url}
@@ -66,20 +67,19 @@ const AquafavDrawer = () => {
                   </p>
                 </div>
               </div>
-              {}
               <button
                 type="button"
                 className={`rounded-md px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 
-    ${
-      isProductInCart(product.id)
-        ? "bg-gray-400 cursor-not-allowed"
-        : "bg-indigo-600 hover:bg-indigo-500 focus-visible:outline-indigo-600"
-    }
-  `}
+                ${
+                  isProductInCart(product._id)
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-indigo-600 hover:bg-indigo-500 focus-visible:outline-indigo-600"
+                }
+              `}
                 onClick={() => handleAddToCart(product)}
-                disabled={isProductInCart(product.id)}
+                disabled={isProductInCart(product._id)}
               >
-                {isProductInCart(product.id)
+                {isProductInCart(product._id)
                   ? "Already in Cart"
                   : "Add To Cart"}
               </button>

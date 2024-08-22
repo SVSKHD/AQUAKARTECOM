@@ -41,6 +41,13 @@ const useProduct = () => {
       (item) => item._id === productData?._id,
     );
 
+    if (isProductInCart) {
+      AquaToast({
+        message: "Already In Cart",
+        type: "info",
+      });
+    }
+
     if (!isProductInCart) {
       dispatch({
         type: "ADD_TO_CART",
