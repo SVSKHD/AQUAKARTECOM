@@ -53,13 +53,13 @@ const AquaProductCard = ({ product }) => {
         <span className="isolate inline-flex rounded-md shadow-sm">
           <button
             type="button"
-            className="relative inline-flex items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:z-10"
+            className={`relative inline-flex items-center rounded-l-md ${cart ? "bg-green-500" : "bg-white"}  px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:z-10`}
             onClick={() => AddAndRemoveCart(product, setAddCart)}
           >
             {cart ? (
               <>
                 <span>Added To Cart</span>
-                <FaCartArrowDown className="text-green-700" size={25} />
+                <FaCartArrowDown size={25} />
               </>
             ) : (
               <>
