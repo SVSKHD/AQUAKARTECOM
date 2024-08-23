@@ -1,13 +1,12 @@
 import AquaDashboardComponent from "@/components/Layout/userDasboard/dahsboard";
 import useCurrency from "@/utils/currency";
 import { useSelector } from "react-redux";
-import Image from "next/image";
 import useCart from "@/utils/cart";
 import useProduct from "@/utils/product";
 
 const AquaCartComponent = () => {
   const { cartData } = useSelector((state) => ({ ...state }));
-  const { changeItemQuantity } = useCart();
+  const { changeItemQuantity, getTotalPrice } = useCart();
   const { removeFromCart } = useProduct();
   const { formatCurrencyINR } = useCurrency;
 
@@ -79,6 +78,15 @@ const AquaCartComponent = () => {
                     ))}
                   </select>
                 </div>
+                <div className="mr-5 ml-5">
+                  <button
+                    type="button"
+                    className="w-full rounded-md bg-red-400 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                    onClick={() => removeFromCart(product._id)}
+                  >
+                    Remove From Cart
+                  </button>
+                </div>
               </li>
             ))
           ) : (
@@ -89,6 +97,16 @@ const AquaCartComponent = () => {
             </div>
           )}
         </div>
+        {cartData.length > 0 && (
+          <div className="mt-10">
+            <h2 className="text-gray-900 font-semibold text-3xl">
+              Cart Total :{" "}
+              <span className=" text-green-700 font-bold">
+                {formatCurrencyINR(getTotalPrice())}
+              </span>
+            </h2>
+          </div>
+        )}
       </AquaDashboardComponent>
     </>
   );

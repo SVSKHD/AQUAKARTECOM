@@ -202,8 +202,6 @@ const AquaCheckoutComponent = () => {
         AquaToast({ message: "Please Add An Address", type: "error" });
       } else if (!selectedAddress) {
         AquaToast({ message: "Please select an address", type: "error" });
-      } else if (userData.user.addresses.length < 0) {
-        AquaToast({ message: "Please Add An Address", type: "error" });
       } else {
         setLoading((prevState) => ({
           ...prevState,
@@ -664,7 +662,7 @@ const AquaCheckoutComponent = () => {
                       {formatCurrencyINR(getTotalPrice())}
                     </dd>
                   </div>
-                  <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+                  {/* <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                     <dt className="flex items-center text-sm text-gray-600">
                       <span>Shipping estimate</span>
                       <a
@@ -683,7 +681,7 @@ const AquaCheckoutComponent = () => {
                     <dd className="text-sm font-medium text-gray-900">
                       {formatCurrencyINR(300)}
                     </dd>
-                  </div>
+                  </div> */}
                   <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                     <dt className="text-base font-medium text-gray-900">
                       Order total

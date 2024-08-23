@@ -9,24 +9,6 @@ const AquaProducts = () => {
     });
   }, []);
 
-  const trendingProducts = [
-    {
-      id: 1,
-      name: "Machined Pen",
-      color: "Black",
-      price: "$35",
-      href: "#",
-      imageSrc:
-        "https://tailwindui.com/img/ecommerce-images/home-page-02-product-01.jpg",
-      imageAlt:
-        "Black machined steel pen with hexagonal grip and small white logo at top.",
-      availableColors: [
-        { name: "Black", colorBg: "#111827" },
-        { name: "Brass", colorBg: "#FDE68A" },
-        { name: "Chrome", colorBg: "#E5E7EB" },
-      ],
-    },
-  ];
   return (
     <>
       <section aria-labelledby="trending-heading" className="bg-white">
@@ -39,10 +21,10 @@ const AquaProducts = () => {
               Trending products
             </h2>
             <a
-              href="#"
+              href="/shop"
               className="hidden text-sm font-semibold text-indigo-600 hover:text-indigo-500 sm:block"
             >
-              See everything
+              Browse All Products
               <span aria-hidden="true"> &rarr;</span>
             </a>
           </div>
@@ -67,10 +49,10 @@ const AquaProducts = () => {
 
           <div className="mt-12 px-4 sm:hidden">
             <a
-              href="#"
+              href="/shop"
               className="text-sm font-semibold text-indigo-600 hover:text-indigo-500"
             >
-              See everything
+              Browse All Products
               <span aria-hidden="true"> &rarr;</span>
             </a>
           </div>
