@@ -26,12 +26,10 @@ const AquaProductCard = ({ product }) => {
   return (
     <div className="relative mb-5">
       <div className="relative h-72 w-full overflow-hidden rounded-lg">
-        <Image
+        <img
           src={photos[0].secure_url}
           alt={title}
           className="h-full w-full object-cover object-center"
-          width={100}
-          height={100}
         />
       </div>
       <div className="relative mt-4">
