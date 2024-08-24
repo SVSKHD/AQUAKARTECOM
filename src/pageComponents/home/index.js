@@ -309,11 +309,9 @@ const AquaHomeComponent = () => {
                                   aria-hidden="true"
                                   className="absolute inset-0"
                                 >
-                                  <Image
+                                  <img
                                     src={category.photos[0].secure_url}
                                     alt={category.title}
-                                    height={100}
-                                    width={100}
                                     className="h-full w-full object-cover object-center"
                                   />
                                 </span>
