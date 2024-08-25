@@ -231,9 +231,7 @@ const AquaHomeComponent = () => {
                 aria-hidden="true"
                 className="absolute inset-0 overflow-hidden"
               >
-                <Image
-                  height={1200}
-                  width={728}
+                <img
                   src="https://res.cloudinary.com/aquakartproducts/image/upload/v1707838737/products/jbtrssziykp98iiklslk.jpg"
                   alt="Aquakart"
                   className="h-full w-full object-cover object-center"
@@ -352,11 +350,9 @@ const AquaHomeComponent = () => {
               >
                 <div className="relative overflow-hidden rounded-lg">
                   <div className="absolute inset-0">
-                    <Image
-                      height={1200}
-                      width={728}
+                    <img
                       src="https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg"
-                      alt=""
+                      alt="Aquakart | Blogs"
                       className="h-full w-full object-cover object-center"
                     />
                   </div>
