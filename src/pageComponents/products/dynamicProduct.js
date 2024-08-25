@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 import ProductServiceOperations from "@/services/products";
 import useCurrency from "@/utils/currency";
 import useProduct from "@/utils/product";
-import { FaHeart, FaHeartBroken } from "react-icons/fa";
+import { FaHeart, FaHeartBroken, FaCartPlus } from "react-icons/fa";
 import { FaCartArrowDown, FaCartShopping } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 import AquaProductCard from "@/components/cards/productCard";
@@ -91,14 +91,13 @@ export default function AquaDynamicProductComponent() {
                             <>
                               <span className="sr-only">{image.id}</span>
                               <span className="absolute inset-0 overflow-hidden rounded-md">
-                                <Image
+                                <img
                                   src={image.secure_url}
-                                  alt=""
-                                  height={600}
-                                  width={400}
+                                  alt={`${productData.title} | Aquakart prodcuts`}
                                   className="h-full w-full object-cover object-center"
                                 />
                               </span>
+
                               <span
                                 className={classNames(
                                   selected
@@ -118,21 +117,33 @@ export default function AquaDynamicProductComponent() {
                   <TabPanels className="aspect-h-1 aspect-w-1 w-full">
                     {productData.photos.map((image) => (
                       <TabPanel key={image.id}>
-                        <Image
+                        <img
                           src={image.secure_url}
                           alt={image.alt}
                           className="h-full w-full object-cover object-center sm:rounded-lg"
                           height={450}
                           width={300}
                         />
+                        <button
+                          onClick={() => AddAndRemoveFav(productData, setFav)}
+                          className="absolute top-2 right-2 z-10 p-1 bg-gray-600 p-3 rounded-full  border-none focus:outline-none"
+                        >
+                          <FaHeart
+                            aria-hidden="true"
+                            size={30}
+                            className={`${fav ? "text-red-500" : "text-gray-300"} hover:text-red-500 transition duration-300`}
+                          />
+                        </button>
                       </TabPanel>
                     ))}
                   </TabPanels>
                 </TabGroup>
-                <div className="mt-10 mb-5 flex">
+                <div className="mt-10 mb-5 flex space-x-4">
                   <button
                     type="submit"
-                    className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
+                    className={`${
+                      cart ? "flex-1" : "w-full"
+                    } flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50`}
                     onClick={() => AddAndRemoveCart(productData, setCart)}
                   >
                     {cart ? (
@@ -142,30 +153,16 @@ export default function AquaDynamicProductComponent() {
                     )}
                   </button>
 
-                  <button
-                    type="button"
-                    className="ml-4 flex items-center justify-center rounded-md px-3 py-3 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
-                    onClick={() => AddAndRemoveFav(productData, setFav)}
-                  >
-                    {fav ? (
-                      <h4 className="text-red-700 font-bold text-xl">
-                        Added to WishList
-                      </h4>
-                    ) : (
-                      <h4 className="text-red-400 font-bold text-xl">
-                        Add to WishList
-                      </h4>
-                    )}
-                  </button>
+                  {cart && (
+                    <a
+                      type="button"
+                      className="w-32 flex items-center justify-center rounded-md bg-gray-600 px-3 py-3 text-sm font-semibold text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                      href="/checkout"
+                    >
+                      <FaCartPlus size={35} />
+                    </a>
+                  )}
                 </div>
-                {cart && (
-                  <a
-                    href="/checkout"
-                    className="flex w-full p-4 font-bold text-xl mb-5 justify-center rounded-md bg-indigo-600 px-3 py-13 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  >
-                    Buy Now
-                  </a>
-                )}
               </div>
 
               {/* Product info */}

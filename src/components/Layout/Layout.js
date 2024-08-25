@@ -12,6 +12,9 @@ import { useEffect } from "react";
 
 const AquaLayout = (props) => {
   const Status = useNetworkStatus();
+  const handleRetry = () => {
+    window.location.reload(); // This reloads the page
+  };
   return (
     <>
       {Status ? (
@@ -32,8 +35,21 @@ const AquaLayout = (props) => {
       ) : (
         <>
           <AquaHeader />
-          <main className="bg-white min-h-screen">
-            <h1>Network Error</h1>
+          <main className="bg-white min-h-screen flex flex-col justify-center items-center">
+            <div className="text-center p-6">
+              <h1 className="text-2xl font-bold text-gray-800 mb-4">
+                Network Error
+              </h1>
+              <p className="text-gray-600">
+                Please check your internet connection and try again.
+              </p>
+              <button
+                onClick={handleRetry}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white font-semibold rounded-md shadow hover:bg-blue-700 transition duration-300"
+              >
+                Retry
+              </button>
+            </div>
           </main>
           <AquaFooter />
         </>
@@ -41,4 +57,5 @@ const AquaLayout = (props) => {
     </>
   );
 };
+
 export default AquaLayout;
