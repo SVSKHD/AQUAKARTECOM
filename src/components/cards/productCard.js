@@ -11,7 +11,7 @@ const AquaProductCard = ({ product }) => {
   const [loading, setLoading] = useState(false);
   const [cart, setAddCart] = useState(false);
   const [fav, setAddFav] = useState(false);
-  const { title, photos, price, color } = product;
+  const { title, photos, price, color, slug } = product;
   const { formatCurrencyINRWithK } = useCurrency;
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
   const { cartData, favData } = useSelector((state) => ({ ...state }));
@@ -34,7 +34,7 @@ const AquaProductCard = ({ product }) => {
       </div>
       <div className="relative mt-4">
         <h3 className="text-lg font-medium text-gray-900">
-          <a href={`/product/${title}`}>{title}</a>
+          <a href={`/product/${slug}`}>{title}</a>
         </h3>
         <p className="mt-1 text-sm text-gray-500">{color}</p>
       </div>
