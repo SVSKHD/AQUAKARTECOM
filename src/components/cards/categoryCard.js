@@ -15,7 +15,7 @@ const AquaCategoryCard = ({ category }) => {
       <div className="mt-4 flex justify-between">
         <div>
           <h3 className="text-md font-bold text-gray-700">
-            <a href={`/category/${_id}`}>
+            <a href={`/category/${title}`}>
               <span aria-hidden="true" className="absolute inset-0" />
               {title}
             </a>
