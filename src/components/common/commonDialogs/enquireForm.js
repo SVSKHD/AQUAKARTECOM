@@ -1,6 +1,12 @@
 import AquaResponsiveDialog from "@/components/reusables/dialog";
 
 const AquaEnquireForm = () => {
-  return <></>;
+  return( 
+  <AquaResponsiveDialog>
+      <div>
+        
+      </div>
+  </AquaResponsiveDialog>
+  )
 };
 export default AquaEnquireForm;
