@@ -102,121 +102,133 @@ const AquaCheckoutComponent = () => {
   const handleCashOnDelivery = () => {
     if (cartData.length <= 0) {
       AquaToast({ message: "Please add products to cart", type: "info" });
-    } else {
-      const cashTransactionId = `AQTR-COD-${nanoid(5).toUpperCase()}D${moment(
-        new Date(),
-      ).format("DDMMYYYY")}`;
-      const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
-      const newOrder = {
-        user: userData?.user?._id, // Safe access and also make sure user exists
-        orderType: "Cash On Delivery",
-        items: productData(cartData),
-        transactionId: cashTransactionId,
-        totalAmount: getTotalPrice(),
-        orderId: orderId,
-        paymentMethod: "Cash On Delivery",
-        paymentStatus: "Pending",
-        currency: "INR",
-        billingAddress: selectedAddress, // Ensure this is correctly assigned using safe access
-        shippingAddress: selectedAddress, // Ensure this is correctly assigned using safe access
-        shippingMethod: "Standard",
-        shippingCost: 50, // Example fixed cost
-        estimatedDelivery: new Date(
-          new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
-        ).toISOString(), // Adding 7 days for delivery
-        orderStatus: "Processing",
-      };
-
-      if (!userData?.user?.email || !userData?.user?.phone) {
-        AquaToast({
-          message: "Please Update Details To Proceed Further",
-          type: "error",
-        });
-      } else if (!userData?.user?.addresses?.length) {
-        AquaToast({ message: "Please Add An Address", type: "error" });
-      } else if (!selectedAddress) {
-        AquaToast({ message: "Please select an address", type: "error" });
-      } else {
-        setLoading((prevState) => ({
-          ...prevState,
-          cod: true,
-        }));
-
-        orderServiceOperations
-          .createCodOrder(newOrder)
-          .then((res) => {
-            setTimeout(() => {
-              setLoading((prevState) => ({
-                ...prevState,
-                cod: false,
-              }));
-              console.log("data", res.data);
-              router.push(`/order/${res.data.transactionId}`);
-            }, 4000); // Delay of 4000 ms (4 seconds)
-          })
-          .catch((err) => {
-            console.log("order", err);
-          });
-      }
+      return; // Exit if no products in cart
     }
+  
+    if (!userData?.user?.email || !userData?.user?.phone) {
+      AquaToast({ message: "Please Update Details To Proceed Further", type: "error" });
+      return; // Exit if user details are missing
+    }
+  
+    if (!userData?.user?.addresses?.length) {
+      AquaToast({ message: "Please Add An Address", type: "error" });
+      return; // Exit if no address exists
+    }
+  
+    if (!selectedAddress) {
+      AquaToast({ message: "Please select an address", type: "error" });
+      return; // Exit if no address selected
+    }
+  
+    const cashTransactionId = `AQTR-COD-${nanoid(5).toUpperCase()}D${moment(new Date()).format("DDMMYYYY")}`;
+    const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
+  
+    const newOrder = {
+      user: userData?.user?._id,
+      orderType: "Cash On Delivery",
+      items: productData(cartData),
+      transactionId: cashTransactionId,
+      totalAmount: getTotalPrice(),
+      orderId: orderId,
+      paymentMethod: "Cash On Delivery",
+      paymentStatus: "Pending",
+      currency: "INR",
+      billingAddress: selectedAddress,
+      shippingAddress: selectedAddress,
+      shippingMethod: "Standard",
+      shippingCost: 50,
+      estimatedDelivery: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      orderStatus: "Processing",
+    };
+  
+    setLoading((prevState) => ({
+      ...prevState,
+      cod: true,
+    }));
+  
+    orderServiceOperations
+      .createCodOrder(newOrder)
+      .then((res) => {
+        setTimeout(() => {
+          setLoading((prevState) => ({
+            ...prevState,
+            cod: false,
+          }));
+          console.log("data", res.data);
+          router.push(`/order/${res.data.transactionId}`);
+        }, 4000);
+      })
+      .catch((err) => {
+        console.log("order", err);
+      });
   };
-
+  
   const handlePhonePayment = () => {
     if (cartData.length <= 0) {
       AquaToast({ message: "Please add products to cart", type: "info" });
-    } else {
-      const transactionId = `AQTR-PGPP${nanoid(5).toUpperCase()}D${moment(
-        new Date(),
-      ).format("DDMMYYYY")}`;
-      const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
-      const newOrder = {
-        user: userData?.user?._id, // Safe access and also make sure user exists
-        transactionId: transactionId,
-        orderType: "Payment Method(Phone Pe Gateway)",
-        orderId: orderId,
-        items: cartData.map((item) => ({
-          productId: item.id,
-          name: item.title,
-          price: item.price,
-          quantity: item.quantity,
-        })),
-        totalAmount: getTotalPrice(),
-        paymentMethod: "OTHER THAN CASH ON DELIVERY",
-        paymentStatus: "Pending",
-        currency: "INR",
-        billingAddress: selectedAddress, // Ensure this is correctly assigned using safe access
-        shippingAddress: selectedAddress, // Ensure this is correctly assigned using safe access
-        shippingMethod: "Standard",
-        shippingCost: 50, // Example fixed cost
-        estimatedDelivery: new Date(
-          new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
-        ).toISOString(), // Adding 7 days
-        orderStatus: "Processing",
-      };
-      if (!userData.user.email || !userData.user.phone) {
-        AquaToast({
-          message: "Please Update Details To Proceed Further",
-          type: "error",
-        });
-      } else if (userData.user.addresses.length < 0) {
-        AquaToast({ message: "Please Add An Address", type: "error" });
-      } else if (!selectedAddress) {
-        AquaToast({ message: "Please select an address", type: "error" });
-      } else {
+      return; // Exit if no products in cart
+    }
+  
+    if (!userData?.user?.email || !userData?.user?.phone) {
+      AquaToast({ message: "Please Update Details To Proceed Further", type: "error" });
+      return; // Exit if user details are missing
+    }
+  
+    if (!userData?.user?.addresses?.length) {
+      AquaToast({ message: "Please Add An Address", type: "error" });
+      return; // Exit if no address exists
+    }
+  
+    if (!selectedAddress) {
+      AquaToast({ message: "Please select an address", type: "error" });
+      return; // Exit if no address selected
+    }
+  
+    const transactionId = `AQTR-PGPP${nanoid(5).toUpperCase()}D${moment(new Date()).format("DDMMYYYY")}`;
+    const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
+  
+    const newOrder = {
+      user: userData?.user?._id,
+      transactionId: transactionId,
+      orderType: "Payment Method(Phone Pe Gateway)",
+      orderId: orderId,
+      items: cartData.map((item) => ({
+        productId: item.id,
+        name: item.title,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+      totalAmount: getTotalPrice(),
+      paymentMethod: "OTHER THAN CASH ON DELIVERY",
+      paymentStatus: "Pending",
+      currency: "INR",
+      billingAddress: selectedAddress,
+      shippingAddress: selectedAddress,
+      shippingMethod: "Standard",
+      shippingCost: 50,
+      estimatedDelivery: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      orderStatus: "Processing",
+    };
+  
+    setLoading((prevState) => ({
+      ...prevState,
+      gateway: true,
+    }));
+  
+    orderServiceOperations
+      .createPhonePePayOrder(newOrder)
+      .then((res) => {
         setLoading((prevState) => ({
           ...prevState,
-          gateway: true,
+          gateway: false,
         }));
-        orderServiceOperations.createPhonePePayOrder(newOrder).then((res) => {
-          setLoading((prevState) => ({
-            ...prevState,
-            gateway: false,
-          }));
-          window.location.href = res.url;
-        });
-      }
-    }
+        window.location.href = res.url;
+      })
+      .catch((err) => {
+        console.log("order", err);
+      });
   };
+  
 
   const handleUpdateDetails = async () => {
     const newDetails = { ...bulkUpdate };
