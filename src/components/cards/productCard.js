@@ -79,7 +79,7 @@ const AquaProductCard = ({ product }) => {
             ) : (
               <>
                 <span>Add to WishList</span>
-                <FaHeartBroken className="text-red-700" size={25} />
+                <FaHeart className="text-gray-700" size={25} />
               </>
             )}
           </button>

@@ -104,25 +104,28 @@ const AquaCheckoutComponent = () => {
       AquaToast({ message: "Please add products to cart", type: "info" });
       return; // Exit if no products in cart
     }
-  
+
     if (!userData?.user?.email || !userData?.user?.phone) {
-      AquaToast({ message: "Please Update Details To Proceed Further", type: "error" });
+      AquaToast({
+        message: "Please Update Details To Proceed Further",
+        type: "error",
+      });
       return; // Exit if user details are missing
     }
-  
+
     if (!userData?.user?.addresses?.length) {
       AquaToast({ message: "Please Add An Address", type: "error" });
       return; // Exit if no address exists
     }
-  
+
     if (!selectedAddress) {
       AquaToast({ message: "Please select an address", type: "error" });
       return; // Exit if no address selected
     }
-  
+
     const cashTransactionId = `AQTR-COD-${nanoid(5).toUpperCase()}D${moment(new Date()).format("DDMMYYYY")}`;
     const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
-  
+
     const newOrder = {
       user: userData?.user?._id,
       orderType: "Cash On Delivery",
@@ -137,15 +140,17 @@ const AquaCheckoutComponent = () => {
       shippingAddress: selectedAddress,
       shippingMethod: "Standard",
       shippingCost: 50,
-      estimatedDelivery: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      estimatedDelivery: new Date(
+        new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
+      ).toISOString(),
       orderStatus: "Processing",
     };
-  
+
     setLoading((prevState) => ({
       ...prevState,
       cod: true,
     }));
-  
+
     orderServiceOperations
       .createCodOrder(newOrder)
       .then((res) => {
@@ -162,31 +167,34 @@ const AquaCheckoutComponent = () => {
         console.log("order", err);
       });
   };
-  
+
   const handlePhonePayment = () => {
     if (cartData.length <= 0) {
       AquaToast({ message: "Please add products to cart", type: "info" });
       return; // Exit if no products in cart
     }
-  
+
     if (!userData?.user?.email || !userData?.user?.phone) {
-      AquaToast({ message: "Please Update Details To Proceed Further", type: "error" });
+      AquaToast({
+        message: "Please Update Details To Proceed Further",
+        type: "error",
+      });
       return; // Exit if user details are missing
     }
-  
+
     if (!userData?.user?.addresses?.length) {
       AquaToast({ message: "Please Add An Address", type: "error" });
       return; // Exit if no address exists
     }
-  
+
     if (!selectedAddress) {
       AquaToast({ message: "Please select an address", type: "error" });
       return; // Exit if no address selected
     }
-  
+
     const transactionId = `AQTR-PGPP${nanoid(5).toUpperCase()}D${moment(new Date()).format("DDMMYYYY")}`;
     const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
-  
+
     const newOrder = {
       user: userData?.user?._id,
       transactionId: transactionId,
@@ -206,15 +214,17 @@ const AquaCheckoutComponent = () => {
       shippingAddress: selectedAddress,
       shippingMethod: "Standard",
       shippingCost: 50,
-      estimatedDelivery: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      estimatedDelivery: new Date(
+        new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
+      ).toISOString(),
       orderStatus: "Processing",
     };
-  
+
     setLoading((prevState) => ({
       ...prevState,
       gateway: true,
     }));
-  
+
     orderServiceOperations
       .createPhonePePayOrder(newOrder)
       .then((res) => {
@@ -228,7 +238,6 @@ const AquaCheckoutComponent = () => {
         console.log("order", err);
       });
   };
-  
 
   const handleUpdateDetails = async () => {
     const newDetails = { ...bulkUpdate };
