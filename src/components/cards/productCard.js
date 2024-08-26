@@ -57,7 +57,7 @@ const AquaProductCard = ({ product }) => {
             {cart ? (
               <>
                 <span>Added To Cart</span>
-                <FaCartArrowDown className="text-green-800" size={25} />
+                <FaCartArrowDown className="text-green-700" size={25} />
               </>
             ) : (
               <>
