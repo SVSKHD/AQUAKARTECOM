@@ -1,16 +1,13 @@
-import { Fragment, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { ChevronDownIcon, StarIcon } from "@heroicons/react/20/solid";
 import AquaLayout from "@/components/Layout/Layout";
 import { useRouter } from "next/router";
 import ProductServiceOperations from "@/services/products";
 import useCurrency from "@/utils/currency";
 import useProduct from "@/utils/product";
-import { FaHeart, FaHeartBroken, FaCartPlus } from "react-icons/fa";
-import { FaCartArrowDown, FaCartShopping } from "react-icons/fa6";
+import { FaHeart, FaCartPlus } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import AquaProductCard from "@/components/cards/productCard";
-import Image from "next/image";
 import LOGO from "../../assests/Default.png";
 import useScreenSize from "@/utils/screenSizer"; // Import the useScreenSize hook
 

@@ -278,7 +278,7 @@ const AquaHomeComponent = () => {
                     href="/categories"
                     className="hidden text-sm font-semibold text-indigo-600 hover:text-indigo-500 sm:block"
                   >
-                    Browse all categories
+                    Browse All categories
                     <span aria-hidden="true"> &rarr;</span>
                   </Link>
                 </div>
