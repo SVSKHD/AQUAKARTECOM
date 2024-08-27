@@ -19,6 +19,7 @@ import ProductServiceOperations from "@/services/products";
 import Image from "next/image";
 import Link from "next/link";
 import AquaProducts from "./products";
+import TestCard from "@/components/cards/ProductCard2";
 
 const AquaHomeComponent = () => {
   const [categoryData, setCategoryData] = useState([]);
@@ -263,6 +264,8 @@ const AquaHomeComponent = () => {
 
             <main>
               <AquaProducts />
+
+        
               <section
                 aria-labelledby="category-heading"
                 className="pt-2 sm:pt-2 xl:mx-auto xl:max-w-7xl xl:px-8"

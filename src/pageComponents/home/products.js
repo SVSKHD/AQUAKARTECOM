@@ -1,4 +1,5 @@
 import AquaProductCard from "@/components/cards/productCard";
+import ReusableProductCard from "@/components/cards/ProductCard2";
 import ProductServiceOperations from "@/services/products";
 import { useEffect, useState } from "react";
 const AquaProducts = () => {
@@ -40,7 +41,8 @@ const AquaProducts = () => {
                     key={product.id}
                     className="inline-flex w-64 flex-col text-center lg:w-auto"
                   >
-                    <AquaProductCard product={product} />
+                    {/* <AquaProductCard product={product} /> */}
+                    <ReusableProductCard product={product}/>
                   </li>
                 ))}
               </ul>

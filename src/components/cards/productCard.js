@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import React from "react";
 import useCurrency from "@/utils/currency";
 import useProduct from "@/utils/product";
-import { FaHeart, FaHeartBroken } from "react-icons/fa";
+import { FaHeart } from "react-icons/fa";
 import { FaCartArrowDown, FaCartShopping } from "react-icons/fa6";
 import { useSelector } from "react-redux";
-import Image from "next/image";
+
 
 const AquaProductCard = ({ product }) => {
   const [loading, setLoading] = useState(false);
