@@ -31,7 +31,7 @@ const ReusableProductCard = ({ product }) => {
         {/* Cart button - top left */}
         <button
           onClick={() => AddAndRemoveCart(product, setAddCart)}
-          className={`absolute top-2 left-2 z-10 p-3 rounded-full border-none focus:outline-none transition-colors duration-300 ${cart ? 'bg-white' : 'bg-gray-600'}`}
+          className={`absolute top-2 left-2 z-10 p-3 rounded-full border-none focus:outline-none transition-colors duration-300 ${cart ? "bg-white" : "bg-gray-600"}`}
         >
           <FaShoppingCart
             aria-hidden="true"
@@ -43,7 +43,7 @@ const ReusableProductCard = ({ product }) => {
         {/* Favorite button - top right */}
         <button
           onClick={() => AddAndRemoveFav(product, setAddFav)}
-          className={`absolute top-2 right-2 z-10 p-3 rounded-full border-none focus:outline-none transition-colors duration-300 ${fav ? 'bg-white' : 'bg-gray-600'}`}
+          className={`absolute top-2 right-2 z-10 p-3 rounded-full border-none focus:outline-none transition-colors duration-300 ${fav ? "bg-white" : "bg-gray-600"}`}
         >
           <FaHeart
             aria-hidden="true"

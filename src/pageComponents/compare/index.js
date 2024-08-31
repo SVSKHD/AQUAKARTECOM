@@ -1,16 +1,22 @@
 import AquaLayout from "@/components/Layout/Layout";
 import { useRouter } from "next/router";
+import { useState } from "react";
+import AquaFavoritesComponent from "./favorites";
+
 const AquaCompareComponent = () => {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState("Favourites");
+
   const tabs = [
-    { name: "Favourites", href: "#", current: true },
-    { name: "Cart", href: "#", current: false },
-    { name: "Compare", href: "#", current: false },
+    { name: "Favourites", href: "#", current: activeTab === "Favourites" },
+    { name: "Cart", href: "#", current: activeTab === "Cart" },
+    { name: "Compare", href: "#", current: activeTab === "Compare" },
   ];
 
   function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
   }
+
   const SeoData = {
     title: "Aquakart | Compare Products",
     description:
@@ -20,6 +26,19 @@ const AquaCompareComponent = () => {
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
   };
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case "Favourites":
+        return <AquaFavoritesComponent />;
+      case "Cart":
+        return <div>Items in your cart will appear here.</div>;
+      case "Compare":
+        return <div>Compare products side by side here.</div>;
+      default:
+        return null;
+    }
+  };
+
   return (
     <AquaLayout seo={SeoData}>
       <div>
@@ -27,15 +46,17 @@ const AquaCompareComponent = () => {
           <label htmlFor="tabs" className="sr-only">
             Select a tab
           </label>
-          {/* Use an "onChange" listener to redirect the user to the selected tab URL. */}
           <select
             id="tabs"
             name="tabs"
             className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-            defaultValue={tabs.find((tab) => tab.current).name}
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value)}
           >
             {tabs.map((tab) => (
-              <option key={tab.name}>{tab.name}</option>
+              <option key={tab.name} value={tab.name}>
+                {tab.name}
+              </option>
             ))}
           </select>
         </div>
@@ -48,6 +69,10 @@ const AquaCompareComponent = () => {
               <a
                 key={tab.name}
                 href={tab.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveTab(tab.name);
+                }}
                 className={classNames(
                   tab.current
                     ? "text-gray-900"
@@ -70,8 +95,10 @@ const AquaCompareComponent = () => {
             ))}
           </nav>
         </div>
+        <div className="mt-4">{renderContent()}</div>
       </div>
     </AquaLayout>
   );
 };
+
 export default AquaCompareComponent;

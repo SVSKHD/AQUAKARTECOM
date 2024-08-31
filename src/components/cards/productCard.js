@@ -6,7 +6,6 @@ import { FaHeart } from "react-icons/fa";
 import { FaCartArrowDown, FaCartShopping } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 
-
 const AquaProductCard = ({ product }) => {
   const [loading, setLoading] = useState(false);
   const [cart, setAddCart] = useState(false);

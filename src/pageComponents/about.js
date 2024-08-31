@@ -67,7 +67,7 @@ const jobOpenings = [
   },
 ];
 
-const AquaAbout=()=> {
+const AquaAbout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const seo = {
     title: "Aquakart | About",
@@ -388,6 +388,6 @@ const AquaAbout=()=> {
       </div>
     </AquaLayout>
   );
-}
+};
 
-export default AquaAbout
+export default AquaAbout;

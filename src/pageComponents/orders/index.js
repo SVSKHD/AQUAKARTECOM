@@ -9,9 +9,7 @@ import {
   TabPanel,
   TabPanels,
 } from "@headlessui/react";
-import {
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import AquaLayout from "@/components/Layout/Layout";
 import { useRouter } from "next/router";
@@ -23,7 +21,6 @@ import { useSelector, useDispatch } from "react-redux";
 import AquaToast from "@/components/reusables/react-toastify";
 import AquaBadge from "@/components/reusables/badge";
 import AquaPaymentDetails from "@/components/utils/paymentTypeDetails";
-
 
 const currencies = ["CAD", "USD", "AUD", "EUR", "GBP"];
 const navigation = {
@@ -95,7 +92,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-const AquaOrder = ()=> {
+const AquaOrder = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { id } = router.query;
@@ -773,8 +770,8 @@ const AquaOrder = ()=> {
       </AquaLayout>
     </div>
   );
-}
+};
 
-export default AquaOrder
+export default AquaOrder;
 
 // payment gateway code.

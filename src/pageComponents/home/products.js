@@ -42,7 +42,7 @@ const AquaProducts = () => {
                     className="inline-flex w-64 flex-col text-center lg:w-auto"
                   >
                     {/* <AquaProductCard product={product} /> */}
-                    <ReusableProductCard product={product}/>
+                    <ReusableProductCard product={product} />
                   </li>
                 ))}
               </ul>
