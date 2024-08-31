@@ -11,6 +11,7 @@ const AquaShopComponent = () => {
   const SeoData = {
     title: "Aquakart | Shop",
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
+    keywords:`Aquakart, Sand-filters , iron-filters, ro-purifiers, geysers,`
   };
 
   const [products, setProducts] = useState([]);

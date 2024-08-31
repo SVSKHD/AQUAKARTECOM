@@ -6,6 +6,9 @@ import { useEffect, useState } from "react";
 const AquaAllCategoriesComponent = () => {
   const seo = {
     title: "Aquakart | shop by categories",
+    desscription:"Aquakart offers a wide range of water solutions including purifiers, dispensers, softeners, storage tanks, pumps, and plumbing accessories. Ensure safe, efficient, and stylish water management for your home or business with our high-quality products. Shop now!",
+    keywords:"Aquakart,Water Purifiers,Water Dispensers,Water Softeners ,Water Storage Tanks,Water Pumps,Plumbing Accessories,Bath Fittings,Irrigation Solutions,Home Appliances,Water Filtration,Clean Drinking Water,Water Management, Water Treatment,Water Solutions, Safe Drinking Water",
+    canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
   };
   const [categories, setCategories] = useState([]);
   useEffect(() => {

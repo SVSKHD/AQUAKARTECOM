@@ -3,10 +3,6 @@ import {
   Dialog,
   DialogBackdrop,
   DialogPanel,
-  Popover,
-  PopoverButton,
-  PopoverGroup,
-  PopoverPanel,
   Tab,
   TabGroup,
   TabList,
@@ -14,10 +10,6 @@ import {
   TabPanels,
 } from "@headlessui/react";
 import {
-  Bars3Icon,
-  MagnifyingGlassIcon,
-  ShoppingCartIcon,
-  UserIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
@@ -31,7 +23,7 @@ import { useSelector, useDispatch } from "react-redux";
 import AquaToast from "@/components/reusables/react-toastify";
 import AquaBadge from "@/components/reusables/badge";
 import AquaPaymentDetails from "@/components/utils/paymentTypeDetails";
-import useProduct from "@/utils/product";
+
 
 const currencies = ["CAD", "USD", "AUD", "EUR", "GBP"];
 const navigation = {
@@ -103,8 +95,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Example() {
-  const { EmptyCart } = useProduct();
+const AquaOrder = ()=> {
   const dispatch = useDispatch();
   const router = useRouter();
   const { id } = router.query;
@@ -783,5 +774,7 @@ export default function Example() {
     </div>
   );
 }
+
+export default AquaOrder
 
 // payment gateway code.
