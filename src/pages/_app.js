@@ -65,10 +65,23 @@ export default function App({ Component, pageProps }) {
       router.events.off("routeChangeComplete", handleRouteChange);
     };
   }, [router.events]);
-  // This useEffect will run only on the client side
+
   useEffect(() => {
+    // This useEffect will run only on the client side
     if (typeof window !== "undefined") {
       persistor.persist();
+
+      // Disable right-click across the entire app
+      const handleContextMenu = (e) => {
+        e.preventDefault();
+      };
+
+      document.addEventListener("contextmenu", handleContextMenu);
+
+      // Cleanup on unmount
+      return () => {
+        document.removeEventListener("contextmenu", handleContextMenu);
+      };
     }
   }, []);
 

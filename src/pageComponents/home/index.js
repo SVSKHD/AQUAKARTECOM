@@ -77,7 +77,7 @@ const AquaHomeComponent = () => {
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
     keywords:
-      "Aquakart Ecom Store , water softeners  , water Ro  , ro machines , Salt Free Water Softener , Water Softener System , Water Softener Installation",
+      "Aquakart Ecom Store ,Aquakart,  water softeners, Aquakart water softeners, Aquakart ro water purifiers, Aquakart geysers, water softener system for home  , water Ro  , ro machines , Salt Free Water Softener , Water Softener System , Water Softener Installation",
     keyphrases: "Water Softener Salt Prices , Salt Water Softener",
   };
 
@@ -265,6 +265,7 @@ const AquaHomeComponent = () => {
             <main>
               <AquaProducts />
 
+        
               <section
                 aria-labelledby="category-heading"
                 className="pt-2 sm:pt-2 xl:mx-auto xl:max-w-7xl xl:px-8"
