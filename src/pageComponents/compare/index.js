@@ -2,6 +2,7 @@ import AquaLayout from "@/components/Layout/Layout";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import AquaFavoritesComponent from "./favorites";
+import AquaCartComponent from "./cart";
 
 const AquaCompareComponent = () => {
   const router = useRouter();
@@ -31,7 +32,7 @@ const AquaCompareComponent = () => {
       case "Favourites":
         return <AquaFavoritesComponent />;
       case "Cart":
-        return <div>Items in your cart will appear here.</div>;
+        return <AquaCartComponent/>;
       case "Compare":
         return <div>Compare products side by side here.</div>;
       default:

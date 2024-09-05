@@ -10,6 +10,8 @@ module.exports = {
     },
     animation: {
       "spin-slow": "spin 3s linear infinite",
+      "bounce-slow": "bounce 3s infinite",
+      "fade-in": "fadeIn 1s ease-in-out",
     },
     fontSize: {
       xs: ["0.75rem", { lineHeight: "1rem" }],

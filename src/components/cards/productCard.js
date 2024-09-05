@@ -2,18 +2,21 @@ import { useState, useEffect } from "react";
 import React from "react";
 import useCurrency from "@/utils/currency";
 import useProduct from "@/utils/product";
-import { FaHeart } from "react-icons/fa";
-import { FaCartArrowDown, FaCartShopping } from "react-icons/fa6";
+import { FaShoppingCart, FaHeart } from "react-icons/fa";
 import { useSelector } from "react-redux";
 
 const AquaProductCard = ({ product }) => {
-  const [loading, setLoading] = useState(false);
   const [cart, setAddCart] = useState(false);
   const [fav, setAddFav] = useState(false);
   const { title, photos, price, color, slug } = product;
   const { formatCurrencyINRWithK } = useCurrency;
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
-  const { cartData, favData } = useSelector((state) => ({ ...state }));
+  const { cartData, favData } = useSelector((state) => ({
+    cartData: state.cartData,
+    favData: state.favData,
+  }));
+
+  
 
   useEffect(() => {
     const isProductInCart = cartData.some((item) => item._id === product?._id);
@@ -22,21 +25,55 @@ const AquaProductCard = ({ product }) => {
     setAddFav(isProductInFav);
   }, [cartData, product?._id, favData]);
 
+
+
+ 
+
   return (
-    <div className="relative mb-5">
+    <div className="relative mb-5 transition-transform duration-300 transform md:hover:scale-105 md:hover:shadow-xl rounded-md">
       <div className="relative h-72 w-full overflow-hidden rounded-lg">
         <img
-          src={photos[0].secure_url}
+          src={photos[0]?.secure_url}
           alt={title}
-          className="h-full w-full object-cover object-center"
+          className="h-full w-full object-cover object-center md:group-hover:opacity-75 transition-opacity duration-300"
         />
+  
+        {/* Cart button - top left */}
+        <button
+          onClick={() => AddAndRemoveCart(product, setAddCart)}
+          className={`absolute top-2 left-2 z-10 p-1.5 rounded-lg border-none focus:outline-none transition-all duration-300 ${
+            cart ? "bg-white" : "bg-gray-600"
+          } md:hover:p-3 md:hover:rounded-full`}
+        >
+          <FaShoppingCart
+            aria-hidden="true"
+            size={20}
+            className={cart ? "text-green-700" : "text-gray-300"}
+          />
+        </button>
+  
+        {/* Favorite button - top right */}
+        <button
+          onClick={() => AddAndRemoveFav(product, setAddFav)}
+          className={`absolute top-2 right-2 z-10 p-1.5 rounded-lg border-none focus:outline-none transition-all duration-300 ${
+            fav ? "bg-white" : "bg-gray-600"
+          } md:hover:p-3 md:hover:rounded-full`}
+        >
+          <FaHeart
+            aria-hidden="true"
+            size={20}
+            className={fav ? "text-red-500" : "text-gray-300"}
+          />
+        </button>
       </div>
-      <div className="relative mt-4">
+  
+      <div className="relative mt-4 pr-3 pl-3 pb-3">
         <h3 className="text-lg font-medium text-gray-900">
           <a href={`/product/${slug}`}>{title}</a>
         </h3>
         <p className="mt-1 text-sm text-gray-500">{color}</p>
       </div>
+  
       <div className="absolute inset-x-0 top-0 flex h-72 items-end justify-end overflow-hidden rounded-lg p-4">
         <div
           aria-hidden="true"
@@ -46,46 +83,9 @@ const AquaProductCard = ({ product }) => {
           {formatCurrencyINRWithK(price)}
         </p>
       </div>
-      <div className="mt-6">
-        <span className="isolate inline-flex rounded-md shadow-sm">
-          <button
-            type="button"
-            className={`relative inline-flex items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:z-10`}
-            onClick={() => AddAndRemoveCart(product, setAddCart)}
-          >
-            {cart ? (
-              <>
-                <span>Added To Cart</span>
-                <FaCartArrowDown className="text-green-700" size={25} />
-              </>
-            ) : (
-              <>
-                <span>Add To Cart</span>
-                <FaCartShopping size={25} />
-              </>
-            )}
-          </button>
-          <button
-            type="button"
-            className="relative -ml-px inline-flex items-center bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:z-10"
-            onClick={() => AddAndRemoveFav(product, setAddFav)}
-          >
-            {fav ? (
-              <>
-                <span>Added to WishList</span>
-                <FaHeart className="text-red-700" size={25} />
-              </>
-            ) : (
-              <>
-                <span>Add to WishList</span>
-                <FaHeart className="text-gray-700" size={25} />
-              </>
-            )}
-          </button>
-        </span>
-      </div>
     </div>
   );
+  
 };
 
 export default AquaProductCard;

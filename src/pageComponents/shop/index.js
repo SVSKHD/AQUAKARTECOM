@@ -5,6 +5,7 @@ import AquaProductCard from "@/components/cards/productCard";
 import { useRouter } from "next/router";
 import AquaToast from "@/components/reusables/react-toastify";
 import AquaSpinner from "@/components/common/spinner";
+import ShimmerEffect from "@/components/loaders/card";
 
 const AquaShopComponent = () => {
   const router = useRouter();
