@@ -337,7 +337,7 @@ const AquaHomeComponent = () => {
 
                 <div className="mt-6 px-4 sm:hidden">
                   <a
-                    href="#"
+                    href="/categories"
                     className="block text-sm font-semibold text-indigo-600 hover:text-indigo-500"
                   >
                     Browse All categories
