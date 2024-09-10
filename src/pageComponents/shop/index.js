@@ -37,7 +37,7 @@ const AquaShopComponent = () => {
         <>
           <div className="flex items-center justify-center h-screen">
             <div className="text-center">
-              <AquaSpinner color="blue" />
+              <AquaSpinner color="blue" size="lg" />
             </div>
           </div>
         </>
