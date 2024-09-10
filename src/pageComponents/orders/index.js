@@ -480,14 +480,14 @@ const AquaOrder = () => {
                 <div className="space-y-8">
                   {order?.items?.map((product) => (
                     <div
-                      key={product.id}
+                      key={product.name}
                       className="border-b border-t border-gray-200 bg-white shadow-sm sm:rounded-lg sm:border"
                     >
                       <div className="px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
                         <div className="sm:flex lg:col-span-7">
                           <div className="mt-6 sm:ml-6 sm:mt-0">
                             <h3 className="text-base font-medium text-gray-900">
-                              <Link href={`/product/${product.productId}`}>
+                              <Link href={`/product/${product.name}`}>
                                 {product.name}
                               </Link>
                             </h3>
@@ -642,23 +642,24 @@ const AquaOrder = () => {
                 <div className="space-y-8">
                   {order?.items?.map((product) => (
                     <div
-                      key={product.id}
+                      key={product.name}
                       className="border-b border-t border-gray-200 bg-white shadow-sm sm:rounded-lg sm:border"
                     >
                       <div className="px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
                         <div className="sm:flex lg:col-span-7">
                           <div className="mt-6 sm:ml-6 sm:mt-0">
                             <h3 className="text-base font-medium text-gray-900">
-                              <Link href={`/product/${product.productId}`}>
+                              <Link href={`/product/${product.name}`}>
                                 {product.name}
                               </Link>
                             </h3>
-                            <p className="mt-2 text-sm font-medium text-green-900">
-                              {formatCurrencyINR(product.price)}
-                            </p>
                             <p className="mt-3 text-sm text-gray-500">
                               Qunatity Placed : {product.quantity}
                             </p>
+                            <p className="mt-2 text-sm font-medium text-green-900">
+                              Price : {formatCurrencyINR(product.price)}
+                            </p>
+                            
                           </div>
                         </div>
 
@@ -695,61 +696,10 @@ const AquaOrder = () => {
                   ))}
                 </div>
               </section>
-              <section aria-labelledby="summary-heading" className="mt-16">
-                <h2 id="summary-heading" className="sr-only">
-                  Billing Summary
-                </h2>
-
-                <div className="bg-white rounded-lg shadow-md p-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8 lg:py-8">
-                  <dl className="grid grid-cols-2 gap-6 text-lg sm:grid-cols-2 md:gap-x-8 lg:col-span-7">
-                    <div>
-                      <dt className="font-medium text-gray-900">
-                        Billing address
-                      </dt>
-                      <dd className="mt-3 text-gray-500">
-                        <span className="block">
-                          {order?.shippingAddress?.street}
-                        </span>
-                        <span className="block">
-                          {order?.shippingAddress?.city}
-                        </span>
-                        <span className="block">
-                          {order?.shippingAddress?.state}
-                        </span>
-                        <span className="block">
-                          {order?.shippingAddress?.postalCode}
-                        </span>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="font-medium text-gray-900">
-                        Payment information
-                      </dt>
-                      <dd className="-ml-4 -mt-1 flex flex-wrap">
-                        <div className="ml-4 mt-4">
-                          <AquaPaymentDetails
-                            paymentInstrument={order.paymentInstrument}
-                          />
-                        </div>
-                      </dd>
-                    </div>
-                  </dl>
-
-                  <dl className="mt-8 divide-y divide-gray-200 text-lg lg:col-span-5 lg:mt-0">
-                    <div className="flex items-center justify-between pt-4">
-                      <dt className="font-medium text-gray-900">Order total</dt>
-                      {/* {JSON.stringify(order)} */}
-                      <dd className="font-medium text-indigo-600">
-                        {formatCurrencyINR(order.totalAmount)}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-              </section>
-
+           
               
                 <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-                  <dl className="space-y-6 border-t border-gray-200 pt-10 text-lg">
+                
                     <div className="flex justify-between items-center">
                       <dt className="font-medium text-gray-900 text-xl">
                         Total
@@ -758,7 +708,7 @@ const AquaOrder = () => {
                         {formatCurrencyINR(order?.totalAmount)}
                       </dd>
                     </div>
-                  </dl>
+           
                 </div>
            
             </>
