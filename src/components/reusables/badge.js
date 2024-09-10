@@ -24,7 +24,7 @@ const AquaBadge = ({ text, color, size }) => {
 
   return (
     <span
-      className={`${baseClasses} ${colorClasses[color]} ${sizeClasses[size]}`}
+      className={`${baseClasses} ${colorClasses[color]} ${sizeClasses[size]} font-bold`}
     >
       {text}
     </span>

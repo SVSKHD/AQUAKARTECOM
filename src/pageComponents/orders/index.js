@@ -115,7 +115,7 @@ const AquaOrder = () => {
 
       fetchOrder
         .then((res) => {
-          const orderData = paymentMode ? res.order : res.order;
+          const orderData = paymentMode ? res.data : res.data;
           setOrder(orderData);
           dispatch({
             type: "EMPTY_CART",
@@ -442,8 +442,9 @@ const AquaOrder = () => {
               <div className="space-y-2 px-4 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
                 <div className="flex sm:items-baseline sm:space-x-4">
                   <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-                    Order #{order?.orderId} - Cash On Delivery
+                    Order #{order?.orderId} - Cash On Delivery 
                   </h1>
+                  
                   <Link
                     href="#"
                     className="hidden text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:block"
@@ -539,23 +540,7 @@ const AquaOrder = () => {
                 </div>
               </section>
 
-              {/* Billing */}
-              {order?.orderType === "Cash On Delivery" ? (
-                <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-                  <dl className="space-y-6 border-t border-gray-200 pt-10 text-lg">
-                    <div className="flex justify-between items-center">
-                      <dt className="font-medium text-gray-900 text-xl">
-                        Total
-                      </dt>
-                      <dd className="text-gray-900 font-bold text-2xl text-green-600">
-                        {formatCurrencyINR(order?.totalAmount)}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-              ) : (
-                ""
-              )}
+          
               <section aria-labelledby="summary-heading" className="mt-16">
                 <h2 id="summary-heading" className="sr-only">
                   Billing Summary
@@ -592,17 +577,26 @@ const AquaOrder = () => {
                     </div>
                   </dl>
 
-                  <dl className="mt-8 divide-y divide-gray-200 text-lg lg:col-span-5 lg:mt-0">
-                    <div className="flex items-center justify-between pt-4">
-                      <dt className="font-medium text-gray-900">Order total</dt>
-                      {/* {JSON.stringify(order)} */}
-                      <dd className="font-medium text-indigo-600">
+                </div>
+              </section>
+
+                  {/* Billing */}
+                  {order?.orderType === "Cash On Delivery" ? (
+                <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+                  <dl className="space-y-6 border-t border-gray-200 pt-10 text-lg">
+                    <div className="flex justify-between items-center">
+                      <dt className="font-medium text-gray-900 text-xl">
+                        Total
+                      </dt>
+                      <dd className="text-gray-900 font-bold text-2xl text-green-600">
                         {formatCurrencyINR(order?.totalAmount)}
                       </dd>
                     </div>
                   </dl>
                 </div>
-              </section>
+              ) : (
+                ""
+              )}
             </>
           )}
           {mode.payment && (
@@ -742,18 +736,6 @@ const AquaOrder = () => {
                   </dl>
 
                   <dl className="mt-8 divide-y divide-gray-200 text-lg lg:col-span-5 lg:mt-0">
-                    {/* <div className="flex items-center justify-between pb-4">
-      <dt className="text-gray-600">Subtotal</dt>
-      <dd className="font-medium text-gray-900">$72</dd>
-    </div>
-    <div className="flex items-center justify-between py-4">
-      <dt className="text-gray-600">Shipping</dt>
-      <dd className="font-medium text-gray-900">$5</dd>
-    </div>
-    <div className="flex items-center justify-between py-4">
-      <dt className="text-gray-600">Tax</dt>
-      <dd className="font-medium text-gray-900">$6.16</dd>
-    </div> */}
                     <div className="flex items-center justify-between pt-4">
                       <dt className="font-medium text-gray-900">Order total</dt>
                       {/* {JSON.stringify(order)} */}
@@ -764,6 +746,21 @@ const AquaOrder = () => {
                   </dl>
                 </div>
               </section>
+
+              
+                <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+                  <dl className="space-y-6 border-t border-gray-200 pt-10 text-lg">
+                    <div className="flex justify-between items-center">
+                      <dt className="font-medium text-gray-900 text-xl">
+                        Total
+                      </dt>
+                      <dd className="text-gray-900 font-bold text-2xl text-green-600">
+                        {formatCurrencyINR(order?.totalAmount)}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+           
             </>
           )}
         </main>
