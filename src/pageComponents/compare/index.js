@@ -1,12 +1,13 @@
 import AquaLayout from "@/components/Layout/Layout";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import AquaFavoritesComponent from "./favorites";
-import AquaCartComponent from "./cart";
+import AquaFavoritesTabContent from "./favorites";
+import AquaCartTabContent from "./cart";
+import AquaCompareTabContent from "./Compare";
 
 const AquaCompareComponent = () => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("Favourites");
+  const [activeTab, setActiveTab] = useState("Compare");
 
   const tabs = [
     { name: "Favourites", href: "#", current: activeTab === "Favourites" },
@@ -30,11 +31,11 @@ const AquaCompareComponent = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "Favourites":
-        return <AquaFavoritesComponent />;
+        return <AquaFavoritesTabContent />;
       case "Cart":
-        return <AquaCartComponent/>;
+        return <AquaCartTabContent />;
       case "Compare":
-        return <div>Compare products side by side here.</div>;
+        return <AquaCompareTabContent />;
       default:
         return null;
     }

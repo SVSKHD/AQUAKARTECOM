@@ -3,9 +3,15 @@ import React from "react";
 
 const AquaFavoriteCompareCard = ({ product, onCompare }) => {
   const { title, price, photos, productLink } = product;
-  
-  // Correctly invoke the useCurrency hook
-  const { formatCurrencyINR } = useCurrency
+
+  const { formatCurrencyINR } = useCurrency;
+
+  console.log("onCompare function:", onCompare);
+
+  const ComparFunction = (e) => {
+    e.preventDefault();
+    onCompare(product);
+  };
 
   return (
     <div className="group relative">
@@ -15,13 +21,10 @@ const AquaFavoriteCompareCard = ({ product, onCompare }) => {
           alt={title}
           className="object-cover object-center"
         />
-        <div
-          className="flex items-end p-4 opacity-0 group-hover:opacity-100"
-          aria-hidden="true"
-        >
+        <div className="flex items-end p-4 opacity-0 group-hover:opacity-100">
           <button
-            onClick={onCompare ? onCompare : () => {}}
-            className="w-full rounded-md bg-white bg-opacity-75 px-4 py-2 text-center text-sm font-medium text-gray-900 backdrop-blur backdrop-filter"
+            onClick={ComparFunction}
+            className="w-full rounded-md bg-white bg-opacity-75 px-4 py-2 text-center text-sm font-medium text-gray-900 backdrop-blur backdrop-filter pointer-events-auto"
           >
             Add to Compare
           </button>

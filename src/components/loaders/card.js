@@ -42,4 +42,4 @@ const ShimmerEffect = ({ productCard = false, imageCard = false }) => {
     </div>
   );
 };
-export default ShimmerEffect
+export default ShimmerEffect;

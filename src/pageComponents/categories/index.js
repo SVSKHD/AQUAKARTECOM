@@ -4,9 +4,8 @@ import CategoryServiceOperations from "@/services/category";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-
 const AquaAllCategoriesComponent = () => {
-  const router = useRouter()
+  const router = useRouter();
   const seo = {
     title: "Aquakart | shop by categories",
     desscription:

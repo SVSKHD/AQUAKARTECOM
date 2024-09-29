@@ -16,18 +16,12 @@ const AquaProductCard = ({ product }) => {
     favData: state.favData,
   }));
 
-  
-
   useEffect(() => {
     const isProductInCart = cartData.some((item) => item._id === product?._id);
     const isProductInFav = favData.some((item) => item._id === product?._id);
     setAddCart(isProductInCart);
     setAddFav(isProductInFav);
   }, [cartData, product?._id, favData]);
-
-
-
- 
 
   return (
     <div className="relative mb-5 transition-transform duration-300 transform md:hover:scale-105 md:hover:shadow-xl rounded-md">
@@ -37,7 +31,7 @@ const AquaProductCard = ({ product }) => {
           alt={title}
           className="h-full w-full object-cover object-center md:group-hover:opacity-75 transition-opacity duration-300"
         />
-  
+
         {/* Cart button - top left */}
         <button
           onClick={() => AddAndRemoveCart(product, setAddCart)}
@@ -51,7 +45,7 @@ const AquaProductCard = ({ product }) => {
             className={cart ? "text-green-700" : "text-gray-300"}
           />
         </button>
-  
+
         {/* Favorite button - top right */}
         <button
           onClick={() => AddAndRemoveFav(product, setAddFav)}
@@ -66,14 +60,14 @@ const AquaProductCard = ({ product }) => {
           />
         </button>
       </div>
-  
+
       <div className="relative mt-4 pr-3 pl-3 pb-3">
         <h3 className="text-lg font-medium text-gray-900">
           <a href={`/product/${slug}`}>{title}</a>
         </h3>
         <p className="mt-1 text-sm text-gray-500">{color}</p>
       </div>
-  
+
       <div className="absolute inset-x-0 top-0 flex h-72 items-end justify-end overflow-hidden rounded-lg p-4">
         <div
           aria-hidden="true"
@@ -85,7 +79,6 @@ const AquaProductCard = ({ product }) => {
       </div>
     </div>
   );
-  
 };
 
 export default AquaProductCard;

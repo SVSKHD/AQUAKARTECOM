@@ -265,7 +265,6 @@ const AquaHomeComponent = () => {
             <main>
               <AquaProducts />
 
-        
               <section
                 aria-labelledby="category-heading"
                 className="pt-2 sm:pt-2 xl:mx-auto xl:max-w-7xl xl:px-8"
