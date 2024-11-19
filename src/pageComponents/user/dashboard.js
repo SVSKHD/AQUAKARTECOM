@@ -208,7 +208,7 @@ const AquaDashboardPageComponent = () => {
           Update Profile
         </button>
         {updateDetails ? (
-          <div className="border-b border-gray-900/10 pb-12">
+          <div className="border-b border-gray-900/10 pb-12 mt-5">
             <h2 className="text-base font-semibold leading-7 text-gray-900">
               Personal Information
             </h2>
@@ -253,6 +253,7 @@ const AquaDashboardPageComponent = () => {
                   onChange={handleChange}
                   label="Email"
                   placeholder="Enter your email"
+                  disabled={bulkUpdate?.email === userData?.user.email}
                 />
               </div>
               <div className="sm:col-span-3">
@@ -265,7 +266,7 @@ const AquaDashboardPageComponent = () => {
                   onChange={handleChange}
                   maxLength={10}
                   label="Phone"
-                  placeholder="Enter your email"
+                  placeholder="Enter your phone number"
                 />
               </div>
             </div>

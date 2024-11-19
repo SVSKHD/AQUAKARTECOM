@@ -434,6 +434,7 @@ const AquaCheckoutComponent = () => {
                                 onChange={handleChange}
                                 label="Email"
                                 placeholder="Enter your email"
+                                disabled={bulkUpdate.email?true:false}
                               />
                             </div>
                             <div className="sm:col-span-3">
