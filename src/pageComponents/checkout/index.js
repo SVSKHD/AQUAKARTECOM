@@ -446,7 +446,7 @@ const AquaCheckoutComponent = () => {
                                 onChange={handleChange}
                                 maxLength={10}
                                 label="Phone"
-                                placeholder="Enter your email"
+                                placeholder="Enter your phone-no:"
                               />
                             </div>
                           </div>
