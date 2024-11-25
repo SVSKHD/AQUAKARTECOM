@@ -5,13 +5,21 @@ import AQ from "@/assests/logo-white.png";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import AquaSpinner from "@/components/common/spinner";
+
 
 const AquaBlogComponnet = () => {
   const router = useRouter();
   const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
+    setLoading(true);
     BlogServiceOperations.AllBlogs().then((res) => {
       setBlogs(res.data.data);
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000)
     });
   }, []);
 
@@ -26,7 +34,16 @@ const AquaBlogComponnet = () => {
   };
   return (
     <AquaLayout seo={seoData}>
-      <div className="bg-white py-24 sm:py-32">
+      {loading ? (
+        <>
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-center">
+              <AquaSpinner color="blue" size="lg" />
+            </div>
+          </div>
+        </>
+      ):(
+        <div className="bg-white py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
@@ -84,6 +101,8 @@ const AquaBlogComponnet = () => {
           </div>
         </div>
       </div>
+      )}
+     
     </AquaLayout>
   );
 };
