@@ -24,12 +24,13 @@ const AquaProductCard = ({ product }) => {
   }, [cartData, product?._id, favData]);
 
   return (
-    <div className="relative mb-5 p-3 transition-transform duration-300 transform md:hover:scale-105 md:hover:shadow-xl rounded-md">
-      <div className="relative h-72 w-full overflow-hidden rounded-lg">
+    <div className="relative mb-5 p-5 bg-white rounded-lg shadow-lg h-96 flex flex-col justify-between">
+      {/* Image Section */}
+      <div className="relative overflow-hidden rounded-lg bg-gray-100 flex-1">
         <img
           src={photos[0]?.secure_url}
           alt={title}
-          className="h-full w-full object-cover object-center md:group-hover:opacity-75 transition-opacity duration-300"
+          className="h-full w-full object-cover rounded-lg"
         />
 
         {/* Cart button - top left */}
@@ -37,7 +38,7 @@ const AquaProductCard = ({ product }) => {
           onClick={() => AddAndRemoveCart(product, setAddCart)}
           className={`absolute top-2 left-2 z-10 p-1.5 rounded-lg border-none focus:outline-none transition-all duration-300 ${
             cart ? "bg-white" : "bg-gray-600"
-          } md:hover:p-3 md:hover:rounded-full`}
+          } hover:p-3 hover:rounded-full`}
         >
           <FaShoppingCart
             aria-hidden="true"
@@ -51,7 +52,7 @@ const AquaProductCard = ({ product }) => {
           onClick={() => AddAndRemoveFav(product, setAddFav)}
           className={`absolute top-2 right-2 z-10 p-1.5 rounded-lg border-none focus:outline-none transition-all duration-300 ${
             fav ? "bg-white" : "bg-gray-600"
-          } md:hover:p-3 md:hover:rounded-full`}
+          } hover:p-3 hover:rounded-full`}
         >
           <FaHeart
             aria-hidden="true"
@@ -61,19 +62,19 @@ const AquaProductCard = ({ product }) => {
         </button>
       </div>
 
-      <div className="relative mt-4 pr-3 pl-3 pb-3">
+      {/* Product Details */}
+      <div className="mt-4 text-center">
         <h3 className="text-lg font-medium text-gray-900">
-          <a href={`/product/${slug}`}>{title}</a>
+          <a href={`/product/${slug}`}>
+            {title.length > 200 ? `${title.slice(0, 200)}...` : title}
+          </a>
         </h3>
         <p className="mt-1 text-sm text-gray-500">{color}</p>
       </div>
 
-      <div className="absolute inset-x-0 top-0 flex h-72 items-end justify-end overflow-hidden rounded-lg p-4">
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black opacity-50"
-        />
-        <p className="bg-gray-800 rounded-md p-1 relative text-lg font-semibold text-white">
+      {/* Price Section */}
+      <div className="mt-4 flex items-center justify-center">
+        <p className="text-lg font-semibold text-gray-900">
           {formatCurrencyINRWithK(price)}
         </p>
       </div>
