@@ -24,7 +24,7 @@ const AquaProductCard = ({ product }) => {
   }, [cartData, product?._id, favData]);
 
   return (
-    <div className="relative mb-5 transition-transform duration-300 transform md:hover:scale-105 md:hover:shadow-xl rounded-md">
+    <div className="relative mb-5 p-3 transition-transform duration-300 transform md:hover:scale-105 md:hover:shadow-xl rounded-md">
       <div className="relative h-72 w-full overflow-hidden rounded-lg">
         <img
           src={photos[0]?.secure_url}

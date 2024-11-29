@@ -48,8 +48,23 @@ const AquaCheckoutComponent = () => {
   });
   const [loading, setLoading] = useState({ cod: false, gateway: true });
   const [selectedtAddressChange, setSelectedAddressChange] = useState({});
+
   const { closeCartDrawer } = useCartDrawer();
   const { EmptyCart, removeFromCart } = useProduct();
+
+  const [couponCode, setCouponCode] = useState("");
+const [discount, setDiscount] = useState(0);
+const [couponError, setCouponError] = useState("");
+
+const handleApplyCoupon = () => {
+  if (couponCode === "DISCOUNT10") {
+    setDiscount(100); // Example: Rs. 100 discount
+    setCouponError("");
+  } else {
+    setDiscount(0);
+    setCouponError("Invalid coupon code.");
+  }
+};
 
   const handleAddressChange = (address) => {
     setSelectedAddress(address);
@@ -480,60 +495,76 @@ const AquaCheckoutComponent = () => {
                   Add Address
                 </button>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {userData.user.addresses.map((r, i) => (
-                    <>
-                      <div className="m-2 overflow-hidden rounded-lg bg-white shadow">
-                        <div className="px-4 py-5 sm:p-6">
-                          <div className="mt-4">
-                            <div className="flex items-center">
-                              <input
-                                value={r.street}
-                                name="notification-method"
-                                type="radio"
-                                onChange={() => handleAddressChange(r)}
-                                checked={
-                                  JSON.stringify(selectedAddress) ===
-                                  JSON.stringify(r)
-                                }
-                                className={`h-4 w-4 border-gray-300 focus:ring-indigo-600 ${selectedAddress === r.street ? "bg-indigo-600 text-white" : "bg-white text-gray-800"}`}
-                              />
-                              <label className="text-md ml-3 block text-sm font-medium leading-6 text-gray-900">
-                                Billing Address
-                              </label>
-                            </div>
-                            <p className="mt-1 text-gray-500">{r.street}</p>
-                            <p className="text-gray-500">{r.state}</p>
-                            <p className="text-gray-500">
-                              {r.city}-{r.postalCode}
-                            </p>
-                          </div>
-                          <div className="mt-4 flex space-x-4">
-                            <button
-                              className="flex items-center text-blue-500 hover:text-blue-700"
-                              onClick={(e) => handleEditAddress(e, r)}
-                            >
-                              <PencilIcon
-                                className="h-5 w-5 mr-1"
-                                aria-hidden="true"
-                              />
-                              Edit
-                            </button>
-                            <button
-                              className="flex items-center text-red-500 hover:text-red-700"
-                              onClick={(e) => handleDeleteAddress(e, r)}
-                            >
-                              <TrashIcon
-                                className="h-5 w-5 mr-1"
-                                aria-hidden="true"
-                              />
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  ))}
+  {
+    userData.user.addresses.length === 0 ? (
+      <div className="col-span-full flex flex-col items-center justify-center mt-10 p-6 bg-gray-100 rounded-lg shadow-md">
+        <h3 className="font-bold text-2xl text-gray-700 mb-2">
+          No Addresses Added Yet
+        </h3>
+        <p className="text-gray-500 text-sm text-center">
+          It seems you haven’t added any addresses yet. Start by clicking the "Add Address" button.
+        </p>
+      </div>
+    ) : (
+      <>
+        {userData.user.addresses.map((r, i) => (
+          <div key={i} className="m-2 overflow-hidden rounded-lg bg-white shadow">
+            <div className="px-4 py-5 sm:p-6">
+              <div className="mt-4">
+                <div className="flex items-center">
+                  <input
+                    value={r.street}
+                    name="notification-method"
+                    type="radio"
+                    onChange={() => handleAddressChange(r)}
+                    checked={
+                      JSON.stringify(selectedAddress) === JSON.stringify(r)
+                    }
+                    className={`h-4 w-4 border-gray-300 focus:ring-indigo-600 ${
+                      JSON.stringify(selectedAddress) === JSON.stringify(r)
+                        ? "bg-indigo-600 text-white"
+                        : "bg-white text-gray-800"
+                    }`}
+                  />
+                  <label className="text-md ml-3 block text-sm font-medium leading-6 text-gray-900">
+                    Billing Address
+                  </label>
                 </div>
+                <p className="mt-1 text-gray-500">{r.street}</p>
+                <p className="text-gray-500">{r.state}</p>
+                <p className="text-gray-500">
+                  {r.city}-{r.postalCode}
+                </p>
+              </div>
+              <div className="mt-4 flex space-x-4">
+                <button
+                  className="flex items-center text-blue-500 hover:text-blue-700"
+                  onClick={(e) => handleEditAddress(e, r)}
+                >
+                  <PencilIcon
+                    className="h-5 w-5 mr-1"
+                    aria-hidden="true"
+                  />
+                  Edit
+                </button>
+                <button
+                  className="flex items-center text-red-500 hover:text-red-700"
+                  onClick={(e) => handleDeleteAddress(e, r)}
+                >
+                  <TrashIcon
+                    className="h-5 w-5 mr-1"
+                    aria-hidden="true"
+                  />
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </>
+    )
+  }
+</div>
 
                 {cartData.length <= 0 ? (
                   <>
@@ -543,7 +574,7 @@ const AquaCheckoutComponent = () => {
                   </>
                 ) : (
                   <>
-                    {cartData.length > 0 ? (
+                    {cartData.length > 1 ? (
                       <button
                         type="button"
                         className="rounded-md bg-red-600 m-4 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
@@ -556,8 +587,12 @@ const AquaCheckoutComponent = () => {
                     )}
                     <ul
                       role="list"
-                      className="divide-y divide-gray-200 border-b border-t border-gray-200"
+                      className=""
                     >
+                    <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-2xl pt-10">
+              Products Added
+            </h1>
+            <hr/>
                       {cartData.map((product, productIdx) => (
                         <li key={product.id} className="flex py-6 sm:py-10">
                           <div className="flex-shrink-0">
@@ -667,102 +702,110 @@ const AquaCheckoutComponent = () => {
 
               {/* Order summary */}
               <section
-                aria-labelledby="summary-heading"
-                className="mt-16 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8"
-              >
-                <h2
-                  id="summary-heading"
-                  className="text-lg font-medium text-gray-900"
-                >
-                  Order summary
-                </h2>
+  aria-labelledby="summary-heading"
+  className="mt-16 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8"
+>
+  <h2
+    id="summary-heading"
+    className="text-lg font-medium text-gray-900"
+  >
+    Order Summary
+  </h2>
 
-                <dl className="mt-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <dt className="text-sm text-gray-600">Subtotal</dt>
-                    <dd className="text-sm font-medium text-gray-900">
-                      {formatCurrencyINR(getTotalPrice())}
-                    </dd>
-                  </div>
-                  {/* <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                    <dt className="flex items-center text-sm text-gray-600">
-                      <span>Shipping estimate</span>
-                      <a
-                        href="#"
-                        className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500"
-                      >
-                        <span className="sr-only">
-                          Learn more about how shipping is calculated
-                        </span>
-                        <QuestionMarkCircleIcon
-                          className="h-5 w-5"
-                          aria-hidden="true"
-                        />
-                      </a>
-                    </dt>
-                    <dd className="text-sm font-medium text-gray-900">
-                      {formatCurrencyINR(300)}
-                    </dd>
-                  </div> */}
-                  <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                    <dt className="text-base font-medium text-gray-900">
-                      Order total
-                    </dt>
-                    <dd className="text-base font-medium text-gray-900">
-                      {formatCurrencyINR(getTotalPrice() + 300)}
-                    </dd>
-                  </div>
-                </dl>
-                {/* handle user */}
-                {!userData ? (
-                  <>
-                    <button
-                      type="button"
-                      className="mt-2 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                      onClick={() =>
-                        dispatch({
-                          type: "SET_AUTH_DIALOG_VISIBLE",
-                          payload: true,
-                        })
-                      }
-                    >
-                      Please Login
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <>
-                      <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-                        <button
-                          type="button"
-                          onClick={handlePhonePayment}
-                          className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-                        >
-                          Pay Now
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleCashOnDelivery}
-                          className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
-                        >
-                          {loading.cod ? (
-                            <AquaSpinner color="gray" />
-                          ) : (
-                            "Cash On Delivery"
-                          )}
-                        </button>
-                      </div>
+  <dl className="mt-6 space-y-4">
+    <div className="flex items-center justify-between">
+      <dt className="text-sm text-gray-600">Subtotal</dt>
+      <dd className="text-sm font-medium text-gray-900">
+        {formatCurrencyINR(getTotalPrice())}
+      </dd>
+    </div>
+    <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+      <dt className="text-base font-medium text-gray-900">
+        Order Total
+      </dt>
+      <dd className="text-base font-medium text-gray-900">
+        {formatCurrencyINR(getTotalPrice() + 300)}
+      </dd>
+    </div>
+  </dl>
 
-                      <button
-                        type="button"
-                        className="mt-2 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                      >
-                        Continue To Shop
-                      </button>
-                    </>
-                  </>
-                )}
-              </section>
+  {/* Coupon Section */}
+  <div className="mt-4 pt-5">
+    <label
+      htmlFor="coupon-code"
+      className="block text-sm font-medium text-gray-700"
+    >
+      Apply Coupon
+    </label>
+    <div className="mt-2 flex">
+      <input
+        id="coupon-code"
+        name="coupon-code"
+        type="text"
+        className="pl-5 block w-full rounded-md border-gray-300 bg-white text-black shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+        placeholder="Enter coupon code"
+        value={couponCode}
+        onChange={(e) => setCouponCode(e.target.value)}
+      />
+      <button
+        type="button"
+        className="ml-2 inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        onClick={handleApplyCoupon}
+      >
+        Apply
+      </button>
+    </div>
+    {couponError && (
+      <p className="mt-2 text-sm text-red-600">{couponError}</p>
+    )}
+    {discount > 0 && (
+      <p className="mt-2 text-sm text-green-600">
+        Coupon applied! You saved {formatCurrencyINR(discount)}.
+      </p>
+    )}
+  </div>
+
+  {/* User Login and Payment Options */}
+  {!userData ? (
+    <button
+      type="button"
+      className="mt-6 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+      onClick={() =>
+        dispatch({
+          type: "SET_AUTH_DIALOG_VISIBLE",
+          payload: true,
+        })
+      }
+    >
+      Please Login
+    </button>
+  ) : (
+    <>
+      <div className="mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+        <button
+          type="button"
+          onClick={handlePhonePayment}
+          className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+        >
+          Pay Now
+        </button>
+        <button
+          type="button"
+          onClick={handleCashOnDelivery}
+          className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
+        >
+          {loading.cod ? <AquaSpinner color="gray" /> : "Cash On Delivery"}
+        </button>
+      </div>
+      <button
+        type="button"
+        className="mt-4 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+      >
+        Continue to Shop
+      </button>
+    </>
+  )}
+</section>
             </form>
           </div>
         </div>
