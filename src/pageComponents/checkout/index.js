@@ -4,11 +4,11 @@ import useCurrency from "@/utils/currency";
 import {
   CheckIcon,
   ClockIcon,
-  QuestionMarkCircleIcon,
   XMarkIcon,
   PencilIcon,
-  TrashIcon,
+  TrashIcon
 } from "@heroicons/react/20/solid";
+import {FaSignInAlt } from "react-icons/fa"
 import { useSelector, useDispatch } from "react-redux";
 import { nanoid } from "nanoid";
 import moment from "moment";
@@ -370,16 +370,32 @@ const handleApplyCoupon = () => {
 
       {!userData || userData === null ? (
         <>
-          <div className="bg-white p-40 justify-center text-center">
-            <button
-              type="button"
-              className="relative justify-center p-10 rounded-full bg-gray-800 text-xl font-bold ml-2 text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-              onClick={() => openAuthDialog()}
-            >
-              Please Login to access Cart
-            </button>
-          </div>
-        </>
+  <div className="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div className="bg-white p-10 rounded-lg shadow-md text-center max-w-md flex flex-col items-center">
+      {/* Icon */}
+      <FaSignInAlt className="h-16 w-16 text-gray-600 mb-4" />
+      
+      {/* Message */}
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">
+        Login Required
+      </h2>
+      <p className="text-gray-600 mb-6">
+        Please log in to access your cart and continue shopping.
+      </p>
+
+      {/* Button */}
+      <button
+        type="button"
+        className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-gray-800 text-white text-lg font-semibold hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+        onClick={() => openAuthDialog()}
+      >
+        <FaSignInAlt className="h-5 w-5 mr-2"/> 
+        Login to Access Cart
+      </button>
+    </div>
+  </div>
+</>
+      
       ) : (
         <div className="bg-white">
           <div className="mx-auto max-w-2xl px-4 pb-24 pt-16 sm:px-6 lg:max-w-7xl lg:px-8">
