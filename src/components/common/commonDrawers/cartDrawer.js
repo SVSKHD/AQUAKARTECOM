@@ -4,7 +4,7 @@ import useDrawer from "@/utils/drawer";
 import useCurrency from "@/utils/currency";
 import useCart from "@/utils/cart";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useProduct from "@/utils/product";
 
 const AquaCartDrawer = () => {
@@ -13,7 +13,6 @@ const AquaCartDrawer = () => {
   const { formatCurrencyINR } = useCurrency;
   const { getTotalPrice, changeItemQuantity } = useCart();
   const { EmptyCart, removeFromCart } = useProduct();
-  const [cart, setCart] = useState(false);
 
   const handleQuantityChange = (event, id) => {
     const quantity = parseInt(event.target.value, 10);
@@ -26,9 +25,10 @@ const AquaCartDrawer = () => {
       close={() => closeCartDrawer()}
       title="Cart"
     >
+      {/* Full-height container */}
       <div className="flex flex-col h-full">
-        {/* Cart Items */}
-        <ul className="flex-1 overflow-y-auto space-y-4 p-4">
+        {/* Scrollable cart items */}
+        <ul className="flex-grow overflow-y-auto space-y-4 p-4">
           {cartData.length > 0 ? (
             cartData.map((product, productIdx) => (
               <li key={product._id} className="flex py-6 sm:py-10 border-b">
@@ -106,34 +106,36 @@ const AquaCartDrawer = () => {
           )}
         </ul>
 
-        {/* Fixed Footer for Cart Total */}
-        {cartData.length > 0 && (
-          <div className="border-t bg-white p-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold text-gray-900">
-                Total:
-                <span className="ml-2 text-green-700">
-                  {formatCurrencyINR(getTotalPrice(cartData))}
-                </span>
-              </h2>
-              <button
-                type="button"
-                className="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-                onClick={() => EmptyCart()}
-              >
-                Empty Cart
-              </button>
+        {/* Sticky footer */}
+        <div className="sticky">
+          {cartData.length > 0 && (
+            <div className="flex-shrink-0 bg-white border-t p-5">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-bold text-gray-900">
+                  Total:
+                  <span className="ml-2 text-green-700">
+                    {formatCurrencyINR(getTotalPrice(cartData))}
+                  </span>
+                </h2>
+                <button
+                  type="button"
+                  className="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                  onClick={() => EmptyCart()}
+                >
+                  Empty Cart
+                </button>
+              </div>
+              <div className="mt-4">
+                <a
+                  href="/checkout"
+                  className="w-full block rounded-md border border-transparent bg-indigo-600 px-4 py-3 text-center text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                >
+                  Go To Checkout
+                </a>
+              </div>
             </div>
-            <div className="mt-4">
-              <a
-                href="/checkout"
-                className="w-full block rounded-md border border-transparent bg-indigo-600 px-4 py-3 text-center text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              >
-                Go To Checkout
-              </a>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </AquaReuseDrawer>
   );

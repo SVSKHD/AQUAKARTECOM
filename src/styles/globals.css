@@ -10,7 +10,7 @@
   scrollbar-width: none; /* Firefox */
 }
 
-
-.image-error{
-  filter: invert(38%) sepia(49%) saturate(530%) hue-rotate(222deg) brightness(92%) contrast(85%);
+.image-error {
+  filter: invert(38%) sepia(49%) saturate(530%) hue-rotate(222deg)
+    brightness(92%) contrast(85%);
 }

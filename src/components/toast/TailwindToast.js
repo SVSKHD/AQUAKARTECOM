@@ -4,7 +4,7 @@ import { Transition } from "@headlessui/react";
 
 const AquaTailwindToast = () => {
   const dispatch = useDispatch();
-  const { toasts } = useSelector((state) => ({...state}));
+  const { toasts } = useSelector((state) => ({ ...state }));
 
   return (
     <div className="fixed top-4 right-4 space-y-2 z-50">

@@ -14,7 +14,6 @@ const AquaAuthMobileForm = ({ signup }) => {
   const { closeAuthDialog } = useDialog();
   const dispatch = useDispatch();
 
-
   const handleKeyDown = (event) => {
     if (event.key === "Backspace") {
       console.log("Backspace pressed");
@@ -62,7 +61,7 @@ const AquaAuthMobileForm = ({ signup }) => {
         setOtpShow(false);
       }
     }, 300),
-    []
+    [],
   );
 
   const handleEmailChange = (e) => {

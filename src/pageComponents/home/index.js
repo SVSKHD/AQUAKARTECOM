@@ -17,7 +17,6 @@ import ProductServiceOperations from "@/services/products";
 import Link from "next/link";
 import AquaProducts from "./products";
 
-
 const AquaHomeComponent = () => {
   const [categoryData, setCategoryData] = useState([]);
   const [productData, setProductData] = useState([]);
@@ -31,6 +30,7 @@ const AquaHomeComponent = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading((prevData) => ({ ...prevData, category: true }));
         // Set category loading to true after 3000ms delay
         const timer = setTimeout(() => {
           setLoading((prevData) => ({ ...prevData, category: true }));
@@ -75,14 +75,10 @@ const AquaHomeComponent = () => {
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
     keywords:
       "Aquakart Ecom Store ,Aquakart,  water softeners, Aquakart water softeners, Aquakart ro water purifiers, Aquakart geysers, water softener system for home  , water Ro  , ro machines , Salt Free Water Softener , Water Softener System , Water Softener Installation",
-    keyphrases: "Water Softener Salt Prices , Salt Water Softener",
+    keyphrases:
+      "Water Softener Salt Prices , Salt Water Softener, bathtoom water softeners, automatic bathroom water softeners",
   };
 
-  const currencies = ["CAD", "USD", "AUD", "EUR", "GBP"];
-
-  function classNames(...classes) {
-    return classes.filter(Boolean).join(" ");
-  }
   return (
     <>
       <AquaLayout seo={SeoData}>
@@ -159,19 +155,6 @@ const AquaHomeComponent = () => {
                     </TabPanels>
                   </TabGroup>
 
-                  {/* <div className="space-y-6 border-t border-gray-200 px-4 py-6">
-                    {navigation.pages.map((page) => (
-                      <div key={page.name} className="flow-root">
-                        <a
-                          href={page.href}
-                          className="-m-2 block p-2 font-medium text-gray-900"
-                        >
-                          {page.name}
-                        </a>
-                      </div>
-                    ))}
-                  </div> */}
-
                   <div className="space-y-6 border-t border-gray-200 px-4 py-6">
                     <div className="flow-root">
                       <a
@@ -189,34 +172,6 @@ const AquaHomeComponent = () => {
                         Sign in
                       </a>
                     </div>
-                  </div>
-
-                  <div className="space-y-6 border-t border-gray-200 px-4 py-6">
-                    {/* Currency selector */}
-                    <form>
-                      <div className="inline-block">
-                        <label htmlFor="mobile-currency" className="sr-only">
-                          Currency
-                        </label>
-                        <div className="group relative -ml-2 rounded-md border-transparent focus-within:ring-2 focus-within:ring-white">
-                          <select
-                            id="mobile-currency"
-                            name="currency"
-                            className="flex items-center rounded-md border-transparent bg-none py-0.5 pl-2 pr-5 text-sm font-medium text-gray-700 focus:border-transparent focus:outline-none focus:ring-0 group-hover:text-gray-800"
-                          >
-                            {currencies.map((currency) => (
-                              <option key={currency}>{currency}</option>
-                            ))}
-                          </select>
-                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center">
-                            <ChevronDownIcon
-                              className="h-5 w-5 text-gray-500"
-                              aria-hidden="true"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </form>
                   </div>
                 </DialogPanel>
               </div>
@@ -288,9 +243,9 @@ const AquaHomeComponent = () => {
                       <div className="absolute flex space-x-8 px-4 sm:px-6 lg:px-8 xl:relative xl:grid xl:grid-cols-5 xl:gap-x-8 xl:space-x-0 xl:px-0">
                         {loading.category ? (
                           <>
-                            <div className="flex items-center justify-center">
+                            <div className="flex items-center text-center justify-center p-20">
                               <div className="text-center">
-                                <AquaSpinner color="blue" />
+                                <AquaSpinner color="blue" size="lg" />
                               </div>
                             </div>
                           </>

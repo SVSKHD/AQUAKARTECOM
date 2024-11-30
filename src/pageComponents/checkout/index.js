@@ -6,9 +6,9 @@ import {
   ClockIcon,
   XMarkIcon,
   PencilIcon,
-  TrashIcon
+  TrashIcon,
 } from "@heroicons/react/20/solid";
-import {FaSignInAlt } from "react-icons/fa"
+import { FaSignInAlt } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { nanoid } from "nanoid";
 import moment from "moment";
@@ -53,18 +53,18 @@ const AquaCheckoutComponent = () => {
   const { EmptyCart, removeFromCart } = useProduct();
 
   const [couponCode, setCouponCode] = useState("");
-const [discount, setDiscount] = useState(0);
-const [couponError, setCouponError] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [couponError, setCouponError] = useState("");
 
-const handleApplyCoupon = () => {
-  if (couponCode === "DISCOUNT10") {
-    setDiscount(100); // Example: Rs. 100 discount
-    setCouponError("");
-  } else {
-    setDiscount(0);
-    setCouponError("Invalid coupon code.");
-  }
-};
+  const handleApplyCoupon = () => {
+    if (couponCode === "DISCOUNT10") {
+      setDiscount(100); // Example: Rs. 100 discount
+      setCouponError("");
+    } else {
+      setDiscount(0);
+      setCouponError("Invalid coupon code.");
+    }
+  };
 
   const handleAddressChange = (address) => {
     setSelectedAddress(address);
@@ -370,32 +370,31 @@ const handleApplyCoupon = () => {
 
       {!userData || userData === null ? (
         <>
-  <div className="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div className="bg-white p-10 rounded-lg shadow-md text-center max-w-md flex flex-col items-center">
-      {/* Icon */}
-      <FaSignInAlt className="h-16 w-16 text-gray-600 mb-4" />
-      
-      {/* Message */}
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">
-        Login Required
-      </h2>
-      <p className="text-gray-600 mb-6">
-        Please log in to access your cart and continue shopping.
-      </p>
+          <div className="bg-gray-100 flex items-center justify-center min-h-screen">
+            <div className="bg-white p-10 rounded-lg shadow-md text-center max-w-md flex flex-col items-center">
+              {/* Icon */}
+              <FaSignInAlt className="h-16 w-16 text-gray-600 mb-4" />
 
-      {/* Button */}
-      <button
-        type="button"
-        className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-gray-800 text-white text-lg font-semibold hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-        onClick={() => openAuthDialog()}
-      >
-        <FaSignInAlt className="h-5 w-5 mr-2"/> 
-        Login to Access Cart
-      </button>
-    </div>
-  </div>
-</>
-      
+              {/* Message */}
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                Login Required
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Please log in to access your cart and continue shopping.
+              </p>
+
+              {/* Button */}
+              <button
+                type="button"
+                className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-gray-800 text-white text-lg font-semibold hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                onClick={() => openAuthDialog()}
+              >
+                <FaSignInAlt className="h-5 w-5 mr-2" />
+                Login to Access Cart
+              </button>
+            </div>
+          </div>
+        </>
       ) : (
         <div className="bg-white">
           <div className="mx-auto max-w-2xl px-4 pb-24 pt-16 sm:px-6 lg:max-w-7xl lg:px-8">
@@ -465,7 +464,7 @@ const handleApplyCoupon = () => {
                                 onChange={handleChange}
                                 label="Email"
                                 placeholder="Enter your email"
-                                disabled={bulkUpdate.email?true:false}
+                                disabled={bulkUpdate.email ? true : false}
                               />
                             </div>
                             <div className="sm:col-span-3">
@@ -511,76 +510,80 @@ const handleApplyCoupon = () => {
                   Add Address
                 </button>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  {
-    userData.user.addresses.length === 0 ? (
-      <div className="col-span-full flex flex-col items-center justify-center mt-10 p-6 bg-gray-100 rounded-lg shadow-md">
-        <h3 className="font-bold text-2xl text-gray-700 mb-2">
-          No Addresses Added Yet
-        </h3>
-        <p className="text-gray-500 text-sm text-center">
-          It seems you haven’t added any addresses yet. Start by clicking the "Add Address" button.
-        </p>
-      </div>
-    ) : (
-      <>
-        {userData.user.addresses.map((r, i) => (
-          <div key={i} className="m-2 overflow-hidden rounded-lg bg-white shadow">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="mt-4">
-                <div className="flex items-center">
-                  <input
-                    value={r.street}
-                    name="notification-method"
-                    type="radio"
-                    onChange={() => handleAddressChange(r)}
-                    checked={
-                      JSON.stringify(selectedAddress) === JSON.stringify(r)
-                    }
-                    className={`h-4 w-4 border-gray-300 focus:ring-indigo-600 ${
-                      JSON.stringify(selectedAddress) === JSON.stringify(r)
-                        ? "bg-indigo-600 text-white"
-                        : "bg-white text-gray-800"
-                    }`}
-                  />
-                  <label className="text-md ml-3 block text-sm font-medium leading-6 text-gray-900">
-                    Billing Address
-                  </label>
+                  {userData.user.addresses.length === 0 ? (
+                    <div className="col-span-full flex flex-col items-center justify-center mt-10 p-6 bg-gray-100 rounded-lg shadow-md">
+                      <h3 className="font-bold text-2xl text-gray-700 mb-2">
+                        No Addresses Added Yet
+                      </h3>
+                      <p className="text-gray-500 text-sm text-center">
+                        It seems you haven’t added any addresses yet. Start by
+                        clicking the "Add Address" button.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {userData.user.addresses.map((r, i) => (
+                        <div
+                          key={i}
+                          className="m-2 overflow-hidden rounded-lg bg-white shadow"
+                        >
+                          <div className="px-4 py-5 sm:p-6">
+                            <div className="mt-4">
+                              <div className="flex items-center">
+                                <input
+                                  value={r.street}
+                                  name="notification-method"
+                                  type="radio"
+                                  onChange={() => handleAddressChange(r)}
+                                  checked={
+                                    JSON.stringify(selectedAddress) ===
+                                    JSON.stringify(r)
+                                  }
+                                  className={`h-4 w-4 border-gray-300 focus:ring-indigo-600 ${
+                                    JSON.stringify(selectedAddress) ===
+                                    JSON.stringify(r)
+                                      ? "bg-indigo-600 text-white"
+                                      : "bg-white text-gray-800"
+                                  }`}
+                                />
+                                <label className="text-md ml-3 block text-sm font-medium leading-6 text-gray-900">
+                                  Billing Address
+                                </label>
+                              </div>
+                              <p className="mt-1 text-gray-500">{r.street}</p>
+                              <p className="text-gray-500">{r.state}</p>
+                              <p className="text-gray-500">
+                                {r.city}-{r.postalCode}
+                              </p>
+                            </div>
+                            <div className="mt-4 flex space-x-4">
+                              <button
+                                className="flex items-center text-blue-500 hover:text-blue-700"
+                                onClick={(e) => handleEditAddress(e, r)}
+                              >
+                                <PencilIcon
+                                  className="h-5 w-5 mr-1"
+                                  aria-hidden="true"
+                                />
+                                Edit
+                              </button>
+                              <button
+                                className="flex items-center text-red-500 hover:text-red-700"
+                                onClick={(e) => handleDeleteAddress(e, r)}
+                              >
+                                <TrashIcon
+                                  className="h-5 w-5 mr-1"
+                                  aria-hidden="true"
+                                />
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
                 </div>
-                <p className="mt-1 text-gray-500">{r.street}</p>
-                <p className="text-gray-500">{r.state}</p>
-                <p className="text-gray-500">
-                  {r.city}-{r.postalCode}
-                </p>
-              </div>
-              <div className="mt-4 flex space-x-4">
-                <button
-                  className="flex items-center text-blue-500 hover:text-blue-700"
-                  onClick={(e) => handleEditAddress(e, r)}
-                >
-                  <PencilIcon
-                    className="h-5 w-5 mr-1"
-                    aria-hidden="true"
-                  />
-                  Edit
-                </button>
-                <button
-                  className="flex items-center text-red-500 hover:text-red-700"
-                  onClick={(e) => handleDeleteAddress(e, r)}
-                >
-                  <TrashIcon
-                    className="h-5 w-5 mr-1"
-                    aria-hidden="true"
-                  />
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </>
-    )
-  }
-</div>
 
                 {cartData.length <= 0 ? (
                   <>
@@ -601,14 +604,11 @@ const handleApplyCoupon = () => {
                     ) : (
                       ""
                     )}
-                    <ul
-                      role="list"
-                      className=""
-                    >
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-2xl pt-10">
-              Products Added
-            </h1>
-            <hr/>
+                    <ul role="list" className="">
+                      <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-2xl pt-10">
+                        Products Added
+                      </h1>
+                      <hr />
                       {cartData.map((product, productIdx) => (
                         <li key={product.id} className="flex py-6 sm:py-10">
                           <div className="flex-shrink-0">
@@ -718,110 +718,114 @@ const handleApplyCoupon = () => {
 
               {/* Order summary */}
               <section
-  aria-labelledby="summary-heading"
-  className="mt-16 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8"
->
-  <h2
-    id="summary-heading"
-    className="text-lg font-medium text-gray-900"
-  >
-    Order Summary
-  </h2>
+                aria-labelledby="summary-heading"
+                className="mt-16 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8"
+              >
+                <h2
+                  id="summary-heading"
+                  className="text-lg font-medium text-gray-900"
+                >
+                  Order Summary
+                </h2>
 
-  <dl className="mt-6 space-y-4">
-    <div className="flex items-center justify-between">
-      <dt className="text-sm text-gray-600">Subtotal</dt>
-      <dd className="text-sm font-medium text-gray-900">
-        {formatCurrencyINR(getTotalPrice())}
-      </dd>
-    </div>
-    <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-      <dt className="text-base font-medium text-gray-900">
-        Order Total
-      </dt>
-      <dd className="text-base font-medium text-gray-900">
-        {formatCurrencyINR(getTotalPrice() + 300)}
-      </dd>
-    </div>
-  </dl>
+                <dl className="mt-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <dt className="text-sm text-gray-600">Subtotal</dt>
+                    <dd className="text-sm font-medium text-gray-900">
+                      {formatCurrencyINR(getTotalPrice())}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+                    <dt className="text-base font-medium text-gray-900">
+                      Order Total
+                    </dt>
+                    <dd className="text-base font-medium text-gray-900">
+                      {formatCurrencyINR(getTotalPrice() + 300)}
+                    </dd>
+                  </div>
+                </dl>
 
-  {/* Coupon Section */}
-  <div className="mt-4 pt-5">
-    <label
-      htmlFor="coupon-code"
-      className="block text-sm font-medium text-gray-700"
-    >
-      Apply Coupon
-    </label>
-    <div className="mt-2 flex">
-      <input
-        id="coupon-code"
-        name="coupon-code"
-        type="text"
-        className="pl-5 block w-full rounded-md border-gray-300 bg-white text-black shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        placeholder="Enter coupon code"
-        value={couponCode}
-        onChange={(e) => setCouponCode(e.target.value)}
-      />
-      <button
-        type="button"
-        className="ml-2 inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        onClick={handleApplyCoupon}
-      >
-        Apply
-      </button>
-    </div>
-    {couponError && (
-      <p className="mt-2 text-sm text-red-600">{couponError}</p>
-    )}
-    {discount > 0 && (
-      <p className="mt-2 text-sm text-green-600">
-        Coupon applied! You saved {formatCurrencyINR(discount)}.
-      </p>
-    )}
-  </div>
+                {/* Coupon Section */}
+                <div className="mt-4 pt-5">
+                  <label
+                    htmlFor="coupon-code"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Apply Coupon
+                  </label>
+                  <div className="mt-2 flex">
+                    <input
+                      id="coupon-code"
+                      name="coupon-code"
+                      type="text"
+                      className="pl-5 block w-full rounded-md border-gray-300 bg-white text-black shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      placeholder="Enter coupon code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="ml-2 inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                      onClick={handleApplyCoupon}
+                    >
+                      Apply
+                    </button>
+                  </div>
+                  {couponError && (
+                    <p className="mt-2 text-sm text-red-600">{couponError}</p>
+                  )}
+                  {discount > 0 && (
+                    <p className="mt-2 text-sm text-green-600">
+                      Coupon applied! You saved {formatCurrencyINR(discount)}.
+                    </p>
+                  )}
+                </div>
 
-  {/* User Login and Payment Options */}
-  {!userData ? (
-    <button
-      type="button"
-      className="mt-6 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-      onClick={() =>
-        dispatch({
-          type: "SET_AUTH_DIALOG_VISIBLE",
-          payload: true,
-        })
-      }
-    >
-      Please Login
-    </button>
-  ) : (
-    <>
-      <div className="mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-        <button
-          type="button"
-          onClick={handlePhonePayment}
-          className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-        >
-          Pay Now
-        </button>
-        <button
-          type="button"
-          onClick={handleCashOnDelivery}
-          className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
-        >
-          {loading.cod ? <AquaSpinner color="gray" /> : "Cash On Delivery"}
-        </button>
-      </div>
-      <button
-        type="button"
-        className="mt-4 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-      >
-        Continue to Shop
-      </button>
-    </>
-  )}
-</section>
+                {/* User Login and Payment Options */}
+                {!userData ? (
+                  <button
+                    type="button"
+                    className="mt-6 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    onClick={() =>
+                      dispatch({
+                        type: "SET_AUTH_DIALOG_VISIBLE",
+                        payload: true,
+                      })
+                    }
+                  >
+                    Please Login
+                  </button>
+                ) : (
+                  <>
+                    <div className="mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+                      <button
+                        type="button"
+                        onClick={handlePhonePayment}
+                        className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+                      >
+                        Pay Now
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCashOnDelivery}
+                        className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
+                      >
+                        {loading.cod ? (
+                          <AquaSpinner color="gray" />
+                        ) : (
+                          "Cash On Delivery"
+                        )}
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      className="mt-4 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                      Continue to Shop
+                    </button>
+                  </>
+                )}
+              </section>
             </form>
           </div>
         </div>
