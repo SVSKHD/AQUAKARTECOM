@@ -7,9 +7,9 @@ function Error({ statusCode }) {
       {/* Illustration */}
       <div className="w-64 h-64 mb-6">
         <img
-          src="/error-illustration.svg" // Replace with your illustration URL
+          src="../assests/svg/undraw_donut_love_kau1.svg" // Replace with your illustration URL
           alt="Error Illustration"
-          className="w-full h-full object-contain"
+          className="image-error w-full h-full object-contain"
         />
       </div>
 

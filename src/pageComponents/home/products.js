@@ -1,4 +1,3 @@
-import AquaProductCard from "@/components/cards/productCard";
 import ReusableProductCard from "@/components/cards/ProductCard2";
 import ProductServiceOperations from "@/services/products";
 import { useEffect, useState } from "react";

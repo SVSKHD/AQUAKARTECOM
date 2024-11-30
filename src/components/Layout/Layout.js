@@ -7,6 +7,7 @@ import AquaSeo from "./seo/seo";
 import AquaUserDataDrawer from "../common/commonDrawers/userDataDrawer";
 import AquaUserAuthDialog from "../common/commonDialogs/authDialog";
 import AquaCartAddressDialog from "../common/commonDialogs/cartAddress";
+import AquaTailwindToast from "../toast/TailwindToast";
 import useNetworkStatus from "@/utils/connectivity";
 import { useEffect } from "react";
 
@@ -26,6 +27,7 @@ const AquaLayout = (props) => {
           <AquaHeader />
           <AquaCartDrawer />
           <AquafavDrawer />
+          <AquaTailwindToast/>
           <AquaToast />
 
           <main className="bg-white min-h-screen">{props.children}</main>

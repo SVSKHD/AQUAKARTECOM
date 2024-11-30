@@ -1,10 +1,11 @@
 import UserServiceOperations from "@/services/user";
 import useDialog from "@/utils/dialog";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import AquaToast from "@/components/reusables/react-toastify";
 import Image from "next/image";
 import debounce from "lodash.debounce";
+import { showToast } from "@/store/reducers/toastReducer";
 
 const AquaAuthMobileForm = ({ signup }) => {
   const [email, setEmail] = useState("");
@@ -12,6 +13,76 @@ const AquaAuthMobileForm = ({ signup }) => {
   const [otp, setOtp] = useState("");
   const { closeAuthDialog } = useDialog();
   const dispatch = useDispatch();
+
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Backspace") {
+      console.log("Backspace pressed");
+    }
+  };
+
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Debounced request for OTP
+  const requestOtp = useCallback(
+    debounce((newEmail) => {
+      if (isValidEmail(newEmail)) {
+        dispatch(showToast("First message", "success"));
+        AquaToast({
+          message: "OTP in Air. Please wait...",
+          type: "info",
+        });
+        UserServiceOperations.UserEmailOtp({ email: newEmail })
+          .then((res) => {
+            setOtpShow(true);
+            AquaToast({
+              message: "Successfully sent OTP",
+              type: "success",
+            });
+            dispatch({
+              type: "SET_AUTH_STATUS_VISIBLE",
+              payload: !res.data.userExist,
+            });
+          })
+          .catch((err) => {
+            setOtpShow(false);
+            AquaToast({
+              message: "Failed to send OTP",
+              type: "error",
+            });
+            dispatch({
+              type: "SET_AUTH_STATUS_VISIBLE",
+              payload: false,
+            });
+          });
+      } else {
+        setOtpShow(false);
+      }
+    }, 300),
+    []
+  );
+
+  const handleEmailChange = (e) => {
+    const newEmail = e.target.value.trim(); // Trim any leading/trailing spaces
+    setEmail(newEmail);
+
+    if (newEmail === "" || !isValidEmail(newEmail)) {
+      setOtpShow(false); // Hide OTP input if email is invalid or empty
+      return;
+    }
+
+    requestOtp(newEmail); // Initiate OTP only for valid and non-empty email
+  };
+
+  // Cancel any pending debounced OTP requests when email is cleared
+  useEffect(() => {
+    if (!email) {
+      requestOtp.cancel();
+    }
+  }, [email, requestOtp]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -34,54 +105,6 @@ const AquaAuthMobileForm = ({ signup }) => {
           type: "error",
         });
       });
-  };
-
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const requestOtp = useCallback(
-    debounce((newEmail) => {
-      if (isValidEmail(newEmail)) {
-        AquaToast({
-          message: "Otp in Air Please wait.....",
-          type: "info",
-        });
-        UserServiceOperations.UserEmailOtp({ email: newEmail })
-          .then((res) => {
-            setOtpShow(true);
-            AquaToast({
-              message: "Successfully sent Otp",
-              type: "success",
-            });
-            dispatch({
-              type: "SET_AUTH_STATUS_VISIBLE",
-              payload: !res.data.userExist,
-            });
-          })
-          .catch((err) => {
-            setOtpShow(false);
-            AquaToast({
-              message: "Failed to send OTP",
-              type: "error",
-            });
-            dispatch({
-              type: "SET_AUTH_STATUS_VISIBLE",
-              payload: false,
-            });
-          });
-      } else {
-        setOtpShow(false);
-      }
-    }, 300), // Adjust debounce delay as needed
-    [],
-  );
-
-  const handleEmailChange = (e) => {
-    const newEmail = e.target.value;
-    setEmail(newEmail);
-    requestOtp(newEmail);
   };
 
   return (
@@ -115,33 +138,54 @@ const AquaAuthMobileForm = ({ signup }) => {
                 type="email"
                 value={email}
                 onChange={handleEmailChange}
+                onKeyDown={handleKeyDown}
                 placeholder="example@example.com"
                 className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
             {otpShow && (
-              <div className="relative mt-2 rounded-md shadow-sm">
-                <input
-                  id="otp"
-                  name="otp"
-                  maxLength="6"
-                  type="number"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  placeholder="Enter OTP"
-                  className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
+              <>
+                <h4 className="mt-4 text-sm font-medium text-gray-900">
+                  Enter the OTP sent to your email
+                </h4>
+                <div className="relative mt-4 grid grid-cols-6 gap-2">
+                  {[...Array(6)].map((_, idx) => (
+                    <input
+                      key={idx}
+                      id={`otp-${idx}`}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="_"
+                      maxLength={1}
+                      value={otp[idx] || ""}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, ""); // Only allow digits
+                        if (val.length <= 1) {
+                          const newOtp = otp.split("");
+                          newOtp[idx] = val;
+                          setOtp(newOtp.join(""));
+                          if (val && idx < 5) {
+                            document.getElementById(`otp-${idx + 1}`).focus();
+                          }
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Backspace" && !otp[idx] && idx > 0) {
+                          document.getElementById(`otp-${idx - 1}`).focus();
+                        }
+                      }}
+                      className="w-12 h-12 text-center text-lg font-medium text-gray-900 bg-white border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600"
+                    />
+                  ))}
+                </div>
+              </>
             )}
-            <p className="mt-2 text-sm text-gray-500">
-              Please enter your email address.
-            </p>
           </div>
 
           <div>
             <button
               type="submit"
-              className={`mt-2 flex w-full items-center justify-center rounded-md border border-transparent px-8 py-3 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+              className={`mt-6 flex w-full items-center justify-center rounded-md border border-transparent px-8 py-3 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
                 !otpShow
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-indigo-600 hover:bg-indigo-700"

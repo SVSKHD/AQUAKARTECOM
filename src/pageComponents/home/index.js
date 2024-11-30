@@ -3,9 +3,7 @@ import {
   Dialog,
   DialogBackdrop,
   DialogPanel,
-  Tab,
   TabGroup,
-  TabList,
   TabPanel,
   TabPanels,
 } from "@headlessui/react";
@@ -16,10 +14,9 @@ import AquaSpinner from "@/components/common/spinner";
 import { useRouter } from "next/router";
 import CategoryServiceOperations from "@/services/category";
 import ProductServiceOperations from "@/services/products";
-import Image from "next/image";
 import Link from "next/link";
 import AquaProducts from "./products";
-import TestCard from "@/components/cards/ProductCard2";
+
 
 const AquaHomeComponent = () => {
   const [categoryData, setCategoryData] = useState([]);
