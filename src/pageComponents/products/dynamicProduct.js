@@ -16,9 +16,6 @@ function classNames(...classes) {
 }
 
 export default function AquaDynamicProductComponent() {
-  const [open, setOpen] = useState(false);
-  const [selectedColor, setSelectedColor] = useState(null);
-  const [selectedSize, setSelectedSize] = useState(null);
   const [productData, setProductData] = useState(null);
   const [related, setRelatedData] = useState([]);
   const [cart, setCart] = useState(false);
@@ -68,6 +65,7 @@ export default function AquaDynamicProductComponent() {
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
   };
 
+  console.log("productData", productData);
   return (
     <AquaLayout seo={seo}>
       <div className="bg-white">
@@ -135,31 +133,67 @@ export default function AquaDynamicProductComponent() {
                     ))}
                   </TabPanels>
                 </TabGroup>
-                <div className="mt-10 mb-5 flex space-x-4">
-                  <button
-                    type="submit"
-                    className={`${
-                      cart ? "flex-1" : "w-full"
-                    } flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50`}
-                    onClick={() => AddAndRemoveCart(productData, setCart)}
-                  >
-                    {cart ? (
-                      <h4 className="font-bold text-xl">Added to Cart</h4>
-                    ) : (
-                      <h4 className="font-bold text-xl">Add to Cart</h4>
-                    )}
-                  </button>
+                <div className="mt-10 mb-5 flex flex-col sm:flex-row sm:space-x-4 items-center">
+  {/* Add to Cart Button */}
+  <button
+    type="submit"
+    className={`${
+      cart ? "w-full sm:flex-1" : "w-full"
+    } flex items-center justify-center rounded-full bg-[#0A3981] px-6 py-3 text-base font-medium text-white hover:bg-[#082c65] focus:outline-none focus:ring-2 focus:ring-[#0A3981] focus:ring-offset-2 transition duration-300 ease-in-out`}
+    onClick={() => AddAndRemoveCart(productData, setCart)}
+  >
+    {cart ? (
+      <h4 className="font-bold text-xl">Added to Cart</h4>
+    ) : (
+      <h4 className="font-bold text-xl">Add to Cart</h4>
+    )}
+  </button>
 
-                  {cart && (
-                    <a
-                      type="button"
-                      className="w-32 flex items-center justify-center rounded-md bg-gray-600 px-3 py-3 text-sm font-semibold text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                      href="/checkout"
-                    >
-                      <FaCartPlus size={35} />
-                    </a>
-                  )}
-                </div>
+  {/* Checkout Button */}
+  {cart && (
+    <a
+      type="button"
+      className="mt-4 sm:mt-0 w-full sm:w-32 flex items-center justify-center rounded-full bg-[#6B7280] px-6 py-3 text-base font-medium text-white hover:bg-[#4B5563] focus:outline-none focus:ring-2 focus:ring-[#6B7280] focus:ring-offset-2 transition duration-300 ease-in-out"
+      href="/checkout"
+    >
+      <FaCartPlus size={20} className="mr-2" />
+      <span>Checkout</span>
+    </a>
+  )}
+</div>
+
+<div className="mt-5">
+  <h1 className="text-2xl font-bold mb-4">Category</h1>
+  <div
+    className={`grid gap-4 ${
+      true /* Condition for single card */
+        ? "grid-cols-1"
+        : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+    }`}
+  >
+    {/* Single Category Card */}
+    <div
+      className="relative group h-56 w-full rounded-lg overflow-hidden cursor-pointer shadow-lg"
+      onClick={() => window.location.href = "/category/electronics"}
+    >
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+        style={{ backgroundImage: `url(${productData?.category?.photos[0]?.secure_url})` }}
+      ></div>
+
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black bg-opacity-50 group-hover:bg-opacity-40 transition-all duration-300"></div>
+
+      {/* Category Title */}
+      <div className="relative z-10 flex items-center justify-center h-full">
+        <h2 className="text-white text-lg font-semibold group-hover:text-2xl transition-all duration-300">
+          {productData?.category?.title}
+        </h2>
+      </div>
+    </div>
+  </div>
+</div>
               </div>
 
               {/* Product info */}
