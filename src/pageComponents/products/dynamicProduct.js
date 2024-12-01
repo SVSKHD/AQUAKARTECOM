@@ -174,7 +174,7 @@ export default function AquaDynamicProductComponent() {
                     <div
                       className="relative group h-56 w-full rounded-lg overflow-hidden cursor-pointer shadow-lg"
                       onClick={() =>
-                        (window.location.href = "/category/electronics")
+                        (window.location.href = `/category/${productData?.category?.title}`)
                       }
                     >
                       {/* Background Image */}
