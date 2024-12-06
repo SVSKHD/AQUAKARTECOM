@@ -67,17 +67,18 @@ const AquaHomeComponent = () => {
 
   const router = useRouter();
   const SeoData = {
-    title: "Aquakart | Online Shopping for Softeners purifiers and many more",
+    title: "Aquakart | Top Water Softeners, Purifiers & More for Your Home",
     description:
-      "Aquakart is renowned for revolutionizing water softening solutions in the e-commerce sphere, offering an array of top-tier water softeners designed to tackle hard water woes effectively. Their innovative range is meticulously engineered to enhance water quality, ensuring that every drop is pure, soft, and conducive to a healthy lifestyle. Aquakart's softeners stand out for their efficiency, durability, and ease of use, making them a prime choice for discerning homeowners seeking to safeguard their appliances from the ravages of hard water.",
+      "Discover top-quality water softeners and purifiers at Aquakart. Revolutionizing water quality, we ensure pure, soft water for a healthier lifestyle.",
     image:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
-    canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
+    canonical: `${process.env.NEXT_PUBLIC_URL || 'https://aquakart.co.in'}${router.asPath}`,
     keywords:
-      "Aquakart Ecom Store ,Aquakart,  water softeners, Aquakart water softeners, Aquakart ro water purifiers, Aquakart geysers, water softener system for home  , water Ro  , ro machines , Salt Free Water Softener , Water Softener System , Water Softener Installation",
+      "water softeners, RO purifiers, water softener systems, bathroom water softeners, salt-free water softeners, water purifier systems",
     keyphrases:
-      "Water Softener Salt Prices , Salt Water Softener, bathtoom water softeners, automatic bathroom water softeners",
+      "Affordable water softeners for bathrooms, automatic water softener systems, salt-free water softener prices, RO water purifier solutions",
   };
+  
 
   return (
     <>
