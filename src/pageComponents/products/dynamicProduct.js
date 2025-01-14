@@ -70,7 +70,7 @@ export default function AquaDynamicProductComponent() {
       <div className="bg-white">
         <main className="mx-auto max-w-7xl sm:px-6 sm:pt-16 lg:px-8">
           <div className="mx-auto max-w-2xl lg:max-w-none">
-            <div className="lg:grid lg:grid-cols-2 lg:gap-x-8 lg:items-start">
+            <div className="lg:grid lg:grid-cols-2 lg:gap-x-8 lg:items-start p-3">
               {/* Image gallery */}
               <div className={screenSize.width >= 1024 ? "sticky top-0" : ""}>
                 <TabGroup className="flex flex-col-reverse">
@@ -113,8 +113,8 @@ export default function AquaDynamicProductComponent() {
                       <TabPanel key={image.id}>
                         <img
                           src={image.secure_url}
-                          alt={image.alt}
-                          className="h-full w-full object-cover object-center sm:rounded-lg"
+                          alt={`${productData.title} | Aquakart prodcuts`}
+                          className="h-full w-full object-cover object-center rounded-lg"
                           height={450}
                           width={300}
                         />

@@ -25,7 +25,7 @@ const AquaDynamicCategoryComponent = () => {
         .then((res) => {
           setCategory(res.data.data);
           setRelated(res.data.relatedProducts);
-          console.log(res);
+       
         })
         .catch((err) => {
           console.error("Error fetching category:", err);
