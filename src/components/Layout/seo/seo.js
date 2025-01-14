@@ -12,12 +12,12 @@ const AquaSeo = ({ seo, blogs = [], products = [] }) => {
     organization = {
       "@type": "Organization",
       "@id": "https://www.aquakart.co.in#organization",
-      "name": "Aquakart",
-      "url": "https://www.aquakart.co.in",
-      "logo": {
+      name: "Aquakart",
+      url: "https://www.aquakart.co.in",
+      logo: {
         "@type": "ImageObject",
-        "url": "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
-      }
+        url: "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
+      },
     },
   } = seo;
 
@@ -26,46 +26,46 @@ const AquaSeo = ({ seo, blogs = [], products = [] }) => {
     {
       "@type": "WebSite",
       "@id": "https://www.aquakart.co.in#website",
-      "url": "https://www.aquakart.co.in",
-      "name": "Aquakart",
-      "publisher": {
-        "@id": "https://www.aquakart.co.in#organization"
-      }
+      url: "https://www.aquakart.co.in",
+      name: "Aquakart",
+      publisher: {
+        "@id": "https://www.aquakart.co.in#organization",
+      },
     },
     {
       "@type": "WebPage",
       "@id": `${canonical}#webpage`,
-      "url": canonical,
-      "name": title,
-      "isPartOf": {
-        "@id": "https://www.aquakart.co.in#website"
+      url: canonical,
+      name: title,
+      isPartOf: {
+        "@id": "https://www.aquakart.co.in#website",
       },
-      "description": description
-    }
+      description: description,
+    },
   ];
 
   // Add breadcrumbs
   graphData.push({
     "@type": "BreadcrumbList",
     "@id": `${canonical}#breadcrumb`,
-    "itemListElement": [
+    itemListElement: [
       {
         "@type": "ListItem",
-        "position": 1,
-        "item": {
+        position: 1,
+        item: {
           "@id": "https://www.aquakart.co.in",
-          "name": "Home"
-        }
+          name: "Home",
+        },
       },
       {
         "@type": "ListItem",
-        "position": 2,
-        "item": {
+        position: 2,
+        item: {
           "@id": canonical,
-          "name": title
-        }
-      }
-    ]
+          name: title,
+        },
+      },
+    ],
   });
 
   // Add blogs dynamically
@@ -73,28 +73,28 @@ const AquaSeo = ({ seo, blogs = [], products = [] }) => {
     graphData.push({
       "@type": "BlogPosting",
       "@id": `${canonical}#blogposting`,
-      "mainEntityOfPage": {
-        "@id": `${canonical}/blog/${blog._id}#webpage`
+      mainEntityOfPage: {
+        "@id": `${canonical}/blog/${blog._id}#webpage`,
       },
-      "headline": blog.title,
-      "description": blog.description.replace(/<[^>]+>/g, ""), // Remove HTML tags
-      "articleBody": blog.description,
-      "keywords": blog.keywords,
-      "image": {
+      headline: blog.title,
+      description: blog.description.replace(/<[^>]+>/g, ""), // Remove HTML tags
+      articleBody: blog.description,
+      keywords: blog.keywords,
+      image: {
         "@type": "ImageObject",
-        "url": blog.titleImages[0]?.secure_url || image,
-        "width": 1200,
-        "height": 800
+        url: blog.titleImages[0]?.secure_url || image,
+        width: 1200,
+        height: 800,
       },
-      "author": {
+      author: {
         "@type": "Organization",
-        "name": "Aquakart"
+        name: "Aquakart",
       },
-      "publisher": {
-        "@id": "https://www.aquakart.co.in#organization"
+      publisher: {
+        "@id": "https://www.aquakart.co.in#organization",
       },
-      "datePublished": new Date(blog.createdAt).toISOString(),
-      "dateModified": new Date(blog.createdAt).toISOString()
+      datePublished: new Date(blog.createdAt).toISOString(),
+      dateModified: new Date(blog.createdAt).toISOString(),
     });
   });
 
@@ -103,28 +103,31 @@ const AquaSeo = ({ seo, blogs = [], products = [] }) => {
     graphData.push({
       "@type": "Product",
       "@id": `https://www.aquakart.co.in/product/${product._id}#product`,
-      "name": product.title,
-      "image": product.photos.map((photo) => photo.secure_url),
-      "description": product.description.replace(/<[^>]+>/g, ""),
-      "sku": product.slug || product.title.replace(/\s+/g, "-").toLowerCase(),
-      "brand": {
+      name: product.title,
+      image: product.photos.map((photo) => photo.secure_url),
+      description: product.description.replace(/<[^>]+>/g, ""),
+      sku: product.slug || product.title.replace(/\s+/g, "-").toLowerCase(),
+      brand: {
         "@type": "Brand",
-        "name": product.brand || "Aquakart"
+        name: product.brand || "Aquakart",
       },
-      "offers": {
+      offers: {
         "@type": "Offer",
-        "url": `https://www.aquakart.co.in/product/${product.slug}`,
-        "priceCurrency": "INR",
-        "price": product.price,
-        "availability": product.stock > 0 ? "http://schema.org/InStock" : "http://schema.org/OutOfStock",
-        "itemCondition": "http://schema.org/NewCondition"
-      }
+        url: `https://www.aquakart.co.in/product/${product.slug}`,
+        priceCurrency: "INR",
+        price: product.price,
+        availability:
+          product.stock > 0
+            ? "http://schema.org/InStock"
+            : "http://schema.org/OutOfStock",
+        itemCondition: "http://schema.org/NewCondition",
+      },
     });
   });
 
   const structuredData = {
     "@context": "https://schema.org",
-    "@graph": graphData
+    "@graph": graphData,
   };
 
   return (

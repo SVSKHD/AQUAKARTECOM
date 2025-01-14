@@ -72,13 +72,12 @@ const AquaHomeComponent = () => {
       "Discover top-quality water softeners and purifiers at Aquakart. Revolutionizing water quality, we ensure pure, soft water for a healthier lifestyle.",
     image:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
-    canonical: `${process.env.NEXT_PUBLIC_URL || 'https://aquakart.co.in'}${router.asPath}`,
+    canonical: `${process.env.NEXT_PUBLIC_URL || "https://aquakart.co.in"}${router.asPath}`,
     keywords:
       "water softeners, RO purifiers, water softener systems, bathroom water softeners, salt-free water softeners, water purifier systems",
     keyphrases:
       "Affordable water softeners for bathrooms, automatic water softener systems, salt-free water softener prices, RO water purifier solutions",
   };
-  
 
   return (
     <>
@@ -273,7 +272,7 @@ const AquaHomeComponent = () => {
                                   className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-gray-800 opacity-50"
                                 />
                                 <Link
-                                  href={`/category/${category._id}`}
+                                  href={`/category/${category?.title}`}
                                   className="relative mt-auto text-center text-xl font-bold text-white"
                                 >
                                   {category.title}

@@ -9,6 +9,7 @@ import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import { PersistGate } from "redux-persist/integration/react";
 import { useRouter } from "next/router";
+import { Toaster } from "sonner";
 
 const persistConfig = {
   key: "root",
@@ -89,7 +90,7 @@ export default function App({ Component, pageProps }) {
     <Provider store={store}>
       <PersistGate persistor={persistor} loading={<div>Loading...</div>}>
         <Component {...pageProps} />
-        <ToastContainer position="top-center" draggable limit={4} />
+        <Toaster position="top-right" richColors closeButton />
       </PersistGate>
     </Provider>
   );

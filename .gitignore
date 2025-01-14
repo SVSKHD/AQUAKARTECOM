@@ -9,6 +9,13 @@
 # testing
 /coverage
 
+# package-lock.json is an auto-generated file for npm, yarn is using yarn.lock instead
+/package-lock.json
+/pnpm-lock.yaml
+/yarn.lock
+
+
+
 # next.js
 /.next/
 /out/

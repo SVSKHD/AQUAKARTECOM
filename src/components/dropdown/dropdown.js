@@ -1,42 +1,64 @@
-'use client'
+"use client";
 
-import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions, Label } from '@headlessui/react'
-import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
-import { useState } from 'react'
+import {
+  Combobox,
+  ComboboxButton,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+  Label,
+} from "@headlessui/react";
+import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
+import { useState, useEffect, useMemo } from "react";
 
-const AquaCombobox = ({ data, label, onSelect }) => {
-  const [query, setQuery] = useState('')
-  const [selectedItem, setSelectedItem] = useState(null)
+const AquaCombobox = ({ data = [], label, onSelect, clear }) => {
+  const [query, setQuery] = useState("");
+  const [selectedItem, setSelectedItem] = useState(null);
 
-  const filteredData =
-    query === ''
-      ? data
-      : data.filter((item) => {
-          return item.name.toLowerCase().includes(query.toLowerCase())
-        })
+  // Memoized filtering for performance optimization
+  const filteredData = useMemo(() => {
+    if (!query) return [{ id: "none", title: "None" }, ...data]; // Add "None" option
+    return [
+      { id: "none", title: "None" },
+      ...data.filter((item) =>
+        item.title.toLowerCase().includes(query.toLowerCase()),
+      ),
+    ];
+  }, [query, data]);
 
+  // Handle selection
   const handleSelection = (item) => {
-    setQuery('')
-    setSelectedItem(item)
-    onSelect(item) // Notify parent of the selection
-  }
+    if (item.id === "none") {
+      setSelectedItem(null);
+      onSelect(null);
+    } else {
+      setSelectedItem(item);
+      onSelect(item);
+    }
+    setQuery(""); // Clear search after selection
+  };
+
+  // Clear selection when the `clear` prop is true
+  useEffect(() => {
+    if (clear) {
+      setSelectedItem(null);
+    }
+  }, [clear]);
 
   return (
-    <Combobox
-      as="div"
-      value={selectedItem}
-      onChange={handleSelection}
-    >
-      <Label className="block text-sm/6 font-medium text-gray-900">{label}</Label>
+    <Combobox as="div" value={selectedItem} onChange={handleSelection}>
+      <Label className="block text-sm font-medium text-gray-900">{label}</Label>
       <div className="relative mt-2">
         <ComboboxInput
-          className="block w-full rounded-md bg-white py-1.5 pl-3 pr-12 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+          className="block w-full rounded-md bg-white py-1.5 pl-3 pr-12 text-base text-gray-900 outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600 sm:text-sm"
           onChange={(event) => setQuery(event.target.value)}
-          onBlur={() => setQuery('')}
-          displayValue={(item) => item?.name}
+          displayValue={(item) => item?.title || "None"}
         />
         <ComboboxButton className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
-          <ChevronUpDownIcon className="size-5 text-gray-400" aria-hidden="true" />
+          <ChevronUpDownIcon
+            className="size-5 text-gray-400"
+            aria-hidden="true"
+          />
         </ComboboxButton>
 
         {filteredData.length > 0 && (
@@ -45,20 +67,25 @@ const AquaCombobox = ({ data, label, onSelect }) => {
               <ComboboxOption
                 key={item.id}
                 value={item}
-                className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white data-[focus]:outline-none"
+                className="group relative cursor-pointer select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white"
               >
-                <span className="block truncate group-data-[selected]:font-semibold">{item?.title}</span>
-
-                <span className="absolute inset-y-0 right-0 hidden items-center pr-4 text-indigo-600 group-data-[selected]:flex group-data-[focus]:text-white">
-                  <CheckIcon className="size-5" aria-hidden="true" />
+                <span
+                  className={`block truncate ${selectedItem?.id === item.id ? "font-semibold" : ""}`}
+                >
+                  {item?.title}
                 </span>
+                {selectedItem?.id === item.id && item.id !== "none" && (
+                  <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 group-data-[focus]:text-white">
+                    <CheckIcon className="size-5" aria-hidden="true" />
+                  </span>
+                )}
               </ComboboxOption>
             ))}
           </ComboboxOptions>
         )}
       </div>
     </Combobox>
-  )
-}
+  );
+};
 
-export default AquaCombobox
+export default AquaCombobox;
