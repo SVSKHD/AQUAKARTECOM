@@ -15,8 +15,11 @@ const AquaDynamicCategoryComponent = () => {
     title: `Aquakart | ${category.title || "Category"}`,
     description: `Aquakart - ${category.description}`,
     image: `${category?.photos?.[0]?.secure_url}`,
+    url: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
     keywords: `${category.keywords}`,
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath} `,
+    photos: `${category?.photos?.[0]?.secure_url}`,
+    follow: true,
   };
 
   useEffect(() => {
@@ -35,7 +38,7 @@ const AquaDynamicCategoryComponent = () => {
 
   return (
     <>
-      <AquaLayout seo={seo}>
+      <AquaLayout categoryData={seo}>
         <div className="bg-gray-50">
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
             <div className="sm:flex sm:items-baseline sm:justify-between">

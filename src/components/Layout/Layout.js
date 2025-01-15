@@ -16,21 +16,33 @@ import { useRouter } from "next/router";
 const AquaLayout = (props) => {
   const router = useRouter();
   const [seo, setSeo] = useState({
-    path:"",
-    product:"",
+    path: "",
+    product: "",
+    category: "",
+    subCategory: "",
   });
-  useEffect(() => {
-    const { pathname } = router;
-    const FormattedPath = pathname.split("/")[1];
-    if (FormattedPath === "/") {
-      setSeo({ path: "home" });
-    }else if (FormattedPath === "product") {
-      setSeo({ product: "product" });
-    } 
-    else if (FormattedPath) {
-      setSeo(FormattedPath);
-    }
-  }, [router]);
+ useEffect(() => {
+   const { pathname } = router;
+   const formattedPath = pathname.split("/")[1];
+
+   setSeo((prev) => {
+     let updatedSeo = { ...prev };
+
+     if (pathname === "/") {
+       updatedSeo.path = "home";
+     } else if (formattedPath === "product") {
+       updatedSeo.product = "product"; // ✅ Correcting the `product` assignment
+     } else if (formattedPath === "category") {
+       updatedSeo.category = "category"; // ✅ Assigning "category" to `category` instead of `product`
+     } else if (formattedPath === "subcategory") {
+       updatedSeo.subCategory = "subcategory"; // ✅ Keeping string consistency
+      } else if (formattedPath) {
+       updatedSeo.path = formattedPath;
+     }
+
+     return updatedSeo;
+   });
+ }, [router]);
 
   const Status = useNetworkStatus();
   const handleRetry = () => {
@@ -41,7 +53,15 @@ const AquaLayout = (props) => {
       {Status ? (
         <>
           {/* <AquaSeo seo={props.seo} /> */}
-          <AquaSeoRevamp path={seo} product={seo?.product} productData={props?.productPageData}  />
+          <AquaSeoRevamp
+            path={seo?.path}
+            category={seo?.category}
+            categoryData={props?.categoryData}
+            subcategory={seo?.subCategory}
+            subcategoryData={props?.subcategoryData}
+            product={seo?.product}
+            productData={props?.productPageData}
+          />
           <AquaCartAddressDialog />
           <AquaUserDataDrawer />
           <AquaUserAuthDialog />

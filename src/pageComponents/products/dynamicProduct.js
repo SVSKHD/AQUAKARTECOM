@@ -83,6 +83,10 @@ export default function AquaDynamicProductComponent() {
         bestRating: productData?.rating?.count || 12,
       },
     ],
+    follow: true,
+    shippingCost: 0,
+    shippingCountry: "IN",
+    shippingRegion: "IN",
   };
 
   return (

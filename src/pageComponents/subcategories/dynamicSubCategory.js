@@ -19,6 +19,9 @@ const AquaDynamicSubCategoryComponent = () => {
     image: `${category?.photos?.[0]?.secure_url}`,
     keywords: `${category.keywords}`,
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath} `,
+    url: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
+    photos: `${category?.photos?.[0]?.secure_url}`,
+    follow:true
   };
 
   useEffect(() => {
@@ -36,7 +39,7 @@ const AquaDynamicSubCategoryComponent = () => {
 
   return (
     <>
-      <AquaLayout seo={seo}>
+      <AquaLayout subcategoryData={seo}>
         <div className="bg-gray-50">
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
             <div className="sm:flex sm:items-baseline sm:justify-between">
