@@ -1,13 +1,13 @@
 import Head from "next/head";
-import config from "./config"
+import config from "./config";
 
-const AquaSeoRevamp = ({path, data, product, productData, blog, shop }) => {
-  if (path){
+const AquaSeoRevamp = ({ path, data, product, productData, blog, shop }) => {
+  if (path) {
     data = config[path];
   }
-  if (product){
+  if (product) {
     data = productData;
-    console.log("product",data)
+    console.log("product", data);
   }
   if (!data) return null;
 
@@ -57,6 +57,34 @@ const AquaSeoRevamp = ({path, data, product, productData, blog, shop }) => {
               image: data?.photos[0]?.secure_url,
               description: data?.description,
               sku: data?.sku,
+              shippingDetails: {
+                "@type": "OfferShippingDetails",
+                shippingRate: {
+                  "@type": "MonetaryAmount",
+                  value: data?.shippingCost,
+                  currency: data?.priceCurrency,
+                },
+                shippingDestination: {
+                  "@type": "DefinedRegion",
+                  addressCountry: data?.shippingCountry,
+                  addressRegion: data?.shippingRegion,
+                },
+                deliveryTime: {
+                  "@type": "ShippingDeliveryTime",
+                  handlingTime: {
+                    "@type": "QuantitativeValue",
+                    minValue: data?.handlingTimeMin,
+                    maxValue: data?.handlingTimeMax,
+                    unitCode: "DAY",
+                  },
+                  transitTime: {
+                    "@type": "QuantitativeValue",
+                    minValue: data?.transitTimeMin,
+                    maxValue: data?.transitTimeMax,
+                    unitCode: "DAY",
+                  },
+                },
+              },
               brand: {
                 "@type": "Brand",
                 name: data?.brand,
