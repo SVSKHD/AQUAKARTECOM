@@ -62,11 +62,30 @@ export default function AquaDynamicProductComponent() {
     title: `Aquakart | ${productData.title}`,
     image: `${productData?.photos ? productData?.photos[0].secure_url : LOGO}`,
     keywords: `Aquakart Products ${productData?.keywords}`,
+    description: productData?.description,
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
+    photos: productData?.photos,
+    brand: productData?.brand,
+    price: productData?.price,
+    priceCurrency: "INR",
+    itemCondition: "New",
+    stock: productData?.stock,
+    rating: {
+      value: productData?.rating?.value || 3.4,
+      count: productData?.rating?.count || 12,
+    },
+    reviews: [
+      {
+        author: "Aquakart",
+        datePublished: new Date().toISOString(),
+        ratingValue: productData?.rating?.value || 3.4,
+        bestRating: productData?.rating?.count || 12,
+      },
+    ],
   };
 
   return (
-    <AquaLayout seo={seo}>
+    <AquaLayout productPageData={seo}>
       <div className="bg-white">
         <main className="mx-auto max-w-7xl sm:px-6 sm:pt-16 lg:px-8">
           <div className="mx-auto max-w-2xl lg:max-w-none">

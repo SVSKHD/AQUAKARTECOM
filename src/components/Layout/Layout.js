@@ -4,14 +4,34 @@ import AquaToast from "../reusables/toast";
 import AquaFooter from "./Footer";
 import AquaHeader from "./Header";
 import AquaSeo from "./seo/seo";
+import AquaSeoRevamp from "./seo/RefactoredSeo";
 import AquaUserDataDrawer from "../common/commonDrawers/userDataDrawer";
 import AquaUserAuthDialog from "../common/commonDialogs/authDialog";
 import AquaCartAddressDialog from "../common/commonDialogs/cartAddress";
 import AquaTailwindToast from "../toast/TailwindToast";
 import useNetworkStatus from "@/utils/connectivity";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 const AquaLayout = (props) => {
+  const router = useRouter();
+  const [seo, setSeo] = useState({
+    path:"",
+    product:"",
+  });
+  useEffect(() => {
+    const { pathname } = router;
+    const FormattedPath = pathname.split("/")[1];
+    if (FormattedPath === "/") {
+      setSeo({ path: "home" });
+    }else if (FormattedPath === "product") {
+      setSeo({ product: "product" });
+    } 
+    else if (FormattedPath) {
+      setSeo(FormattedPath);
+    }
+  }, [router]);
+
   const Status = useNetworkStatus();
   const handleRetry = () => {
     window.location.reload(); // This reloads the page
@@ -20,7 +40,8 @@ const AquaLayout = (props) => {
     <>
       {Status ? (
         <>
-          <AquaSeo seo={props.seo} />
+          {/* <AquaSeo seo={props.seo} /> */}
+          <AquaSeoRevamp path={seo} product={seo?.product} productData={props?.productPageData}  />
           <AquaCartAddressDialog />
           <AquaUserDataDrawer />
           <AquaUserAuthDialog />
