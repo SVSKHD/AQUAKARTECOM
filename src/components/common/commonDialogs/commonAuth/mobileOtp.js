@@ -1,0 +1,164 @@
+import UserServiceOperations from "@/services/user";
+import useDialog from "@/utils/dialog";
+import { useState, useCallback } from "react";
+import { useDispatch } from "react-redux";
+import Image from "next/image";
+import AquaToast from "@/components/reusables/react-toastify";
+import debounce from "lodash.debounce";
+
+const AquaAuthMobileForm = ({ signup }) => {
+  const [phone, setPhone] = useState("");
+  const [otpShow, setOtpShow] = useState(false);
+  const [otp, setOtp] = useState("");
+  const { closeAuthDialog } = useDialog();
+  const dispatch = useDispatch();
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const phoneFormat = Number(phone);
+    const otpFormat = Number(otp);
+    const data = { phone: phoneFormat, otp: otpFormat };
+    UserServiceOperations.UserMobileVerify(data)
+      .then((res) => {
+        AquaToast({
+          message: "Verification successful",
+          type: "success",
+        });
+        dispatch({
+          type: "LOGGED_IN_USER",
+          payload: res.data,
+        });
+        closeAuthDialog();
+      })
+      .catch((err) => {
+        AquaToast({
+          message: "Verification failed",
+          type: "error",
+        });
+      });
+  };
+
+  const isValidPhone = (phone) => {
+    const phoneRegex = /^\d{10}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const requestOtp = useCallback(
+    debounce((newPhone) => {
+      if (isValidPhone(newPhone)) {
+        AquaToast({
+          message: "Otp in Air Please wait.....",
+          type: "info",
+        });
+        UserServiceOperations.UserMobileOtp({ phone: newPhone })
+          .then((res) => {
+            setOtpShow(true);
+            AquaToast({
+              message: "Successfully sent Otp",
+              type: "success",
+            });
+            dispatch({
+              type: "SET_AUTH_STATUS_VISIBLE",
+              payload: !res.data.userExist,
+            });
+          })
+          .catch((err) => {
+            setOtpShow(false);
+            AquaToast({
+              message: "Failed to send OTP",
+              type: "error",
+            });
+
+            dispatch({
+              type: "SET_AUTH_STATUS_VISIBLE",
+              payload: false,
+            });
+          });
+      } else {
+        setOtpShow(false);
+      }
+    }, 300), // Adjust debounce delay as needed
+    [],
+  );
+
+  const handlePhoneChange = (e) => {
+    const newPhone = e.target.value;
+    setPhone(newPhone);
+    requestOtp(newPhone);
+  };
+
+  return (
+    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+        <Image
+          alt="Aquakart"
+          src="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
+          className="mx-auto h-20 w-auto"
+          width={100}
+          height={100}
+        />
+        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+          {signup ? "Sign up with phone" : "Sign in with phone"}
+        </h2>
+      </div>
+
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-sm">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label
+              htmlFor="phone-number"
+              className="block text-sm font-medium leading-6 text-gray-900"
+            >
+              Phone No
+            </label>
+            <div className="relative mt-2 rounded-md shadow-sm">
+              <input
+                id="phone-number"
+                name="phone-number"
+                maxLength="10"
+                type="text"
+                value={phone}
+                onChange={handlePhoneChange}
+                placeholder="000-00-00000"
+                className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              />
+            </div>
+            {otpShow && (
+              <div className="relative mt-2 rounded-md shadow-sm">
+                <input
+                  id="otp"
+                  name="otp"
+                  maxLength="6"
+                  type="number"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Enter OTP"
+                  className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                />
+              </div>
+            )}
+            <p className="mt-2 text-sm text-gray-500">
+              Please ensure your phone number is associated with WhatsApp.
+            </p>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              className={`mt-2 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+                !otpShow
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
+              disabled={!otpShow}
+            >
+              {signup ? "Sign Up" : "Sign In"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default AquaAuthMobileForm;

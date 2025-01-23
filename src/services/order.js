@@ -1,0 +1,76 @@
+import axios from "axios";
+
+const BASE = process.env.NEXT_PUBLIC_API_URL;
+
+const createCodOrder = async (data) => {
+  try {
+    const response = await axios.post(`${BASE}/order/cod`, data);
+    return response.data;
+  } catch (error) {
+    throw new Error(`Error creating COD order: ${error.message}`);
+  }
+};
+
+const getOrdersByUserId = async (id, token) => {
+  try {
+    const response = await axios.get(`${BASE}/orders/user/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(`Error fetching orders by user ID: ${error.message}`);
+  }
+};
+
+const getOrdersByTransactionId = async (id, token) => {
+  try {
+    const response = await axios.get(`${BASE}/order/transaction-id/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      `Error fetching orders by transaction ID: ${error.message}`,
+    );
+  }
+};
+
+const createPhonePePayOrder = async (data) => {
+  try {
+    const response = await axios.post(`${BASE}/order/pay`, data);
+    return response.data;
+  } catch (error) {
+    throw new Error(`Error creating PhonePe pay order: ${error.message}`);
+  }
+};
+
+const verifyPayment = async (id, token) => {
+  try {
+    const response = await axios.post(
+      `${BASE}/phonepe-verify/${id}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(`Error verifying payment: ${error.message}`);
+  }
+};
+
+const orderServiceOperations = {
+  createCodOrder,
+  createPhonePePayOrder,
+  verifyPayment,
+  getOrdersByUserId,
+  getOrdersByTransactionId,
+};
+
+export default orderServiceOperations;

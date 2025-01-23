@@ -1,0 +1,70 @@
+{
+  "home": {
+    "title": "Aquakart | Your One Stop for All Softeners",
+    "description": "Welcome to Aquakart - Your one-stop shop for softeners, water softeners, and RO filters. Find everything you need for pristine water quality.",
+    "keyphrases": ["softeners", "water softeners", "RO filters", "Aquakart water softeners"],
+    "keywords": ["softeners", "Aquakart", "water softeners", "automatic water softeners", "RO filters", "Aquakart water solutions"],
+    "images": [
+      "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
+    ],
+    "meta": {
+      "title": "Aquakart | Your One Stop for All Softeners",
+      "description": "Welcome to Aquakart - Your one-stop shop for softeners, water softeners, and RO filters. Find everything you need for pristine water quality.",
+      "keywords": "softeners, Aquakart, water softeners, automatic water softeners, RO filters, Aquakart water solutions",
+      "canonical": "https://www.aquakart.co.in/",
+      "image": "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
+    }
+  },
+  "shop": {
+    "title": "Shop - Aquakart",
+    "description": "Explore Aquakart's shop for high-quality water softeners, automatic softeners, and RO filters to meet all your water purification needs.",
+    "keyphrases": ["Aquakart shop", "water softeners", "automatic water softeners", "RO filters", "water purification products"],
+    "keywords": ["Aquakart", "water softeners", "automatic water softeners", "RO filters", "water purification"],
+    "images": [],
+    "meta": {
+      "title": "Shop - Aquakart",
+      "description": "Explore Aquakart's shop for high-quality water softeners, automatic softeners, and RO filters to meet all your water purification needs.",
+      "keywords": "Aquakart, water softeners, automatic water softeners, RO filters, water purification",
+      "canonical": "https://www.aquakart.co.in/shop"
+    }
+  },
+  "checkout": {
+    "title": "Checkout - Aquakart",
+    "description": "Complete your purchase of premium softeners, water softeners, and RO filters at Aquakart for efficient water purification solutions.",
+    "keyphrases": ["Aquakart checkout", "water softeners", "RO filters", "complete purchase"],
+    "keywords": ["Aquakart", "checkout", "water softeners", "RO filters", "purchase water solutions"],
+    "images": [],
+    "meta": {
+      "title": "Checkout - Aquakart",
+      "description": "Complete your purchase of premium softeners, water softeners, and RO filters at Aquakart for efficient water purification solutions.",
+      "keywords": "Aquakart, checkout, water softeners, RO filters, purchase water solutions",
+      "canonical": "https://www.aquakart.co.in/checkout"
+    }
+  },
+  "compare": {
+    "title": "Compare Products - Aquakart",
+    "description": "Compare top water softeners, RO filters, and automatic water purification systems to find the best solution for your needs at Aquakart.",
+    "keyphrases": ["compare products", "water softeners comparison", "RO filters comparison", "Aquakart"],
+    "keywords": ["compare water softeners", "RO filters comparison", "Aquakart"],
+    "images": [],
+    "meta": {
+      "title": "Compare Products - Aquakart",
+      "description": "Compare top water softeners, RO filters, and automatic water purification systems to find the best solution for your needs at Aquakart.",
+      "keywords": "compare water softeners, RO filters comparison, Aquakart",
+      "canonical": "https://www.aquakart.co.in/compare"
+    }
+  },
+  "blogs": {
+    "title": "Blogs - Aquakart",
+    "description": "Discover tips, guides, and updates on water softeners, RO filters, and water purification technologies from the experts at Aquakart.",
+    "keyphrases": ["blogs on water softeners", "RO filters guides", "Aquakart tips"],
+    "keywords": ["Aquakart blogs", "water softeners guides", "RO filters tips", "water purification updates"],
+    "images": [],
+    "meta": {
+      "title": "Blogs - Aquakart",
+      "description": "Discover tips, guides, and updates on water softeners, RO filters, and water purification technologies from the experts at Aquakart.",
+      "keywords": "Aquakart blogs, water softeners guides, RO filters tips, water purification updates",
+      "canonical": "https://www.aquakart.co.in/blogs"
+    }
+  }
+}
