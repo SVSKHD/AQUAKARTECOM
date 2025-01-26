@@ -3,7 +3,6 @@ import AquafavDrawer from "../common/commonDrawers/favDrawer";
 import AquaToast from "../reusables/toast";
 import AquaFooter from "./Footer";
 import AquaHeader from "./Header";
-import AquaSeo from "./seo/seo";
 import AquaSeoRevamp from "./seo/RefactoredSeo";
 import AquaUserDataDrawer from "../common/commonDrawers/userDataDrawer";
 import AquaUserAuthDialog from "../common/commonDialogs/authDialog";
@@ -21,28 +20,28 @@ const AquaLayout = (props) => {
     category: "",
     subCategory: "",
   });
- useEffect(() => {
-   const { pathname } = router;
-   const formattedPath = pathname.split("/")[1];
+  useEffect(() => {
+    const { pathname } = router;
+    const formattedPath = pathname.split("/")[1];
 
-   setSeo((prev) => {
-     let updatedSeo = { ...prev };
+    setSeo((prev) => {
+      let updatedSeo = { ...prev };
 
-     if (pathname === "/") {
-       updatedSeo.path = "home";
-     } else if (formattedPath === "product") {
-       updatedSeo.product = "product"; // ✅ Correcting the `product` assignment
-     } else if (formattedPath === "category") {
-       updatedSeo.category = "category"; // ✅ Assigning "category" to `category` instead of `product`
-     } else if (formattedPath === "subcategory") {
-       updatedSeo.subCategory = "subcategory"; // ✅ Keeping string consistency
+      if (pathname === "/") {
+        updatedSeo.path = "home";
+      } else if (formattedPath === "product") {
+        updatedSeo.product = "product"; // ✅ Correcting the `product` assignment
+      } else if (formattedPath === "category") {
+        updatedSeo.category = "category"; // ✅ Assigning "category" to `category` instead of `product`
+      } else if (formattedPath === "subcategory") {
+        updatedSeo.subCategory = "subcategory"; // ✅ Keeping string consistency
       } else if (formattedPath) {
-       updatedSeo.path = formattedPath;
-     }
+        updatedSeo.path = formattedPath;
+      }
 
-     return updatedSeo;
-   });
- }, [router]);
+      return updatedSeo;
+    });
+  }, [router]);
 
   const Status = useNetworkStatus();
   const handleRetry = () => {

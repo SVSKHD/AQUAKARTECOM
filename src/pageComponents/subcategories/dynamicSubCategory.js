@@ -21,7 +21,7 @@ const AquaDynamicSubCategoryComponent = () => {
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath} `,
     url: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
     photos: `${category?.photos?.[0]?.secure_url}`,
-    follow:true
+    follow: true,
   };
 
   useEffect(() => {
