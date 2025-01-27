@@ -4,7 +4,6 @@ import EmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import AquaHeader from "@/components/Layout/Header";
 import AquaFooter from "@/components/Layout/Footer";
-import AquaProductSeo from "@/components/Layout/seo/productSeo";
 import useProduct from "@/utils/product";
 import { useSelector } from "react-redux";
 import AquafavDrawer from "@/components/common/commonDrawers/favDrawer";
@@ -75,35 +74,13 @@ function AquaServerDynamicProduct({ product, related }) {
     return () => clearInterval(interval);
   }, [emblaApi, progress, onSelect]);
 
-  const sanitizeText = (input) => {
-    if (!input) return "";
-    const parser = new DOMParser();
-    const parsedString = parser.parseFromString(input, "text/html");
-    const plainText = parsedString.body.textContent || "";
-    return plainText
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .trim();
-  };
 
-  const ogDescription = sanitizeText(product?.description)?.substring(0, 150);
-  const ProductSeo = {
-    title: product?.title,
-    keywords: "aquakart, product, ecommerce, online shopping",
-    keyphrases: "aquakart, product, ecommerce, online shopping",
-    url: `https://aquakart.co.in/product/${product?.slug}`,
-    photos: product?.photos[0]?.secure_url,
-    follow: true,
-    description: ogDescription,
-    price: product?.price,
-    priceCurrency: "INR",
-  };
+
 
   return (
     <div>
       <AquaHeader />
-      <AquaProductSeo product={ProductSeo} />
+ 
       <AquaCartDrawer />
       <AquafavDrawer />
       <div className="bg-white">
