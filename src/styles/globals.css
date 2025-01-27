@@ -15,7 +15,6 @@
     brightness(92%) contrast(85%);
 }
 
-
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }

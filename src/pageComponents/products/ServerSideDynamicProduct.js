@@ -1,13 +1,17 @@
 import React, { useState, useEffect, Suspense, useCallback } from "react";
-import { ShoppingCart, Heart } from "lucide-react";
+import { ShoppingCart, Heart, BookHeart } from "lucide-react";
 import EmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import AquaHeader from "@/components/Layout/Header";
 import AquaFooter from "@/components/Layout/Footer";
 import AquaProductSeo from "@/components/Layout/seo/productSeo";
 import useProduct from "@/utils/product";
-const AquaRelatedProductCard = React.lazy(() =>
-  import("@/components/cards/RelatedProductCard")
+import { useSelector } from "react-redux";
+import AquafavDrawer from "@/components/common/commonDrawers/favDrawer";
+import AquaCartDrawer from "@/components/common/commonDrawers/cartDrawer";
+
+const AquaRelatedProductCard = React.lazy(
+  () => import("@/components/cards/RelatedProductCard"),
 );
 
 function AquaServerDynamicProduct({ product, related }) {
@@ -17,13 +21,15 @@ function AquaServerDynamicProduct({ product, related }) {
   const [progress, setProgress] = useState(0);
   const [cart, setCart] = useState(false);
 
+  const { cartData, favData } = useSelector((state) => ({ ...state }));
 
   // store
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
 
   const calculateDiscount = () => {
     if (product.discountPriceStatus && product.discountPrice) {
-      const discount = ((product.price - product.discountPrice) / product.price) * 100;
+      const discount =
+        ((product.price - product.discountPrice) / product.price) * 100;
       return Math.round(discount);
     }
     return 0;
@@ -31,18 +37,27 @@ function AquaServerDynamicProduct({ product, related }) {
 
   const handleAddToCart = () => {
     AddAndRemoveCart(product, setCart);
-
   };
 
   const handleAddToFav = () => {
     AddAndRemoveFav(product, setIsFavorite);
- 
-  }
+  };
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setCurrentImageIndex(emblaApi.selectedScrollSnap());
   }, [emblaApi]);
+
+  useEffect(() => {
+    if (!product) return;
+
+    // Reset cart and favorite states for the current product
+    const isProductInCart = cartData?.some((item) => item._id === product?._id);
+    const isProductInFav = favData?.some((item) => item._id === product?._id);
+
+    setCart(isProductInCart);
+    setIsFavorite(isProductInFav);
+  }, [cartData, favData, product]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -65,7 +80,11 @@ function AquaServerDynamicProduct({ product, related }) {
     const parser = new DOMParser();
     const parsedString = parser.parseFromString(input, "text/html");
     const plainText = parsedString.body.textContent || "";
-    return plainText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").trim();
+    return plainText
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .trim();
   };
 
   const ogDescription = sanitizeText(product?.description)?.substring(0, 150);
@@ -77,12 +96,16 @@ function AquaServerDynamicProduct({ product, related }) {
     photos: product?.photos[0]?.secure_url,
     follow: true,
     description: ogDescription,
+    price: product?.price,
+    priceCurrency: "INR",
   };
 
   return (
     <div>
       <AquaHeader />
       <AquaProductSeo product={ProductSeo} />
+      <AquaCartDrawer />
+      <AquafavDrawer />
       <div className="bg-white">
         <div className="mx-auto max-w-7xl sm:px-6 sm:pt-16 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -117,7 +140,9 @@ function AquaServerDynamicProduct({ product, related }) {
                     <motion.div
                       key={index}
                       className={`h-1 rounded ${
-                        index === currentImageIndex ? "bg-blue-600" : "bg-gray-200"
+                        index === currentImageIndex
+                          ? "bg-blue-600"
+                          : "bg-gray-200"
                       }`}
                       initial={{ width: "0%" }}
                       animate={{
@@ -160,47 +185,47 @@ function AquaServerDynamicProduct({ product, related }) {
                 <div className="pt-4">
                   <motion.button
                     onClick={handleAddToCart}
-                    className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors"
+                    className={`w-full ${cart ? "bg-green-600" : "bg-blue-600"} text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
                     <ShoppingCart className="w-5 h-5" />
-                    <span>Add to Cart</span>
+                    <span>{cart ? "Added to Cart" : "Add to Cart"}</span>
                   </motion.button>
                 </div>
               </div>
             </div>
 
             {/* Right Column */}
-            <div
-  className="h-[calc(100vh-6rem)] p-8 overflow-y-scroll hide-scrollbar"
->
-  <h1 className="text-3xl font-bold text-gray-900">{product?.title}</h1>
-  <p className="text-lg text-gray-500 mt-2">{product?.brand}</p>
-  <div className="mt-4 flex items-baseline space-x-3">
-    {product?.discountPriceStatus && product?.discountPrice ? (
-      <>
-        <div className="text-3xl font-bold text-gray-900">
-          ₹{product.discountPrice.toLocaleString()}
-        </div>
-        <div className="text-xl text-gray-500 line-through">
-          ₹{product?.price?.toLocaleString()}
-        </div>
-        <div className="text-lg font-semibold text-green-600">
-          {calculateDiscount()}% off
-        </div>
-      </>
-    ) : (
-      <div className="text-3xl font-bold text-gray-900">
-        ₹{product?.price?.toLocaleString()}
-      </div>
-    )}
-  </div>
-  <div
-    className="prose prose-lg max-w-none mt-6"
-    dangerouslySetInnerHTML={{ __html: product?.description }}
-  />
-</div>
+            <div className="h-[calc(100vh-6rem)] p-8 overflow-y-scroll hide-scrollbar">
+              <h1 className="text-3xl font-bold text-gray-900">
+                {product?.title}
+              </h1>
+              <p className="text-lg text-gray-500 mt-2">{product?.brand}</p>
+              <div className="mt-4 flex items-baseline space-x-3">
+                {product?.discountPriceStatus && product?.discountPrice ? (
+                  <>
+                    <div className="text-3xl font-bold text-gray-900">
+                      ₹{product.discountPrice.toLocaleString()}
+                    </div>
+                    <div className="text-xl text-gray-500 line-through">
+                      ₹{product?.price?.toLocaleString()}
+                    </div>
+                    <div className="text-lg font-semibold text-green-600">
+                      {calculateDiscount()}% off
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-3xl font-bold text-gray-900">
+                    ₹{product?.price?.toLocaleString()}
+                  </div>
+                )}
+              </div>
+              <div
+                className="prose prose-lg max-w-none mt-6"
+                dangerouslySetInnerHTML={{ __html: product?.description }}
+              />
+            </div>
           </div>
 
           {/* Related Products */}

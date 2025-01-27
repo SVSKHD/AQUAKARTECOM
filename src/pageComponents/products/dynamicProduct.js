@@ -21,7 +21,7 @@ export default function AquaDynamicProductComponent() {
   const [cart, setCart] = useState(false);
   const [fav, setFav] = useState(false);
   const { formatCurrencyINR } = useCurrency;
-  const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
+
   const screenSize = useScreenSize(); // Use the useScreenSize hook
 
   const router = useRouter();

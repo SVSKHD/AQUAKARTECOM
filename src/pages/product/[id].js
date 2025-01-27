@@ -23,8 +23,6 @@ function AquaDynamicProduct({ product, related, error }) {
       {/* Example usage of a separate component: */}
       {/* <AquaDynamicProductComponent product={product} /> */}
 
-
-
       {/* Server-side product rendering component */}
       <AquaServerDynamicProduct product={product} related={related} />
     </>
@@ -39,7 +37,7 @@ export async function getServerSideProps({ params }) {
 
   try {
     const response = await axios.get(
-      `https://api.aquakart.co.in/v1/product?searchField=slug&value=${id}`
+      `https://api.aquakart.co.in/v1/product?searchField=slug&value=${id}`,
     );
 
     // Extract relevant fields
