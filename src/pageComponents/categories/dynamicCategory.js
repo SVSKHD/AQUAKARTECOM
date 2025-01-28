@@ -1,5 +1,5 @@
 import AquaLayout from "@/components/Layout/Layout";
-import AquaProductCard from "@/components/cards/productCard";
+import AquaProductCard from "@/components/cards/productCard2";
 import CategoryServiceOperations from "@/services/category";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -53,31 +53,39 @@ const AquaDynamicCategoryComponent = () => {
               </a>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-6 lg:gap-8">
-              {/* Category Image */}
-              {category?.photos?.[0]?.secure_url && (
-                <div className="group aspect-h-1 aspect-w-2 overflow-hidden rounded-lg sm:aspect-h-1 sm:aspect-w-1 sm:col-span-1 sm:row-span-2">
-                  <img
-                    alt={category?.title}
-                    src={category.photos[0].secure_url}
-                    className="object-cover object-center group-hover:opacity-75"
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="bg-gradient-to-b from-transparent to-black opacity-50"
-                  />
-                  <div className="flex items-end p-6">
-                    <div>
-                      <h3 className="font-semibold text-white">
-                        <a href="#">
-                          <span className="absolute inset-0" />
-                          {category?.title}
-                        </a>
-                      </h3>
-                    </div>
+            {category?.photos?.[0]?.secure_url && (
+              <div class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-2 gap-4">
+                <div class="p-4">
+                  <div className="flex justify-center items-center bg-gray-100">
+                    <img
+                      alt={category?.title}
+                      src={category.photos[0].secure_url}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
                   </div>
                 </div>
-              )}
+                <div class="p-4">
+                  <div className="flex flex-col justify-center space-y-4">
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      {category?.title}
+                    </h3>
+                    <p className="text-gray-700">
+                      {category?.description ||
+                        "Explore our exclusive category to discover premium products."}
+                    </p>
+                    <a
+                      href="/categories"
+                      className="px-4 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700"
+                    >
+                      Browse Categories →
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-6 lg:gap-8">
+              {/* Category Image */}
 
               {/* Related Products */}
               <div className="sm:col-span-2">
@@ -85,7 +93,7 @@ const AquaDynamicCategoryComponent = () => {
                   Related Products
                 </h1>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
                   {related.map((r, i) => (
                     <>
                       <div key={i}>

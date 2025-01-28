@@ -42,10 +42,10 @@ const AquaRelatedProductCard = ({ product }) => {
   };
 
   return (
-    <div className="max-w-sm rounded-md overflow-hidden shadow-lg bg-white border border-gray-200 m-2">
+    <div className="max-w-sm rounded-xl overflow-hidden shadow-lg bg-white border border-gray-200 m-4">
       <div className="relative">
         {/* Embla Carousel */}
-        <div className="overflow-hidden rounded-t-md" ref={emblaRef}>
+        <div className="overflow-hidden rounded-t-xl" ref={emblaRef}>
           <div className="flex">
             {product?.photos.map((photo, index) => (
               <motion.div
@@ -56,13 +56,10 @@ const AquaRelatedProductCard = ({ product }) => {
                   opacity: activeIndex === index ? 1 : 0.5,
                   scale: activeIndex === index ? 1 : 0.9,
                 }}
-                transition={{
-                  duration: 0.5,
-                  ease: "easeInOut",
-                }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
               >
                 <img
-                  className="w-full object-cover"
+                  className="w-full object-cover rounded-t-xl"
                   src={photo?.secure_url}
                   alt={product.name}
                   style={{ height: "auto", maxHeight: "370px" }}
@@ -74,12 +71,12 @@ const AquaRelatedProductCard = ({ product }) => {
 
         {/* Favorite Button */}
         <motion.div
-          className="absolute top-2 right-2"
+          className="absolute top-3 right-3"
           whileTap={{ scale: 0.8 }}
           onClick={handleAddToFav}
         >
           <button
-            className={`p-2 rounded-full shadow ${
+            className={`p-2 rounded-full shadow transition-all duration-300 ${
               isFavorite ? "bg-red-100" : "bg-white"
             } hover:bg-gray-100`}
           >
@@ -88,11 +85,7 @@ const AquaRelatedProductCard = ({ product }) => {
                 scale: isFavorite ? 1.3 : 1,
                 color: isFavorite ? "#ef4444" : "#4b5563",
               }}
-              transition={{
-                type: "spring",
-                stiffness: 500,
-                damping: 20,
-              }}
+              transition={{ type: "spring", stiffness: 500, damping: 20 }}
             >
               <Heart className="w-6 h-6" />
             </motion.div>
@@ -104,9 +97,9 @@ const AquaRelatedProductCard = ({ product }) => {
           {product?.photos.map((_, index) => (
             <div
               key={index}
-              className={`relative w-10 h-1 ${
-                activeIndex === index ? "bg-blue-500" : "bg-gray-300"
-              } overflow-hidden rounded-full cursor-pointer`}
+              className={`relative w-10 h-2 rounded-full cursor-pointer transition-all duration-300 ${
+                activeIndex === index ? "bg-blue-500 scale-125" : "bg-gray-300"
+              }`}
               onClick={() => emblaApi && emblaApi.scrollTo(index)}
             ></div>
           ))}
@@ -123,9 +116,9 @@ const AquaRelatedProductCard = ({ product }) => {
             ₹{product.price}
           </span>
           <motion.button
-            className={`relative ${
+            className={`relative px-4 py-2 rounded-xl text-white flex items-center justify-center transition-all duration-300 ${
               isInCart ? "bg-green-500" : "bg-blue-500"
-            } text-white px-4 py-2 rounded-xl hover:opacity-80 transition flex items-center`}
+            } hover:opacity-80`}
             whileTap={{ scale: 0.95 }}
             onClick={handleAddToCart}
           >

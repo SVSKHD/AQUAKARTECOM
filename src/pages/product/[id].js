@@ -3,7 +3,7 @@ import AquaServerDynamicProduct from "@/pageComponents/products/ServerSideDynami
 import AquaProductSeo from "@/components/Layout/seo/productSeo";
 
 function AquaDynamicProduct({ product, related, error }) {
-  // If our request in getServerSideProps failed, show an error message
+  // Error handling
   if (error) {
     return (
       <div>
@@ -13,21 +13,17 @@ function AquaDynamicProduct({ product, related, error }) {
     );
   }
 
-  // If there's no error but we still didn't get a product, handle it gracefully
+  // Fallback for missing product data
   if (!product) {
     return <div>No product data available.</div>;
   }
 
+  // SEO setup
   const sanitizeText = (input) => {
     if (!input) return "";
     const parser = new DOMParser();
     const parsedString = parser.parseFromString(input, "text/html");
-    const plainText = parsedString.body.textContent || "";
-    return plainText
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .trim();
+    return parsedString.body.textContent || "";
   };
 
   const ogDescription = sanitizeText(product?.description)?.substring(0, 150);
@@ -45,10 +41,6 @@ function AquaDynamicProduct({ product, related, error }) {
 
   return (
     <>
-      {/* Example usage of a separate component: */}
-      {/* <AquaDynamicProductComponent product={product} /> */}
-
-      {/* Server-side product rendering component */}
       <AquaProductSeo product={ProductSeo} />
       <AquaServerDynamicProduct product={product} related={related} />
     </>
@@ -56,17 +48,44 @@ function AquaDynamicProduct({ product, related, error }) {
 }
 
 // ----------------------------------------
-// getServerSideProps
+// getStaticPaths
 // ----------------------------------------
-export async function getServerSideProps({ params }) {
+export async function getStaticPaths() {
+  try {
+    // Fetch all products for pre-rendering paths
+    const response = await axios.get("https://api.aquakart.co.in/v1/products");
+    const products = response?.data || [];
+
+    // Generate paths for products
+    const paths = products.map((product) => ({
+      params: { id: product.slug }, // Replace `slug` with the actual key if different
+    }));
+
+    return {
+      paths, // Pre-render these paths
+      fallback: "blocking", // Dynamically generate pages on demand
+    };
+  } catch (err) {
+    console.error("Error fetching product paths:", err.message);
+    return {
+      paths: [],
+      fallback: "blocking", // Allow for on-demand generation
+    };
+  }
+}
+
+// ----------------------------------------
+// getStaticProps
+// ----------------------------------------
+export async function getStaticProps({ params }) {
   const { id } = params;
 
   try {
+    // Fetch product data for the given ID
     const response = await axios.get(
       `https://api.aquakart.co.in/v1/product?searchField=slug&value=${id}`,
     );
 
-    // Extract relevant fields
     const product = response?.data?.data || null;
     const related = response?.data?.related || null;
 
@@ -75,11 +94,10 @@ export async function getServerSideProps({ params }) {
         product,
         related,
       },
+      revalidate: 60, // Revalidate the page every 60 seconds
     };
   } catch (err) {
     console.error("Error fetching product data:", err.message);
-
-    // Pass the error message to the page via props
     return {
       props: {
         product: null,
@@ -91,4 +109,3 @@ export async function getServerSideProps({ params }) {
 }
 
 export default AquaDynamicProduct;
-// pages/aqua-dynamic-product/[id].js  <-- example filename

@@ -74,13 +74,10 @@ function AquaServerDynamicProduct({ product, related }) {
     return () => clearInterval(interval);
   }, [emblaApi, progress, onSelect]);
 
-
-
-
   return (
     <div>
       <AquaHeader />
- 
+
       <AquaCartDrawer />
       <AquafavDrawer />
       <div className="bg-white">
