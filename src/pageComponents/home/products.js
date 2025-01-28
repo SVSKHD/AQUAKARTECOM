@@ -1,4 +1,4 @@
-import ReusableProductCard from "@/components/cards/ProductCard2";
+import ReusableProductCard from "@/components/cards/ProductCardTwo";
 import ProductServiceOperations from "@/services/products";
 import { useEffect, useState } from "react";
 import AquaSpinner from "@/components/common/spinner";

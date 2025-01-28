@@ -8,18 +8,15 @@ import {
   TabPanels,
 } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import AquaLayout from "@/components/Layout/Layout";
 import AquaSpinner from "@/components/common/spinner";
 import { useRouter } from "next/router";
 import CategoryServiceOperations from "@/services/category";
-import ProductServiceOperations from "@/services/products";
 import Link from "next/link";
 import AquaProducts from "./products";
 
 const AquaHomeComponent = () => {
   const [categoryData, setCategoryData] = useState([]);
-  const [productData, setProductData] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState({
     category: false,
@@ -31,19 +28,11 @@ const AquaHomeComponent = () => {
     const fetchData = async () => {
       try {
         setLoading((prevData) => ({ ...prevData, category: true }));
-        // Set category loading to true after 3000ms delay
         const timer = setTimeout(() => {
           setLoading((prevData) => ({ ...prevData, category: true }));
         }, 3000);
-
-        // Fetch category data
         const categoryRes = await CategoryServiceOperations.Allcategories();
         setCategoryData(categoryRes.data.data);
-
-        // Fetch product data
-        const productRes = await ProductServiceOperations.AllProducts();
-        setProductData(productRes.data.data);
-
         // Clear timeout and update loading states
         clearTimeout(timer);
         setLoading((prevData) => ({

@@ -1,5 +1,5 @@
 import AquaLayout from "@/components/Layout/Layout";
-import AquaProductCard from "@/components/cards/productCard2";
+import AquaProductCard from "@/components/cards/ProductCardTwo";
 import CategoryServiceOperations from "@/services/category";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
