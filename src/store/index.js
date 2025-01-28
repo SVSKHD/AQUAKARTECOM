@@ -11,7 +11,7 @@ import { toastReducer } from "./reducers/toastReducer";
 import { userDataDrawerReducer } from "./reducers/userDataUpdateDrawer";
 import { addressDialog } from "./reducers/addressDialogReducer";
 import { addressData } from "./reducers/addressDialogData";
-import { compareDataReducer } from "./reducers/compareDataReducer";
+// import { compareDataReducer } from "./reducers/compareDataReducer";
 
 const rootReducer = combineReducers({
   toastNotify: toastReducer,
@@ -25,7 +25,7 @@ const rootReducer = combineReducers({
   userDataDrawer: userDataDrawerReducer,
   addressDialog: addressDialog,
   addressData: addressData,
-  compare: compareDataReducer,
+  // compare: compareDataReducer,
 });
 
 export default rootReducer;

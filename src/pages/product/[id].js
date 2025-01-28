@@ -42,7 +42,7 @@ function AquaDynamicProduct({ product, related, error }) {
   return (
     <>
       <AquaProductSeo product={ProductSeo} />
-      <AquaServerDynamicProduct product={product} related={related} />
+      {/* <AquaServerDynamicProduct product={product} related={related} /> */}
     </>
   );
 }
@@ -77,35 +77,44 @@ export async function getStaticPaths() {
 // ----------------------------------------
 // getStaticProps
 // ----------------------------------------
+// ----------------------------------------
+// getStaticProps
+// ----------------------------------------
 export async function getStaticProps({ params }) {
-  const { id } = params;
-
-  try {
-    // Fetch product data for the given ID
-    const response = await axios.get(
-      `https://api.aquakart.co.in/v1/product?searchField=slug&value=${id}`,
-    );
-
-    const product = response?.data?.data || null;
-    const related = response?.data?.related || null;
-
-    return {
-      props: {
-        product,
-        related,
+  const staticProductData = {
+    title: "Sample Product Title",
+    description:
+      "This is a sample product description for testing purposes. It includes key metadata fields like title, description, and images.",
+    slug: "sample-product",
+    photos: [
+      {
+        secure_url: "https://example.com/sample-product-image.jpg",
       },
-      revalidate: 60, // Revalidate the page every 60 seconds
-    };
-  } catch (err) {
-    console.error("Error fetching product data:", err.message);
-    return {
-      props: {
-        product: null,
-        related: null,
-        error: "Failed to fetch product data. Please try again later.",
+    ],
+    price: "999.00",
+    priceCurrency: "INR",
+    related: [
+      {
+        title: "Related Product 1",
+        slug: "related-product-1",
       },
-    };
-  }
+      {
+        title: "Related Product 2",
+        slug: "related-product-2",
+      },
+    ],
+  };
+
+  const product = staticProductData;
+  const related = staticProductData.related;
+
+  return {
+    props: {
+      product,
+      related,
+    },
+    revalidate: 60, // Revalidate the page every 60 seconds
+  };
 }
 
 export default AquaDynamicProduct;
