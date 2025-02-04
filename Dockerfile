@@ -1,5 +1,5 @@
 # Use a specific version of node on Alpine for a smaller image size
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Set the working directory in the container
 WORKDIR /app
