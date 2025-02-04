@@ -1,5 +1,4 @@
 /** @type {import('tailwindcss').Config} */
-import daisyui from "daisyui";
 const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
@@ -38,5 +37,4 @@ module.exports = {
       },
     },
   },
-  plugins: [daisyui, require("@tailwindcss/aspect-ratio")],
 };
