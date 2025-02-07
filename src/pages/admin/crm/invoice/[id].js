@@ -17,7 +17,7 @@ const AquaInvoice = (props) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-700">
-      <p className="text-white text-xl">Redirecting to invoice...</p>
+      <p className="text-white text-xl">Redirecting to invoice...{id}</p>
     </div>
   );
 };
