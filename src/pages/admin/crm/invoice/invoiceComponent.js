@@ -4,7 +4,7 @@ import { useRef } from "react";
 import Image from "next/image";
 import { Download } from "lucide-react";
 import AQ from "../../../../assests/logo-white.png";
-import PrintProvider, { Print, NoPrint } from "react-easy-print";
+
 
 const AquaInvoiceClient = ({ data }) => {
   const invoiceRef = useRef();
