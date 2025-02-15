@@ -7,6 +7,8 @@ import AquaToast from "@/components/reusables/react-toastify";
 import AquaSpinner from "@/components/common/spinner";
 import AquaCombobox from "@/components/dropdown/dropdown";
 import CategoryServiceOperations from "@/services/category";
+import ReusableProductCard from "@/components/cards/ProductCardTwo";
+
 
 const AquaShopComponent = () => {
   const router = useRouter();
@@ -99,61 +101,19 @@ const AquaShopComponent = () => {
         </div>
       ) : (
         <div className="bg-white">
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-            <div className="grid grid-cols-12 gap-x-6">
-              {/* Sidebar */}
-              <aside className="col-span-12 lg:col-span-3">
-                <div className="sticky top-4 space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-                    Filters
-                  </h2>
+          <div className="bg-white">
+            <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+              <h2 className="text-xl font-bold text-gray-900">
+                Customers also bought
+              </h2>
 
-                  <div className="p-4">
-                    <AquaCombobox
-                      data={categories}
-                      label="Category"
-                      onSelect={handleCategorySelect}
-                      clear={clearAll} // ✅ Pass clear state to AquaCombobox
-                    />
+              <div className="mt-8 grid grid-cols-1 gap-y-12 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
+                {products.map((product) => (
+                  <div key={product._id}>
+                    <ReusableProductCard product={product} />
                   </div>
-
-                  {selectedCategory && (
-                    <button
-                      onClick={handleClearFilter}
-                      className="mt-4 bg-gray-200 text-black px-4 py-2 rounded-md hover:bg-gray-300 transition"
-                    >
-                      Clear All
-                    </button>
-                  )}
-                </div>
-              </aside>
-
-              {/* Products Section */}
-              <section className="col-span-12 lg:col-span-9">
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-                    Products
-                  </h2>
-                </div>
-
-                {productsLoading ? (
-                  <div className="flex items-center justify-center h-60">
-                    <AquaSpinner color="blue" size="lg" />
-                  </div>
-                ) : (
-                  <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-12">
-                    {products.length > 0 ? (
-                      products.map((product) => (
-                        <div key={product.id}>
-                          <AquaProductCard product={product} />
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-gray-500">No products found.</p>
-                    )}
-                  </div>
-                )}
-              </section>
+                ))}
+              </div>
             </div>
           </div>
         </div>

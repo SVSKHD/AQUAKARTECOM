@@ -29,10 +29,10 @@ function AquaDynamicProduct({ product, related, error }) {
   const ogDescription = sanitizeText(product?.description)?.substring(0, 150);
   const ProductSeo = {
     title: product?.title,
-    keywords: "aquakart, product, ecommerce, online shopping",
+    keywords: product?.keywords,
     keyphrases: "aquakart, product, ecommerce, online shopping",
     url: `https://aquakart.co.in/product/${product?.slug}`,
-    photos: product?.photos[0]?.secure_url,
+    photos:product?.photos,
     follow: true,
     description: ogDescription,
     price: product?.price,
