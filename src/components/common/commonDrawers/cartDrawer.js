@@ -6,7 +6,7 @@ import useCart from "@/utils/cart";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import useProduct from "@/utils/product";
-import Image from "next/image"
+
 
 const AquaCartDrawer = () => {
   const { cartDrawer, cartData } = useSelector((state) => ({ ...state }));
