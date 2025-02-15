@@ -23,7 +23,7 @@ return (
                   transition={{ duration: 0.5, delay: index * 0.2 }}
                   className="relative"
                 >
-                  <img
+                  <Image
                     src={category?.photos[0]?.secure_url}
                     alt="Aquakart Water Solutions"
                     className="w-full h-full object-cover rounded-lg shadow-lg"
