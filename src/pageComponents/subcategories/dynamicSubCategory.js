@@ -2,7 +2,7 @@ import AquaLayout from "@/components/Layout/Layout";
 import AquaProductCard from "@/components/cards/productCard";
 import CategoryServiceOperations from "@/services/category";
 import SubCategoryServiceOperations from "@/services/subcategory";
-
+import Image from "next/image"
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -59,7 +59,7 @@ const AquaDynamicSubCategoryComponent = () => {
               {/* Category Image */}
               {category?.photos?.[0]?.secure_url && (
                 <div className="group aspect-h-1 aspect-w-2 overflow-hidden rounded-lg sm:aspect-h-1 sm:aspect-w-1 sm:col-span-1 sm:row-span-2">
-                  <img
+                  <Image
                     alt={category?.title}
                     src={category.photos[0].secure_url}
                     className="object-cover object-center group-hover:opacity-75"

@@ -4,6 +4,7 @@ import useDrawer from "@/utils/drawer";
 import useCurrency from "@/utils/currency";
 import { useState } from "react";
 import useProduct from "@/utils/product";
+import Image from "next/image"
 
 const AquafavDrawer = () => {
   const dispatch = useDispatch();
@@ -34,7 +35,7 @@ const AquafavDrawer = () => {
         favData.map((product) => (
           <li key={product._id} className="flex py-6 sm:py-10">
             <div className="flex-shrink-0">
-              <img
+              <Image
                 src={product.photos[0].secure_url}
                 alt={product.imageAlt}
                 className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"

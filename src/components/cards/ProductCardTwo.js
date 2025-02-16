@@ -5,6 +5,7 @@ import { FaHeart } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const ReusableProductCard = ({ product }) => {
   const [fav, setAddFav] = useState(false);
@@ -49,7 +50,7 @@ const ReusableProductCard = ({ product }) => {
                 }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
               >
-                <img
+                <Image
                   src={photo?.secure_url}
                   alt={title}
                   className="h-full w-full object-cover object-center"
