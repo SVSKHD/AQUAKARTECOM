@@ -42,7 +42,7 @@ const AquaCheckoutComponent = () => {
   const [bulkUpdate, setBulkUpdate] = useState({
     firstName: userData?.user.firstName,
     lastName: userData?.user.lastName,
-    email: userData?.user.email,
+    email: userData?.user?.email,
     phone: userData?.user.phone,
     dob: userData?.user.dob,
   });
@@ -473,9 +473,10 @@ const AquaCheckoutComponent = () => {
                                 name="phone"
                                 type="number"
                                 autoComplete="given-name"
+                                maxLength={10}
                                 value={bulkUpdate.phone}
                                 onChange={handleChange}
-                                maxLength={10}
+                               
                                 label="Phone"
                                 placeholder="Enter your phone-no:"
                               />
