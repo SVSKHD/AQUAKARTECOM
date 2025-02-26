@@ -6,6 +6,7 @@ import AquaToast from "@/components/reusables/react-toastify";
 import Image from "next/image";
 import debounce from "lodash.debounce";
 import { showToast } from "@/store/reducers/toastReducer";
+import {Send} from "lucide-react"
 
 const AquaAuthMobileForm = ({ signup }) => {
   const [email, setEmail] = useState("");
@@ -131,16 +132,25 @@ const AquaAuthMobileForm = ({ signup }) => {
               Email Address
             </label>
             <div className="relative mt-2 rounded-md shadow-sm">
-              <input
-                id="email-address"
-                name="email-address"
-                type="email"
-                value={email}
-                onChange={handleEmailChange}
-                onKeyDown={handleKeyDown}
-                placeholder="example@example.com"
-                className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
+            <div className="relative w-full">
+  <input
+    id="email-address"
+    name="email-address"
+    type="email"
+    value={email}
+    onChange={handleEmailChange}
+    onKeyDown={handleKeyDown}
+    placeholder="example@example.com"
+    className="block w-full p-4 rounded-md border-0 py-1.5 pr-12 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+  />
+  <button
+    type="button"
+    onClick={handleSend}
+    className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-indigo-600"
+  >
+    <Send size={20} />
+  </button>
+</div>
             </div>
             {otpShow && (
               <>
