@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
+    unoptimized: true, // Disables next/image optimizations, preventing width errors
     remotePatterns: [
       {
         protocol: "https",

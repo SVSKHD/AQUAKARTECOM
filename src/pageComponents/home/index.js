@@ -220,7 +220,7 @@ const AquaHomeComponent = () => {
                                   aria-hidden="true"
                                   className="absolute inset-0"
                                 >
-                                  <Image
+                                  <img
                                     src={category.photos[0].secure_url}
                                     alt={category.title}
                                     className="h-full w-full object-cover object-center"
@@ -263,7 +263,7 @@ const AquaHomeComponent = () => {
               >
                 <div className="relative overflow-hidden rounded-lg">
                   <div className="absolute inset-0">
-                    <Image
+                    <img
                       src="https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg"
                       alt="Aquakart | Blogs"
                       className="h-full w-full object-cover object-center"

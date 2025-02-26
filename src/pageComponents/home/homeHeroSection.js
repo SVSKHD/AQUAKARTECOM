@@ -23,7 +23,7 @@ return (
                   transition={{ duration: 0.5, delay: index * 0.2 }}
                   className="relative"
                 >
-                  <Image
+                  <img
                     src={category?.photos[0]?.secure_url}
                     alt="Aquakart Water Solutions"
                     className="w-full h-full object-cover rounded-lg shadow-lg"
@@ -47,7 +47,7 @@ return (
             transition={{ duration: 0.5, delay: 0.5 }}
             className="text-center lg:text-left order-1 lg:order-2"
           >
-            <Image
+            <img
               src={logo}
               alt="Aquakart"
               className="mx-auto max-w-[180px]"

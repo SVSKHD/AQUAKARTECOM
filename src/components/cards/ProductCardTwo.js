@@ -50,7 +50,7 @@ const ReusableProductCard = ({ product }) => {
                 }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
               >
-                <Image
+                <img
                   src={photo?.secure_url}
                   alt={title}
                   className="h-full w-full object-cover object-center"
