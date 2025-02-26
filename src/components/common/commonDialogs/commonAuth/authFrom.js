@@ -143,7 +143,7 @@ const AquaAuthMobileForm = ({ signup }) => {
   />
   <button
     type="button"
-    onClick={handleSend}
+    onClick={handleEmailChange}
     className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-indigo-600"
   >
     <Send size={20} />
