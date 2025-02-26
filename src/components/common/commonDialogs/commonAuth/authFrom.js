@@ -6,12 +6,13 @@ import AquaToast from "@/components/reusables/react-toastify";
 import Image from "next/image";
 import debounce from "lodash.debounce";
 import { showToast } from "@/store/reducers/toastReducer";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react"; // Import loader icon
 
 const AquaAuthMobileForm = ({ signup }) => {
   const [email, setEmail] = useState("");
   const [otpShow, setOtpShow] = useState(false);
   const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false); // Track loading state
   const { closeAuthDialog } = useDialog();
   const dispatch = useDispatch();
 
@@ -26,15 +27,18 @@ const AquaAuthMobileForm = ({ signup }) => {
     return emailRegex.test(email);
   };
 
-  // Debounced request for OTP (triggers only when send button is clicked)
+  // Debounced OTP request function
   const requestOtp = useCallback(
     debounce((emailToSend) => {
       if (isValidEmail(emailToSend)) {
+        setLoading(true); // Show loader & disable input
+
         dispatch(showToast("First message", "success"));
         AquaToast({
           message: "OTP in Air. Please wait...",
           type: "info",
         });
+
         UserServiceOperations.UserEmailOtp({ email: emailToSend })
           .then((res) => {
             setOtpShow(true);
@@ -57,6 +61,9 @@ const AquaAuthMobileForm = ({ signup }) => {
               type: "SET_AUTH_STATUS_VISIBLE",
               payload: false,
             });
+          })
+          .finally(() => {
+            setLoading(false); // Hide loader & enable input
           });
       } else {
         setOtpShow(false);
@@ -87,29 +94,6 @@ const AquaAuthMobileForm = ({ signup }) => {
     }
   }, [email, requestOtp]);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = { email, otp: Number(otp) };
-    UserServiceOperations.UserEmailVerify(data)
-      .then((res) => {
-        AquaToast({
-          message: "Verification successful",
-          type: "success",
-        });
-        dispatch({
-          type: "LOGGED_IN_USER",
-          payload: res.data,
-        });
-        closeAuthDialog();
-      })
-      .catch(() => {
-        AquaToast({
-          message: "Verification failed",
-          type: "error",
-        });
-      });
-  };
-
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
@@ -126,7 +110,7 @@ const AquaAuthMobileForm = ({ signup }) => {
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form className="space-y-6">
           <div>
             <label
               htmlFor="email-address"
@@ -141,20 +125,25 @@ const AquaAuthMobileForm = ({ signup }) => {
                   name="email-address"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)} // Now only updates state
+                  onChange={(e) => setEmail(e.target.value)} // Only updates state
                   onKeyDown={handleKeyDown}
                   placeholder="example@example.com"
                   className="block w-full p-4 rounded-md border-0 py-1.5 pr-12 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  disabled={loading} // Disable input when loading
                 />
                 <button
                   type="button"
-                  onClick={handleSendClick} // Trigger OTP request only on button click
-                  className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-indigo-600"
+                  onClick={handleSendClick}
+                  className={`absolute inset-y-0 right-3 flex items-center text-gray-500 ${
+                    loading ? "cursor-not-allowed opacity-50" : "hover:text-indigo-600"
+                  }`}
+                  disabled={loading} // Disable button while sending OTP
                 >
-                  <Send size={20} />
+                  {loading ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
                 </button>
               </div>
             </div>
+
             {otpShow && (
               <>
                 <h4 className="mt-4 text-sm font-medium text-gray-900">
