@@ -26,16 +26,16 @@ const AquaAuthMobileForm = ({ signup }) => {
     return emailRegex.test(email);
   };
 
-  // Debounced request for OTP
+  // Debounced request for OTP (triggers only when send button is clicked)
   const requestOtp = useCallback(
-    debounce((newEmail) => {
-      if (isValidEmail(newEmail)) {
+    debounce((emailToSend) => {
+      if (isValidEmail(emailToSend)) {
         dispatch(showToast("First message", "success"));
         AquaToast({
           message: "OTP in Air. Please wait...",
           type: "info",
         });
-        UserServiceOperations.UserEmailOtp({ email: newEmail })
+        UserServiceOperations.UserEmailOtp({ email: emailToSend })
           .then((res) => {
             setOtpShow(true);
             AquaToast({
@@ -47,7 +47,7 @@ const AquaAuthMobileForm = ({ signup }) => {
               payload: !res.data.userExist,
             });
           })
-          .catch((err) => {
+          .catch(() => {
             setOtpShow(false);
             AquaToast({
               message: "Failed to send OTP",
@@ -60,20 +60,27 @@ const AquaAuthMobileForm = ({ signup }) => {
           });
       } else {
         setOtpShow(false);
+        AquaToast({
+          message: "Invalid email address!",
+          type: "error",
+        });
       }
     }, 300),
-    [],
+    []
   );
 
-  const handleEmailChange = (e) => {
-    if (newEmail === "" || !isValidEmail(newEmail)) {
-      setOtpShow(false); // Hide OTP input if email is invalid or empty
+  // Function to trigger OTP request only on button click
+  const handleSendClick = () => {
+    if (!email || !isValidEmail(email)) {
+      AquaToast({
+        message: "Enter a valid email before sending OTP!",
+        type: "error",
+      });
       return;
     }
-    requestOtp(newEmail); // Initiate OTP only for valid and non-empty email
+    requestOtp(email);
   };
 
-  // Cancel any pending debounced OTP requests when email is cleared
   useEffect(() => {
     if (!email) {
       requestOtp.cancel();
@@ -95,7 +102,7 @@ const AquaAuthMobileForm = ({ signup }) => {
         });
         closeAuthDialog();
       })
-      .catch((err) => {
+      .catch(() => {
         AquaToast({
           message: "Verification failed",
           type: "error",
@@ -128,27 +135,25 @@ const AquaAuthMobileForm = ({ signup }) => {
               Email Address
             </label>
             <div className="relative mt-2 rounded-md shadow-sm">
-            import { Send } from "lucide-react";
-
-<div className="relative w-full">
-  <input
-    id="email-address"
-    name="email-address"
-    type="email"
-    value={email}
-    onChange={()=>setEmail(e.target.value)}
-    onKeyDown={handleKeyDown}
-    placeholder="example@example.com"
-    className="block w-full p-4 rounded-md border-0 py-1.5 pr-12 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-  />
-  <button
-    type="button"
-    onClick={()=>handleEmailChange}
-    className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-indigo-600"
-  >
-    <Send size={20} />
-  </button>
-</div>
+              <div className="relative w-full">
+                <input
+                  id="email-address"
+                  name="email-address"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)} // Now only updates state
+                  onKeyDown={handleKeyDown}
+                  placeholder="example@example.com"
+                  className="block w-full p-4 rounded-md border-0 py-1.5 pr-12 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                />
+                <button
+                  type="button"
+                  onClick={handleSendClick} // Trigger OTP request only on button click
+                  className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-indigo-600"
+                >
+                  <Send size={20} />
+                </button>
+              </div>
             </div>
             {otpShow && (
               <>
