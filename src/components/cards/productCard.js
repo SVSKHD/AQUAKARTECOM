@@ -4,6 +4,7 @@ import useCurrency from "@/utils/currency";
 import useProduct from "@/utils/product";
 import { FaShoppingCart, FaHeart } from "react-icons/fa";
 import { useSelector } from "react-redux";
+import AquaImage from "../images/AquaImage";
 
 const AquaProductCard = ({ product }) => {
   const [cart, setAddCart] = useState(false);
@@ -27,10 +28,10 @@ const AquaProductCard = ({ product }) => {
     <div className="relative mb-5 p-5 bg-white rounded-lg shadow-lg h-96 flex flex-col justify-between">
       {/* Image Section */}
       <div className="relative overflow-hidden rounded-lg bg-gray-100 flex-1">
-        <img
+        <AquaImage
           src={photos[0]?.secure_url}
           alt={title}
-          className="h-full w-full object-cover rounded-lg"
+          customClass="h-full w-full object-cover rounded-lg"
         />
 
         {/* Cart button - top left */}

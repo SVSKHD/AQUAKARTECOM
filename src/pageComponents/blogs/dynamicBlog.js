@@ -5,7 +5,9 @@ import BlogServiceOperations from "@/services/blog";
 import { CameraIcon } from "@heroicons/react/20/solid";
 import Head from "next/head";
 import AquaProductCard from "@/components/cards/productCard";
-import Image from "next/image";
+
+import AquaImage from "@/components/images/AquaImage";
+
 const AquaDynamicBlogComponent = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -87,8 +89,8 @@ const AquaDynamicBlogComponent = () => {
               <div className="relative mx-auto max-w-prose text-base lg:max-w-none">
                 <figure>
                   <div className="aspect-h-7 aspect-w-12 lg:aspect-none">
-                    <Image
-                      className="rounded-lg object-cover object-center shadow-lg"
+                    <AquaImage
+                      customClass="rounded-lg object-cover object-center shadow-lg"
                       src={
                         blog?.titleImages?.[0]?.secure_url ||
                         "/default-image.jpg"

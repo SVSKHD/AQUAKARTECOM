@@ -5,7 +5,7 @@ import useCurrency from "@/utils/currency";
 import useCart from "@/utils/cart";
 import { useState, useEffect } from "react";
 import useProduct from "@/utils/product";
-import Image from "next/image";
+import AquaImage from "@/components/images/AquaImage";
 
 const AquaCartDrawer = () => {
   const { cartDrawer, cartData } = useSelector((state) => ({ ...state }));
@@ -33,11 +33,10 @@ const AquaCartDrawer = () => {
             cartData.map((product, productIdx) => (
               <li key={product._id} className="flex py-6 sm:py-10 border-b">
                 <div className="flex-shrink-0">
-                  <Image
+                  <AquaImage
                     src={product?.photos[0]?.secure_url}
                     alt={product.imageAlt}
-                    className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
-                    layout="fill"
+                    customClass="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
                   />
                 </div>
 
