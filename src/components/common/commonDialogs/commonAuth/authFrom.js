@@ -77,7 +77,7 @@ const AquaAuthMobileForm = ({ signup }) => {
   );
 
   // Function to trigger OTP request only on button click
-  const handleSendClick = () => {
+  const handleSendClick = (e) => {
     if (!email || !isValidEmail(email)) {
       AquaToast({
         message: "Enter a valid email before sending OTP!",
@@ -93,6 +93,29 @@ const AquaAuthMobileForm = ({ signup }) => {
       requestOtp.cancel();
     }
   }, [email, requestOtp]);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const data = { email, otp: Number(otp) };
+    UserServiceOperations.UserEmailVerify(data)
+      .then((res) => {
+        AquaToast({
+          message: "Verification successful",
+          type: "success",
+        });
+        dispatch({
+          type: "LOGGED_IN_USER",
+          payload: res.data,
+        });
+        closeAuthDialog();
+      })
+      .catch((err) => {
+        AquaToast({
+          message: "Verification failed",
+          type: "error",
+        });
+      });
+  };
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
@@ -110,7 +133,7 @@ const AquaAuthMobileForm = ({ signup }) => {
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
             <label
               htmlFor="email-address"

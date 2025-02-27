@@ -11,7 +11,7 @@ module.exports = {
       "spin-slow": "spin 3s linear infinite",
       "bounce-slow": "bounce 3s infinite",
       "fade-in": "fadeIn 1s ease-in-out",
-      "spin": "spin 1s linear infinite",
+      spin: "spin 1s linear infinite",
     },
     safelist: [
       "animate-spin",
