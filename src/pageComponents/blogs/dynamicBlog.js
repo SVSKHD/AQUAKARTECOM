@@ -5,7 +5,7 @@ import BlogServiceOperations from "@/services/blog";
 import { CameraIcon } from "@heroicons/react/20/solid";
 import Head from "next/head";
 import AquaProductCard from "@/components/cards/productCard";
-import Image from "next/image"
+import Image from "next/image";
 const AquaDynamicBlogComponent = () => {
   const router = useRouter();
   const { id } = router.query;

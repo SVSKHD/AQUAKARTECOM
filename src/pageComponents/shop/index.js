@@ -9,7 +9,6 @@ import AquaCombobox from "@/components/dropdown/dropdown";
 import CategoryServiceOperations from "@/services/category";
 import ReusableProductCard from "@/components/cards/ProductCardTwo";
 
-
 const AquaShopComponent = () => {
   const router = useRouter();
   const SeoData = {

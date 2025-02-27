@@ -5,7 +5,7 @@ import { FaHeart } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
-import Image from "next/image";
+import AquaImage from "../images/AquaImage";
 
 const ReusableProductCard = ({ product }) => {
   const [fav, setAddFav] = useState(false);
@@ -50,10 +50,10 @@ const ReusableProductCard = ({ product }) => {
                 }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
               >
-                <img
+                <AquaImage
                   src={photo?.secure_url}
                   alt={title}
-                  className="h-full w-full object-cover object-center"
+                  customClass="h-full w-full object-cover object-center"
                 />
               </motion.div>
             ))}

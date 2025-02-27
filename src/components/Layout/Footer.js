@@ -5,19 +5,6 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 const navigation = {
-  // solutions: [
-  //   { name: "Marketing", href: "#" },
-  //   { name: "Analytics", href: "#" },
-  //   { name: "Commerce", href: "#" },
-  //   { name: "Insights", href: "#" },
-  // ],
-  // company: [
-  //   { name: "About", href: "#" },
-  //   { name: "Blog", href: "#" },
-  //   { name: "Jobs", href: "#" },
-  //   { name: "Press", href: "#" },
-  //   { name: "Partners", href: "#" },
-  // ],
   Policy: [
     { name: "Shipping-policy", href: "/shipping-policy" },
     { name: "Privacy-policy", href: "/privacy-policy" },

@@ -2,7 +2,7 @@ import AquaLayout from "@/components/Layout/Layout";
 import AquaProductCard from "@/components/cards/productCard";
 import CategoryServiceOperations from "@/services/category";
 import SubCategoryServiceOperations from "@/services/subcategory";
-import Image from "next/image"
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 

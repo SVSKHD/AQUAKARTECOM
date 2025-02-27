@@ -4,7 +4,7 @@ import useDrawer from "@/utils/drawer";
 import useCurrency from "@/utils/currency";
 import { useState } from "react";
 import useProduct from "@/utils/product";
-import Image from "next/image"
+import Image from "next/image";
 
 const AquafavDrawer = () => {
   const dispatch = useDispatch();
@@ -39,6 +39,7 @@ const AquafavDrawer = () => {
                 src={product.photos[0].secure_url}
                 alt={product.imageAlt}
                 className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
+                layout="fill"
               />
             </div>
 

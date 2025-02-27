@@ -5,7 +5,7 @@ import useCurrency from "@/utils/currency";
 import useCart from "@/utils/cart";
 import { useState, useEffect } from "react";
 import useProduct from "@/utils/product";
-import Image from "next/image"
+import Image from "next/image";
 
 const AquaCartDrawer = () => {
   const { cartDrawer, cartData } = useSelector((state) => ({ ...state }));
@@ -37,6 +37,7 @@ const AquaCartDrawer = () => {
                     src={product?.photos[0]?.secure_url}
                     alt={product.imageAlt}
                     className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
+                    layout="fill"
                   />
                 </div>
 

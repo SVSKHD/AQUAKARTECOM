@@ -11,7 +11,14 @@ module.exports = {
       "spin-slow": "spin 3s linear infinite",
       "bounce-slow": "bounce 3s infinite",
       "fade-in": "fadeIn 1s ease-in-out",
+      "spin": "spin 1s linear infinite",
     },
+    safelist: [
+      "animate-spin",
+      "animate-spin-slow",
+      "animate-bounce-slow",
+      "animate-fade-in",
+    ],
     fontSize: {
       xs: ["0.75rem", { lineHeight: "1rem" }],
       sm: ["0.875rem", { lineHeight: "1.5rem" }],

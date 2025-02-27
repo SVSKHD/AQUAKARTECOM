@@ -28,25 +28,29 @@ const AquaProductSeo = ({ product }) => {
         name="robots"
         content={`index, ${follow ? "follow" : "nofollow"}, max-image-preview:large`}
       />
-
       {/* Open Graph Metadata */}
       <meta property="og:type" content="product" />
       <meta property="og:site_name" content="Aquakart" />
       <meta property="og:url" content={url} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
-      <meta property="og:image" content={photos[0]?.secure_url || photos[0] || ""} />
+      <meta
+        property="og:image"
+        content={photos[0]?.secure_url || photos[0] || ""}
+      />
       <meta property="og:image:type" content="image/jpeg" />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-
       {/* Twitter Card Metadata */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:site" content="@aquakart8" /> {/* Replace with your handle */}
+      <meta name="twitter:site" content="@aquakart8" />{" "}
+      {/* Replace with your handle */}
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={photos[0]?.secure_url || photos[0] || ""} />
-
+      <meta
+        name="twitter:image"
+        content={photos[0]?.secure_url || photos[0] || ""}
+      />
       {/* JSON-LD Structured Data */}
       <script
         type="application/ld+json"

@@ -476,7 +476,6 @@ const AquaCheckoutComponent = () => {
                                 maxLength={10}
                                 value={bulkUpdate.phone}
                                 onChange={handleChange}
-                               
                                 label="Phone"
                                 placeholder="Enter your phone-no:"
                               />

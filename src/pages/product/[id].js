@@ -32,7 +32,7 @@ function AquaDynamicProduct({ product, related, error }) {
     keywords: product?.keywords,
     keyphrases: "aquakart, product, ecommerce, online shopping",
     url: `https://aquakart.co.in/product/${product?.slug}`,
-    photos:product?.photos,
+    photos: product?.photos,
     follow: true,
     description: ogDescription,
     price: product?.price,

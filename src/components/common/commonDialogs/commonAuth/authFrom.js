@@ -6,7 +6,7 @@ import AquaToast from "@/components/reusables/react-toastify";
 import Image from "next/image";
 import debounce from "lodash.debounce";
 import { showToast } from "@/store/reducers/toastReducer";
-import { Send, Loader2 } from "lucide-react"; // Import loader icon
+import { Send, Loader2 } from "lucide-react";
 
 const AquaAuthMobileForm = ({ signup }) => {
   const [email, setEmail] = useState("");
@@ -18,7 +18,7 @@ const AquaAuthMobileForm = ({ signup }) => {
 
   const handleKeyDown = (event) => {
     if (event.key === "Backspace") {
-      console.log("Backspace pressed");
+      // console.log("Backspace pressed");
     }
   };
 
@@ -73,7 +73,7 @@ const AquaAuthMobileForm = ({ signup }) => {
         });
       }
     }, 300),
-    []
+    [],
   );
 
   // Function to trigger OTP request only on button click
@@ -135,11 +135,17 @@ const AquaAuthMobileForm = ({ signup }) => {
                   type="button"
                   onClick={handleSendClick}
                   className={`absolute inset-y-0 right-3 flex items-center text-gray-500 ${
-                    loading ? "cursor-not-allowed opacity-50" : "hover:text-indigo-600"
+                    loading
+                      ? "cursor-not-allowed opacity-50"
+                      : "hover:text-indigo-600"
                   }`}
                   disabled={loading} // Disable button while sending OTP
                 >
-                  {loading ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
+                  {loading ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
+                  ) : (
+                    <Send className="w-5 h-5 text-gray-500 hover:text-indigo-600" />
+                  )}
                 </button>
               </div>
             </div>

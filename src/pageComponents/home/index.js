@@ -14,7 +14,7 @@ import { useRouter } from "next/router";
 import CategoryServiceOperations from "@/services/category";
 import Link from "next/link";
 import AquaProducts from "./products";
-import {motion} from "framer-motion"
+import { motion } from "framer-motion";
 import logo from "@/assests/logo.png";
 import Image from "next/image";
 import AquaHomeHero from "./homeHeroSection";
@@ -171,7 +171,7 @@ const AquaHomeComponent = () => {
             </Dialog>
 
             {/* Hero section */}
-            <AquaHomeHero data={categoryData}/>
+            <AquaHomeHero data={categoryData} />
 
             <main>
               <AquaProducts />
