@@ -10,6 +10,7 @@ import { Bars3Icon, XMarkIcon, HomeIcon } from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import AquaCartAddressDialog from "../../common/commonDialogs/cartAddress";
+import AquaImage from "@/components/images/AquaImage";
 
 const navigation = [
   { name: "Dashboard", href: "/user/dashboard", current: true },
@@ -64,8 +65,8 @@ export default function AquaDashboardComponent(props) {
                   <div className="flex">
                     <div className="flex flex-shrink-0 items-center">
                       <a href="/">
-                        <img
-                          className="block h-8 w-auto lg:hidden"
+                        <AquaImage
+                          customClass="block h-8 w-auto lg:hidden"
                           alt="Aquakart"
                           src="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
                         />
