@@ -1,8 +1,7 @@
 const config = {
   home: {
     title: "Aquakart | India's Best Water Solutions",
-    keywords:
-      "Aquakart, Water Softeners, RO Purifiers, Best Water Filters, Home Water Solutions, Water Filtration, Hard Water Treatment",
+    keywords: "Aquakart, Water Softeners, RO Purifiers, Best Water Filters, Home Water Solutions, Water Filtration, Hard Water Treatment Aquakart, Aquakart Softwater treatement",
     keyphrases: "Aquakart, Water Softeners, RO Purifiers, Home Water Solutions",
     url: "https://aquakart.co.in",
     photos:
@@ -14,9 +13,9 @@ const config = {
   shop: {
     title: "Aquakart | Buy Water Softeners, RO Purifiers & More",
     keywords:
-      "Shop, Aquakart Online Store, Water Softeners, RO Purifiers, Hard Water Filters, UV Filters, Water Purification",
+      "Shop, Aquakart Online Store, Water Softeners, RO Purifiers, Hard Water Filters, UV Filters, Water Purification, Aquakart Shop, Aquakart Water Solutions",
     keyphrases:
-      "Aquakart Water Softeners, RO Purifiers, Hard Water Solutions, Buy Water Filters Online",
+      "Aquakart Water Softeners, RO Purifiers, Hard Water Solutions, Buy Water Filters Online, Aquakart",
     url: "https://aquakart.co.in/shop",
     photos: "https://www.aquakart.co.in/images/shop.jpg",
     description:
