@@ -1,25 +1,29 @@
 const config = {
   home: {
-    title: "Aquakart | India's Best Water Solutions",
-    keywords: "Aquakart, Water Softeners, RO Purifiers, Best Water Filters, Home Water Solutions, Water Filtration, Hard Water Treatment Aquakart, Aquakart Softwater treatement",
-    keyphrases: "Aquakart, Water Softeners, RO Purifiers, Home Water Solutions",
+    title:
+      "Aquakart | India's Leading Water Softening & Purification Solutions",
+    keywords:
+      "Aquakart, Water Softeners, RO Purifiers, Best Water Filters, Hard Water Treatment, Home Water Solutions, Water Purification Systems, Whole House Filtration, Soft Water Treatment",
+    keyphrases:
+      "Aquakart, Water Softeners, RO Purifiers, Home Water Solutions, Hard Water Treatment, Best Water Purifiers",
     url: "https://aquakart.co.in",
     photos:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg",
     description:
-      "Aquakart offers the best water treatment solutions including water softeners, RO purifiers, and filtration systems. Shop online for top-quality water products.",
+      "Aquakart offers India's best water treatment solutions, including advanced water softeners, RO purifiers, and whole-house filtration systems. Enjoy clean, soft water at home with our high-quality products.",
     follow: true,
   },
   shop: {
-    title: "Aquakart | Buy Water Softeners, RO Purifiers & More",
+    title:
+      "Aquakart | Buy Automatic & Manual Water Softeners, RO Purifiers & More",
     keywords:
-      "Shop, Aquakart Online Store, Water Softeners, RO Purifiers, Hard Water Filters, UV Filters, Water Purification, Aquakart Shop, Aquakart Water Solutions",
+      "Buy Water Softeners, RO Purifiers, Hard Water Filters, UV Water Purifiers, Water Filtration Systems, Home Water Solutions, Aquakart Online Store, Whole House Water Filters",
     keyphrases:
-      "Aquakart Water Softeners, RO Purifiers, Hard Water Solutions, Buy Water Filters Online, Aquakart",
+      "Aquakart Water Softeners, Buy RO Purifiers Online, Hard Water Treatment, Best Water Filters, Shop Water Purification Systems",
     url: "https://aquakart.co.in/shop",
     photos: "https://www.aquakart.co.in/images/shop.jpg",
     description:
-      "Find the best water softeners, RO purifiers, and filtration systems at Aquakart. Get high-quality water solutions for your home and office.",
+      "Shop high-quality water softeners, RO purifiers, and filtration systems at Aquakart. Find the best solutions for hard water treatment and pure drinking water for your home and office.",
     follow: true,
   },
   compare: {
