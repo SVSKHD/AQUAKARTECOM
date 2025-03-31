@@ -42,7 +42,7 @@ const AquaLayout = (props) => {
       return updatedSeo;
     });
     console.log("SEO", seo, pathname);
-  }, [router]);
+  }, [router, seo]);
 
   const Status = useNetworkStatus();
   const handleRetry = () => {

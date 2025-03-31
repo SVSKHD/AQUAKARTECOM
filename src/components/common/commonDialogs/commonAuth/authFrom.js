@@ -31,14 +31,14 @@ const AquaAuthMobileForm = ({ signup }) => {
   const requestOtp = useCallback(
     debounce((emailToSend) => {
       if (isValidEmail(emailToSend)) {
-        setLoading(true); // Show loader & disable input
-
+        setLoading(true);
+ 
         dispatch(showToast("First message", "success"));
         AquaToast({
           message: "OTP in Air. Please wait...",
           type: "info",
         });
-
+ 
         UserServiceOperations.UserEmailOtp({ email: emailToSend })
           .then((res) => {
             setOtpShow(true);
@@ -63,7 +63,7 @@ const AquaAuthMobileForm = ({ signup }) => {
             });
           })
           .finally(() => {
-            setLoading(false); // Hide loader & enable input
+            setLoading(false);
           });
       } else {
         setOtpShow(false);
@@ -73,7 +73,7 @@ const AquaAuthMobileForm = ({ signup }) => {
         });
       }
     }, 300),
-    [],
+    [dispatch]
   );
 
   // Function to trigger OTP request only on button click

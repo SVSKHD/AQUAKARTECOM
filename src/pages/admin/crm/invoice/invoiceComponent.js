@@ -76,8 +76,7 @@ const AquaInvoiceClient = ({ data }) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-700">
-      {/* Invoice Content Container with ref */}
-      <PrintProvider>
+ 
         <div ref={invoiceRef}>
           <Image
             src={AQ}
@@ -242,7 +241,6 @@ const AquaInvoiceClient = ({ data }) => {
             </div>
           </div>
         </div>
-      </PrintProvider>
     </div>
   );
 };

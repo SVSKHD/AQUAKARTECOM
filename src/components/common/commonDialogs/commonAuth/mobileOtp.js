@@ -78,7 +78,7 @@ const AquaAuthMobileForm = ({ signup }) => {
         setOtpShow(false);
       }
     }, 300), // Adjust debounce delay as needed
-    [],
+    [dispatch],
   );
 
   const handlePhoneChange = (e) => {
