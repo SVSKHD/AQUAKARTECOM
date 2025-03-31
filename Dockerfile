@@ -4,14 +4,17 @@ FROM node:20-alpine
 # Set the working directory in the container
 WORKDIR /app
 
+# Enable and prepare pnpm via corepack
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 # Copy package.json and package-lock.json (or npm-shrinkwrap.json) first for better caching
 COPY package*.json npm-shrinkwrap.json* ./
 
 # Install PM2 globally
-RUN pnpm install -g pm2
+RUN pnpm add -g pm2
 
 # Install dependencies
-RUN PM2npm install --production
+RUN pnpm install --prod
 
 # Copy the rest of the application code
 COPY . .
