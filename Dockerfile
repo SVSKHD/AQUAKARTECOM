@@ -8,16 +8,16 @@ WORKDIR /app
 COPY package*.json npm-shrinkwrap.json* ./
 
 # Install PM2 globally
-RUN pnpm install -g pm2
+RUN npm install -g pm2
 
 # Install dependencies
-RUN pnpm install --production
+RUN npm install --production
 
 # Copy the rest of the application code
 COPY . .
 
 # Build the application
-RUN pnpm run build
+RUN npm run build
 
 # Expose the port the app runs on
 EXPOSE 3000
