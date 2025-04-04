@@ -29,13 +29,13 @@ const AquaHomeHero = ({ data }) => {
                       alt="Aquakart Water Solutions"
                       customClass="w-full h-full object-cover rounded-lg shadow-lg"
                     />
-                    <Link href={`/category/${category?.title}`}>
+                    <a href={`/category/${category?.title}`}>
                       <div className="absolute bottom-0 left-0 right-0 h-1/6 bg-black bg-opacity-50 flex items-center justify-center p-2 rounded-b-lg">
                         <span className="text-white text-lg font-semibold">
                           {category?.title}
                         </span>
                       </div>
-                    </Link>
+                    </a>
                   </motion.div>
                 ))}
               </div>

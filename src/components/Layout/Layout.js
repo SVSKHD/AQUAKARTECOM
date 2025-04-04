@@ -41,7 +41,6 @@ const AquaLayout = (props) => {
 
       return updatedSeo;
     });
-    console.log("SEO", seo, pathname);
   }, [router, seo]);
 
   const Status = useNetworkStatus();

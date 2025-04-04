@@ -112,37 +112,6 @@ const AquaHomeComponent = () => {
                           key={category.name}
                           className="space-y-12 px-4 py-6"
                         >
-                          {/* <div className="grid grid-cols-2 gap-x-4 gap-y-10">
-                            {category.featured.map((item) => (
-                              <div key={item.name} className="group relative">
-                                <div className="aspect-h-1 aspect-w-1 overflow-hidden rounded-md bg-gray-100 group-hover:opacity-75">
-                                  <Image
-                                    src={item.imageSrc}
-                                    alt={item.imageAlt}
-                                    height={100}
-                                    width={100}
-                                    className="object-cover object-center"
-                                  />
-                                </div>
-                                <a
-                                  href={item.href}
-                                  className="mt-6 block text-sm font-medium text-gray-900"
-                                >
-                                  <span
-                                    className="absolute inset-0 z-10"
-                                    aria-hidden="true"
-                                  />
-                                  {item.name}
-                                </a>
-                                <p
-                                  aria-hidden="true"
-                                  className="mt-1 text-sm text-gray-500"
-                                >
-                                  Shop now
-                                </p>
-                              </div>
-                            ))}
-                          </div> */}
                         </TabPanel>
                       ))}
                     </TabPanels>
@@ -176,7 +145,7 @@ const AquaHomeComponent = () => {
             <main>
               <AquaProducts />
 
-              <section
+              {/* <section
                 aria-labelledby="category-heading"
                 className="pt-2 sm:pt-2 xl:mx-auto xl:max-w-7xl xl:px-8"
               >
@@ -254,7 +223,7 @@ const AquaHomeComponent = () => {
                     <span aria-hidden="true"> &rarr;</span>
                   </a>
                 </div>
-              </section>
+              </section> */}
 
               {/* Featured section */}
               <section
