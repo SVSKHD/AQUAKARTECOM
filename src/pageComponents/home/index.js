@@ -145,7 +145,7 @@ const AquaHomeComponent = () => {
             <main>
               <AquaProducts />
 
-              {/* <section
+              <section
                 aria-labelledby="category-heading"
                 className="pt-2 sm:pt-2 xl:mx-auto xl:max-w-7xl xl:px-8"
               >
@@ -156,13 +156,13 @@ const AquaHomeComponent = () => {
                   >
                     Shop by Category
                   </h2>
-                  <Link
+                  <a
                     href="/categories"
                     className="hidden text-sm font-semibold text-indigo-600 hover:text-indigo-500 sm:block"
                   >
                     Browse All categories
                     <span aria-hidden="true"> &rarr;</span>
-                  </Link>
+                  </a>
                 </div>
 
                 <div className="mt-4 flow-root">
@@ -223,7 +223,7 @@ const AquaHomeComponent = () => {
                     <span aria-hidden="true"> &rarr;</span>
                   </a>
                 </div>
-              </section> */}
+              </section>
 
               {/* Featured section */}
               <section
