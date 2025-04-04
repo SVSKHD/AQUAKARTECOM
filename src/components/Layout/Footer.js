@@ -94,7 +94,7 @@ const AquaFooter = () => {
                 </h3>
                 <ul role="list" className="mt-6 space-y-4">
                   {subcategories.map((item) => (
-                    <li key={item.name}>
+                    <li key={item.title}>
                       <a
                         href={`/subcategory/${item.title}`}
                         className="text-sm leading-6 text-gray-300 hover:text-white"
@@ -112,7 +112,7 @@ const AquaFooter = () => {
                 </h3>
                 <ul role="list" className="mt-6 space-y-4">
                   {categories.map((item) => (
-                    <li key={item.name}>
+                    <li key={item.title}>
                       <a
                         href={`/category/${item.title}`}
                         className="text-sm leading-6 text-gray-300 hover:text-white"

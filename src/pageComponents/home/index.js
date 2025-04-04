@@ -180,7 +180,7 @@ const AquaHomeComponent = () => {
                         ) : (
                           <>
                             {categoryData.map((category) => (
-                              <Link
+                              <a
                                 key={category.title}
                                 href={`/category/${category.title}`}
                                 className="relative flex h-80 w-56 flex-col overflow-hidden rounded-lg p-6 hover:opacity-75 xl:w-auto"
@@ -199,13 +199,13 @@ const AquaHomeComponent = () => {
                                   aria-hidden="true"
                                   className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-gray-800 opacity-50"
                                 />
-                                <Link
+                                <a
                                   href={`/category/${category?.title}`}
                                   className="relative mt-auto text-center text-xl font-bold text-white"
                                 >
                                   {category.title}
-                                </Link>
-                              </Link>
+                                </a>
+                              </a>
                             ))}
                           </>
                         )}

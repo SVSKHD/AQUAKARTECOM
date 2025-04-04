@@ -4,12 +4,11 @@ import CategoryServiceOperations from "@/services/category";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-const AquaDynamicCategoryComponent = () => {
+const AquaDynamicCategoryComponent = ({id}) => {
   const [category, setCategory] = useState({});
   const [related, setRelated] = useState([]);
   const router = useRouter();
 
-  const { id } = router.query;
 
   const seo = {
     title: `Aquakart | ${category.title || "Category"}`,
