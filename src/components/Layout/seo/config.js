@@ -99,7 +99,7 @@ const config = {
     follow: true,
   },
   offers: {
-    title: "Special Offers & Discounts | Aquakart Water Solutions",
+    title: "Special Offers & Discounts | Aquakart Water Softener Solutions",
     keywords:
       "Aquakart Deals, Water Softener Offers, RO Purifier Discounts, Best Prices",
     keyphrases:
@@ -111,7 +111,7 @@ const config = {
     follow: true,
   },
   privacyPolicy: {
-    title: "Privacy Policy | Aquakart Water Solutions",
+    title: "Privacy Policy | Aquakart Water Softener Solutions",
     keywords:
       "Aquakart Privacy Policy, Data Security, Customer Information Protection, Water Solutions Privacy",
     keyphrases: "Privacy Policy, Customer Data Protection, Aquakart Privacy",
@@ -122,7 +122,7 @@ const config = {
     follow: false, // Typically, legal pages should not be indexed
   },
   termsConditions: {
-    title: "Terms & Conditions | Aquakart Water Solutions",
+    title: "Terms & Conditions | Aquakart Water Softener Solutions",
     keywords:
       "Aquakart Terms & Conditions, Online Purchase Terms, Customer Agreement, Water Product Policies",
     keyphrases: "Terms of Service, Customer Agreement, Aquakart Policies",

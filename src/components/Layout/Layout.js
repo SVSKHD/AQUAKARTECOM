@@ -23,25 +23,28 @@ const AquaLayout = (props) => {
   useEffect(() => {
     const { pathname } = router;
     const formattedPath = pathname.split("/")[1];
-
-    setSeo((prev) => {
-      let updatedSeo = { ...prev };
-
-      if (pathname === "/") {
-        updatedSeo.path = "home";
-      } else if (formattedPath === "product") {
-        updatedSeo.product = "product"; // ✅ Correcting the `product` assignment
-      } else if (formattedPath === "category") {
-        updatedSeo.category = "category"; // ✅ Assigning "category" to `category` instead of `product`
-      } else if (formattedPath === "subcategory") {
-        updatedSeo.subCategory = "subcategory"; // ✅ Keeping string consistency
-      } else if (formattedPath) {
-        updatedSeo.path = formattedPath;
-      }
-
-      return updatedSeo;
-    });
-  }, [router, seo]);
+  
+    const newSeo = {
+      path: "",
+      product: "",
+      category: "",
+      subCategory: "",
+    };
+  
+    if (pathname === "/") {
+      newSeo.path = "home";
+    } else if (formattedPath === "product") {
+      newSeo.product = "product";
+    } else if (formattedPath === "category") {
+      newSeo.category = "category";
+    } else if (formattedPath === "subcategory") {
+      newSeo.subCategory = "subcategory";
+    } else if (formattedPath) {
+      newSeo.path = formattedPath;
+    }
+  
+    setSeo(newSeo);
+  }, [router.pathname]);
 
   const Status = useNetworkStatus();
   const handleRetry = () => {
