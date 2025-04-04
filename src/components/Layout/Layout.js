@@ -23,14 +23,14 @@ const AquaLayout = (props) => {
   useEffect(() => {
     const { pathname } = router;
     const formattedPath = pathname.split("/")[1];
-  
+
     const newSeo = {
       path: "",
       product: "",
       category: "",
       subCategory: "",
     };
-  
+
     if (pathname === "/") {
       newSeo.path = "home";
     } else if (formattedPath === "product") {
@@ -42,7 +42,7 @@ const AquaLayout = (props) => {
     } else if (formattedPath) {
       newSeo.path = formattedPath;
     }
-  
+
     setSeo(newSeo);
   }, [router.pathname]);
 

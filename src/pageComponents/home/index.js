@@ -111,8 +111,7 @@ const AquaHomeComponent = () => {
                         <TabPanel
                           key={category.name}
                           className="space-y-12 px-4 py-6"
-                        >
-                        </TabPanel>
+                        ></TabPanel>
                       ))}
                     </TabPanels>
                   </TabGroup>
