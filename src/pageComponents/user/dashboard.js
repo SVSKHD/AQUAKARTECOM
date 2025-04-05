@@ -45,7 +45,6 @@ const AquaDashboardPageComponent = () => {
 
     await UserServiceOperations.UserUpdateDetails(id, payload, token)
       .then((res) => {
-        console.log("apiu", res.data);
         dispatch({
           type: "UPDATE_USER_DETAILS",
           payload: res.data,
@@ -60,7 +59,6 @@ const AquaDashboardPageComponent = () => {
 
   const handleEditAddress = (e, r) => {
     e.preventDefault();
-    console.log(r);
     dispatch({
       type: "SET_ADDRESS_DIALOG",
       payload: true,

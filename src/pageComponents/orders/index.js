@@ -104,6 +104,29 @@ const AquaOrder = () => {
   const formattedDate = moment(order?.createdAt).format("DD MMM YYYY");
   const { userData } = useSelector((state) => ({ ...state }));
 
+  const handleRetryPayment = async (id) => {
+    console.log("order", order);
+  };
+  const handleRetryCOD = async (id) => {
+    console.log("order", order);
+    orderServiceOperations
+      .updateOrderStatus(id._id, userData.token, {
+        paymentMethod: "Cash On Delivery",
+      })
+      .then(() => {
+        AquaToast({
+          message: "Order is successfully accepted as COD",
+          type: "success",
+        });
+      })
+      .catch(() => {
+        AquaToast({
+          message: "Error in accepting COD",
+          type: "error",
+        });
+      });
+  };
+
   useEffect(() => {
     if (!router.isReady || !userData?.token) return;
 
@@ -750,21 +773,13 @@ const AquaOrder = () => {
                                 </p>
                                 <div className="mt-4 flex gap-4">
                                   <button
-                                    onClick={() =>
-                                      router.push(
-                                        `/retry-payment/${order?.orderId}`,
-                                      )
-                                    }
+                                    onClick={() => handleRetryPayment(id)}
                                     className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
                                   >
                                     Pay Again
                                   </button>
                                   <button
-                                    onClick={() =>
-                                      router.push(
-                                        `/select-cod/${order?.orderId}`,
-                                      )
-                                    }
+                                    onClick={() => handleRetryCOD(id)}
                                     className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
                                   >
                                     Switch to COD

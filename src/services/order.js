@@ -51,7 +51,7 @@ const createPhonePePayOrder = async (data) => {
 const verifyPayment = async (id, token) => {
   try {
     const response = await axios.post(
-      `${BASE}/phonepe-verify/${id}`,
+      `${BASE}/order/user/${id}`,
       {},
       {
         headers: {
@@ -65,12 +65,26 @@ const verifyPayment = async (id, token) => {
   }
 };
 
+const updateOrderStatus = async (id, token, data) => {
+  try {
+    const response = await axios.put(`${BASE}/phonepe-verify/${id}`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(`Error verifying payment: ${error.message}`);
+  }
+};
+
 const orderServiceOperations = {
   createCodOrder,
   createPhonePePayOrder,
   verifyPayment,
   getOrdersByUserId,
   getOrdersByTransactionId,
+  updateOrderStatus,
 };
 
 export default orderServiceOperations;
