@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 // Function to calculate the total price
 const cartTotal = (cart) => {
-  return cart?.reduce((total, item) => total + item.quantity * item.price, 0);
+  return cart?.reduce((total, item) => total + item.quantity * item?.discountPriceStatus ? item.discountPrice : item.price, 0);
 };
 
 // Custom hook to manage cart state

@@ -194,7 +194,30 @@ function AquaServerDynamicProduct({ product, related }) {
                     ₹{product?.price?.toLocaleString()}
                   </div>
                 )}
+                
+  
               </div>
+              {(() => {
+  const stock = JSON.parse(product?.stock || "0");
+
+  if (stock <= 0) {
+    return <p className="text-red-600 font-semibold">Out of stock</p>;
+  }
+
+  if (stock < 5) {
+    return (
+      <p className="text-orange-600 font-medium">
+        Only {stock} left — order quickly!
+      </p>
+    );
+  }
+
+  return (
+    <p className="text-green-600 font-medium">
+      In stock ({stock} available)
+    </p>
+  );
+})()}
               <div
                 className="prose prose-lg max-w-none mt-6"
                 dangerouslySetInnerHTML={{ __html: product?.description }}
