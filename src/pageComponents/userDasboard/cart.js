@@ -5,9 +5,9 @@ const AquaUserCartPageComponent = () => {
   const { cartData } = useSelector((state) => ({ ...state }));
   return (
     <>
-    <AquaUserDashbordLayout>
-     <h1>Cart</h1>
-     </AquaUserDashbordLayout>
+      <AquaUserDashbordLayout>
+        <h1>Cart</h1>
+      </AquaUserDashbordLayout>
     </>
   );
 };

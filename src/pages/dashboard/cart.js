@@ -1,10 +1,6 @@
 import AquaUserCartPageComponent from "@/pageComponents/userDasboard/cart";
 const AquaUserCart = () => {
-  return (
-    
-      <AquaUserCartPageComponent />
-   
-  );
+  return <AquaUserCartPageComponent />;
 };
 
 export default AquaUserCart;

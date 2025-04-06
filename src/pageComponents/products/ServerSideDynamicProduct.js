@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, useCallback } from "react";
-import { ShoppingCart, Heart, BookHeart } from "lucide-react";
+import { ShoppingCart, Heart, BookHeart, Truck } from "lucide-react";
 import EmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import AquaHeader from "@/components/Layout/Header";
@@ -194,30 +194,46 @@ function AquaServerDynamicProduct({ product, related }) {
                     ₹{product?.price?.toLocaleString()}
                   </div>
                 )}
-                
-  
               </div>
               {(() => {
-  const stock = JSON.parse(product?.stock || "0");
+                const stock = JSON.parse(product?.stock || "0");
 
-  if (stock <= 0) {
-    return <p className="text-red-600 font-semibold">Out of stock</p>;
-  }
+                if (stock <= 0) {
+                  return (
+                    <p className="text-red-600 font-semibold">Out of stock</p>
+                  );
+                }
 
-  if (stock < 5) {
-    return (
-      <p className="text-orange-600 font-medium">
-        Only {stock} left — order quickly!
-      </p>
-    );
-  }
+                if (stock < 5) {
+                  return (
+                    <p className="text-orange-600 font-medium">
+                      Only {stock} left — order quickly!
+                    </p>
+                  );
+                }
 
-  return (
-    <p className="text-green-600 font-medium">
-      In stock ({stock} available)
-    </p>
-  );
-})()}
+                return (
+                  <p className="text-green-600 font-medium">
+                    In stock ({stock} available)
+                  </p>
+                );
+              })()}
+
+              <div className="mt-6 rounded-lg border border-cyan-100 bg-cyan-50 p-4 flex items-start space-x-4">
+                <div className="flex-shrink-0 text-cyan-600">
+                  <Truck className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-cyan-800">
+                    Same-Day Delivery in Hyderabad
+                  </h4>
+                  <p className="text-sm text-cyan-700 mt-1">
+                    Place your order before <strong>1:00 PM</strong> to get it
+                    delivered on the same day in Hyderabad.
+                  </p>
+                </div>
+              </div>
+
               <div
                 className="prose prose-lg max-w-none mt-6"
                 dangerouslySetInnerHTML={{ __html: product?.description }}

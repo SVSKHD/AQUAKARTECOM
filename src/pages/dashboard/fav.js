@@ -3,7 +3,7 @@ import AquaUserFavPageComponent from "@/pageComponents/userDasboard/fav";
 const AquaUserFavCart = () => {
   return (
     <>
-    <AquaUserFavPageComponent/>
+      <AquaUserFavPageComponent />
     </>
   );
 };

@@ -13,7 +13,8 @@ const ReusableProductCard = ({ product }) => {
   const { formatCurrencyINR } = useCurrency;
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
   const { cartData, favData } = useSelector((state) => ({ ...state }));
-  const { title, photos, price, slug, discountPrice, discountPriceStatus } = product;
+  const { title, photos, price, slug, discountPrice, discountPriceStatus } =
+    product;
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [activeIndex, setActiveIndex] = useState(0);
@@ -91,17 +92,19 @@ const ReusableProductCard = ({ product }) => {
           <a href={`/product/${slug}`}>{title}</a>
         </h3>
         <p className="text-lg font-bold text-gray-800">
-  {discountPriceStatus ? (
-    <>
-      <span className="text-red-600">{formatCurrencyINR(discountPrice)}</span>
-      <span className="text-sm text-gray-500 line-through ml-2">
-        {formatCurrencyINR(price)}
-      </span>
-    </>
-  ) : (
-    formatCurrencyINR(price)
-  )}
-</p>
+          {discountPriceStatus ? (
+            <>
+              <span className="text-red-600">
+                {formatCurrencyINR(discountPrice)}
+              </span>
+              <span className="text-sm text-gray-500 line-through ml-2">
+                {formatCurrencyINR(price)}
+              </span>
+            </>
+          ) : (
+            formatCurrencyINR(price)
+          )}
+        </p>
         <div className="flex mt-4 space-x-4">
           <button
             onClick={() => AddAndRemoveCart(product, setAddCart)}

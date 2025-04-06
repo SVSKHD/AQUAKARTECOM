@@ -1,10 +1,10 @@
 import AquaUserProfilePageComponent from "@/pageComponents/userDasboard/profle";
 
-const AquaUserProfile = () =>{
-return(
+const AquaUserProfile = () => {
+  return (
     <>
-    <AquaUserProfilePageComponent />
+      <AquaUserProfilePageComponent />
     </>
-)
-}
+  );
+};
 export default AquaUserProfile;
