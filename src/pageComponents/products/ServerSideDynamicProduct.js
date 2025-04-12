@@ -21,8 +21,6 @@ function AquaServerDynamicProduct({ product, related }) {
   const [cart, setCart] = useState(false);
 
   const { cartData, favData } = useSelector((state) => ({ ...state }));
-
-  // store
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
 
   const calculateDiscount = () => {
@@ -49,11 +47,8 @@ function AquaServerDynamicProduct({ product, related }) {
 
   useEffect(() => {
     if (!product) return;
-
-    // Reset cart and favorite states for the current product
     const isProductInCart = cartData?.some((item) => item._id === product?._id);
     const isProductInFav = favData?.some((item) => item._id === product?._id);
-
     setCart(isProductInCart);
     setIsFavorite(isProductInFav);
   }, [cartData, favData, product]);
@@ -61,7 +56,6 @@ function AquaServerDynamicProduct({ product, related }) {
   useEffect(() => {
     if (!emblaApi) return;
     emblaApi.on("select", onSelect);
-
     const interval = setInterval(() => {
       if (progress >= 100) {
         emblaApi.scrollNext();
@@ -70,21 +64,19 @@ function AquaServerDynamicProduct({ product, related }) {
         setProgress((prev) => prev + 1);
       }
     }, 30);
-
     return () => clearInterval(interval);
   }, [emblaApi, progress, onSelect]);
 
   return (
     <div>
       <AquaHeader />
-
       <AquaCartDrawer />
       <AquafavDrawer />
       <div className="bg-white">
         <div className="mx-auto max-w-7xl sm:px-6 sm:pt-16 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left Column */}
-            <div className="md:sticky md:top-8 p-8">
+            <div className="md:sticky md:top-8 p-6 md:p-8">
               <div className="relative space-y-4">
                 {/* Main Image */}
                 <div className="relative rounded-lg overflow-hidden">
@@ -122,10 +114,7 @@ function AquaServerDynamicProduct({ product, related }) {
                       animate={{
                         width: index === currentImageIndex ? "100%" : "100%",
                       }}
-                      transition={{
-                        duration: 3,
-                        ease: "easeInOut",
-                      }}
+                      transition={{ duration: 3, ease: "easeInOut" }}
                       style={{ flexGrow: 1 }}
                       onClick={() => setCurrentImageIndex(index)}
                     />
@@ -156,7 +145,7 @@ function AquaServerDynamicProduct({ product, related }) {
                 </div>
 
                 {/* Add to Cart Button */}
-                <div className="pt-4">
+                <div className="pt-6">
                   <motion.button
                     onClick={handleAddToCart}
                     className={`w-full ${cart ? "bg-green-600" : "bg-blue-600"} text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors`}
@@ -171,11 +160,12 @@ function AquaServerDynamicProduct({ product, related }) {
             </div>
 
             {/* Right Column */}
-            <div className="h-[calc(100vh-6rem)] p-8 overflow-y-scroll hide-scrollbar">
+            <div className="h-[calc(100vh-6rem)] p-6 md:p-8 overflow-y-scroll hide-scrollbar">
               <h1 className="text-3xl font-bold text-gray-900">
                 {product?.title}
               </h1>
               <p className="text-lg text-gray-500 mt-2">{product?.brand}</p>
+
               <div className="mt-4 flex items-baseline space-x-3">
                 {product?.discountPriceStatus && product?.discountPrice ? (
                   <>
@@ -195,30 +185,35 @@ function AquaServerDynamicProduct({ product, related }) {
                   </div>
                 )}
               </div>
-              {(() => {
-                const stock = JSON.parse(product?.stock || "0");
 
-                if (stock <= 0) {
-                  return (
-                    <p className="text-red-600 font-semibold">Out of stock</p>
-                  );
-                }
+              {/* Stock Status */}
+              <div className="mt-3">
+                {(() => {
+                  const stock = JSON.parse(product?.stock || "0");
 
-                if (stock < 5) {
+                  if (stock <= 0) {
+                    return (
+                      <p className="text-red-600 font-semibold">Out of stock</p>
+                    );
+                  }
+
+                  if (stock < 5) {
+                    return (
+                      <p className="text-orange-600 font-medium">
+                        Only {stock} left — order quickly!
+                      </p>
+                    );
+                  }
+
                   return (
-                    <p className="text-orange-600 font-medium">
-                      Only {stock} left — order quickly!
+                    <p className="text-green-600 font-medium">
+                      In stock ({stock} available)
                     </p>
                   );
-                }
+                })()}
+              </div>
 
-                return (
-                  <p className="text-green-600 font-medium">
-                    In stock ({stock} available)
-                  </p>
-                );
-              })()}
-
+              {/* Delivery Info */}
               <div className="mt-6 rounded-lg border border-cyan-100 bg-cyan-50 p-4 flex items-start space-x-4">
                 <div className="flex-shrink-0 text-cyan-600">
                   <Truck className="w-6 h-6" />
@@ -234,6 +229,7 @@ function AquaServerDynamicProduct({ product, related }) {
                 </div>
               </div>
 
+              {/* Product Description */}
               <div
                 className="prose prose-lg max-w-none mt-6"
                 dangerouslySetInnerHTML={{ __html: product?.description }}
@@ -242,10 +238,12 @@ function AquaServerDynamicProduct({ product, related }) {
           </div>
 
           {/* Related Products */}
-          <div className="p-3">
-            <h2 className="text-3xl text-gray-800">Related Products</h2>
+          <div className="p-6 mt-10">
+            <h2 className="text-2xl font-semibold text-gray-800">
+              Related Products
+            </h2>
           </div>
-          <div className="p-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="p-6 pt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             <Suspense fallback={<div>Loading Related Products...</div>}>
               {related?.map((product) => (
                 <AquaRelatedProductCard key={product._id} product={product} />

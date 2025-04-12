@@ -24,13 +24,17 @@ import AquaPromptDialog from "@/components/common/promptDialogs/promtDialog";
 import UserServiceOperations from "@/services/user";
 import AquaSpinner from "@/components/common/spinner";
 import AquaInput from "@/components/common/input";
+import { set } from "lodash";
 
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { cartData, userData } = useSelector((state) => ({ ...state }));
   const { formatCurrencyINR } = useCurrency;
-
+  const [buttonStatus, setButtonStatus] = useState({
+    cod: false,
+    gateway: false,
+  });
   const { getTotalPrice, changeItemQuantity } = useCart();
   const [selectedAddress, setSelectedAddress] = useState(
     userData?.user?.selectedAddress,
@@ -46,7 +50,6 @@ const AquaCheckoutComponent = () => {
     phone: userData?.user.phone,
     dob: userData?.user.dob,
   });
-  const [loading, setLoading] = useState({ cod: false, gateway: true });
   const [selectedtAddressChange, setSelectedAddressChange] = useState({});
 
   const { closeCartDrawer } = useCartDrawer();
@@ -93,6 +96,7 @@ const AquaCheckoutComponent = () => {
 
   //especially to not open cart drawer in checkout page.
   useEffect(() => {
+    setButtonStatus;
     closeCartDrawer();
   });
 
@@ -117,7 +121,7 @@ const AquaCheckoutComponent = () => {
   const handleCashOnDelivery = () => {
     if (cartData.length <= 0) {
       AquaToast({ message: "Please add products to cart", type: "info" });
-      return; // Exit if no products in cart
+      return;
     }
 
     if (!userData?.user?.email || !userData?.user?.phone) {
@@ -125,18 +129,24 @@ const AquaCheckoutComponent = () => {
         message: "Please Update Details To Proceed Further",
         type: "error",
       });
-      return; // Exit if user details are missing
+      return;
     }
 
     if (!userData?.user?.addresses?.length) {
       AquaToast({ message: "Please Add An Address", type: "error" });
-      return; // Exit if no address exists
+      return;
     }
 
     if (!selectedAddress) {
       AquaToast({ message: "Please select an address", type: "error" });
-      return; // Exit if no address selected
+      return;
     }
+
+    // ✅ Start loading
+    setButtonStatus((prevState) => ({
+      ...prevState,
+      cod: true,
+    }));
 
     const cashTransactionId = `AQTR-COD-${nanoid(5).toUpperCase()}D${moment(new Date()).format("DDMMYYYY")}`;
     const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
@@ -161,25 +171,28 @@ const AquaCheckoutComponent = () => {
       orderStatus: "Processing",
     };
 
-    setLoading((prevState) => ({
-      ...prevState,
-      cod: true,
-    }));
-
     orderServiceOperations
       .createCodOrder(newOrder)
       .then((res) => {
-        setTimeout(() => {
-          setLoading((prevState) => ({
-            ...prevState,
-            cod: false,
-          }));
-          console.log("data", res.data);
-          router.push(`/order/${res.data.transactionId}`);
-        }, 4000);
+        AquaToast({
+          message: "COD order created successfully",
+          type: "success",
+        });
+        router.push(`/order/cod/${res.data.transactionId}`);
       })
       .catch((err) => {
         console.log("order", err);
+        AquaToast({
+          message: "Failed to create COD order",
+          type: "error",
+        });
+      })
+      .finally(() => {
+        // ✅ End loading
+        setButtonStatus((prevState) => ({
+          ...prevState,
+          cod: false,
+        }));
       });
   };
 
@@ -235,7 +248,7 @@ const AquaCheckoutComponent = () => {
       orderStatus: "Processing",
     };
 
-    setLoading((prevState) => ({
+    setButtonStatus((prevState) => ({
       ...prevState,
       gateway: true,
     }));
@@ -243,7 +256,7 @@ const AquaCheckoutComponent = () => {
     orderServiceOperations
       .createPhonePePayOrder(newOrder)
       .then((res) => {
-        setLoading((prevState) => ({
+        setButtonStatus((prevState) => ({
           ...prevState,
           gateway: false,
         }));
@@ -740,7 +753,7 @@ const AquaCheckoutComponent = () => {
                       Order Total
                     </dt>
                     <dd className="text-base font-medium text-gray-900">
-                      {formatCurrencyINR(getTotalPrice() + 300)}
+                      {formatCurrencyINR(getTotalPrice())}
                     </dd>
                   </div>
                 </dl>
@@ -798,20 +811,43 @@ const AquaCheckoutComponent = () => {
                 ) : (
                   <>
                     <div className="mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+                      {/* Pay Now Button */}
                       <button
                         type="button"
                         onClick={handlePhonePayment}
-                        className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+                        disabled={buttonStatus.gateway}
+                        className={`inline-flex w-full items-center justify-center rounded-md px-4 py-2 text-sm font-semibold 
+                shadow-sm transition-all sm:col-start-2
+                ${
+                  buttonStatus.gateway
+                    ? "bg-indigo-400 text-white cursor-not-allowed"
+                    : "bg-indigo-600 text-white hover:bg-indigo-500 active:bg-indigo-700"
+                }`}
                       >
-                        Pay Now
+                        {buttonStatus.gateway ? (
+                          <span className="flex items-center">
+                            <AquaSpinner color="white" />
+                            <span className="ml-2">Processing...</span>
+                          </span>
+                        ) : (
+                          "Pay Now"
+                        )}
                       </button>
+
+                      {/* Cash On Delivery Button */}
                       <button
                         type="button"
                         onClick={handleCashOnDelivery}
-                        className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
+                        disabled={buttonStatus.cod}
+                        className={`mt-3 inline-flex w-full items-center justify-center rounded-md border border-gray-300 
+                bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm transition-all
+                hover:bg-gray-100 active:bg-gray-200 disabled:opacity-60 disabled:cursor-not-allowed`}
                       >
-                        {loading.cod ? (
-                          <AquaSpinner color="gray" />
+                        {buttonStatus.cod ? (
+                          <span className="flex items-center">
+                            <AquaSpinner color="gray" />
+                            <span className="ml-2">Processing...</span>
+                          </span>
                         ) : (
                           "Cash On Delivery"
                         )}
@@ -820,6 +856,7 @@ const AquaCheckoutComponent = () => {
                     <button
                       type="button"
                       className="mt-4 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                      onClick={() => router.push("/shop")}
                     >
                       Continue to Shop
                     </button>
