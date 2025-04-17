@@ -18,7 +18,6 @@ const AquaSeoRevamp = ({
   }
   if (product) {
     data = productData;
-    console.log("product", data);
   }
   if (category) {
     data = categoryData;

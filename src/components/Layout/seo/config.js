@@ -15,7 +15,7 @@ const config = {
   },
   shop: {
     title:
-      "Aquakart | Buy Automatic & Manual Water Softeners, RO Purifiers & More",
+      "Aquakart | Buy Automatic & Manual Water Softeners, RO Purifiers &  Sand and Iron Filters",
     keywords:
       "Buy Water Softeners, RO Purifiers, Hard Water Filters, UV Water Purifiers, Water Filtration Systems, Home Water Solutions, Aquakart Online Store, Whole House Water Filters",
     keyphrases:
@@ -25,6 +25,19 @@ const config = {
     description:
       "Shop high-quality water softeners, RO purifiers, and filtration systems at Aquakart. Find the best solutions for hard water treatment and pure drinking water for your home and office.",
     follow: true,
+  },
+  softeners_hyderabad:{
+    title: "Aquakart | Water Softeners in Hyderabad",
+    keywords:
+      "Water Softeners Hyderabad, RO Purifiers Hyderabad, Hard Water Treatment Hyderabad, Best Water Filters Hyderabad",
+    keyphrases:
+      "Aquakart Hyderabad, Water Softening Solutions, RO Purifiers in Hyderabad",
+    url: "https://aquakart.co.in/softeners_hyderabad",
+    photos:
+      "https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg",
+    description:
+      "Discover the best water softeners and RO purifiers in Hyderabad. Aquakart offers advanced filtration solutions for hard water treatment and pure drinking water.",
+    follow: true, 
   },
   compare: {
     title: "Compare Water Softeners & RO Purifiers | Aquakart",

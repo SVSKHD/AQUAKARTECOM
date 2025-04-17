@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Home, User, Settings, ShoppingCart, Heart } from "lucide-react";
+import { Home, User, Settings, ShoppingCart, Heart, ShoppingBag } from "lucide-react";
 
 const AquaUserDashboardHeader = () => {
   const router = useRouter();
@@ -18,6 +18,12 @@ const AquaUserDashboardHeader = () => {
       label: "Profile",
       href: "/dashboard/profile",
       icon: User,
+    },
+    {
+      id: "orders",
+      label: "Orders",
+      href: "/dashboard/orders",
+      icon: ShoppingBag,
     },
     {
       id: "settings",
