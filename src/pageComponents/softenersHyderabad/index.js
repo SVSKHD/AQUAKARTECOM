@@ -1,65 +1,73 @@
-import {useEffect, useState} from "react"
+import { useEffect, useState } from "react";
 import AquaLayout from "@/components/Layout/Layout";
 import ArtGallery from "@/components/reusables/artGalery";
 import AquaSoftnerOperations from "@/services/softenersHyderabad";
 
-const AquaSoftenerHyderabadComponent = () =>{
-    const [imageData, setImageData] = useState([])
-    
-    const fetchData = async() =>{
-        await AquaSoftnerOperations.getSofteners().then((res)=>{
-            setImageData(res.data)
-        })
-    }
+const AquaSoftenerHyderabadComponent = () => {
+  const [imageData, setImageData] = useState([]);
 
-    useEffect(()=>{
-     fetchData()
-    },[imageData])
+  const fetchData = async () => {
+    const res = await AquaSoftnerOperations.getSofteners();
+    setImageData(res.data);
+  };
 
-    const galleryData = [
-        {
-          area: "Gachibowli",
-          description: "",
-          images: [
-            {
-              id: "1",
-              url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80",
-              likes: 1245,
-              comments: 48,
-              location: "Manhattan"
-            },
-            {
-              id: "2",
-              url: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80",
-              likes: 892,
-              comments: 35,
-              location: "Brooklyn"
-            },
-            {
-              id: "3",
-              url: "https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&q=80",
-              likes: 1567,
-              comments: 62,
-              location: "Queens"
-            },
-            {
-              id: "4",
-              url: "https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&q=80",
-              likes: 943,
-              comments: 41,
-              location: "Bronx"
-            }
-          ],
-        }
-      ];
-return(
-    <>
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  return (
     <AquaLayout>
-        <main className="container mx-auto px-4 py-8">
-         <ArtGallery sections={imageData} />
-         </main>
+      <main className="bg-gray-50 min-h-screen py-16">
+        {/* 🪟 Hero Container */}
+        <section className="max-w-5xl mx-auto px-6 text-center">
+          <h1 className="text-4xl md:text-5xl font-semibold text-gray-900 leading-tight">
+            Premium Water Softeners for Hyderabad Homes
+          </h1>
+          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+            Backed by 100+ successful{" "}
+            <span className="italic underline decoration-blue-500">realtime installations</span>,
+            Aquakart delivers reliability, purity, and peace of mind.
+          </p>
+        </section>
+
+        {/* 🧊 Features Section */}
+        <section className="max-w-6xl mx-auto mt-16 px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Verified Installations",
+                desc: "All displayed images are from actual homes & clients in Hyderabad.",
+              },
+              {
+                title: "Class-Leading Quality",
+                desc: "Only high-grade MPV heads, tanks & media. Designed for performance.",
+              },
+              {
+                title: "Elegant Design",
+                desc: "Sleek, compact softeners that blend into your home space.",
+              },
+            ].map((item, index) => (
+              <div
+                key={index}
+                className="border border-gray-200 rounded-xl p-6 bg-white hover:shadow-sm transition"
+              >
+                <h3 className="text-xl font-medium text-gray-800 mb-2">{item.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 📸 Gallery Section */}
+        <section className="max-w-8xl mx-auto mt-20 px-6">
+          <h2 className="text-3xl font-semibold text-center text-gray-900 mb-10">
+            Realtime <span className="italic underline decoration-pink-400">Installations</span> Gallery
+          </h2>
+          <ArtGallery sections={imageData} />
+        </section>
+      </main>
     </AquaLayout>
-    </>
-)
-}
+  );
+};
+
 export default AquaSoftenerHyderabadComponent;
