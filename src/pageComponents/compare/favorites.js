@@ -8,6 +8,7 @@ const AquaFavoritesTabContent = () => {
   const { formatCurrencyINRWithK } = useCurrency;
 
   const AddToCompare = (product) => {
+    console.log("compare", product, compare)
     if (!compare?.find((item) => item._id === product._id)) {
       dispatch({
         type: "ADD_TO_COMPARE",
