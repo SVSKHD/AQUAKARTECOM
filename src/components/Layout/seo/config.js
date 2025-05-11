@@ -3,9 +3,9 @@ const config = {
     title:
       "Aquakart | India's Leading Water Softening & Purification Solutions",
     keywords:
-      "Aquakart, Water Softeners, RO Purifiers, Best Water Filters, Hard Water Treatment, Home Water Solutions, Water Purification Systems, Whole House Filtration, Soft Water Treatment",
+      "Aquakart, Water Softeners, RO Purifiers, Best Water Filters, Hard Water Treatment, Home Water Solutions, Water Purification Systems, Whole House Filtration, Soft Water Treatment, Water Softeners in Hyderabad, RO Purifiers in Hyderabad, Water Filters Gachibowli, Water Filters Jubilee Hills, Hard Water Solution Madhapur, Softener Dealers Kondapur, Whole House RO Hyderabad",
     keyphrases:
-      "Aquakart, Water Softeners, RO Purifiers, Home Water Solutions, Hard Water Treatment, Best Water Purifiers",
+      "Aquakart, Water Softeners, RO Purifiers, Home Water Solutions, Hard Water Treatment, Best Water Purifiers, Hyderabad Water Softener Services, RO Purifier Setup Gachibowli, Hard Water Fix Jubilee Hills, Water Filtration Experts Madhapur, Aquakart in Hyderabad",
     url: "https://aquakart.co.in",
     photos:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg",
@@ -17,34 +17,34 @@ const config = {
     title:
       "Aquakart | Buy Automatic & Manual Water Softeners, RO Purifiers &  Sand and Iron Filters",
     keywords:
-      "Buy Water Softeners, RO Purifiers, Hard Water Filters, UV Water Purifiers, Water Filtration Systems, Home Water Solutions, Aquakart Online Store, Whole House Water Filters",
+      "Buy Water Softeners, RO Purifiers, Hard Water Filters, UV Water Purifiers, Water Filtration Systems, Home Water Solutions, Aquakart Online Store, Whole House Water Filters, RO Purifiers Hyderabad, Water Softeners Hyderabad, Water Filters Gachibowli, RO Systems Jubilee Hills, Water Treatment Kukatpally",
     keyphrases:
-      "Aquakart Water Softeners, Buy RO Purifiers Online, Hard Water Treatment, Best Water Filters, Shop Water Purification Systems",
+      "Aquakart Water Softeners, Buy RO Purifiers Online, Hard Water Treatment, Best Water Filters, Shop Water Purification Systems, RO Purifiers in Hyderabad, Water Softener Dealers Jubilee Hills, Online Water Filters Gachibowli",
     url: "https://aquakart.co.in/shop",
     photos: "https://www.aquakart.co.in/images/shop.jpg",
     description:
       "Shop high-quality water softeners, RO purifiers, and filtration systems at Aquakart. Find the best solutions for hard water treatment and pure drinking water for your home and office.",
     follow: true,
   },
-  softeners_hyderabad:{
+  softeners_hyderabad: {
     title: "Aquakart | Water Softeners in Hyderabad",
     keywords:
-      "Water Softeners Hyderabad, RO Purifiers Hyderabad, Hard Water Treatment Hyderabad, Best Water Filters Hyderabad",
+      "Water Softeners Hyderabad, RO Purifiers Hyderabad, Hard Water Treatment Hyderabad, Best Water Filters Hyderabad, RO Systems Gachibowli, Water Softeners Jubilee Hills, Water Filters Kukatpally, RO Dealers Kondapur",
     keyphrases:
-      "Aquakart Hyderabad, Water Softening Solutions, RO Purifiers in Hyderabad",
+      "Aquakart Hyderabad, Water Softening Solutions, RO Purifiers in Hyderabad, RO Systems for Borewell Water Hyderabad, Softener Installation Gachibowli, Water Treatment Services Jubilee Hills",
     url: "https://aquakart.co.in/softeners_hyderabad",
     photos:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg",
     description:
       "Discover the best water softeners and RO purifiers in Hyderabad. Aquakart offers advanced filtration solutions for hard water treatment and pure drinking water.",
-    follow: true, 
+    follow: true,
   },
   compare: {
     title: "Compare Water Softeners & RO Purifiers | Aquakart",
     keywords:
-      "Compare Water Softeners, Compare RO Purifiers, Best Water Filters, Water Softener Price Comparison",
+      "Compare Water Softeners, Compare RO Purifiers, Best Water Filters, Water Softener Price Comparison, Hyderabad RO Purifier Reviews, Local Water Filter Comparison Hyderabad",
     keyphrases:
-      "Water Softener Comparison, RO Purifier Reviews, Best Water Filters",
+      "Water Softener Comparison, RO Purifier Reviews, Best Water Filters, Compare Filters in Hyderabad, RO Price Comparison Gachibowli",
     url: "https://aquakart.co.in/compare",
     photos: "https://www.aquakart.co.in/images/compare.jpg",
     description:
@@ -54,9 +54,9 @@ const config = {
   blogs: {
     title: "Aquakart Blogs | Water Softener & RO Purifier Insights",
     keywords:
-      "Water Softener Blogs, RO Purifier Guides, Best Water Filtration Tips, Aquakart Blog, Latest Water Purification News",
+      "Water Softener Blogs, RO Purifier Guides, Best Water Filtration Tips, Aquakart Blog, Latest Water Purification News, Best Water Solutions and Softeners in Hyderabad, RO Filters Gachibowli, Water Treatment Jubilee Hills, Home Water Filtration Hyderabad",
     keyphrases:
-      "Water Softener Advice, RO Purifier Buying Guide, Home Water Solutions Blog",
+      "Water Softener Advice, RO Purifier Buying Guide, Home Water Solutions Blog, RO Setup Gachibowli, Softener Installation Jubilee Hills, Water Filter Help Hyderabad, Aquakart Blog for Hyderabad",
     url: "https://aquakart.co.in/blogs",
     photos:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg",
@@ -67,8 +67,8 @@ const config = {
   contact: {
     title: "Contact Aquakart | Customer Support & Inquiries",
     keywords:
-      "Contact Aquakart, Customer Support, Water Softener Queries, RO Purifier Assistance",
-    keyphrases: "Aquakart Customer Support, Water Softener Help, Contact Us",
+      "Contact Aquakart, Customer Support, Water Softener Queries, RO Purifier Assistance, Hyderabad Water Filter Help",
+    keyphrases: "Aquakart Customer Support, Water Softener Help, Contact Us Hyderabad",
     url: "https://aquakart.co.in/contact",
     photos: "https://www.aquakart.co.in/images/contact.jpg",
     description:
@@ -78,9 +78,9 @@ const config = {
   about: {
     title: "About Aquakart | Leading Water Softener & Purifier Provider",
     keywords:
-      "About Aquakart, Water Softener Company, RO Purifier Manufacturer, Best Water Solutions Provider",
+      "About Aquakart, Water Softener Company, RO Purifier Manufacturer, Best Water Solutions Provider, Water Filter Brand Hyderabad",
     keyphrases:
-      "Aquakart Mission, Best Water Softener Company, Water Solutions",
+      "Aquakart Mission, Best Water Softener Company, Water Solutions, Hyderabad Water Technology Brand",
     url: "https://aquakart.co.in/about",
     photos: "https://www.aquakart.co.in/images/about.jpg",
     description:
@@ -90,9 +90,9 @@ const config = {
   faq: {
     title: "FAQs | Aquakart Water Softener & Purifier Queries",
     keywords:
-      "Aquakart FAQs, Water Softener Questions, RO Purifier Guide, Water Filter Support",
+      "Aquakart FAQs, Water Softener Questions, RO Purifier Guide, Water Filter Support, Hyderabad RO Support, Local Water Issues",
     keyphrases:
-      "Common Water Softener Questions, RO Purifier FAQs, Water Filtration Help",
+      "Common Water Softener Questions, RO Purifier FAQs, Water Filtration Help, Hyderabad Water Troubleshooting",
     url: "https://aquakart.co.in/faq",
     photos: "https://www.aquakart.co.in/images/faq.jpg",
     description:
@@ -102,9 +102,9 @@ const config = {
   installation: {
     title: "Installation Services | Aquakart Water Softeners & RO Purifiers",
     keywords:
-      "Aquakart Installation, Water Softener Setup, RO Purifier Installation Service",
+      "Aquakart Installation, Water Softener Setup, RO Purifier Installation Service, Hyderabad Softener Technicians, Gachibowli RO Installer",
     keyphrases:
-      "Water Softener Installation, RO Purifier Setup, Home Water Filtration Install",
+      "Water Softener Installation, RO Purifier Setup, Home Water Filtration Install, Hyderabad RO Services, Aquakart Installation Support",
     url: "https://aquakart.co.in/installation",
     photos: "https://www.aquakart.co.in/images/installation.jpg",
     description:
@@ -114,9 +114,9 @@ const config = {
   offers: {
     title: "Special Offers & Discounts | Aquakart Water Softener Solutions",
     keywords:
-      "Aquakart Deals, Water Softener Offers, RO Purifier Discounts, Best Prices",
+      "Aquakart Deals, Water Softener Offers, RO Purifier Discounts, Best Prices, Hyderabad RO Offers, Water Filter Coupons Jubilee Hills",
     keyphrases:
-      "Water Softener Discounts, RO Purifier Coupons, Aquakart Special Offers",
+      "Water Softener Discounts, RO Purifier Coupons, Aquakart Special Offers, Local Water Filter Deals Hyderabad",
     url: "https://aquakart.co.in/offers",
     photos: "https://www.aquakart.co.in/images/offers.jpg",
     description:
@@ -132,7 +132,7 @@ const config = {
     photos: "https://www.aquakart.co.in/images/privacy-policy.jpg",
     description:
       "Read Aquakart's privacy policy to learn how we protect your data, ensure security, and maintain confidentiality for a safe online shopping experience.",
-    follow: false, // Typically, legal pages should not be indexed
+    follow: false,
   },
   termsConditions: {
     title: "Terms & Conditions | Aquakart Water Softener Solutions",
@@ -144,7 +144,7 @@ const config = {
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg",
     description:
       "Review the terms and conditions for using Aquakart, purchasing water softeners, RO purifiers, and other products online. Understand our policies before shopping.",
-    follow: false, // Legal pages should not be indexed
+    follow: false,
   },
 };
 
