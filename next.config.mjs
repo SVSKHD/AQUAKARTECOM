@@ -1,8 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  env: {
+    NEXT_PUBLIC_URL: "https://aquakart.co.in/",
+    NEXT_PUBLIC_API_URL: "https://api.aquakart.co.in/v1",
+  },
   images: {
-    unoptimized: true, // Disables next/image optimizations, preventing width errors
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
