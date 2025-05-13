@@ -35,13 +35,14 @@ const AquaBlogComponnet = () => {
   return (
     <AquaLayout seo={seoData}>
       {loading ? (
-        <>
-          <div className="flex items-center justify-center h-screen">
-            <div className="text-center">
-              <AquaSpinner color="blue" size="lg" />
-            </div>
+        <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-blue-100 to-blue-300">
+          <div className="animate-bounce">
+            <Image src={AQ} alt="Loading..." width={80} height={80} className="rounded-full shadow-lg" />
           </div>
-        </>
+          <p className="mt-4 text-lg text-blue-900 font-medium animate-pulse">
+            Fetching the freshest blogs for you...
+          </p>
+        </div>
       ) : (
         <div className="bg-white py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">

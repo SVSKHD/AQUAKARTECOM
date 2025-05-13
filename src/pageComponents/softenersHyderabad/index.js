@@ -2,20 +2,33 @@ import { useEffect, useState } from "react";
 import AquaLayout from "@/components/Layout/Layout";
 import ArtGallery from "@/components/reusables/artGalery";
 import AquaSoftnerOperations from "@/services/softenersHyderabad";
+import AQ from "@/assests/logo-white.png";
+import Image from "next/image";
 
 const AquaSoftenerHyderabadComponent = () => {
   const [imageData, setImageData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     const res = await AquaSoftnerOperations.getSofteners();
     setImageData(res.data);
+    setLoading(false);
   };
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  return (
+  return loading ? (
+    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-blue-100 to-blue-300">
+      <div className="animate-bounce">
+        <Image src={AQ} alt="Loading..." width={80} height={80} className="rounded-full shadow-lg" />
+      </div>
+      <p className="mt-4 text-lg text-blue-900 font-medium animate-pulse">
+        Loading Hyderabad installations for you...
+      </p>
+    </div>
+  ) : (
     <AquaLayout>
       <main className="bg-gray-50 min-h-screen py-16">
         {/* 🪟 Hero Container */}
