@@ -1,12 +1,10 @@
 import AquaUserDashbordLayout from "./layout/layout";
-import {useSelector} from "react-redux"
+import { useSelector } from "react-redux";
 
 const AquaOrdersPageComponent = () => {
   return (
     <>
-      <AquaUserDashbordLayout>
-        {}
-      </AquaUserDashbordLayout>
+      <AquaUserDashbordLayout>{}</AquaUserDashbordLayout>
     </>
   );
 };

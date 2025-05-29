@@ -1,5 +1,5 @@
-import React from 'react';
-import { MapPin, Heart, MessageCircle } from 'lucide-react';
+import React from "react";
+import { MapPin, Heart, MessageCircle } from "lucide-react";
 
 const AreaGallery = ({ sections }) => {
   return (
@@ -7,7 +7,9 @@ const AreaGallery = ({ sections }) => {
       {sections.map((section) => (
         <div key={section.area} className="bg-white rounded-xl shadow-lg p-6">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">{section.title}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              {section.title}
+            </h2>
             <p className="text-gray-600">{section.description}</p>
           </div>
 
@@ -29,7 +31,9 @@ const AreaGallery = ({ sections }) => {
                     {/* Location */}
                     <div className="absolute top-4 left-4 flex items-center gap-1 text-white">
                       <MapPin className="w-4 h-4" />
-                      <span className="text-sm font-medium">{section.title}</span>
+                      <span className="text-sm font-medium">
+                        {section.title}
+                      </span>
                     </div>
 
                     {/* Stats */}

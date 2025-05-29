@@ -1,10 +1,9 @@
-
-import AquaSoftenerHyderabadComponent from "@/pageComponents/softenersHyderabad"
-const AquaSoftenersHyderabad = ()=>{
-return(
+import AquaSoftenerHyderabadComponent from "@/pageComponents/softenersHyderabad";
+const AquaSoftenersHyderabad = () => {
+  return (
     <>
-    <AquaSoftenerHyderabadComponent/>
+      <AquaSoftenerHyderabadComponent />
     </>
-)
-}
-export default AquaSoftenersHyderabad
+  );
+};
+export default AquaSoftenersHyderabad;

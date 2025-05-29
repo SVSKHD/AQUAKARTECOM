@@ -232,7 +232,7 @@ const AquaHomeComponent = () => {
                 <div className="relative overflow-hidden rounded-lg">
                   <div className="absolute inset-0">
                     <img
-                      src="https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg"
+                      src="https://res.cloudinary.com/aquakartproducts/image/upload/v1741968501/Blogs/jhkfgdhd9yatyml1bz4j.jpg"
                       alt="Aquakart | Blogs"
                       className="h-full w-full object-cover object-center"
                     />

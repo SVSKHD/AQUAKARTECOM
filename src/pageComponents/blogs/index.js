@@ -37,7 +37,13 @@ const AquaBlogComponnet = () => {
       {loading ? (
         <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-blue-100 to-blue-300">
           <div className="animate-bounce">
-            <Image src={AQ} alt="Loading..." width={80} height={80} className="rounded-full shadow-lg" />
+            <Image
+              src={AQ}
+              alt="Loading..."
+              width={80}
+              height={80}
+              className="rounded-full shadow-lg"
+            />
           </div>
           <p className="mt-4 text-lg text-blue-900 font-medium animate-pulse">
             Fetching the freshest blogs for you...

@@ -1,10 +1,10 @@
 import AquaOrdersPageComponent from "@/pageComponents/userDasboard/orders";
 
-const AquaOrdersPage = () =>{
-return(
+const AquaOrdersPage = () => {
+  return (
     <>
-    <AquaOrdersPageComponent/>
+      <AquaOrdersPageComponent />
     </>
-)
-}
+  );
+};
 export default AquaOrdersPage;

@@ -26,6 +26,7 @@ const AquaCodOrderPageComponent = () => {
         userData.token,
       );
       setOrder(response.data);
+      dispatch({ type: "EMPTY_CART" });
       setLoading(false);
     } catch (error) {
       AquaToast({
@@ -228,12 +229,6 @@ const AquaCodOrderPageComponent = () => {
                             <dd className="mt-3 space-y-3 text-gray-500">
                               <p>{order.email}</p>
                               <p>{order.phone}</p>
-                              <button
-                                type="button"
-                                className="font-medium text-indigo-600 hover:text-indigo-500"
-                              >
-                                Edit
-                              </button>
                             </dd>
                           </div>
                         </dl>
@@ -287,14 +282,12 @@ const AquaCodOrderPageComponent = () => {
             {/* Billing */}
             {order?.orderType === "Cash On Delivery" ? (
               <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-                <dl className="space-y-6 border-t border-gray-200 pt-10 text-lg">
-                  <div className="flex justify-between items-center">
-                    <dt className="font-medium text-gray-900 text-xl">Total</dt>
-                    <dd className="text-gray-900 font-bold text-2xl text-green-600">
-                      {formatCurrencyINR(order?.totalAmount)}
-                    </dd>
-                  </div>
-                </dl>
+                <div className="flex justify-between items-center">
+                  <dt className="font-medium text-gray-900 text-xl">Total</dt>
+                  <dd className="text-gray-900 font-bold text-2xl text-green-600">
+                    {formatCurrencyINR(order?.totalAmount)}
+                  </dd>
+                </div>
               </div>
             ) : (
               ""

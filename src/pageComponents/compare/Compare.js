@@ -46,7 +46,9 @@ const AquaCompareTabContent = () => {
           </div>
         </>
       ) : (
-        <h4 className="text-3xl text-center text-black">Add Something to Compare</h4>
+        <h4 className="text-3xl text-center text-black">
+          Add Something to Compare
+        </h4>
       )}
     </div>
   );

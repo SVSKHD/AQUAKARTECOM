@@ -15,7 +15,9 @@ const AquaUserFavPageComponent = () => {
         </div>
       ) : (
         <div className="p-4">
-          <h1 className="text-center text-gray-600 text-lg">No favourites yet.</h1>
+          <h1 className="text-center text-gray-600 text-lg">
+            No favourites yet.
+          </h1>
         </div>
       )}
     </AquaUserDashbordLayout>

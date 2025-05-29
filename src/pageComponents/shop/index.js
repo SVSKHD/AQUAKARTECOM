@@ -96,7 +96,11 @@ const AquaShopComponent = () => {
 
   return (
     <>
-      <Dialog open={mobileFiltersOpen} onClose={setMobileFiltersOpen} className="fixed inset-0 z-40 flex lg:hidden">
+      <Dialog
+        open={mobileFiltersOpen}
+        onClose={setMobileFiltersOpen}
+        className="fixed inset-0 z-40 flex lg:hidden"
+      >
         <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
         <div className="relative bg-white w-3/4 max-w-xs h-full shadow-xl overflow-y-auto p-4">
           <div className="flex justify-between items-center mb-4">
@@ -108,7 +112,9 @@ const AquaShopComponent = () => {
           {/* Filters content (same as the aside) */}
           <aside className="space-y-8">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Categories</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Categories
+              </h3>
               <ul className="mt-4 space-y-2">
                 {categories.map((cat) => (
                   <li
@@ -118,7 +124,9 @@ const AquaShopComponent = () => {
                       setMobileFiltersOpen(false);
                     }}
                     className={`cursor-pointer px-3 py-2 rounded-md border ${
-                      selectedCategory?._id === cat._id ? "bg-blue-100 border-blue-500" : "border-gray-300"
+                      selectedCategory?._id === cat._id
+                        ? "bg-blue-100 border-blue-500"
+                        : "border-gray-300"
                     }`}
                   >
                     {cat.title}
@@ -136,7 +144,9 @@ const AquaShopComponent = () => {
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Price Range</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Price Range
+              </h3>
               <div className="flex flex-col space-y-2 mt-4">
                 <input type="range" min={0} max={10000} className="w-full" />
                 <div className="flex justify-between text-sm text-gray-600">
@@ -153,7 +163,13 @@ const AquaShopComponent = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-blue-100 to-blue-300">
             <div className="animate-bounce">
-              <Image src={AQ} alt="Loading..." width={80} height={80} className="rounded-full shadow-lg" />
+              <Image
+                src={AQ}
+                alt="Loading..."
+                width={80}
+                height={80}
+                className="rounded-full shadow-lg"
+              />
             </div>
             <p className="mt-4 text-lg text-blue-900 font-medium animate-pulse">
               Loading amazing products just for you...
@@ -166,14 +182,18 @@ const AquaShopComponent = () => {
                 {/* Left Filter Panel */}
                 <aside className="w-full lg:w-1/4 space-y-8">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Categories</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Categories
+                    </h3>
                     <ul className="mt-4 space-y-2">
                       {categories.map((cat) => (
                         <li
                           key={cat._id}
                           onClick={() => handleCategorySelect(cat)}
                           className={`cursor-pointer px-3 py-2 rounded-md border ${
-                            selectedCategory?._id === cat._id ? "bg-blue-100 border-blue-500" : "border-gray-300"
+                            selectedCategory?._id === cat._id
+                              ? "bg-blue-100 border-blue-500"
+                              : "border-gray-300"
                           }`}
                         >
                           {cat.title}
@@ -189,9 +209,16 @@ const AquaShopComponent = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Price Range</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Price Range
+                    </h3>
                     <div className="flex flex-col space-y-2 mt-4">
-                      <input type="range" min={0} max={10000} className="w-full" />
+                      <input
+                        type="range"
+                        min={0}
+                        max={10000}
+                        className="w-full"
+                      />
                       <div className="flex justify-between text-sm text-gray-600">
                         <span>₹0</span>
                         <span>₹10,000+</span>

@@ -1,7 +1,14 @@
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Home, User, Settings, ShoppingCart, Heart, ShoppingBag } from "lucide-react";
+import {
+  Home,
+  User,
+  Settings,
+  ShoppingCart,
+  Heart,
+  ShoppingBag,
+} from "lucide-react";
 
 const AquaUserDashboardHeader = () => {
   const router = useRouter();
@@ -28,7 +35,7 @@ const AquaUserDashboardHeader = () => {
     {
       id: "settings",
       label: "Settings",
-      href: "/settings",
+      href: "/dashboard/settings",
       icon: Settings,
     },
     {

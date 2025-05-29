@@ -68,7 +68,8 @@ const config = {
     title: "Contact Aquakart | Customer Support & Inquiries",
     keywords:
       "Contact Aquakart, Customer Support, Water Softener Queries, RO Purifier Assistance, Hyderabad Water Filter Help",
-    keyphrases: "Aquakart Customer Support, Water Softener Help, Contact Us Hyderabad",
+    keyphrases:
+      "Aquakart Customer Support, Water Softener Help, Contact Us Hyderabad",
     url: "https://aquakart.co.in/contact",
     photos: "https://www.aquakart.co.in/images/contact.jpg",
     description:
