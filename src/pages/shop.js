@@ -1,8 +1,6 @@
 import AquaShopComponent from "@/pageComponents/shop";
 
 const AquaShop = () => {
-  return (
-    <AquaShopComponent/>
-  )
+  return <AquaShopComponent />;
 };
 export default AquaShop;

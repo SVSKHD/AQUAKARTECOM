@@ -9,6 +9,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import { useRouter } from "next/router";
 import { Toaster } from "sonner";
 
+
 const persistConfig = {
   key: "root",
   storage,
@@ -21,6 +22,9 @@ const persistor = persistStore(store);
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();
+  const dispatch = useDispatch()
+  
+  
 
   useEffect(() => {
     // Function to initialize gtag
@@ -76,8 +80,6 @@ export default function App({ Component, pageProps }) {
       };
 
       document.addEventListener("contextmenu", handleContextMenu);
-
-      // Cleanup on unmount
       return () => {
         document.removeEventListener("contextmenu", handleContextMenu);
       };
