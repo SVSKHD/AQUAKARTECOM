@@ -22,7 +22,6 @@ const persistor = persistStore(store);
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();
-  const dispatch = useDispatch()
   
   
 
