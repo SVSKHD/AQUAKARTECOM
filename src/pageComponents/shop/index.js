@@ -21,7 +21,6 @@ const AquaShopPageComponent = () => {
       .finally(() => setLoading(false));
   }, []);
 
-
   return (
     <AquaLayout>
       {loading ? (
@@ -68,7 +67,11 @@ const AquaShopPageComponent = () => {
 
           {/* Mobile Filter Drawer */}
           <Transition appear show={showFilters} as={Fragment}>
-            <Dialog as="div" className="relative z-10 md:hidden" onClose={() => setShowFilters(false)}>
+            <Dialog
+              as="div"
+              className="relative z-10 md:hidden"
+              onClose={() => setShowFilters(false)}
+            >
               <Transition.Child
                 as={Fragment}
                 enter="ease-out duration-300"
@@ -93,7 +96,9 @@ const AquaShopPageComponent = () => {
                     leaveTo="translate-x-full"
                   >
                     <Dialog.Panel className="w-3/4 max-w-sm bg-white p-6 shadow-xl">
-                      <Dialog.Title className="text-lg font-bold">Filters</Dialog.Title>
+                      <Dialog.Title className="text-lg font-bold">
+                        Filters
+                      </Dialog.Title>
                       <div className="mt-4">
                         <ShopFiltersPanel />
                       </div>

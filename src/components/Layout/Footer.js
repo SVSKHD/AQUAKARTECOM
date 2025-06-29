@@ -52,23 +52,10 @@ const navigation = {
 const year = new Date().getFullYear();
 const AquaFooter = () => {
   const { userData } = useSelector((state) => ({ ...state }));
-  const [categories, setCategories] = useState([]);
-  const [subcategories, setSubCategories] = useState([]);
+  const { categories, subcategories } = useSelector(
+    (state) => state.dynamicData,
+  );
   const [email, setEmail] = useState("");
-  useEffect(() => {
-    const fetchCategories = () => {
-      CategoryServiceOperations.Allcategories().then((res) => {
-        setCategories(res.data.data);
-      });
-    };
-    const fetchSubCategories = () => {
-      SubCategoryServiceOperations.AllSubcategories().then((res) => {
-        setSubCategories(res.data.data);
-      });
-    };
-    fetchCategories();
-    fetchSubCategories();
-  }, []); // Only run once, when the component mounts
 
   const handleSubmitEmail = () => {};
 

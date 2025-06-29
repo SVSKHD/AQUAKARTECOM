@@ -12,6 +12,7 @@ import { userDataDrawerReducer } from "./reducers/userDataUpdateDrawer";
 import { addressDialog } from "./reducers/addressDialogReducer";
 import { addressData } from "./reducers/addressDialogData";
 import { compareDataReducer } from "./reducers/compareDataReducer";
+import { dynamicDataReducer } from "./reducers/dynamicReducer";
 
 const rootReducer = combineReducers({
   toastNotify: toastReducer,
@@ -26,6 +27,7 @@ const rootReducer = combineReducers({
   addressDialog: addressDialog,
   addressData: addressData,
   compare: compareDataReducer,
+  dynamicData: dynamicDataReducer,
 });
 
 export default rootReducer;

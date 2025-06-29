@@ -9,7 +9,6 @@ import { PersistGate } from "redux-persist/integration/react";
 import { useRouter } from "next/router";
 import { Toaster } from "sonner";
 
-
 const persistConfig = {
   key: "root",
   storage,
@@ -22,8 +21,6 @@ const persistor = persistStore(store);
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();
-  
-  
 
   useEffect(() => {
     // Function to initialize gtag

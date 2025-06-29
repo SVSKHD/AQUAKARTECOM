@@ -11,15 +11,44 @@ import AquaTailwindToast from "../toast/TailwindToast";
 import useNetworkStatus from "@/utils/connectivity";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { useSelector, useDispatch } from "react-redux";
+import CategoryServiceOperations from "@/services/category";
+import SubCategoryServiceOperations from "@/services/subcategory";
 
 const AquaLayout = (props) => {
   const router = useRouter();
+  const dispatch = useDispatch();
+
   const [seo, setSeo] = useState({
     path: "",
     product: "",
     category: "",
     subCategory: "",
   });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const categoryData = await CategoryServiceOperations.Allcategories();
+      const subcategoryData =
+        await SubCategoryServiceOperations.AllSubcategories();
+
+      dispatch({
+        type: "SET_CATEGORIES",
+        payload: categoryData?.data?.data || [],
+      });
+      dispatch({
+        type: "SET_SUBCATEGORIES",
+        payload: subcategoryData?.data?.data || [],
+      });
+    };
+
+    fetchData();
+  }, []);
+
+  const { categories, subcategories } = useSelector(
+    (state) => state.dynamicData,
+  );
+
   useEffect(() => {
     const { pathname } = router;
     const formattedPath = pathname.split("/")[1];
@@ -44,7 +73,7 @@ const AquaLayout = (props) => {
     }
 
     setSeo(newSeo);
-  }, [router.pathname]);
+  }, [router.pathname, dispatch]);
 
   const Status = useNetworkStatus();
   const handleRetry = () => {
@@ -55,6 +84,7 @@ const AquaLayout = (props) => {
       {Status ? (
         <>
           {/* <AquaSeo seo={props.seo} /> */}
+
           <AquaSeoRevamp
             path={seo?.path}
             category={seo?.category}
@@ -68,6 +98,7 @@ const AquaLayout = (props) => {
           <AquaUserDataDrawer />
           <AquaUserAuthDialog />
           <AquaHeader />
+
           <AquaCartDrawer />
           <AquafavDrawer />
           <AquaTailwindToast />
