@@ -26,28 +26,27 @@ const AquaLayout = (props) => {
     subCategory: "",
   });
 
+   const { categories, subcategories } = useSelector(
+    (state) => state.dynamicData,
+  );
+
   useEffect(() => {
     const fetchData = async () => {
-      const categoryData = await CategoryServiceOperations.Allcategories();
-      const subcategoryData =
-        await SubCategoryServiceOperations.AllSubcategories();
+      if (categories.length === 0) {
+        const catData = await CategoryServiceOperations.Allcategories();
+        dispatch({ type: "SET_CATEGORIES", payload: catData?.data || [] });
+      }
 
-      dispatch({
-        type: "SET_CATEGORIES",
-        payload: categoryData?.data?.data || [],
-      });
-      dispatch({
-        type: "SET_SUBCATEGORIES",
-        payload: subcategoryData?.data?.data || [],
-      });
+      if (subcategories.length === 0) {
+        const subCatData = await SubCategoryServiceOperations.AllSubcategories();
+        dispatch({ type: "SET_SUBCATEGORIES", payload: subCatData?.data || [] });
+      }
     };
 
     fetchData();
-  }, []);
+  }, [categories.length, subcategories.length, dispatch]);
 
-  const { categories, subcategories } = useSelector(
-    (state) => state.dynamicData,
-  );
+ 
 
   useEffect(() => {
     const { pathname } = router;

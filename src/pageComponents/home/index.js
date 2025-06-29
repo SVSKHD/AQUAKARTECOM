@@ -11,13 +11,10 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import AquaLayout from "@/components/Layout/Layout";
 import AquaSpinner from "@/components/common/spinner";
 import { useRouter } from "next/router";
-import CategoryServiceOperations from "@/services/category";
 import Link from "next/link";
 import AquaProducts from "./products";
-import { motion } from "framer-motion";
-import logo from "@/assests/logo.png";
-import Image from "next/image";
 import AquaHomeHero from "./homeHeroSection";
+import { useSelector } from "react-redux";
 
 const AquaHomeComponent = () => {
   const [categoryData, setCategoryData] = useState([]);
@@ -28,6 +25,10 @@ const AquaHomeComponent = () => {
     product: false,
   });
 
+  const { categories, subcategories } = useSelector(
+    (state) => state.dynamicData,
+  );
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -35,8 +36,6 @@ const AquaHomeComponent = () => {
         const timer = setTimeout(() => {
           setLoading((prevData) => ({ ...prevData, category: true }));
         }, 3000);
-        const categoryRes = await CategoryServiceOperations.Allcategories();
-        setCategoryData(categoryRes.data.data);
         // Clear timeout and update loading states
         clearTimeout(timer);
         setLoading((prevData) => ({
@@ -139,7 +138,7 @@ const AquaHomeComponent = () => {
             </Dialog>
 
             {/* Hero section */}
-            <AquaHomeHero data={categoryData} />
+            <AquaHomeHero data={categories} />
 
             <main>
               <AquaProducts />
@@ -178,7 +177,7 @@ const AquaHomeComponent = () => {
                           </>
                         ) : (
                           <>
-                            {categoryData.map((category) => (
+                            {categories.map((category) => (
                               <a
                                 key={category.title}
                                 href={`/category/${category.title}`}
