@@ -34,11 +34,13 @@ const AquaLayout = (props) => {
     const fetchData = async () => {
       if (categories.length === 0) {
         const catData = await CategoryServiceOperations.Allcategories();
+      
         dispatch({ type: "SET_CATEGORIES", payload: catData?.data || [] });
       }
 
       if (subcategories.length === 0) {
         const subCatData = await SubCategoryServiceOperations.AllSubcategories();
+       
         dispatch({ type: "SET_SUBCATEGORIES", payload: subCatData?.data || [] });
       }
     };
@@ -104,8 +106,8 @@ const AquaLayout = (props) => {
           <AquaToast />
 
           <main className="bg-white min-h-screen">{props.children}</main>
-
-          <AquaFooter />
+<AquaFooter/>
+          
         </>
       ) : (
         <>

@@ -106,7 +106,7 @@ const AquaHomeComponent = () => {
                   {/* Links */}
                   <TabGroup className="mt-2">
                     <TabPanels as={Fragment}>
-                      {categoryData.map((category) => (
+                      {categories?.data.map((category) => (
                         <TabPanel
                           key={category.name}
                           className="space-y-12 px-4 py-6"
@@ -163,7 +163,8 @@ const AquaHomeComponent = () => {
                   </a>
                 </div>
 
-                <div className="mt-4 flow-root">
+
+               <div className="mt-4 flow-root">
                   <div className="-my-2">
                     <div className="relative box-content h-80 overflow-x-auto py-2 xl:overflow-visible">
                       <div className="absolute flex space-x-8 px-4 sm:px-6 lg:px-8 xl:relative xl:grid xl:grid-cols-5 xl:gap-x-8 xl:space-x-0 xl:px-0">
@@ -177,7 +178,7 @@ const AquaHomeComponent = () => {
                           </>
                         ) : (
                           <>
-                            {categories.map((category) => (
+                            {categories?.data?.map((category) => (
                               <a
                                 key={category.title}
                                 href={`/category/${category.title}`}
@@ -210,7 +211,8 @@ const AquaHomeComponent = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                </div>               
+
 
                 <div className="mt-6 px-4 sm:hidden">
                   <a

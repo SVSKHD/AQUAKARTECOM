@@ -80,7 +80,7 @@ const AquaFooter = () => {
                   SubCategories
                 </h3>
                 <ul role="list" className="mt-6 space-y-4">
-                  {subcategories.map((item) => (
+                  {subcategories?.data.map((item) => (
                     <li key={item.title}>
                       <a
                         href={`/subcategory/${item.title}`}
@@ -98,7 +98,7 @@ const AquaFooter = () => {
                   Categories
                 </h3>
                 <ul role="list" className="mt-6 space-y-4">
-                  {categories.map((item) => (
+                  {categories?.data.map((item) => (
                     <li key={item.title}>
                       <a
                         href={`/category/${item.title}`}
