@@ -16,7 +16,7 @@ const ShopFiltersPanel = () => {
               {label === "Category" && (
                 <>
                   <option>All</option>
-                  {categories.map((r, i) => (
+                  {categories?.data.map((r, i) => (
                     <option key={i}>{r.title}</option>
                   ))}
                 </>
@@ -24,7 +24,7 @@ const ShopFiltersPanel = () => {
               {label === "Subcategory" && (
                 <>
                   <option>All</option>
-                  {subcategories.map((r, i) => (
+                  {subcategories?.data.map((r, i) => (
                     <option key={i}>{r.title}</option>
                   ))}
                 </>
