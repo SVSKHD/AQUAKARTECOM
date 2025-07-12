@@ -27,7 +27,7 @@ const AquaUserAuthDialog = () => {
           <AquaAuthForm signup={userSignupStatus} />
         )}
 
-        {/* <p className="mt-10 text-center text-sm text-gray-500">
+        <p className="mt-10 text-center text-sm text-gray-500">
           Not a member? <span className="mx-2">or</span>
           <span
             onClick={() => setMobile(!mobile)}
@@ -36,7 +36,7 @@ const AquaUserAuthDialog = () => {
           >
             {mobile ? "Signup with Email" : "Signup With Phone"}
           </span>
-        </p> */}
+        </p>
       </AquaResponsiveDialog>
     </>
   );

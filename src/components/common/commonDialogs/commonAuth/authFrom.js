@@ -139,7 +139,7 @@ const AquaAuthMobileForm = ({ signup }) => {
               htmlFor="email-address"
               className="block text-sm font-medium leading-6 text-gray-900"
             >
-              Email Address
+              Email Address:
             </label>
             <div className="relative mt-2 rounded-md shadow-sm">
               <div className="relative w-full">
@@ -151,7 +151,7 @@ const AquaAuthMobileForm = ({ signup }) => {
                   onChange={(e) => setEmail(e.target.value)} // Only updates state
                   onKeyDown={handleKeyDown}
                   placeholder="example@example.com"
-                  className="block w-full p-4 rounded-md border-0 py-1.5 pr-12 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-full pt-4 pb-4  p-4 rounded-md border-0 py-1.5 pr-12 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   disabled={loading} // Disable input when loading
                 />
                 <button

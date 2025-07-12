@@ -109,7 +109,7 @@ const AquaAuthMobileForm = ({ signup }) => {
               htmlFor="phone-number"
               className="block text-sm font-medium leading-6 text-gray-900"
             >
-              Phone No
+              Phone No:
             </label>
             <div className="relative mt-2 rounded-md shadow-sm">
               <input
@@ -120,7 +120,7 @@ const AquaAuthMobileForm = ({ signup }) => {
                 value={phone}
                 onChange={handlePhoneChange}
                 placeholder="000-00-00000"
-                className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full p-4 pt-4 pb-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
             {otpShow && (
@@ -133,7 +133,7 @@ const AquaAuthMobileForm = ({ signup }) => {
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   placeholder="Enter OTP"
-                  className="block w-full p-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-full p-4 pt-4 pb-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
               </div>
             )}

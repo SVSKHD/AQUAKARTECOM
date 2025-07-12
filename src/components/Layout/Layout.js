@@ -26,7 +26,7 @@ const AquaLayout = (props) => {
     subCategory: "",
   });
 
-   const { categories, subcategories } = useSelector(
+  const { categories, subcategories } = useSelector(
     (state) => state.dynamicData,
   );
 
@@ -34,21 +34,23 @@ const AquaLayout = (props) => {
     const fetchData = async () => {
       if (categories.length === 0) {
         const catData = await CategoryServiceOperations.Allcategories();
-      
+
         dispatch({ type: "SET_CATEGORIES", payload: catData?.data || [] });
       }
 
       if (subcategories.length === 0) {
-        const subCatData = await SubCategoryServiceOperations.AllSubcategories();
-       
-        dispatch({ type: "SET_SUBCATEGORIES", payload: subCatData?.data || [] });
+        const subCatData =
+          await SubCategoryServiceOperations.AllSubcategories();
+
+        dispatch({
+          type: "SET_SUBCATEGORIES",
+          payload: subCatData?.data || [],
+        });
       }
     };
 
     fetchData();
   }, [categories.length, subcategories.length, dispatch]);
-
- 
 
   useEffect(() => {
     const { pathname } = router;
@@ -106,8 +108,7 @@ const AquaLayout = (props) => {
           <AquaToast />
 
           <main className="bg-white min-h-screen">{props.children}</main>
-<AquaFooter/>
-          
+          <AquaFooter />
         </>
       ) : (
         <>
