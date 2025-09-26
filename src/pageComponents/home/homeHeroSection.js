@@ -12,7 +12,7 @@ const AquaHomeHero = ({ data }) => {
             {/* Left side: Static image grid with overlapping images */}
             <div className="relative order-2 lg:order-1">
               <div className="grid grid-cols-2 grid-rows-2 gap-4">
-                {data?.data?.slice(0, 4).map((category, index) => (
+                {data?.slice(0, 4).map((category, index) => (
                   <motion.div
                     key={category.id || index}
                     initial={{

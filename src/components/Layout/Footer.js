@@ -1,8 +1,7 @@
 import LW from "@/assests/logo-white.png";
-import CategoryServiceOperations from "@/services/category";
-import SubCategoryServiceOperations from "@/services/subcategory";
+import { isArray } from "lodash";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 const navigation = {
   Policy: [
@@ -50,14 +49,13 @@ const navigation = {
   ],
 };
 const year = new Date().getFullYear();
-const AquaFooter = () => {
+const AquaFooter = ({ categories = [], subcategories = [] }) => {
   const { userData } = useSelector((state) => ({ ...state }));
-  const { categories, subcategories } = useSelector(
-    (state) => state.dynamicData,
-  );
+
   const [email, setEmail] = useState("");
 
-  const handleSubmitEmail = () => {};
+  const formattedCategories = isArray(categories) ? categories : [];
+  const formattedSubCategories = isArray(subcategories) ? subcategories : [];
 
   return (
     <footer className="bg-gray-900" aria-labelledby="footer-heading">
@@ -80,7 +78,7 @@ const AquaFooter = () => {
                   SubCategories
                 </h3>
                 <ul role="list" className="mt-6 space-y-4">
-                  {subcategories?.data.map((item) => (
+                  {formattedSubCategories?.map((item) => (
                     <li key={item.title}>
                       <a
                         href={`/subcategory/${item.title}`}
@@ -97,8 +95,9 @@ const AquaFooter = () => {
                 <h3 className="text-sm font-semibold leading-6 text-white">
                   Categories
                 </h3>
+
                 <ul role="list" className="mt-6 space-y-4">
-                  {categories?.data.map((item) => (
+                  {formattedCategories?.map((item) => (
                     <li key={item.title}>
                       <a
                         href={`/category/${item.title}`}
@@ -162,7 +161,7 @@ const AquaFooter = () => {
               />
               <div className="mt-4 sm:ml-4 sm:mt-0 sm:flex-shrink-0">
                 <button
-                  onClick={handleSubmitEmail}
+                  // onClick={handleSubmitEmail}
                   type="submit"
                   className="flex w-full items-center justify-center rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
                 >

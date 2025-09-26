@@ -26,31 +26,22 @@ const AquaLayout = (props) => {
     subCategory: "",
   });
 
-  const { categories, subcategories } = useSelector(
-    (state) => state.dynamicData,
-  );
+  const [setDataCategories, setcategories] = useState([]);
+  const [setDataSubCategories, setsubcategories] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (categories.length === 0) {
-        const catData = await CategoryServiceOperations.Allcategories();
+      const catData = await CategoryServiceOperations.Allcategories();
+      console.log("catData", catData?.data?.data);
+      setcategories(catData?.data?.data);
 
-        dispatch({ type: "SET_CATEGORIES", payload: catData?.data || [] });
-      }
-
-      if (subcategories.length === 0) {
-        const subCatData =
-          await SubCategoryServiceOperations.AllSubcategories();
-
-        dispatch({
-          type: "SET_SUBCATEGORIES",
-          payload: subCatData?.data || [],
-        });
-      }
+      const subCatData = await SubCategoryServiceOperations.AllSubcategories();
+      console.log("subCatData", subCatData?.data?.data);
+      setsubcategories(subCatData?.data?.data);
     };
 
     fetchData();
-  }, [categories.length, subcategories.length, dispatch]);
+  }, [setDataCategories.length, setDataSubCategories.length]);
 
   useEffect(() => {
     const { pathname } = router;
@@ -108,7 +99,11 @@ const AquaLayout = (props) => {
           <AquaToast />
 
           <main className="bg-white min-h-screen">{props.children}</main>
-          <AquaFooter />
+
+          <AquaFooter
+            categories={setDataCategories}
+            subcategories={setDataSubCategories}
+          />
         </>
       ) : (
         <>
@@ -129,7 +124,10 @@ const AquaLayout = (props) => {
               </button>
             </div>
           </main>
-          <AquaFooter />
+          <AquaFooter
+            categories={setDataCategories}
+            subcategories={setDataSubCategories}
+          />
         </>
       )}
     </>

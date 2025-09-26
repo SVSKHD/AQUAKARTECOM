@@ -14,10 +14,12 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import AquaProducts from "./products";
 import AquaHomeHero from "./homeHeroSection";
-import { useSelector } from "react-redux";
+import CategoryServiceOperations from "@/services/category";
+import SubCategoryServiceOperations from "@/services/subcategory";
 
 const AquaHomeComponent = () => {
   const [categoryData, setCategoryData] = useState([]);
+  const [subCategoryData, setSubCategoryData] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState({
     category: false,
@@ -25,36 +27,19 @@ const AquaHomeComponent = () => {
     product: false,
   });
 
-  const { categories, subcategories } = useSelector(
-    (state) => state.dynamicData,
-  );
-
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading((prevData) => ({ ...prevData, category: true }));
-        const timer = setTimeout(() => {
-          setLoading((prevData) => ({ ...prevData, category: true }));
-        }, 3000);
-        // Clear timeout and update loading states
-        clearTimeout(timer);
-        setLoading((prevData) => ({
-          ...prevData,
-          category: false,
-          product: false,
-        }));
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-        // Optionally set loading states to false in case of an error
-        setLoading((prevData) => ({
-          ...prevData,
-          category: false,
-          product: false,
-        }));
-      }
+    const fetchAllCategories = async () => {
+      CategoryServiceOperations.Allcategories().then((res) => {
+        setCategoryData(res.data?.data);
+      });
     };
-
-    fetchData();
+    const fetchAllSubCategories = async () => {
+      SubCategoryServiceOperations.AllSubcategories().then((res) => {
+        setSubCategoryData(res.data?.data);
+      });
+    };
+    fetchAllCategories();
+    fetchAllSubCategories();
   }, []);
 
   const router = useRouter();
@@ -102,11 +87,11 @@ const AquaHomeComponent = () => {
                       <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                     </button>
                   </div>
-
+                  {/* {categoryData.length} */}
                   {/* Links */}
                   <TabGroup className="mt-2">
                     <TabPanels as={Fragment}>
-                      {categories?.data.map((category) => (
+                      {categoryData?.map((category) => (
                         <TabPanel
                           key={category.name}
                           className="space-y-12 px-4 py-6"
@@ -138,7 +123,7 @@ const AquaHomeComponent = () => {
             </Dialog>
 
             {/* Hero section */}
-            <AquaHomeHero data={categories} />
+            <AquaHomeHero data={categoryData} />
 
             <main>
               <AquaProducts />
@@ -177,7 +162,7 @@ const AquaHomeComponent = () => {
                           </>
                         ) : (
                           <>
-                            {categories?.data?.map((category) => (
+                            {categoryData.map((category) => (
                               <a
                                 key={category.title}
                                 href={`/category/${category.title}`}
