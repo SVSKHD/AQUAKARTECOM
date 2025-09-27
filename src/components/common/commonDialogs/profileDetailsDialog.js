@@ -1,0 +1,207 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import AquaResponsiveDialog from "@/components/reusables/dialog";
+
+const defaultValues = {
+  email: "",
+  phone: "",
+  alternatePhone: "",
+  dob: "",
+  address: "",
+};
+
+const ProfileDetailsDialog = ({
+  open,
+  onClose,
+  initialValues,
+  onSubmit,
+  isSubmitting,
+  focusField,
+}) => {
+  const [formValues, setFormValues] = useState(defaultValues);
+
+  const emailRef = useRef(null);
+  const phoneRef = useRef(null);
+  const alternateRef = useRef(null);
+  const dobRef = useRef(null);
+  const addressRef = useRef(null);
+
+  useEffect(() => {
+    if (open) {
+      setFormValues({ ...defaultValues, ...initialValues });
+    }
+  }, [initialValues, open]);
+
+  const focusTarget = useMemo(() => {
+    switch (focusField) {
+      case "email":
+        return emailRef;
+      case "phone":
+        return phoneRef;
+      case "alternatePhone":
+        return alternateRef;
+      case "dob":
+        return dobRef;
+      case "address":
+        return addressRef;
+      default:
+        return null;
+    }
+  }, [focusField]);
+
+  useEffect(() => {
+    if (open && focusTarget?.current) {
+      const timeout = setTimeout(() => focusTarget.current?.focus(), 100);
+      return () => clearTimeout(timeout);
+    }
+  }, [open, focusTarget]);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormValues((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    onSubmit?.(formValues);
+  };
+
+  return (
+    <AquaResponsiveDialog open={open} close={onClose}>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Update your contact details
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Keep your profile up to date so we can reach you for deliveries,
+            maintenance, and service reminders.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label
+              htmlFor="address"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Address
+            </label>
+            <textarea
+              id="address"
+              name="address"
+              ref={addressRef}
+              rows={3}
+              value={formValues.address}
+              onChange={handleChange}
+              placeholder="Flat No, Street, Area, City"
+              className="mt-1 block w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              This will be used as your default delivery and service address.
+            </p>
+          </div>
+
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              ref={emailRef}
+              value={formValues.email}
+              onChange={handleChange}
+              placeholder="name@example.com"
+              className="mt-1 block w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="phone"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Phone
+            </label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              ref={phoneRef}
+              value={formValues.phone}
+              onChange={handleChange}
+              maxLength={10}
+              placeholder="Primary contact number"
+              className="mt-1 block w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="alternatePhone"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Alternate Phone
+            </label>
+            <input
+              id="alternatePhone"
+              name="alternatePhone"
+              type="tel"
+              ref={alternateRef}
+              value={formValues.alternatePhone}
+              onChange={handleChange}
+              maxLength={10}
+              placeholder="Optional backup number"
+              className="mt-1 block w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="dob"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Date of Birth
+            </label>
+            <input
+              id="dob"
+              name="dob"
+              type="date"
+              ref={dobRef}
+              value={formValues.dob}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-indigo-400"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Saving..." : "Save changes"}
+          </button>
+        </div>
+      </form>
+    </AquaResponsiveDialog>
+  );
+};
+
+export default ProfileDetailsDialog;

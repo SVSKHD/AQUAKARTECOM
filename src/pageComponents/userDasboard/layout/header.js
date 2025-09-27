@@ -8,12 +8,19 @@ import {
   ShoppingCart,
   Heart,
   ShoppingBag,
+  ShoppingBagIcon
 } from "lucide-react";
 
 const AquaUserDashboardHeader = () => {
   const router = useRouter();
 
   const navItems = [
+    {
+      id: "home",
+      label: "Shop",
+      href: "/",
+      icon: ShoppingBagIcon,
+    },
     {
       id: "dashboard",
       label: "Dashboard",
