@@ -1,22 +1,27 @@
 import UserServiceOperations from "@/services/user";
 import useDialog from "@/utils/dialog";
-import { useState, useCallback } from "react";
+import { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import Image from "next/image";
 import AquaToast from "@/components/reusables/react-toastify";
-import debounce from "lodash.debounce";
 
 const AquaAuthMobileForm = ({ signup }) => {
   const [phone, setPhone] = useState("");
   const [otpShow, setOtpShow] = useState(false);
-  const [otp, setOtp] = useState("");
+  const [otpDigits, setOtpDigits] = useState(Array(6).fill(""));
   const { closeAuthDialog } = useDialog();
   const dispatch = useDispatch();
+  const inputRefs = useRef([]);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const phoneFormat = Number(phone);
-    const otpFormat = Number(otp);
+    const otpValue = otpDigits.join("");
+    if (otpValue.length !== 6) {
+      return;
+    }
+    const otpFormat = Number(otpValue);
     const data = { phone: phoneFormat, otp: otpFormat };
     UserServiceOperations.UserMobileVerify(data)
       .then((res) => {
@@ -43,49 +48,106 @@ const AquaAuthMobileForm = ({ signup }) => {
     return phoneRegex.test(phone);
   };
 
-  const requestOtp = useCallback(
-    debounce((newPhone) => {
-      if (isValidPhone(newPhone)) {
-        AquaToast({
-          message: "Otp in Air Please wait.....",
-          type: "info",
-        });
-        UserServiceOperations.UserMobileOtp({ phone: newPhone })
-          .then((res) => {
-            setOtpShow(true);
-            AquaToast({
-              message: "Successfully sent Otp",
-              type: "success",
-            });
-            dispatch({
-              type: "SET_AUTH_STATUS_VISIBLE",
-              payload: !res.data.userExist,
-            });
-          })
-          .catch((err) => {
-            setOtpShow(false);
-            AquaToast({
-              message: "Failed to send OTP",
-              type: "error",
-            });
-
-            dispatch({
-              type: "SET_AUTH_STATUS_VISIBLE",
-              payload: false,
-            });
-          });
-      } else {
-        setOtpShow(false);
-      }
-    }, 300), // Adjust debounce delay as needed
-    [dispatch],
-  );
-
   const handlePhoneChange = (e) => {
-    const newPhone = e.target.value;
-    setPhone(newPhone);
-    requestOtp(newPhone);
+    const newPhone = e.target.value.replace(/\D/g, "");
+    if (newPhone.length <= 10) {
+      setPhone(newPhone);
+      setOtpShow(false);
+      setOtpDigits(Array(6).fill(""));
+    }
   };
+
+  const handleSendOtp = () => {
+    if (!isValidPhone(phone) || isSendingOtp) {
+      return;
+    }
+
+    setIsSendingOtp(true);
+    AquaToast({
+      message: "Sending WhatsApp OTP...",
+      type: "info",
+    });
+
+    UserServiceOperations.UserMobileOtp({ phone })
+      .then((res) => {
+        setOtpShow(true);
+        setIsSendingOtp(false);
+        AquaToast({
+          message: "OTP sent successfully",
+          type: "success",
+        });
+        dispatch({
+          type: "SET_AUTH_STATUS_VISIBLE",
+          payload: !res.data.userExist,
+        });
+        setTimeout(() => inputRefs.current?.[0]?.focus(), 0);
+      })
+      .catch(() => {
+        setOtpShow(false);
+        setIsSendingOtp(false);
+        AquaToast({
+          message: "Failed to send OTP",
+          type: "error",
+        });
+
+        dispatch({
+          type: "SET_AUTH_STATUS_VISIBLE",
+          payload: false,
+        });
+      });
+  };
+
+  const handleOtpChange = (index, value) => {
+    const sanitized = value.replace(/\D/g, "");
+    const updatedDigits = [...otpDigits];
+
+    if (!sanitized) {
+      updatedDigits[index] = "";
+      setOtpDigits(updatedDigits);
+      return;
+    }
+
+    updatedDigits[index] = sanitized.charAt(sanitized.length - 1);
+    setOtpDigits(updatedDigits);
+
+    if (index < inputRefs.current.length - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index, event) => {
+    if (event.key === "Backspace") {
+      event.preventDefault();
+      const updatedDigits = [...otpDigits];
+      if (updatedDigits[index]) {
+        updatedDigits[index] = "";
+        setOtpDigits(updatedDigits);
+      } else if (index > 0) {
+        updatedDigits[index - 1] = "";
+        setOtpDigits(updatedDigits);
+        inputRefs.current[index - 1]?.focus();
+      }
+    }
+  };
+
+  const handleOtpPaste = (event) => {
+    event.preventDefault();
+    const pasted = event.clipboardData.getData("text").replace(/\D/g, "");
+    if (!pasted) {
+      return;
+    }
+
+    const updatedDigits = Array(6)
+      .fill("")
+      .map((_, idx) => pasted[idx] || "");
+    setOtpDigits(updatedDigits);
+
+    const nextIndex = Math.min(pasted.length, 5);
+    inputRefs.current[nextIndex]?.focus();
+  };
+
+  const isOtpComplete = otpDigits.every((digit) => digit !== "");
+  const canSubmit = otpShow && isOtpComplete;
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
@@ -117,24 +179,45 @@ const AquaAuthMobileForm = ({ signup }) => {
                 name="phone-number"
                 maxLength="10"
                 type="text"
+                inputMode="numeric"
                 value={phone}
                 onChange={handlePhoneChange}
-                placeholder="000-00-00000"
-                className="block w-full p-4 pt-4 pb-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                placeholder="Enter 10-digit phone number"
+                className="block w-full rounded-md border-0 bg-white p-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
+            <span className="mt-2 inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800">
+              WhatsApp OTP only (SMS coming soon)
+            </span>
+            {isValidPhone(phone) && !otpShow && (
+              <button
+                type="button"
+                onClick={handleSendOtp}
+                className="mt-4 flex w-full items-center justify-center rounded-md bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                disabled={isSendingOtp}
+              >
+                {isSendingOtp ? "Sending..." : "Send WhatsApp OTP"}
+              </button>
+            )}
             {otpShow && (
-              <div className="relative mt-2 rounded-md shadow-sm">
-                <input
-                  id="otp"
-                  name="otp"
-                  maxLength="6"
-                  type="number"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  placeholder="Enter OTP"
-                  className="block w-full p-4 pt-4 pb-4 rounded-md border-0 py-1.5 pr-10 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
+              <div className="mt-6 flex justify-center gap-3">
+                {otpDigits.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => {
+                      inputRefs.current[index] = el;
+                    }}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength="1"
+                    value={digit}
+                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                    onKeyDown={(event) => handleOtpKeyDown(index, event)}
+                    onPaste={index === 0 ? handleOtpPaste : undefined}
+                    className="h-12 w-12 rounded-md border border-gray-300 text-center text-lg font-semibold text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                ))}
               </div>
             )}
             <p className="mt-2 text-sm text-gray-500">
@@ -145,12 +228,12 @@ const AquaAuthMobileForm = ({ signup }) => {
           <div>
             <button
               type="submit"
-              className={`mt-2 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                !otpShow
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-indigo-600 hover:bg-indigo-700"
+              className={`mt-2 flex w-full items-center justify-center rounded-md border border-transparent px-8 py-3 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+                canSubmit
+                  ? "bg-indigo-600 hover:bg-indigo-700"
+                  : "bg-gray-400 cursor-not-allowed"
               }`}
-              disabled={!otpShow}
+              disabled={!canSubmit}
             >
               {signup ? "Sign Up" : "Sign In"}
             </button>

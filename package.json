@@ -17,6 +17,7 @@
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "axios": "^1.12.2",
     "embla-carousel-react": "^8.6.0",
+    "firebase": "^12.3.0",
     "formidable": "^3.5.4",
     "framer-motion": "^12.23.22",
     "lodash": "^4.17.21",
