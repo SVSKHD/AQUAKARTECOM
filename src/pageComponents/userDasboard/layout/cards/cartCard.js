@@ -10,12 +10,16 @@ import {
 } from "lucide-react";
 import AQ from "@/assests/logo-white.png";
 import Image from "next/image";
+import { useDispatch, useSelector } from "react-redux";
+import AquaToast from "@/components/reusables/react-toastify";
 
-const DashboardProductCard = ({ product }) => {
+const DashboardProductCard = ({ product, variant = "default" }) => {
   const [currentImage, setCurrentImage] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
+  const dispatch = useDispatch();
+  const { favData } = useSelector((state) => ({ favData: state.favData }));
 
   const {
     title: productName,
@@ -40,6 +44,7 @@ const DashboardProductCard = ({ product }) => {
   const userAvatar = user.avatar || "/avatar.jpg";
 
   const isProduct = Boolean(productName && brandName);
+  const productId = product?._id || product?.id;
 
   const nextImage = () => {
     setCurrentImage((prev) => (prev + 1) % images.length);
@@ -47,6 +52,27 @@ const DashboardProductCard = ({ product }) => {
 
   const previousImage = () => {
     setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const handleMoveToFavourites = () => {
+    if (!product) {
+      return;
+    }
+
+    const alreadyFavourite = Array.isArray(favData)
+      ? favData.some((item) => item._id === productId || item.id === productId)
+      : false;
+
+    if (!alreadyFavourite) {
+      dispatch({ type: "ADD_TO_FAV", payload: product });
+      AquaToast({ message: "Added to favourites", type: "success" });
+    } else {
+      AquaToast({ message: "Already in favourites", type: "info" });
+    }
+
+    if (productId && variant === "cart") {
+      dispatch({ type: "REMOVE_FROM_CART", payload: productId });
+    }
   };
 
   return (
@@ -238,6 +264,19 @@ const DashboardProductCard = ({ product }) => {
               <div className="flex items-center justify-center gap-2">
                 <ShoppingCart className="w-5 h-5" />
                 {inStock ? "Add to Cart" : "Out of Stock"}
+              </div>
+            </button>
+          )}
+
+          {variant === "cart" && (
+            <button
+              type="button"
+              onClick={handleMoveToFavourites}
+              className="mt-3 w-full rounded-lg border border-white/30 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Heart className="h-4 w-4" aria-hidden="true" />
+                Move to favourites
               </div>
             </button>
           )}

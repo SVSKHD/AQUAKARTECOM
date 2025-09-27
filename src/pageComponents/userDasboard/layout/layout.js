@@ -1,5 +1,6 @@
 import AquaUserGreet from "./greet";
 import AquaUserDashboardHeader from "./header";
+import AquaCartAddressDialog from "@/components/common/commonDialogs/cartAddress";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
 
@@ -53,6 +54,7 @@ const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-gray-50">
       <AquaUserDashboardHeader />
+      <AquaCartAddressDialog />
       <div className="w-full max-w-4xl px-4">
         <AquaUserGreet
           userName={getFirstLettersFromEmail(userData?.user?.email)}

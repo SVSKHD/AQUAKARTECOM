@@ -69,8 +69,9 @@ const AquaUserProfilePageComponent = () => {
     user?.alternateMobile ||
     "";
 
-  const primaryAddress = user?.selectedAddress || user?.addresses?.[0];
-  const addressCount = user?.addresses?.length || 0;
+  const addresses = Array.isArray(user?.addresses) ? user.addresses : [];
+  const primaryAddress = user?.selectedAddress || addresses[0];
+  const addressCount = addresses.length;
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogFocus, setDialogFocus] = useState(null);
@@ -78,9 +79,9 @@ const AquaUserProfilePageComponent = () => {
 
   const dialogInitialValues = useMemo(
     () => ({
-      email: user?.email || "",
-      phone: user?.phone || "",
-      alternatePhone: alternatePhone || "",
+      email: `${user?.email ?? ""}`,
+      phone: `${user?.phone ?? ""}`,
+      alternatePhone: `${alternatePhone ?? ""}`,
       dob: toDateInputValue(user?.dob),
       address: formatAddress(primaryAddress),
     }),
@@ -156,6 +157,16 @@ const AquaUserProfilePageComponent = () => {
     setDialogFocus(null);
   };
 
+  const sanitize = (value) => {
+    if (value === null || value === undefined) {
+      return "";
+    }
+
+    const stringValue =
+      typeof value === "string" ? value : String(value ?? "");
+    return stringValue.trim();
+  };
+
   const handleSaveDetails = async (values) => {
     if (!userData?.user?._id) {
       return;
@@ -167,12 +178,10 @@ const AquaUserProfilePageComponent = () => {
       const userId = userData.user._id;
       const token = userData.token;
 
-      const originalAddresses = Array.isArray(user?.addresses)
-        ? user.addresses.map((address) => ({ ...address }))
-        : [];
+      const originalAddresses = addresses.map((address) => ({ ...address }));
       const existingSelected = primaryAddress ? { ...primaryAddress } : null;
 
-      const trimmedAddress = values.address?.trim() || "";
+      const trimmedAddress = sanitize(values.address);
 
       let updatedSelectedAddress = existingSelected;
       let updatedAddresses = [...originalAddresses];
@@ -203,10 +212,10 @@ const AquaUserProfilePageComponent = () => {
       }
 
       const newDetails = {
-        email: values.email?.trim() || "",
-        phone: values.phone?.trim() || "",
-        alternatePhone: values.alternatePhone?.trim() || "",
-        dob: values.dob || "",
+        email: sanitize(values.email),
+        phone: sanitize(values.phone),
+        alternatePhone: sanitize(values.alternatePhone),
+        dob: sanitize(values.dob),
       };
 
       if (updatedAddresses.length > 0) {
@@ -247,6 +256,58 @@ const AquaUserProfilePageComponent = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const addressesMatch = (first = {}, second = {}) => {
+    if (first?._id && second?._id) {
+      return first._id === second._id;
+    }
+
+    return JSON.stringify(first) === JSON.stringify(second);
+  };
+
+  const handleSelectDefaultAddress = async (address) => {
+    if (!userData?.user?._id) {
+      return;
+    }
+
+    try {
+      await UserServiceOperations.UserUpdateDetails(
+        userData.user._id,
+        {
+          newDetails: {
+            selectedAddress: address,
+          },
+        },
+        userData.token,
+      );
+
+      dispatch({
+        type: "UPDATE_SELECTED_ADDRESS",
+        payload: { selectedAddress: address },
+      });
+
+      AquaToast({
+        message: "Default address updated",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to update default address", error);
+      AquaToast({
+        message: "Unable to set default address. Please try again.",
+        type: "error",
+      });
+    }
+  };
+
+  const handleAddAddress = () => {
+    dispatch({ type: "SET_ADDRESS_DIALOG", payload: true });
+    dispatch({ type: "SET_ADDRESS_DATA", payload: null });
+  };
+
+  const handleEditAddress = (address) => {
+    dispatch({ type: "SET_ADDRESS_DIALOG", payload: true });
+    dispatch({ type: "SET_ADDRESS_DATA", payload: address });
   };
 
   return (
@@ -297,6 +358,93 @@ const AquaUserProfilePageComponent = () => {
           );
         })}
       </div>
+      <section className="mt-10 rounded-2xl border border-gray-100 bg-white/80 p-6 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Delivery addresses
+            </h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Set which address should be used by default during checkout.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleAddAddress}
+            className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-600 transition hover:border-indigo-300 hover:bg-indigo-100"
+          >
+            + Add address
+          </button>
+        </div>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  {addresses.length ? (
+                    addresses.map((address) => {
+                      const isDefault = addressesMatch(address, primaryAddress);
+                      return (
+                        <label
+                          key={address._id || address.street}
+                          className={`relative flex cursor-pointer flex-col gap-3 rounded-2xl border p-4 transition ${
+                    isDefault
+                      ? "border-indigo-500 bg-indigo-50 shadow-sm"
+                      : "border-gray-200 bg-white hover:border-indigo-200"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="default-address"
+                    className="sr-only"
+                    checked={isDefault}
+                    onChange={() => handleSelectDefaultAddress(address)}
+                  />
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {address?.label || "Saved address"}
+                      </p>
+                      <p className="mt-1 text-sm text-gray-600">
+                        {[address.street, address.city, address.state, address.postalCode]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2 text-xs font-medium text-indigo-600">
+                      {isDefault && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-1 text-xs font-medium text-indigo-600">
+                          <CheckCircleIcon className="h-4 w-4" aria-hidden="true" />
+                          Default
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          handleEditAddress(address);
+                        }}
+                        className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-white px-2 py-1 text-xs text-indigo-600 transition hover:border-indigo-300 hover:bg-indigo-50"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                  {address.phone && (
+                    <p className="text-xs text-gray-500">Contact: {address.phone}</p>
+                  )}
+                </label>
+              );
+            })
+          ) : (
+            <div className="col-span-full rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-10 text-center">
+              <h3 className="text-base font-semibold text-gray-900">
+                No addresses saved yet
+              </h3>
+              <p className="mt-2 text-sm text-gray-500">
+                Add an address from the checkout page to enable default selection here.
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
       <ProfileDetailsDialog
         open={dialogOpen}
         onClose={handleCloseDialog}
