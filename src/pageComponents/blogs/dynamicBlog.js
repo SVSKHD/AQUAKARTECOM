@@ -1,8 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AquaLayout from "@/components/Layout/Layout";
 import { useRouter } from "next/router";
 import BlogServiceOperations from "@/services/blog";
-import { CameraIcon } from "@heroicons/react/20/solid";
+import {
+  CameraIcon,
+  ClipboardDocumentCheckIcon,
+  ClipboardDocumentIcon,
+} from "@heroicons/react/20/solid";
+import {
+  ArrowUpIcon,
+  ClockIcon,
+  LinkIcon,
+  SparklesIcon,
+} from "@heroicons/react/24/outline";
 import Head from "next/head";
 import AquaProductCard from "@/components/cards/productCard";
 
@@ -13,15 +23,129 @@ const AquaDynamicBlogComponent = () => {
   const { id } = router.query;
   const [blog, setBlog] = useState({});
   const [related, setRelated] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [toc, setToc] = useState([]);
+  const [progress, setProgress] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  const contentRef = useRef(null);
 
   useEffect(() => {
-    if (id) {
-      BlogServiceOperations.blogById(id).then((res) => {
+    if (!id) return;
+
+    let isMounted = true;
+    setLoading(true);
+    setError("");
+
+    BlogServiceOperations.blogById(id)
+      .then((res) => {
+        if (!isMounted) return;
         setBlog(res.data.data);
-        setRelated(res.data.relatedProduct);
+        setRelated(res.data.relatedProduct || []);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setError("We couldn't load this story. Please refresh and try again.");
+      })
+      .finally(() => {
+        if (isMounted) {
+          setLoading(false);
+        }
       });
-    }
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
+
+  useEffect(() => {
+    if (!blog?.description || !contentRef.current || typeof window === "undefined") {
+      setToc([]);
+      return;
+    }
+
+    const headings = Array.from(
+      contentRef.current.querySelectorAll("h2, h3"),
+    ).map((heading, index) => {
+      const baseId = heading.textContent
+        ?.toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "")
+        || `section-${index}`;
+      const uniqueId = heading.id || `${baseId}-${index}`;
+      heading.id = uniqueId;
+      return {
+        id: uniqueId,
+        text: heading.textContent || `Section ${index + 1}`,
+        level: heading.tagName.toLowerCase(),
+      };
+    });
+
+    setToc(headings);
+  }, [blog?.description]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleScroll = () => {
+      if (!contentRef.current) return;
+      const element = contentRef.current;
+      const elementTop = element.offsetTop;
+      const elementHeight = element.offsetHeight;
+      const viewportHeight = window.innerHeight;
+      const maxScroll = Math.max(elementTop + elementHeight - viewportHeight, 0);
+      const currentScroll = Math.min(
+        Math.max(window.scrollY - elementTop, 0),
+        maxScroll,
+      );
+      const ratio = maxScroll > 0 ? currentScroll / maxScroll : 1;
+      setProgress(Math.min(Math.max(ratio * 100, 0), 100));
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [blog?.description]);
+
+  const estimatedReadMinutes = useMemo(() => {
+    if (!blog?.description) return 3;
+    const text = blog.description.replace(/<[^>]+>/g, " ");
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.ceil(words / 200));
+  }, [blog?.description]);
+
+  const publishedDate = useMemo(() => {
+    if (!blog?.createdAt) return "";
+    try {
+      return new Date(blog.createdAt).toLocaleDateString("en-IN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return "";
+    }
+  }, [blog?.createdAt]);
+
+  const copyToClipboard = async () => {
+    if (typeof window === "undefined") return;
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Copy link failed", err);
+      setCopied(false);
+    }
+  };
+
+  const handleScrollToTop = () => {
+    if (typeof window === "undefined") return;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const seoData = {
     title: `${blog.title || "Blog"} | Aquakart`,
@@ -38,92 +162,164 @@ const AquaDynamicBlogComponent = () => {
         {seoData.image && <meta property="og:image" content={seoData.image} />}
         <meta name="keywords" content={seoData.keywords} />
       </Head>
-      <div className="overflow-hidden bg-white">
-        <div className="relative mx-auto max-w-7xl px-6 py-16 lg:px-8">
-          <div className="absolute bottom-0 left-3/4 top-0 hidden w-screen bg-gray-50 lg:block" />
-          <div className="mx-auto max-w-prose text-base lg:grid lg:max-w-none lg:grid-cols-2 lg:gap-8">
-            <div>
-              <h2 className="text-lg font-semibold text-indigo-600">
-                Use Cases
-              </h2>
-              <h3 className="mt-2 text-3xl font-bold leading-8 tracking-tight text-gray-900 sm:text-4xl">
-                {blog.title}
-              </h3>
-            </div>
-          </div>
-          <div className="mt-8 lg:grid lg:grid-cols-2 lg:gap-8">
-            <div className="relative lg:col-start-2 lg:row-start-1">
-              <svg
-                className="absolute right-0 top-0 -mr-20 -mt-20 hidden lg:block"
-                width={404}
-                height={384}
-                fill="none"
-                viewBox="0 0 404 384"
-                aria-hidden="true"
-              >
-                <defs>
-                  <pattern
-                    id="de316486-4a29-4312-bdfc-fbce2132a2c1"
-                    x={0}
-                    y={0}
-                    width={20}
-                    height={20}
-                    patternUnits="userSpaceOnUse"
+      <div className="relative bg-white">
+        <div
+          className="pointer-events-none fixed inset-x-0 top-16 z-40 h-1 bg-emerald-100"
+          aria-hidden="true"
+        >
+          <span
+            className="block h-full w-0 bg-emerald-500 transition-all"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-12 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            {loading ? (
+              <div className="space-y-4">
+                <div className="mx-auto h-10 w-40 animate-pulse rounded-full bg-slate-200" />
+                <div className="mx-auto h-12 w-full max-w-xl animate-pulse rounded-lg bg-slate-200" />
+                <div className="mx-auto h-6 w-1/2 animate-pulse rounded-full bg-slate-200" />
+              </div>
+            ) : error ? (
+              <div className="rounded-2xl border border-rose-100 bg-rose-50 px-6 py-8 text-left">
+                <div className="flex items-center gap-3 text-rose-600">
+                  <SparklesIcon className="h-6 w-6" />
+                  <p className="text-sm font-semibold">Something went wrong</p>
+                </div>
+                <p className="mt-3 text-sm text-rose-700">{error}</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                  <SparklesIcon className="h-4 w-4" />
+                  Inspiration
+                </span>
+                <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
+                  {blog.title}
+                </h1>
+                <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-slate-600">
+                  {publishedDate && (
+                    <span className="inline-flex items-center gap-2">
+                      <ClockIcon className="h-4 w-4" />
+                      {publishedDate}
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-2">
+                    <SparklesIcon className="h-4 w-4" />
+                    {estimatedReadMinutes} min read
+                  </span>
+                  <button
+                    type="button"
+                    onClick={copyToClipboard}
+                    className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-200"
                   >
-                    <rect
-                      x={0}
-                      y={0}
-                      width={4}
-                      height={4}
-                      className="text-gray-200"
-                      fill="currentColor"
-                    />
-                  </pattern>
-                </defs>
-                <rect
-                  width={404}
-                  height={384}
-                  fill="url(#de316486-4a29-4312-bdfc-fbce2132a2c1)"
-                />
-              </svg>
-              <div className="relative mx-auto max-w-prose text-base lg:max-w-none">
-                <figure>
-                  <div className="aspect-h-7 aspect-w-12 lg:aspect-none">
-                    <AquaImage
-                      customClass="rounded-lg object-cover object-center shadow-lg"
-                      src={
-                        blog?.titleImages?.[0]?.secure_url ||
-                        "/default-image.jpg"
-                      }
-                      alt="Aquakart"
-                      width={1184}
-                      height={1376}
-                    />
-                  </div>
-                  <figcaption className="mt-3 flex text-sm text-gray-500">
-                    <CameraIcon
-                      className="h-5 w-5 flex-none text-gray-400"
-                      aria-hidden="true"
-                    />
-                    <span className="ml-2">Aquakart</span>
+                    {copied ? (
+                      <>
+                        <ClipboardDocumentCheckIcon className="h-4 w-4" />
+                        Link copied
+                      </>
+                    ) : (
+                      <>
+                        <ClipboardDocumentIcon className="h-4 w-4" />
+                        Share link
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {!loading && !error && (
+            <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <article
+                ref={contentRef}
+                className="space-y-10 rounded-3xl bg-white p-6 shadow-lg ring-1 ring-slate-100"
+              >
+                <figure className="overflow-hidden rounded-3xl">
+                  <AquaImage
+                    customClass="h-full w-full object-cover"
+                    src={
+                      blog?.titleImages?.[0]?.secure_url || "/default-image.jpg"
+                    }
+                    alt={blog.title || "Aquakart blog"}
+                    width={1280}
+                    height={720}
+                  />
+                  <figcaption className="flex items-center gap-2 px-2 py-3 text-xs text-slate-500">
+                    <CameraIcon className="h-4 w-4" aria-hidden="true" />
+                    Aquakart Media Team
                   </figcaption>
                 </figure>
-              </div>
-              <hr />
-              <h2 className="text-2xl font-bold leading-7 text-black mb-3 mt-3 sm:truncate sm:text-3xl sm:tracking-tight">
-                Related Products
-              </h2>
-              {related.map((r, i) => (
-                <div key={i}>
-                  <AquaProductCard product={r} />
+
+                <div
+                  className="prose prose-lg max-w-none prose-headings:text-slate-900 prose-a:text-emerald-600 hover:prose-a:text-emerald-500"
+                  dangerouslySetInnerHTML={{ __html: blog.description }}
+                />
+              </article>
+
+              <aside className="flex flex-col gap-8">
+                {toc.length > 0 && (
+                  <div className="rounded-3xl border border-slate-100 bg-slate-50/80 p-6 text-sm text-slate-600 shadow-sm">
+                    <h2 className="text-base font-semibold text-slate-900">
+                      On this page
+                    </h2>
+                    <ul className="mt-4 space-y-3">
+                      {toc.map((item) => (
+                        <li key={item.id} className="leading-snug">
+                          <a
+                            href={`#${item.id}`}
+                            className={`inline-flex items-start gap-2 rounded-lg px-2 py-1 transition hover:bg-white hover:text-emerald-600 ${
+                              item.level === "h3" ? "pl-4 text-xs" : "text-sm"
+                            }`}
+                          >
+                            <LinkIcon className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                            <span>{item.text}</span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-lg">
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    Related products
+                  </h2>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Explore systems featured in this article.
+                  </p>
+                  <div className="mt-4 space-y-4">
+                    {related.length > 0 ? (
+                      related.map((item, index) => (
+                        <AquaProductCard
+                          key={item?._id || `${item?.name}-${index}`}
+                          product={item}
+                        />
+                      ))
+                    ) : (
+                      <p className="rounded-2xl bg-slate-50 p-4 text-xs text-slate-500">
+                        We’ll update this section when matching products are available.
+                      </p>
+                    )}
+                  </div>
                 </div>
-              ))}
+              </aside>
             </div>
-            <div className="mt-8 lg:mt-0">
-              <div dangerouslySetInnerHTML={{ __html: blog.description }} />
-            </div>
-          </div>
+          )}
         </div>
+
+        {progress > 10 && (
+          <button
+            type="button"
+            onClick={handleScrollToTop}
+            className="fixed bottom-6 right-6 z-40 inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-400"
+            aria-label="Back to top"
+          >
+            <ArrowUpIcon className="h-5 w-5" />
+          </button>
+        )}
       </div>
     </AquaLayout>
   );
