@@ -61,7 +61,7 @@ const AquaUserDashboardHeader = () => {
 
   return (
     <div className="mx-auto mt-8 flex w-full justify-center px-4">
-      <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-3 shadow-lg backdrop-blur-lg">
+      <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3 shadow-lg">
         {navItems.map((item) => {
           const isActive = router.pathname === item.href;
           const Icon = item.icon;
@@ -73,14 +73,14 @@ const AquaUserDashboardHeader = () => {
                 whileHover={{ scale: 1.05 }}
                 className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? "bg-white/25 text-white shadow"
-                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                    ? "bg-slate-900 text-white shadow"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 }`}
               >
                 <Icon
                   size={18}
                   strokeWidth={isActive ? 2.4 : 1.6}
-                  className={isActive ? "text-white" : "text-white/60"}
+                  className={isActive ? "text-white" : "text-slate-500"}
                 />
                 {item.label}
               </motion.span>
