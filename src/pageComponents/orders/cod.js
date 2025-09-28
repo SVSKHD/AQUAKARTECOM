@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import AquaLayout from "@/components/Layout/Layout";
 import orderServiceOperations from "@/services/order";
 import { useRouter } from "next/router";
@@ -7,6 +7,18 @@ import AquaToast from "@/components/reusables/react-toastify";
 import useCurrency from "@/utils/currency";
 import Link from "next/link";
 import moment from "moment";
+import {
+  CheckCircle,
+  Clock,
+  Truck,
+  MapPin,
+  Download,
+  IndianRupee,
+  ShoppingBag,
+  Home,
+  Phone,
+  Mail,
+} from "lucide-react";
 
 const AquaCodOrderPageComponent = () => {
   const router = useRouter();
@@ -65,238 +77,244 @@ const AquaCodOrderPageComponent = () => {
     }
   };
 
+  const timelineSteps = useMemo(
+    () => [
+      {
+        name: "Order placed",
+        description: "We received your order",
+        icon: ShoppingBag,
+      },
+      {
+        name: "Processing",
+        description: "Items are being prepared",
+        icon: Clock,
+      },
+      {
+        name: "Shipped",
+        description: "On the way to you",
+        icon: Truck,
+      },
+      {
+        name: "Delivered",
+        description: "Package delivered",
+        icon: CheckCircle,
+      },
+    ],
+    [],
+  );
+
   const AquaOrderTimeline = ({ order }) => {
     const currentStep = getOrderStep(order.orderStatus);
 
     return (
-      <div className="border-t border-gray-200 px-4 py-6 sm:px-6 lg:p-8">
-        <h4 className="sr-only">Status</h4>
-        <p className="text-sm font-medium text-gray-900">
-          {order.orderStatus} on{" "}
-          <time dateTime={order.updatedAt}>
-            {new Date(order.updatedAt).toLocaleDateString()}
-          </time>
-        </p>
-        <div aria-hidden="true" className="mt-6">
-          <div className="overflow-hidden rounded-full bg-gray-200">
-            <div
-              style={{
-                width: `calc((${currentStep} * 2 + 1) / 8 * 100%)`,
-              }}
-              className="h-2 rounded-full bg-indigo-600"
-            />
-          </div>
-          <div className="mt-6 hidden grid-cols-4 text-sm font-medium text-gray-600 sm:grid">
-            <div
-              className={classNames(
-                "text-center",
-                currentStep >= 0 && "text-indigo-600",
-              )}
-            >
-              Order placed
-            </div>
-            <div
-              className={classNames(
-                "text-center",
-                currentStep >= 1 && "text-indigo-600",
-              )}
-            >
-              Processing
-            </div>
-            <div
-              className={classNames(
-                "text-center",
-                currentStep >= 2 && "text-indigo-600",
-              )}
-            >
-              Shipped
-            </div>
-            <div
-              className={classNames(
-                "text-right",
-                currentStep >= 3 && "text-indigo-600",
-              )}
-            >
-              Delivered
+      <div className="space-y-6">
+        <div className="flex flex-col gap-2 rounded-2xl bg-indigo-50/70 p-4 text-sm text-indigo-900 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <Truck className="h-5 w-5" aria-hidden="true" />
+            <div>
+              <p className="font-semibold">Current status: {order.orderStatus}</p>
+              <p className="text-xs text-indigo-700">
+                Last updated {moment(order.updatedAt).format("DD MMM YYYY, hh:mm A")}
+              </p>
             </div>
           </div>
+          <button className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3 py-1 text-xs font-medium text-indigo-600 transition hover:border-indigo-300 hover:bg-indigo-50">
+            Track package
+          </button>
+        </div>
+
+        <div className="relative">
+          <div className="absolute left-[13px] top-0 h-full w-0.5 bg-gray-200" aria-hidden="true" />
+          <ol className="space-y-6">
+            {timelineSteps.map((step, index) => {
+              const isCompleted = index <= currentStep;
+              const isCurrent = index === currentStep;
+              const Icon = step.icon;
+
+              return (
+                <li key={step.name} className="relative flex gap-4">
+                  <span
+                    className={`relative inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-white shadow ${
+                      isCompleted
+                        ? "bg-indigo-600"
+                        : "bg-gray-300 text-gray-500"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <div className="flex flex-col gap-1">
+                    <p className={`text-sm font-semibold ${isCompleted ? "text-gray-900" : "text-gray-500"}`}>
+                      {step.name}
+                    </p>
+                    <p className="text-xs text-gray-500">{step.description}</p>
+                    {isCurrent && order.estimatedDelivery && (
+                      <p className="text-xs font-medium text-indigo-600">
+                        Estimated delivery {moment(order.estimatedDelivery).format("DD MMM YYYY")}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
         </div>
       </div>
     );
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Failed":
-        return "red";
-      case "Paid":
-        return "green";
-      case "Pending":
-        return "yellow";
-      default:
-        return "gray";
-    }
-  };
-
-  function classNames(...classes) {
-    return classes.filter(Boolean).join(" ");
-  }
-
   return (
     <AquaLayout>
       {loading ? (
-        <div className="flex flex-col items-center justify-center h-screen bg-white">
-          {/* <AquaSpinner color="blue" size="lg" /> */}
-          <p className="mt-4 text-sm text-gray-500 animate-pulse">
-            Loading your order details...
-          </p>
+        <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-indigo-100 px-6 py-12">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-lg ring-1 ring-indigo-100">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+              <Clock className="h-6 w-6" aria-hidden="true" />
+            </div>
+            <h2 className="mt-4 text-lg font-semibold text-gray-900">
+              Fetching your order
+            </h2>
+            <p className="mt-2 text-sm text-gray-500">
+              We’re pulling your COD order details. This might take a few seconds.
+            </p>
+            <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-gray-100">
+              <div className="h-full w-1/3 animate-[loading_1.5s_infinite] rounded-full bg-indigo-500"></div>
+            </div>
+          </div>
         </div>
       ) : order ? (
-        <main className="mx-auto max-w-2xl pb-24 pt-8 sm:px-6 sm:pt-16 lg:max-w-7xl lg:px-8">
-          <>
-            <div className="space-y-2 px-4 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
-              <div className="flex sm:items-baseline sm:space-x-4">
-                <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-                  Order #{order?.orderId} - Cash On Delivery
-                </h1>
-              </div>
-              <p className="text-sm text-gray-600">
-                Order placed{" "}
-                <time
-                  dateTime="2021-03-22"
-                  className="font-medium text-gray-900"
-                >
-                  {moment(order?.createdAt).format("DD MMM YYYY")}
-                </time>
+        <main className="mx-auto flex max-w-6xl flex-col gap-10 pb-24 pt-12 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-4 rounded-3xl bg-white/90 p-6 shadow-lg ring-1 ring-gray-100 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-indigo-600">Order confirmed</p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900">
+                COD Order #{order?.orderId}
+              </h1>
+              <p className="mt-2 text-sm text-gray-500">
+                Placed on {moment(order?.createdAt).format("DD MMM YYYY, hh:mm A")}
               </p>
-              <a
-                href="#"
-                className="text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:hidden"
-              >
-                View invoice
-                <span aria-hidden="true"> &rarr;</span>
-              </a>
             </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <button className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-600 transition hover:border-indigo-300 hover:bg-indigo-50">
+                <Download className="h-4 w-4" aria-hidden="true" />
+                Download invoice
+              </button>
+              <Link
+                href="/shop"
+                className="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-500"
+              >
+                Continue shopping
+              </Link>
+            </div>
+          </div>
 
-            {/* Products */}
-            <section aria-labelledby="products-heading" className="mt-6">
-              <h2 id="products-heading" className="sr-only">
-                Products purchased
+          <section className="grid gap-6 lg:grid-cols-7">
+            <article className="col-span-4 space-y-6 rounded-3xl bg-white p-6 shadow-lg ring-1 ring-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Items in your order
               </h2>
-
-              <div className="space-y-8">
+              <div className="space-y-4">
                 {order?.items?.map((product) => (
                   <div
-                    key={product.name}
-                    className="border-b border-t border-gray-200 bg-white shadow-sm sm:rounded-lg sm:border"
+                    key={product.productId}
+                    className="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:flex-row sm:items-start sm:gap-6"
                   >
-                    <div className="px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
-                      <div className="sm:flex lg:col-span-7">
-                        <div className="mt-6 sm:ml-6 sm:mt-0">
-                          <h3 className="text-base font-medium text-gray-900">
-                            <Link href={`/product/${product.name}`}>
-                              {product.name}
-                            </Link>
-                          </h3>
-                          <p className="mt-2 text-sm font-medium text-green-900">
-                            {formatCurrencyINR(product.price)}
-                          </p>
-                          <p className="mt-3 text-sm text-gray-500">
-                            {product.description}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="mt-6 lg:col-span-5 lg:mt-0">
-                        <dl className="grid grid-cols-2 gap-x-6 text-sm">
-                          <div>
-                            <dt className="font-medium text-gray-900">
-                              Delivery address
-                            </dt>
-                            <dd className="mt-3 text-gray-500">
-                              <p>{order.shippingAddress.street}</p>
-                              <p>
-                                {order.shippingAddress.city},{" "}
-                                {order.shippingAddress.state}
-                              </p>
-                              <p>{order.shippingAddress.postalCode}</p>
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="font-medium text-gray-900">
-                              Shipping updates
-                            </dt>
-                            <dd className="mt-3 space-y-3 text-gray-500">
-                              <p>{order.email}</p>
-                              <p>{order.phone}</p>
-                            </dd>
-                          </div>
-                        </dl>
-                      </div>
+                    <div className="flex-1 space-y-1">
+                      <h3 className="text-base font-semibold text-gray-900">
+                        <Link href={`/product/${product.productId}`}>{product.name}</Link>
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Qty: {product.quantity}
+                      </p>
+                      <p className="text-medium font-semibold text-gray-800">
+                        {formatCurrencyINR(product.price * product.quantity)}
+                      </p>
                     </div>
-
-                    {AquaOrderTimeline({ order })}
+                    <div className="w-full rounded-2xl bg-gray-50 p-4 text-sm text-gray-600 sm:w-64">
+                      <p className="font-semibold text-gray-900">Delivery to</p>
+                      <p className="mt-2 flex items-center gap-2 text-xs">
+                        <MapPin className="h-4 w-4 text-indigo-500" />
+                        {order.shippingAddress.street}, {" "}
+                        {order.shippingAddress.city}, {order.shippingAddress.state} {" "}
+                        {order.shippingAddress.postalCode}
+                      </p>
+                      <p className="mt-2 flex items-center gap-2 text-xs">
+                        <Phone className="h-4 w-4 text-indigo-500" />
+                        {order.phone || "N/A"}
+                      </p>
+                      <p className="mt-2 flex items-center gap-2 text-xs">
+                        <Mail className="h-4 w-4 text-indigo-500" />
+                        {order.email || "N/A"}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
-            </section>
 
-            <section aria-labelledby="summary-heading" className="mt-16">
-              <h2 id="summary-heading" className="sr-only">
-                Billing Summary
-              </h2>
+              <div className="rounded-2xl border border-gray-100 bg-white p-4">
+                <AquaOrderTimeline order={order} />
+              </div>
+            </article>
 
-              <div className="bg-white rounded-lg shadow-md p-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8 lg:py-8">
-                <dl className="grid grid-cols-2 gap-6 text-lg sm:grid-cols-2 md:gap-x-8 lg:col-span-7">
-                  <div>
-                    <dt className="font-medium text-gray-900">
-                      Billing address
-                    </dt>
-                    <dd className="mt-3 text-gray-500">
-                      <span className="block">
-                        {order?.shippingAddress?.street}
-                      </span>
-                      <span className="block">
-                        {order?.shippingAddress?.city}
-                      </span>
-                      <span className="block">
-                        {order?.shippingAddress?.state}
-                      </span>
-                      <span className="block">
-                        {order?.shippingAddress?.postalCode}
-                      </span>
+            <aside className="col-span-3 space-y-6">
+              <div className="rounded-3xl bg-white p-6 shadow-lg ring-1 ring-gray-100">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Order summary
+                </h3>
+                <dl className="mt-4 space-y-3 text-sm text-gray-600">
+                  <div className="flex items-center justify-between">
+                    <dt>Subtotal</dt>
+                    <dd className="font-medium text-gray-900">
+                      {formatCurrencyINR(order.totalAmount)}
                     </dd>
                   </div>
-                  <div>
-                    <dt className="font-medium text-gray-900">
-                      Payment information
-                    </dt>
-                    <dd className="-ml-4 -mt-1 flex flex-wrap">
-                      <div className="ml-4 mt-4">COD</div>
+                  <div className="flex items-center justify-between">
+                    <dt>Shipping</dt>
+                    <dd className="font-medium text-gray-900">₹50.00</dd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <dt>Payment method</dt>
+                    <dd className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600">
+                      <IndianRupee className="h-4 w-4" aria-hidden="true" />
+                      Cash On Delivery
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-base font-semibold text-gray-900">
+                    <dt>Total paid on delivery</dt>
+                    <dd className="text-indigo-600">
+                      {formatCurrencyINR(order.totalAmount + 50)}
                     </dd>
                   </div>
                 </dl>
               </div>
-            </section>
 
-            {/* Billing */}
-            {order?.orderType === "Cash On Delivery" ? (
-              <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-                <div className="flex justify-between items-center">
-                  <dt className="font-medium text-gray-900 text-xl">Total</dt>
-                  <dd className="text-gray-900 font-bold text-2xl text-green-600">
-                    {formatCurrencyINR(order?.totalAmount)}
-                  </dd>
-                </div>
+              <div className="rounded-3xl bg-indigo-50/70 p-6 text-sm text-indigo-900 shadow-sm">
+                <h3 className="text-base font-semibold">Need help?</h3>
+                <p className="mt-2">
+                  Reach our support team at
+                  <span className="font-semibold"> +91 96186 06807</span> or email
+                  <span className="font-semibold"> support@aquakart.co.in</span>.
+                </p>
               </div>
-            ) : (
-              ""
-            )}
-          </>
+            </aside>
+          </section>
         </main>
       ) : (
-        <div className="flex flex-col items-center justify-center h-screen bg-white">
-          <p className="mt-4 text-sm text-gray-500">Order not found</p>
+        <div className="flex min-h-screen flex-col items-center justify-center bg-white px-6">
+          <div className="max-w-sm rounded-3xl bg-gray-50 p-6 text-center shadow">
+            <Home className="mx-auto h-10 w-10 text-gray-400" />
+            <h2 className="mt-4 text-lg font-semibold text-gray-900">
+              Order not found
+            </h2>
+            <p className="mt-2 text-sm text-gray-500">
+              We couldn’t find an order with that reference. Double-check the link or go back to your orders.
+            </p>
+            <Link
+              href="/dashboard/orders"
+              className="mt-4 inline-flex items-center justify-center rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500"
+            >
+              View my orders
+            </Link>
+          </div>
         </div>
       )}
     </AquaLayout>

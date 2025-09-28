@@ -60,30 +60,30 @@ const AquaUserDashboardHeader = () => {
   ];
 
   return (
-    <div className="mt-6 mx-auto w-fit bg-white rounded-full shadow-lg px-3 py-2">
-      <div className="flex gap-2 justify-center items-center">
+    <div className="mx-auto mt-8 flex w-full justify-center px-4">
+      <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-3 shadow-lg backdrop-blur-lg">
         {navItems.map((item) => {
           const isActive = router.pathname === item.href;
           const Icon = item.icon;
 
           return (
-            <Link key={item.id} href={item.href}>
-              <motion.button
+            <Link key={item.id} href={item.href} className="relative">
+              <motion.span
                 whileTap={{ scale: 0.95 }}
                 whileHover={{ scale: 1.05 }}
-                className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? "bg-gradient-to-r from-gray-700 to-gray-900 text-white shadow-md"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm"
+                    ? "bg-white/25 text-white shadow"
+                    : "text-white/70 hover:bg-white/10 hover:text-white"
                 }`}
               >
                 <Icon
                   size={18}
-                  strokeWidth={isActive ? 2.5 : 1.5}
-                  fill={isActive ? "white" : "none"}
+                  strokeWidth={isActive ? 2.4 : 1.6}
+                  className={isActive ? "text-white" : "text-white/60"}
                 />
                 {item.label}
-              </motion.button>
+              </motion.span>
             </Link>
           );
         })}

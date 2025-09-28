@@ -382,21 +382,14 @@ const AquaUserProfilePageComponent = () => {
                     addresses.map((address) => {
                       const isDefault = addressesMatch(address, primaryAddress);
                       return (
-                        <label
-                          key={address._id || address.street}
-                          className={`relative flex cursor-pointer flex-col gap-3 rounded-2xl border p-4 transition ${
+                <div
+                  key={address._id || address.street}
+                  className={`relative flex flex-col gap-3 rounded-2xl border p-4 transition ${
                     isDefault
                       ? "border-indigo-500 bg-indigo-50 shadow-sm"
                       : "border-gray-200 bg-white hover:border-indigo-200"
                   }`}
                 >
-                  <input
-                    type="radio"
-                    name="default-address"
-                    className="sr-only"
-                    checked={isDefault}
-                    onChange={() => handleSelectDefaultAddress(address)}
-                  />
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-gray-900">
@@ -417,20 +410,28 @@ const AquaUserProfilePageComponent = () => {
                       )}
                       <button
                         type="button"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          handleEditAddress(address);
-                        }}
-                        className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-white px-2 py-1 text-xs text-indigo-600 transition hover:border-indigo-300 hover:bg-indigo-50"
+                        onClick={() => handleSelectDefaultAddress(address)}
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs transition ${
+                          isDefault
+                            ? "border-indigo-500 bg-indigo-500 text-white"
+                            : "border-indigo-200 bg-white text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50"
+                        }`}
                       >
-                        Edit
+                        {isDefault ? "Selected" : "Set as default"}
                       </button>
                     </div>
                   </div>
                   {address.phone && (
                     <p className="text-xs text-gray-500">Contact: {address.phone}</p>
                   )}
-                </label>
+                  <button
+                    type="button"
+                    onClick={() => handleEditAddress(address)}
+                    className="mt-3 inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 transition hover:border-gray-300 hover:bg-gray-50"
+                  >
+                    Edit address
+                  </button>
+                </div>
               );
             })
           ) : (

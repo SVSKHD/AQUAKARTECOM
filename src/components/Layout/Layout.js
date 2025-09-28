@@ -77,8 +77,6 @@ const AquaLayout = (props) => {
     <>
       {Status ? (
         <>
-          {/* <AquaSeo seo={props.seo} /> */}
-
           <AquaSeoRevamp
             path={seo?.path}
             category={seo?.category}
@@ -93,41 +91,50 @@ const AquaLayout = (props) => {
           <AquaUserAuthDialog />
           <AquaHeader />
 
-          <AquaCartDrawer />
-          <AquafavDrawer />
-          <AquaTailwindToast />
-          <AquaToast />
+          <div className="relative min-h-screen overflow-hidden bg-white text-slate-900">
 
-          <main className="bg-white min-h-screen">{props.children}</main>
+            <AquaCartDrawer />
+            <AquafavDrawer />
+            <AquaTailwindToast />
+            <AquaToast />
 
-          <AquaFooter
-            categories={setDataCategories}
-            subcategories={setDataSubCategories}
-          />
+            <main className="relative z-10 min-h-screen bg-white">
+              {props.children}
+            </main>
+
+            <AquaFooter
+              categories={setDataCategories}
+              subcategories={setDataSubCategories}
+            />
+          </div>
         </>
       ) : (
         <>
           <AquaHeader />
-          <main className="bg-white min-h-screen flex flex-col justify-center items-center">
-            <div className="text-center p-6">
-              <h1 className="text-2xl font-bold text-gray-800 mb-4">
-                Network Error
-              </h1>
-              <p className="text-gray-600">
-                Please check your internet connection and try again.
-              </p>
-              <button
-                onClick={handleRetry}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white font-semibold rounded-md shadow hover:bg-blue-700 transition duration-300"
-              >
-                Retry
-              </button>
-            </div>
-          </main>
-          <AquaFooter
-            categories={setDataCategories}
-            subcategories={setDataSubCategories}
-          />
+          <div className="relative min-h-screen overflow-hidden bg-white text-slate-900">
+
+            <main className="relative z-10 flex min-h-screen flex-col items-center justify-center bg-white">
+              <div className="text-center p-6">
+                <h1 className="text-2xl font-bold text-gray-800 mb-4">
+                  Network Error
+                </h1>
+                <p className="text-gray-600">
+                  Please check your internet connection and try again.
+                </p>
+                <button
+                  onClick={handleRetry}
+                  className="mt-4 px-4 py-2 bg-blue-600 text-white font-semibold rounded-md shadow hover:bg-blue-700 transition duration-300"
+                >
+                  Retry
+                </button>
+              </div>
+            </main>
+
+            <AquaFooter
+              categories={setDataCategories}
+              subcategories={setDataSubCategories}
+            />
+          </div>
         </>
       )}
     </>
