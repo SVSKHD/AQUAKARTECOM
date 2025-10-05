@@ -312,7 +312,7 @@ const AquaUserProfilePageComponent = () => {
 
   return (
     <AquaUserDashbordLayout>
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-6 px-2 sm:grid-cols-2 sm:px-0">
         {profileHighlights.map((item) => {
           const isComplete = Boolean(item.isComplete);
           const StatusIcon = isComplete
@@ -325,9 +325,9 @@ const AquaUserProfilePageComponent = () => {
           return (
             <div
               key={item.key}
-              className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white/80 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white/90 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
             >
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                 <div>
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
                     {item.title}
@@ -336,19 +336,21 @@ const AquaUserProfilePageComponent = () => {
                     {item.value || "Not provided yet"}
                   </p>
                 </div>
-                <span
-                  className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${statusClasses}`}
-                >
-                  <StatusIcon className="h-4 w-4" aria-hidden="true" />
-                  {isComplete ? "Updated" : "Pending"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${statusClasses}`}
+                  >
+                    <StatusIcon className="h-4 w-4" aria-hidden="true" />
+                    {isComplete ? "Updated" : "Pending"}
+                  </span>
+                </div>
               </div>
               <p className="mt-3 text-sm text-gray-500">{item.helper}</p>
-              <div className="mt-4 flex items-center justify-between text-sm">
+              <div className="mt-4 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
                 <button
                   type="button"
                   onClick={() => handleOpenDialog(item.focusField)}
-                  className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 font-medium text-indigo-600 transition hover:bg-indigo-100"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 font-medium text-indigo-600 transition hover:bg-indigo-100 sm:w-auto"
                 >
                   <PencilSquareIcon className="h-4 w-4" aria-hidden="true" />
                   {item.actionLabel}
@@ -358,8 +360,8 @@ const AquaUserProfilePageComponent = () => {
           );
         })}
       </div>
-      <section className="mt-10 rounded-2xl border border-gray-100 bg-white/80 p-6 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+      <section className="mt-10 rounded-2xl border border-gray-100 bg-white/90 p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
               Delivery addresses
@@ -371,17 +373,17 @@ const AquaUserProfilePageComponent = () => {
           <button
             type="button"
             onClick={handleAddAddress}
-            className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-600 transition hover:border-indigo-300 hover:bg-indigo-100"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-600 transition hover:border-indigo-300 hover:bg-indigo-100 sm:w-auto"
           >
             + Add address
           </button>
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                  {addresses.length ? (
-                    addresses.map((address) => {
-                      const isDefault = addressesMatch(address, primaryAddress);
-                      return (
+          {addresses.length ? (
+            addresses.map((address) => {
+              const isDefault = addressesMatch(address, primaryAddress);
+              return (
                 <div
                   key={address._id || address.street}
                   className={`relative flex flex-col gap-3 rounded-2xl border p-4 transition ${
@@ -390,7 +392,7 @@ const AquaUserProfilePageComponent = () => {
                       : "border-gray-200 bg-white hover:border-indigo-200"
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:gap-3">
                     <div>
                       <p className="text-sm font-semibold text-gray-900">
                         {address?.label || "Saved address"}
@@ -401,7 +403,7 @@ const AquaUserProfilePageComponent = () => {
                           .join(", ")}
                       </p>
                     </div>
-                    <div className="flex flex-col items-end gap-2 text-xs font-medium text-indigo-600">
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-indigo-600">
                       {isDefault && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-1 text-xs font-medium text-indigo-600">
                           <CheckCircleIcon className="h-4 w-4" aria-hidden="true" />
@@ -427,7 +429,7 @@ const AquaUserProfilePageComponent = () => {
                   <button
                     type="button"
                     onClick={() => handleEditAddress(address)}
-                    className="mt-3 inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 transition hover:border-gray-300 hover:bg-gray-50"
+                    className="mt-3 inline-flex w-full items-center justify-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 sm:w-auto"
                   >
                     Edit address
                   </button>

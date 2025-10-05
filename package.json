@@ -16,6 +16,7 @@
     "@reduxjs/toolkit": "^2.9.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "axios": "^1.12.2",
+    "dayjs": "^1.11.18",
     "embla-carousel-react": "^8.6.0",
     "firebase": "^12.3.0",
     "formidable": "^3.5.4",

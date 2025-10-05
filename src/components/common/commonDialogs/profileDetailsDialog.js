@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import AquaResponsiveDialog from "@/components/reusables/dialog";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
 
 const defaultValues = {
   email: "",
@@ -62,6 +66,25 @@ const ProfileDetailsDialog = ({
       [name]: value,
     }));
   };
+
+  const dobSummary = useMemo(() => {
+    if (!formValues.dob) return null;
+    const dobDate = dayjs(formValues.dob);
+    if (!dobDate.isValid()) return null;
+
+    const today = dayjs();
+    const ageYears = today.diff(dobDate, "year");
+    const nextBirthday = dobDate.add(ageYears + 1, "year");
+    const daysUntilBirthday = nextBirthday.startOf("day").diff(today.startOf("day"), "day");
+
+    const ageLabel = ageYears > 0 ? `${ageYears} year${ageYears > 1 ? "s" : ""}` : null;
+
+    return {
+      ageLabel,
+      daysUntilBirthday,
+      birthdayToday: daysUntilBirthday === 0,
+    };
+  }, [formValues.dob]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -179,6 +202,22 @@ const ProfileDetailsDialog = ({
               onChange={handleChange}
               className="mt-1 block w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
+            {dobSummary && (
+              <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-indigo-50/80 px-3 py-2 text-xs text-indigo-700">
+                {dobSummary.ageLabel && (
+                  <span className="font-semibold">{dobSummary.ageLabel} young</span>
+                )}
+                {dobSummary.birthdayToday ? (
+                  <span className="inline-flex items-center rounded-full bg-indigo-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+                    Happy Birthday! 🎉
+                  </span>
+                ) : (
+                  <span className="text-indigo-600">
+                    {dobSummary.daysUntilBirthday} day{dobSummary.daysUntilBirthday !== 1 ? "s" : ""} until your next birthday
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

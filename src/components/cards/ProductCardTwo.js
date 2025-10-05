@@ -1,11 +1,12 @@
 import useCurrency from "@/utils/currency";
 import useProduct from "@/utils/product";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { FaHeart } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import AquaImage from "../images/AquaImage";
+import { useRouter } from "next/router";
 
 const ReusableProductCard = ({ product }) => {
   const [fav, setAddFav] = useState(false);
@@ -13,7 +14,8 @@ const ReusableProductCard = ({ product }) => {
   const { formatCurrencyINR } = useCurrency;
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
   const { cartData, favData } = useSelector((state) => ({ ...state }));
-  const { title, photos, price, slug, discountPrice, discountPriceStatus } =
+  const router = useRouter();
+  const { title, photos = [], price, slug, discountPrice, discountPriceStatus } =
     product;
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
@@ -26,6 +28,18 @@ const ReusableProductCard = ({ product }) => {
     setAddFav(isProductInFav);
   }, [cartData, product?._id, favData]);
 
+  const displayPhotos = useMemo(() => {
+    if (Array.isArray(photos) && photos.length > 0) {
+      return photos;
+    }
+    return [
+      {
+        secure_url:
+          "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
+      },
+    ];
+  }, [photos]);
+
   useEffect(() => {
     if (emblaApi) {
       const onSelect = () => setActiveIndex(emblaApi.selectedScrollSnap());
@@ -34,16 +48,51 @@ const ReusableProductCard = ({ product }) => {
     }
   }, [emblaApi]);
 
+  const productHref = useMemo(() => {
+    if (product?.slug) return `/product/${product.slug}`;
+    if (product?._id) return `/product/${product._id}`;
+    return "/product";
+  }, [product]);
+
+  const handleNavigate = () => {
+    router.push(productHref);
+  };
+
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleNavigate();
+    }
+  };
+
+  const handleFavToggle = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    AddAndRemoveFav(product, setAddFav);
+  };
+
+  const handleCartToggle = (event) => {
+    event.stopPropagation();
+    AddAndRemoveCart(product, setAddCart);
+  };
+
   return (
-    <div className="bg-white relative mb-5 shadow-lg hover:shadow-2xl transition-shadow duration-300 rounded-xl">
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={handleNavigate}
+      onKeyDown={handleKeyPress}
+      className="group relative mb-5 flex h-full cursor-pointer flex-col rounded-2xl border border-slate-100 bg-white shadow-lg transition hover:-translate-y-1 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
+      aria-label={`View details for ${title}`}
+    >
       {/* Full-Width Image Carousel */}
       <div className="relative w-full overflow-hidden rounded-t-xl">
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex">
-            {photos.map((photo, index) => (
+            {displayPhotos.map((photo, index) => (
               <motion.div
                 key={index}
-                className="flex-shrink-0 w-full h-80"
+                className="flex h-72 w-full flex-shrink-0"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{
                   opacity: activeIndex === index ? 1 : 0.5,
@@ -63,11 +112,12 @@ const ReusableProductCard = ({ product }) => {
 
         {/* Favorite Button */}
         <button
-          onClick={() => AddAndRemoveFav(product, setAddFav)}
-          className={`absolute top-4 right-4 z-10 p-3 rounded-full transition-all duration-300 shadow-lg ${
+          type="button"
+          onClick={handleFavToggle}
+          className={`absolute top-4 right-4 z-10 rounded-full border p-3 transition-all duration-300 shadow-lg ${
             fav
-              ? "bg-red-500 hover:bg-red-600 text-white"
-              : "bg-gray-200 hover:bg-gray-300 text-gray-600"
+              ? "border-rose-500 bg-white/90 text-rose-600 hover:bg-rose-500 hover:text-white"
+              : "border-white/70 bg-white/80 text-slate-500 hover:border-rose-300 hover:text-rose-500"
           }`}
         >
           <FaHeart size={20} />
@@ -75,7 +125,7 @@ const ReusableProductCard = ({ product }) => {
 
         {/* Timeline Indicators */}
         <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {photos.map((_, index) => (
+          {displayPhotos.map((_, index) => (
             <div
               key={index}
               className={`w-4 h-1 rounded-full cursor-pointer transition-all duration-300 ${
@@ -87,11 +137,16 @@ const ReusableProductCard = ({ product }) => {
         </div>
       </div>
 
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-900 truncate">
-          <a href={`/product/${slug}`}>{title}</a>
-        </h3>
-        <p className="text-lg font-bold text-gray-800">
+      <div className="flex flex-1 flex-col gap-3 p-4">
+        <div className="flex flex-col gap-1 text-left">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            {product?.brand || product?.manufacturer || "Aquakart"}
+          </p>
+          <h3 className="text-lg font-semibold text-slate-900 transition group-hover:text-emerald-600">
+            {title}
+          </h3>
+        </div>
+        <p className="text-lg font-bold text-slate-900">
           {discountPriceStatus ? (
             <>
               <span className="text-red-600">
@@ -105,13 +160,25 @@ const ReusableProductCard = ({ product }) => {
             formatCurrencyINR(price)
           )}
         </p>
-        <div className="flex mt-4 space-x-4">
+        <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
+          <span>
+            {product?.coverage || product?.capacity
+              ? `${product.coverage || product.capacity} coverage`
+              : "For all water sources"}
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-600">
+            {product?.warranty || "1 year warranty"}
+          </span>
+        </div>
+
+        <div className="mt-auto flex w-full">
           <button
-            onClick={() => AddAndRemoveCart(product, setAddCart)}
-            className={`flex-1 py-3 rounded-lg text-white font-medium shadow-md transition-all duration-300 ${
+            onClick={handleCartToggle}
+            type="button"
+            className={`w-full rounded-lg py-3 text-sm font-semibold shadow-md transition-all duration-300 ${
               cart
-                ? "bg-green-500 hover:bg-green-600"
-                : "bg-blue-500 hover:bg-blue-600"
+                ? "bg-slate-900 text-white hover:bg-slate-800"
+                : "bg-emerald-500 text-white hover:bg-emerald-400"
             }`}
           >
             {cart ? "In Cart" : "Add to Cart"}

@@ -15,6 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Head from "next/head";
 import AquaProductCard from "@/components/cards/productCard";
+import Link from "next/link";
 
 import AquaImage from "@/components/images/AquaImage";
 
@@ -154,6 +155,37 @@ const AquaDynamicBlogComponent = () => {
     keywords: `Aquakart Product | ${blog.title || "Blog"}`,
   };
 
+  const formatTopicLabel = (value, fallback = "Aquakart") => {
+    if (!value || typeof value !== "string") return fallback;
+    const cleaned = value.replace(/[._-]+/g, " ").trim();
+    if (!cleaned) return fallback;
+    return cleaned
+      .toLowerCase()
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
+  const categoryLabel = formatTopicLabel(blog?.category, blog?.title || "Aquakart");
+
+  const keyHighlights = useMemo(() => {
+    if (Array.isArray(blog?.keyHighlights)) {
+      return blog.keyHighlights.filter(Boolean);
+    }
+    if (typeof blog?.keyHighlights === "string") {
+      return blog.keyHighlights
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+    }
+    if (typeof blog?.summary === "string") {
+      return blog.summary
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .slice(0, 5);
+    }
+    return [];
+  }, [blog?.keyHighlights, blog?.summary]);
+
   return (
     <AquaLayout seo={seoData}>
       <Head>
@@ -173,8 +205,21 @@ const AquaDynamicBlogComponent = () => {
           />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-12 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
+        <div className="relative mx-auto max-w-6xl px-4 pb-24 pt-12 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-emerald-600">
+            <Link
+              href="/blogs"
+              className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-emerald-600 transition hover:border-emerald-200 hover:bg-emerald-100"
+            >
+              ← Back to insights
+            </Link>
+            <span className="hidden text-slate-400 sm:inline">/</span>
+            <span className="hidden rounded-full bg-emerald-50 px-3 py-1 text-emerald-600 sm:inline">
+              {categoryLabel}
+            </span>
+          </div>
+
+          <div className="mx-auto mt-6 max-w-3xl text-center">
             {loading ? (
               <div className="space-y-4">
                 <div className="mx-auto h-10 w-40 animate-pulse rounded-full bg-slate-200" />
@@ -190,49 +235,59 @@ const AquaDynamicBlogComponent = () => {
                 <p className="mt-3 text-sm text-rose-700">{error}</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-5 rounded-3xl border border-emerald-100 bg-emerald-50/60 px-6 py-8 text-left shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                    <SparklesIcon className="h-4 w-4" />
+                    {categoryLabel}
+                  </span>
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-emerald-700">
+                    {publishedDate && (
+                      <span className="inline-flex items-center gap-2">
+                        <ClockIcon className="h-4 w-4" />
+                        {publishedDate}
+                      </span>
+                    )}
+                    <span className="inline-flex items-center gap-2">
+                      <SparklesIcon className="h-4 w-4" />
+                      {estimatedReadMinutes} min read
+                    </span>
+                    <button
+                      type="button"
+                      onClick={copyToClipboard}
+                      className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100"
+                    >
+                      {copied ? (
+                        <>
+                          <ClipboardDocumentCheckIcon className="h-4 w-4" />
+                          Link copied
+                        </>
+                      ) : (
+                        <>
+                          <ClipboardDocumentIcon className="h-4 w-4" />
+                          Share
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
                 <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-600">
-                  <SparklesIcon className="h-4 w-4" />
                   Inspiration
                 </span>
-                <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
                   {blog.title}
                 </h1>
-                <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-slate-600">
-                  {publishedDate && (
-                    <span className="inline-flex items-center gap-2">
-                      <ClockIcon className="h-4 w-4" />
-                      {publishedDate}
-                    </span>
-                  )}
-                  <span className="inline-flex items-center gap-2">
-                    <SparklesIcon className="h-4 w-4" />
-                    {estimatedReadMinutes} min read
-                  </span>
-                  <button
-                    type="button"
-                    onClick={copyToClipboard}
-                    className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-200"
-                  >
-                    {copied ? (
-                      <>
-                        <ClipboardDocumentCheckIcon className="h-4 w-4" />
-                        Link copied
-                      </>
-                    ) : (
-                      <>
-                        <ClipboardDocumentIcon className="h-4 w-4" />
-                        Share link
-                      </>
-                    )}
-                  </button>
-                </div>
+                <p className="text-sm text-slate-600">
+                  {blog?.excerpt ||
+                    blog?.shortDescription ||
+                    "Expert guidance to keep every drop of water in your space pure, soft, and reliable."}
+                </p>
               </div>
             )}
           </div>
 
           {!loading && !error && (
-            <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
               <article
                 ref={contentRef}
                 className="space-y-10 rounded-3xl bg-white p-6 shadow-lg ring-1 ring-slate-100"
@@ -257,14 +312,39 @@ const AquaDynamicBlogComponent = () => {
                   className="prose prose-lg max-w-none prose-headings:text-slate-900 prose-a:text-emerald-600 hover:prose-a:text-emerald-500"
                   dangerouslySetInnerHTML={{ __html: blog.description }}
                 />
+
+                {keyHighlights.length > 0 && (
+                  <section className="rounded-3xl border border-emerald-100 bg-emerald-50/70 p-6 shadow-inner">
+                    <h2 className="text-lg font-semibold text-emerald-900">
+                      Key takeaways
+                    </h2>
+                    <ul className="mt-3 space-y-2 text-sm text-emerald-800">
+                      {keyHighlights.map((highlight, index) => (
+                        <li key={`${highlight}-${index}`} className="flex items-start gap-2">
+                          <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500" />
+                          <span>{highlight}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
               </article>
 
               <aside className="flex flex-col gap-8">
                 {toc.length > 0 && (
                   <div className="rounded-3xl border border-slate-100 bg-slate-50/80 p-6 text-sm text-slate-600 shadow-sm">
-                    <h2 className="text-base font-semibold text-slate-900">
-                      On this page
-                    </h2>
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-base font-semibold text-slate-900">
+                        On this page
+                      </h2>
+                      <button
+                        type="button"
+                        className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:bg-white"
+                        onClick={handleScrollToTop}
+                      >
+                        Back to top
+                      </button>
+                    </div>
                     <ul className="mt-4 space-y-3">
                       {toc.map((item) => (
                         <li key={item.id} className="leading-snug">
@@ -283,27 +363,34 @@ const AquaDynamicBlogComponent = () => {
                   </div>
                 )}
 
-                <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-lg">
-                  <h2 className="text-lg font-semibold text-slate-900">
-                    Related products
-                  </h2>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Explore systems featured in this article.
-                  </p>
-                  <div className="mt-4 space-y-4">
-                    {related.length > 0 ? (
-                      related.map((item, index) => (
-                        <AquaProductCard
-                          key={item?._id || `${item?.name}-${index}`}
-                          product={item}
-                        />
-                      ))
-                    ) : (
-                      <p className="rounded-2xl bg-slate-50 p-4 text-xs text-slate-500">
-                        We’ll update this section when matching products are available.
-                      </p>
-                    )}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-slate-900">
+                      Related products
+                    </h2>
+                    <span className="text-xs font-medium text-slate-500">
+                      Curated for this guide
+                    </span>
                   </div>
+                  <p className="text-xs text-slate-500">
+                    Explore systems featured or recommended in this article.
+                  </p>
+                  {related.length > 0 ? (
+                    <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 sm:grid sm:grid-cols-1 sm:gap-4 sm:overflow-visible sm:pb-0">
+                      {related.map((item, index) => (
+                        <div
+                          key={item?._id || `${item?.name}-${index}`}
+                          className="min-w-[260px] snap-start sm:min-w-0"
+                        >
+                          <AquaProductCard product={item} />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="rounded-2xl border border-dashed border-slate-200 p-4 text-xs text-slate-500">
+                      We’ll update this section when matching products are available.
+                    </p>
+                  )}
                 </div>
               </aside>
             </div>

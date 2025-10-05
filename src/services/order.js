@@ -50,7 +50,7 @@ const createPhonePePayOrder = async (data) => {
 
 const verifyPayment = async (id, token) => {
   try {
-    const response = await axios.post(
+    const response = await axios.put(
       `${BASE}/order/user/${id}`,
       {},
       {

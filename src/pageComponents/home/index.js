@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect } from "react";
+import { Fragment, useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogBackdrop,
@@ -16,6 +16,12 @@ import AquaProducts from "./products";
 import AquaHomeHero from "./homeHeroSection";
 import CategoryServiceOperations from "@/services/category";
 import SubCategoryServiceOperations from "@/services/subcategory";
+import {
+  SparklesIcon,
+  WrenchScrewdriverIcon,
+  ShieldCheckIcon,
+  RocketLaunchIcon,
+} from "@heroicons/react/24/outline";
 
 const AquaHomeComponent = () => {
   const [categoryData, setCategoryData] = useState([]);
@@ -26,6 +32,70 @@ const AquaHomeComponent = () => {
     subcategory: false,
     product: false,
   });
+  const waterGuides = useMemo(
+    () => [
+      {
+        id: "planner",
+        title: "Softener planner",
+        description:
+          "Tell us your household size and hardness level to get the ideal softener capacity and salt schedule.",
+        bullets: [
+          "Predict salt usage for the next 6 months",
+          "Get maintenance reminders on WhatsApp",
+          "Receive tailored product recommendations",
+        ],
+        cta: { label: "Launch planner", href: "/softener-planner" },
+        icon: SparklesIcon,
+      },
+      {
+        id: "retrofit",
+        title: "Service & retrofit",
+        description:
+          "Already have a unit? Book an Aquakart engineer to calibrate, retrofit, or upgrade your setup in under 48 hours.",
+        bullets: [
+          "Covers all major brands and models",
+          "Includes 14-point performance checklist",
+          "Optional AMC plans with on-call experts",
+        ],
+        cta: { label: "Book a visit", href: "/services" },
+        icon: WrenchScrewdriverIcon,
+      },
+      {
+        id: "assurance",
+        title: "Water assurance report",
+        description:
+          "Upload your latest borewell or corporation report and we’ll decode contaminants, recommend filters, and send a PDF summary.",
+        bullets: [
+          "AI-assisted analysis of 30+ parameters",
+          "Actionable fix list for each contaminant",
+          "One-click quote for recommended systems",
+        ],
+        cta: { label: "Upload report", href: "/water-report" },
+        icon: ShieldCheckIcon,
+      },
+      {
+        id: "builder",
+        title: "Project builder",
+        description:
+          "Architects & PMCs can use our builder to spec centralized softening, RO plants, and grey water reuse in minutes.",
+        bullets: [
+          "Auto-generate BOQs and layout drawings",
+          "Compare energy footprint across models",
+          "Dedicated project success manager",
+        ],
+        cta: { label: "Start a project", href: "/projects" },
+        icon: RocketLaunchIcon,
+      },
+    ],
+    [],
+  );
+  const [activeGuideId, setActiveGuideId] = useState(waterGuides[0]?.id);
+
+  const activeGuide = useMemo(
+    () => waterGuides.find((item) => item.id === activeGuideId) || waterGuides[0],
+    [activeGuideId, waterGuides],
+  );
+  const ActiveGuideIcon = activeGuide?.icon || SparklesIcon;
 
   useEffect(() => {
     const fetchAllCategories = async () => {
@@ -126,6 +196,77 @@ const AquaHomeComponent = () => {
             <AquaHomeHero data={categoryData} />
 
             <main>
+              <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+                <div className="flex flex-col gap-8 rounded-3xl bg-white px-6 py-8 shadow-lg ring-1 ring-slate-100 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="max-w-xl">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                      Aquakart concierge
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">
+                      Plan, upgrade, or service in a few guided steps
+                    </h2>
+                    <p className="mt-3 text-sm text-slate-500">
+                      Choose a journey below to get instant recommendations, service slots, or project-ready documentation. Everything is mapped to real Indian water challenges.
+                    </p>
+                    <div className="mt-5 flex flex-wrap gap-3">
+                      {waterGuides.map((guide) => {
+                        const Icon = guide.icon;
+                        const isActive = guide.id === activeGuideId;
+                        return (
+                          <button
+                            key={guide.id}
+                            type="button"
+                            onClick={() => setActiveGuideId(guide.id)}
+                            className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                              isActive
+                                ? "border-emerald-300 bg-emerald-50 text-emerald-700 shadow"
+                                : "border-slate-200 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-600"
+                            }`}
+                          >
+                            <Icon className="h-4 w-4" />
+                            {guide.title}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="w-full max-w-lg rounded-3xl bg-slate-900/95 p-6 text-white shadow-xl lg:w-auto">
+                    <div className="flex items-center gap-3 text-sm font-semibold uppercase tracking-wide text-emerald-200">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
+                        <ActiveGuideIcon className="h-5 w-5" />
+                      </span>
+                      Guided experience
+                    </div>
+                    <h3 className="mt-3 text-2xl font-semibold tracking-tight">
+                      {activeGuide.title}
+                    </h3>
+                    <p className="mt-2 text-sm text-slate-200">
+                      {activeGuide.description}
+                    </p>
+                    <ul className="mt-4 space-y-2 text-sm text-emerald-100">
+                      {activeGuide.bullets.map((item) => (
+                        <li key={item} className="flex items-start gap-2">
+                          <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-300" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                    {activeGuide.cta && (
+                      <Link
+                        href={activeGuide.cta.href}
+                        className="mt-6 inline-flex items-center justify-center rounded-full bg-white px-5 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
+                      >
+                        {activeGuide.cta.label}
+                        <span className="ml-1" aria-hidden="true">
+                          →
+                        </span>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </section>
+
               <AquaProducts />
 
               <section

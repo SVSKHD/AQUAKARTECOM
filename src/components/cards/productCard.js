@@ -1,21 +1,20 @@
-import { useState, useEffect } from "react";
-import React from "react";
+import { useState, useEffect, useMemo } from "react";
 import useCurrency from "@/utils/currency";
 import useProduct from "@/utils/product";
-import { FaShoppingCart, FaHeart } from "react-icons/fa";
 import { useSelector } from "react-redux";
+import { useRouter } from "next/router";
+import { FaHeart, FaShoppingCart } from "react-icons/fa";
 import AquaImage from "../images/AquaImage";
 
 const AquaProductCard = ({ product }) => {
-  const [cart, setAddCart] = useState(false);
-  const [fav, setAddFav] = useState(false);
-  const { title, photos, price, color, slug } = product;
+  const { title, photos = [], price, slug, coverage, capacity, warranty } = product;
   const { formatCurrencyINRWithK } = useCurrency;
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
-  const { cartData, favData } = useSelector((state) => ({
-    cartData: state.cartData,
-    favData: state.favData,
-  }));
+  const { cartData, favData } = useSelector((state) => ({ ...state }));
+  const router = useRouter();
+
+  const [cart, setAddCart] = useState(false);
+  const [fav, setAddFav] = useState(false);
 
   useEffect(() => {
     const isProductInCart = cartData.some((item) => item._id === product?._id);
@@ -24,60 +23,103 @@ const AquaProductCard = ({ product }) => {
     setAddFav(isProductInFav);
   }, [cartData, product?._id, favData]);
 
+  const productHref = useMemo(() => {
+    if (product?.slug) return `/product/${product.slug}`;
+    if (product?._id) return `/product/${product._id}`;
+    return "/product";
+  }, [product]);
+
+  const displayPhotos = useMemo(() => {
+    if (Array.isArray(photos) && photos.length > 0) return photos;
+    return [
+      {
+        secure_url:
+          "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
+      },
+    ];
+  }, [photos]);
+
+  const handleNavigate = () => {
+    router.push(productHref);
+  };
+
+  const handleFavToggle = (event) => {
+    event.stopPropagation();
+    AddAndRemoveFav(product, setAddFav);
+  };
+
+  const handleCartToggle = (event) => {
+    event.stopPropagation();
+    AddAndRemoveCart(product, setAddCart);
+  };
+
   return (
-    <div className="relative mb-5 p-5 bg-white rounded-lg shadow-lg h-96 flex flex-col justify-between">
-      {/* Image Section */}
-      <div className="relative overflow-hidden rounded-lg bg-gray-100 flex-1">
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={handleNavigate}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleNavigate();
+        }
+      }}
+      className="group flex h-full flex-col rounded-2xl border border-slate-100 bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
+      aria-label={`View details for ${title}`}
+    >
+      <div className="relative h-48 overflow-hidden rounded-t-2xl bg-slate-100">
         <AquaImage
-          src={photos[0]?.secure_url}
+          src={displayPhotos[0]?.secure_url}
           alt={title}
-          customClass="h-full w-full object-cover rounded-lg"
+          customClass="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
+        <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-slate-950/70 to-transparent px-3 pb-3 pt-8 text-xs uppercase tracking-wide text-white/80">
+          <span>{product?.brand || product?.manufacturer || "Aquakart"}</span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px]">
+            {coverage || capacity || "All sources"}
+          </span>
+        </div>
 
-        {/* Cart button - top left */}
         <button
-          onClick={() => AddAndRemoveCart(product, setAddCart)}
-          className={`absolute top-2 left-2 z-10 p-1.5 rounded-lg border-none focus:outline-none transition-all duration-300 ${
-            cart ? "bg-white" : "bg-gray-600"
-          } hover:p-3 hover:rounded-full`}
+          type="button"
+          onClick={handleFavToggle}
+          className={`absolute top-3 right-3 rounded-full border p-2 transition-all duration-300 shadow ${
+            fav
+              ? "border-rose-500 bg-white/90 text-rose-600 hover:bg-rose-500 hover:text-white"
+              : "border-white/70 bg-white/80 text-slate-500 hover:border-rose-300 hover:text-rose-500"
+          }`}
         >
-          <FaShoppingCart
-            aria-hidden="true"
-            size={20}
-            className={cart ? "text-green-700" : "text-gray-300"}
-          />
+          <FaHeart size={16} />
         </button>
-
-        {/* Favorite button - top right */}
         <button
-          onClick={() => AddAndRemoveFav(product, setAddFav)}
-          className={`absolute top-2 right-2 z-10 p-1.5 rounded-lg border-none focus:outline-none transition-all duration-300 ${
-            fav ? "bg-white" : "bg-gray-600"
-          } hover:p-3 hover:rounded-full`}
+          type="button"
+          onClick={handleCartToggle}
+          className={`absolute top-3 left-3 rounded-full border p-2 transition-all duration-300 shadow ${
+            cart
+              ? "border-slate-900 bg-slate-900 text-white hover:bg-slate-800"
+              : "border-white/70 bg-white/80 text-slate-500 hover:border-emerald-300 hover:text-emerald-600"
+          }`}
         >
-          <FaHeart
-            aria-hidden="true"
-            size={20}
-            className={fav ? "text-red-500" : "text-gray-300"}
-          />
+          <FaShoppingCart size={16} />
         </button>
       </div>
 
-      {/* Product Details */}
-      <div className="mt-4 text-center">
-        <h3 className="text-lg font-medium text-gray-900">
-          <a href={`/product/${slug}`}>
-            {title.length > 200 ? `${title.slice(0, 200)}...` : title}
-          </a>
+      <div className="flex flex-1 flex-col gap-3 p-5 text-left">
+        <h3 className="text-base font-semibold text-slate-900 transition group-hover:text-emerald-600">
+          {title?.length > 100 ? `${title.slice(0, 97)}…` : title}
         </h3>
-        <p className="mt-1 text-sm text-gray-500">{color}</p>
-      </div>
-
-      {/* Price Section */}
-      <div className="mt-4 flex items-center justify-center">
-        <p className="text-lg font-semibold text-gray-900">
+        <p className="text-lg font-bold text-slate-900">
           {formatCurrencyINRWithK(price)}
         </p>
+        <div className="flex items-center justify-between text-xs text-slate-500">
+          <span>{product?.color || product?.application || "Fits kitchens & baths"}</span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
+            {warranty || "1 yr warranty"}
+          </span>
+        </div>
+        <div className="mt-auto text-sm font-medium text-emerald-600">
+          View details →
+        </div>
       </div>
     </div>
   );

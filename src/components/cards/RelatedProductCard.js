@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import { Heart, ShoppingCart, Check } from "lucide-react";
@@ -14,6 +14,63 @@ const AquaRelatedProductCard = ({ product }) => {
 
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
   const { cartData, favData } = useSelector((state) => ({ ...state }));
+
+  const displayPhotos = useMemo(() => {
+    if (Array.isArray(product?.photos) && product.photos.length > 0) {
+      return product.photos.filter(Boolean);
+    }
+
+    return [
+      {
+        secure_url:
+          "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
+      },
+    ];
+  }, [product?.photos]);
+
+  const productHref = useMemo(() => {
+    if (product?.slug) return `/product/${product.slug}`;
+    if (product?._id) return `/product/${product._id}`;
+    return "/product";
+  }, [product?.slug, product?._id]);
+
+  const priceDetails = useMemo(() => {
+    const price = Number(product?.price) || null;
+    const discountPrice = Number(product?.discountPrice) || null;
+    const showDiscount = product?.discountPriceStatus && discountPrice;
+
+    const formatter = new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    });
+
+    return {
+      actual: showDiscount ? discountPrice : price,
+      original: showDiscount ? price : null,
+      labelActual: price
+        ? formatter.format(showDiscount ? discountPrice : price)
+        : "",
+      labelOriginal:
+        showDiscount && price ? formatter.format(price) : "",
+      discountPercent:
+        showDiscount && price
+          ? Math.max(1, Math.round(((price - discountPrice) / price) * 100))
+          : null,
+    };
+  }, [product?.price, product?.discountPrice, product?.discountPriceStatus]);
+
+  const descriptionText = useMemo(() => {
+    const raw =
+      typeof product?.shortDescription === "string"
+        ? product.shortDescription
+        : typeof product?.description === "string"
+        ? product.description.replace(/<[^>]+>/g, " ")
+        : "";
+
+    const trimmed = raw.replace(/\s+/g, " ").trim();
+    return trimmed || "Well suited for modern water purification needs.";
+  }, [product?.shortDescription, product?.description]);
 
   useEffect(() => {
     if (emblaApi) {
@@ -42,12 +99,12 @@ const AquaRelatedProductCard = ({ product }) => {
   };
 
   return (
-    <div className="max-w-sm rounded-xl overflow-hidden shadow-lg bg-white border border-gray-200 m-4">
+    <div className="group flex h-full w-full min-w-[260px] max-w-[320px] flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-within:ring-2 focus-within:ring-emerald-400 focus-within:ring-offset-2 sm:min-w-0">
       <div className="relative">
         {/* Embla Carousel */}
         <div className="overflow-hidden rounded-t-xl" ref={emblaRef}>
           <div className="flex">
-            {product?.photos.map((photo, index) => (
+            {displayPhotos.map((photo, index) => (
               <motion.div
                 key={index}
                 className="flex-shrink-0 w-full"
@@ -61,8 +118,8 @@ const AquaRelatedProductCard = ({ product }) => {
                 <img
                   className="w-full object-cover rounded-t-xl"
                   src={photo?.secure_url}
-                  alt={product.name}
-                  style={{ height: "auto", maxHeight: "370px" }}
+                  alt={product?.title || "Aquakart product"}
+                  style={{ height: "auto", maxHeight: "320px" }}
                 />
               </motion.div>
             ))}
@@ -76,6 +133,7 @@ const AquaRelatedProductCard = ({ product }) => {
           onClick={handleAddToFav}
         >
           <button
+            type="button"
             className={`p-2 rounded-full shadow transition-all duration-300 ${
               isFavorite ? "bg-red-100" : "bg-white"
             } hover:bg-gray-100`}
@@ -92,9 +150,15 @@ const AquaRelatedProductCard = ({ product }) => {
           </button>
         </motion.div>
 
+        {priceDetails.discountPercent ? (
+          <div className="absolute left-4 top-4 inline-flex items-center rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+            Save {priceDetails.discountPercent}%
+          </div>
+        ) : null}
+
         {/* Timeline Indicators */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {product?.photos.map((_, index) => (
+          {displayPhotos.map((_, index) => (
             <div
               key={index}
               className={`relative w-10 h-2 rounded-full cursor-pointer transition-all duration-300 ${
@@ -107,30 +171,49 @@ const AquaRelatedProductCard = ({ product }) => {
       </div>
 
       {/* Product Details */}
-      <div className="p-4">
-        <h2 className="text-xl font-semibold mb-2 text-gray-800">
-          <Link href={`/product/${product?.slug}`}>{product?.title}</Link>
-        </h2>
-        <div className="flex justify-between items-center">
-          <span className="text-lg font-bold text-gray-900">
-            ₹{product.price}
+      <div className="flex flex-1 flex-col gap-4 p-5">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-semibold uppercase tracking-wide text-emerald-500">
+            {product?.brand || "Aquakart"}
           </span>
+          <h2 className="text-base font-semibold leading-snug text-slate-900 transition group-hover:text-emerald-600">
+            <Link href={productHref}>{product?.title}</Link>
+          </h2>
+        </div>
+
+        <p className="line-clamp-2 text-xs text-slate-500">{descriptionText}</p>
+
+        <div className="mt-auto flex items-center justify-between gap-3">
+          <div className="flex flex-col">
+            {priceDetails.labelActual ? (
+              <span className="text-lg font-bold text-slate-900">
+                {priceDetails.labelActual}
+              </span>
+            ) : null}
+            {priceDetails.labelOriginal ? (
+              <span className="text-xs text-slate-400 line-through">
+                {priceDetails.labelOriginal}
+              </span>
+            ) : null}
+          </div>
+
           <motion.button
-            className={`relative px-4 py-2 rounded-xl text-white flex items-center justify-center transition-all duration-300 ${
-              isInCart ? "bg-green-500" : "bg-blue-500"
-            } hover:opacity-80`}
+            type="button"
+            className={`relative inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold text-white shadow transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 ${
+              isInCart ? "bg-emerald-600" : "bg-slate-900 hover:bg-slate-800"
+            }`}
             whileTap={{ scale: 0.95 }}
             onClick={handleAddToCart}
           >
             {isInCart ? (
               <>
-                <Check className="w-6 h-6 mr-2" />
-                <span>In Cart</span>
+                <Check className="mr-1 h-4 w-4" />
+                In cart
               </>
             ) : (
               <>
-                <ShoppingCart className="w-6 h-6 mr-2" />
-                <span>Add to Cart</span>
+                <ShoppingCart className="mr-1 h-4 w-4" />
+                Add
               </>
             )}
           </motion.button>

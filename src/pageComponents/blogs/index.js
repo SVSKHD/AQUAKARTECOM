@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import AquaLayout from "@/components/Layout/Layout";
 import BlogServiceOperations from "@/services/blog";
-import AQ from "@/assests/logo-white.png";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -25,6 +24,29 @@ const formatDate = (value) => {
     return "";
   }
 };
+
+const looksLikeId = (value = "") => {
+  const compact = value.replace(/[^0-9a-f]/gi, "");
+  return compact.length >= 16;
+};
+
+const formatTopicLabel = (value, fallback = "Featured") => {
+  if (!value || typeof value !== "string") {
+    return fallback;
+  }
+
+  const cleaned = value.replace(/[._-]+/g, " ").trim();
+  if (!cleaned || looksLikeId(cleaned)) {
+    return fallback;
+  }
+
+  return cleaned
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+const topicKey = (value, fallback) =>
+  formatTopicLabel(value, fallback).toLowerCase();
 
 const AquaBlogComponnet = () => {
   const router = useRouter();
@@ -58,23 +80,47 @@ const AquaBlogComponnet = () => {
   }, []);
 
   const topics = useMemo(() => {
-    const unique = new Set();
+    const unique = new Map();
+
     blogs.forEach((item) => {
+      const fallback = item?.title || item?.heading || item?.slug || "Featured";
+
       if (Array.isArray(item.tags)) {
-        item.tags.filter(Boolean).forEach((tag) => unique.add(tag));
-      } else if (item.category) {
-        unique.add(item.category);
+        item.tags
+          .filter(Boolean)
+          .forEach((tag) => {
+            const label = formatTopicLabel(tag, fallback);
+            const key = label.toLowerCase();
+            if (!unique.has(key)) unique.set(key, label);
+          });
+      }
+
+      if (item?.category) {
+        const label = formatTopicLabel(item.category, fallback);
+        const key = label.toLowerCase();
+        if (!unique.has(key)) unique.set(key, label);
       }
     });
-    return ["All", ...Array.from(unique).slice(0, 12)];
+
+    return ["All", ...Array.from(unique.values()).slice(0, 12)];
   }, [blogs]);
 
   const filteredBlogs = useMemo(() => {
     const byTopic = topic === "All"
       ? blogs
       : blogs.filter((item) => {
-          if (Array.isArray(item.tags) && item.tags.includes(topic)) return true;
-          return item.category === topic;
+          const fallback = item?.title || item?.heading || item?.slug || "Featured";
+          const targetKey = topic.toLowerCase();
+
+          if (
+            Array.isArray(item.tags) &&
+            item.tags.some((tag) => topicKey(tag, fallback) === targetKey)
+          ) {
+            return true;
+          }
+
+          const categoryMatch = item?.category && topicKey(item.category, fallback) === targetKey;
+          return Boolean(categoryMatch);
         });
 
     if (!query.trim()) return byTopic;
@@ -89,6 +135,76 @@ const AquaBlogComponnet = () => {
 
   const featured = useMemo(() => filteredBlogs.slice(0, 3), [filteredBlogs]);
   const moreStories = useMemo(() => filteredBlogs.slice(3), [filteredBlogs]);
+
+  const toPlainText = (html) =>
+    typeof html === "string" ? html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : "";
+
+  const buildBlogCard = (post, variant = "featured") => {
+    const id = post?._id ?? post?.id;
+    const href = id ? `/blog/${id}` : "/blogs";
+    const image =
+      post?.photos?.[0]?.secure_url || post?.titleImages?.[0]?.secure_url || null;
+    const readTime = computeReadingTime(post?.description || post?.content || "");
+    const dateLabel = formatDate(post?.createdAt || post?.publishedAt);
+    const topicLabel = formatTopicLabel(post?.category, post?.title || "story");
+    const excerpt =
+      post?.shortDescription || toPlainText(post?.description)?.slice(0, variant === "featured" ? 160 : 120) ||
+      "Dive into Aquakart’s perspective on water treatment.";
+
+    return (
+      <Link
+        key={id || post?.title || Math.random()}
+        href={href}
+        className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-lg transition hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 ${
+          variant === "featured" ? "" : "sm:text-sm"
+        }`}
+      >
+        <div className={`relative overflow-hidden ${variant === "featured" ? "h-48" : "h-40"}`}>
+          {image ? (
+            <Image
+              src={image}
+              alt={post?.title || "Aquakart blog"}
+              fill
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+              className="object-cover transition duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center bg-slate-100 text-sm text-slate-400">
+              Image coming soon
+            </div>
+          )}
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-slate-950/80 to-transparent px-4 pb-3 pt-6 text-xs font-semibold uppercase tracking-wide text-white/80">
+            <span>{topicLabel}</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white">
+              {readTime} min read
+            </span>
+          </div>
+        </div>
+        <div className="flex flex-1 flex-col gap-4 p-6">
+          <div className="flex items-center gap-3 text-xs text-slate-500">
+            {dateLabel && <span>{dateLabel}</span>}
+            {dateLabel && <span>•</span>}
+            <span>Insights</span>
+          </div>
+          <h3 className="text-lg font-semibold text-slate-900 transition group-hover:text-emerald-600">
+            {post?.title || "Untitled story"}
+          </h3>
+          <p className={`${variant === "featured" ? "line-clamp-3" : "line-clamp-2"} text-sm text-slate-600`}>
+            {excerpt}
+          </p>
+          <div className="mt-auto flex items-center justify-between text-sm text-emerald-600">
+            <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Aquakart Team
+            </span>
+            <span className="inline-flex items-center gap-1 text-xs font-semibold">
+              Read article
+              <span aria-hidden="true">→</span>
+            </span>
+          </div>
+        </div>
+      </Link>
+    );
+  };
 
   const seoData = {
     title: "Aquakart | Know More About Water Softeners and Filters",
@@ -114,8 +230,8 @@ const AquaBlogComponnet = () => {
             <p className="mx-auto max-w-2xl text-base text-slate-600">
               Explore expert guides, maintenance tips, and success stories to keep your water systems running flawlessly.
             </p>
-            <div className="mx-auto flex max-w-3xl flex-col gap-4 rounded-3xl border border-slate-100 bg-white p-4 shadow-lg sm:flex-row sm:items-center">
-              <div className="relative flex-1">
+            <div className="mx-auto flex max-w-3xl flex-col gap-4 rounded-3xl border border-slate-100 bg-white p-4 shadow-lg sm:flex-row sm:items-start">
+              <div className="relative flex w-full sm:w-52">
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
@@ -125,6 +241,26 @@ const AquaBlogComponnet = () => {
                   aria-label="Search blogs"
                 />
               </div>
+              {query.trim() && filteredBlogs.length > 0 && (
+                <div className="w-full flex-1 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3 text-left text-sm text-emerald-800 shadow-sm">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                    Matching articles
+                  </p>
+                  <ul className="space-y-2 overflow-y-auto text-sm max-h-40">
+                    {filteredBlogs.slice(0, 6).map((item) => (
+                      <li key={item?._id || item?.id} className="truncate">
+                        <Link
+                          href={`/blog/${item?._id ?? item?.id}`}
+                          className="inline-flex items-center gap-2 text-emerald-700 transition hover:text-emerald-500"
+                        >
+                          <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                          {item?.title || "Untitled story"}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <div className="flex flex-wrap gap-2">
                 {topics.map((item) => (
                   <button
@@ -172,62 +308,7 @@ const AquaBlogComponnet = () => {
               <section>
                 <h2 className="text-lg font-semibold text-slate-900">Featured reads</h2>
                 <div className="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                  {featured.map((post) => {
-                    const image = post?.photos?.[0]?.secure_url || post?.titleImages?.[0]?.secure_url;
-                    const readTime = computeReadingTime(post?.description || post?.content || "");
-                    const dateLabel = formatDate(post?.createdAt || post?.publishedAt);
-
-                    return (
-                      <article
-                        key={post?._id || post?.id}
-                        className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-lg transition hover:-translate-y-1 hover:shadow-xl"
-                      >
-                        <div className="relative h-48 overflow-hidden">
-                          {image ? (
-                            <Image
-                              src={image}
-                              alt={post?.title || "Aquakart blog"}
-                              fill
-                              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                              className="object-cover transition duration-500 group-hover:scale-105"
-                              priority={false}
-                            />
-                          ) : (
-                            <div className="flex h-full items-center justify-center bg-slate-100 text-sm text-slate-400">
-                              Image coming soon
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex flex-1 flex-col gap-4 p-6">
-                          <div className="flex items-center gap-3 text-xs text-slate-500">
-                            {dateLabel && <span>{dateLabel}</span>}
-                            <span>•</span>
-                            <span>{readTime} min read</span>
-                          </div>
-                          <h3 className="text-lg font-semibold text-slate-900">
-                            <Link href={`/blog/${post?._id ?? post?.id}`}>
-                              <span className="absolute inset-0" />
-                              {post?.title || "Untitled story"}
-                            </Link>
-                          </h3>
-                          <p className="line-clamp-3 text-sm text-slate-600">
-                            {post?.shortDescription ||
-                              post?.description?.replace(/<[^>]+>/g, " ")?.slice(0, 160) ||
-                              "Dive into AquaKart’s perspective on water treatment."}
-                          </p>
-                          <div className="mt-auto">
-                            <Link
-                              className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-400"
-                              href={`/blog/${post?._id ?? post?.id}`}
-                            >
-                              Continue reading
-                              <span aria-hidden="true">→</span>
-                            </Link>
-                          </div>
-                        </div>
-                      </article>
-                    );
-                  })}
+                  {featured.map((post) => buildBlogCard(post, "featured"))}
                 </div>
               </section>
 
@@ -243,70 +324,7 @@ const AquaBlogComponnet = () => {
                     </Link>
                   </div>
                   <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {moreStories.map((post) => {
-                      const image = post?.photos?.[0]?.secure_url || post?.titleImages?.[0]?.secure_url;
-                      const readTime = computeReadingTime(post?.description || post?.content || "");
-                      const dateLabel = formatDate(post?.createdAt || post?.publishedAt);
-
-                      return (
-                        <article
-                          key={post?._id || post?.id}
-                          className="flex h-full flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
-                        >
-                          <div className="relative h-40 overflow-hidden">
-                            {image ? (
-                              <Image
-                                src={image}
-                                alt={post?.title || "Aquakart blog"}
-                                fill
-                                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                                className="object-cover transition duration-500 hover:scale-105"
-                              />
-                            ) : (
-                              <div className="flex h-full items-center justify-center bg-slate-100 text-xs text-slate-400">
-                                Image coming soon
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex flex-1 flex-col gap-3 p-5">
-                            <div className="flex items-center gap-3 text-[11px] uppercase tracking-wide text-slate-500">
-                              {dateLabel && <span>{dateLabel}</span>}
-                              <span>•</span>
-                              <span>{readTime} min read</span>
-                            </div>
-                            <h3 className="text-base font-semibold text-slate-900">
-                              <Link href={`/blog/${post?._id ?? post?.id}`}>
-                                <span className="absolute inset-0" />
-                                {post?.title || "Untitled story"}
-                              </Link>
-                            </h3>
-                            <p className="line-clamp-2 text-sm text-slate-600">
-                              {post?.shortDescription ||
-                                post?.description?.replace(/<[^>]+>/g, " ")?.slice(0, 120) ||
-                                "Quick takeaways from Aquakart’s experts."}
-                            </p>
-                            <div className="mt-auto flex items-center justify-between pt-2">
-                              <div className="flex items-center gap-2 text-xs text-slate-500">
-                                <Image
-                                  src={AQ}
-                                  alt="Aquakart"
-                                  width={24}
-                                  height={24}
-                                  className="h-6 w-6 rounded-full bg-slate-100"
-                                />
-                                Aquakart Team
-                              </div>
-                              <Link
-                                href={`/blog/${post?._id ?? post?.id}`}
-                                className="text-sm font-medium text-emerald-600 hover:text-emerald-500"
-                              >
-                                Read →
-                              </Link>
-                            </div>
-                          </div>
-                        </article>
-                      );
-                    })}
+                    {moreStories.map((post) => buildBlogCard(post, "compact"))}
                   </div>
                 </section>
               )}

@@ -60,10 +60,10 @@ const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
           userName={getFirstLettersFromEmail(userData?.user?.email)}
         />
       </div>
-      <div className="w-full max-w-4xl px-4 py-8">
-        <div className="w-full bg-white rounded-2xl shadow-lg p-6">
+      <div className="w-full max-w-4xl px-4 py-6 sm:py-8">
+        <div className="w-full rounded-2xl bg-white p-4 shadow-lg sm:p-6">
           <div className="mb-6 border-b border-gray-100 pb-4">
-            <h1 className="text-2xl font-semibold text-gray-900">
+            <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">
               {resolvedTitle}
             </h1>
             {resolvedSubtitle && (
@@ -72,7 +72,9 @@ const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
               </p>
             )}
           </div>
-          {children}
+          <div className="min-h-[60vh]">
+            {children}
+          </div>
         </div>
       </div>
     </div>

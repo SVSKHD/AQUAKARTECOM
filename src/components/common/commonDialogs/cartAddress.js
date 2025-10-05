@@ -3,6 +3,7 @@ import AquaResponsiveDialog from "@/components/reusables/dialog";
 import { useSelector, useDispatch } from "react-redux";
 import UserServiceOperations from "@/services/user";
 import AquaToast from "@/components/reusables/react-toastify";
+import { MapPinIcon } from "@heroicons/react/24/outline";
 
 const STATE_CITY_OPTIONS = [
   {
@@ -38,6 +39,7 @@ const AquaAddressDialog = ({ editData }) => {
     state: "",
     postalCode: "",
   });
+  const [errors, setErrors] = useState({});
   const dispatch = useDispatch();
   const { addressDialog, addressData, userData } = useSelector((state) => ({
     ...state,
@@ -53,6 +55,7 @@ const AquaAddressDialog = ({ editData }) => {
         postalCode: "",
       });
     }
+    setErrors({});
   }, [addressData]);
 
   const handleChange = (e) => {
@@ -184,6 +187,32 @@ const AquaAddressDialog = ({ editData }) => {
   };
 
   const handleSubmit = () => {
+    const validationErrors = {};
+    if (!address.street.trim()) {
+      validationErrors.street = "Street is required";
+    }
+    if (!address.state.trim()) {
+      validationErrors.state = "Select a state";
+    }
+    if (!address.city.trim()) {
+      validationErrors.city = "Select or enter a city";
+    }
+    if (!address.postalCode.trim()) {
+      validationErrors.postalCode = "Postal code is required";
+    } else if (!/^\d{6}$/.test(address.postalCode.trim())) {
+      validationErrors.postalCode = "Enter a valid 6 digit postal code";
+    }
+
+    if (Object.keys(validationErrors).length) {
+      setErrors(validationErrors);
+      AquaToast({
+        message: "Please review the highlighted fields",
+        type: "error",
+      });
+      return;
+    }
+
+    setErrors({});
     if (addressData) {
       handleAddressEdit();
     } else {
@@ -202,18 +231,26 @@ const AquaAddressDialog = ({ editData }) => {
           })
         }
       >
-        <div className="m-5">
-          <h3 className="font-semibold text-black mb-5">
-            {editData ? "Edit Your Address" : "Please Fill Your Address"}
-          </h3>
-          <div className="col-span-full">
-            <label
-              htmlFor="street"
-              className="block text-sm font-medium leading-6 text-gray-900"
-            >
-              Street address
-            </label>
-            <div className="mt-2">
+        <div className="space-y-6 rounded-3xl bg-white px-5 py-6 shadow-xl ring-1 ring-slate-100 sm:px-8">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <MapPinIcon className="h-6 w-6" />
+            </span>
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">
+                {editData ? "Edit delivery address" : "Add new delivery address"}
+              </h3>
+              <p className="mt-1 text-sm text-slate-500">
+                Save an address for faster checkout and accurate installation support.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-5">
+            <div className="grid gap-2">
+              <label htmlFor="street" className="text-sm font-medium text-slate-700">
+                Street address
+              </label>
               <input
                 id="street"
                 name="street"
@@ -221,82 +258,90 @@ const AquaAddressDialog = ({ editData }) => {
                 onChange={handleChange}
                 type="text"
                 autoComplete="address-line1"
-                className="p-3 block w-full rounded-md border-0 py-1.5 bg-white text-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className={`h-11 w-full rounded-2xl border bg-white px-4 text-sm text-slate-800 shadow-sm transition focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 ${
+                  errors.street ? "border-rose-400" : "border-slate-200"
+                }`}
+                placeholder="House no, street, landmark"
               />
+              {errors.street && (
+                <p className="text-xs text-rose-500">{errors.street}</p>
+              )}
             </div>
-          </div>
 
-          <div className="sm:col-span-2 sm:col-start-1">
-            <label
-              htmlFor="city"
-              className="block text-sm font-medium leading-6 text-gray-900"
-            >
-              City
-            </label>
-            <div className="mt-2">
-              {cityOptions.length ? (
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <label htmlFor="region" className="text-sm font-medium text-slate-700">
+                  State
+                </label>
                 <select
-                  id="city"
-                  name="city"
-                  value={address.city}
-                  onChange={handleChange}
-                  className="p-3 block w-full rounded-md border-0 bg-white text-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  id="region"
+                  name="state"
+                  value={address.state}
+                  onChange={handleStateChange}
+                  className={`h-11 w-full rounded-2xl border bg-white px-4 text-sm text-slate-800 shadow-sm transition focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 ${
+                    errors.state ? "border-rose-400" : "border-slate-200"
+                  }`}
                 >
-                  <option value="">Select city</option>
-                  {cityOptions.map((city) => (
-                    <option key={city} value={city}>
-                      {city}
+                  <option value="">Select state</option>
+                  {stateOptions.map((state) => (
+                    <option key={state} value={state}>
+                      {state}
                     </option>
                   ))}
                 </select>
-              ) : (
-                <input
-                  id="city"
-                  name="city"
-                  type="text"
-                  value={address.city}
-                  onChange={handleChange}
-                  autoComplete="address-level2"
-                  placeholder="Enter city"
-                  className="p-3 block w-full rounded-md border-0 py-1.5 bg-white text-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              )}
-            </div>
-          </div>
+                {errors.state && (
+                  <p className="text-xs text-rose-500">{errors.state}</p>
+                )}
+              </div>
 
-          <div className="sm:col-span-2">
-            <label
-              htmlFor="region"
-              className="block text-sm font-medium leading-6 text-gray-900"
-            >
-              State / Province
-            </label>
-            <div className="mt-2">
-              <select
-                id="region"
-                name="state"
-                value={address.state}
-                onChange={handleStateChange}
-                className="p-3 block w-full rounded-md border-0 bg-white text-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              <div className="grid gap-2">
+                <label htmlFor="city" className="text-sm font-medium text-slate-700">
+                  City
+                </label>
+                {cityOptions.length ? (
+                  <select
+                    id="city"
+                    name="city"
+                    value={address.city}
+                    onChange={handleChange}
+                    className={`h-11 w-full rounded-2xl border bg-white px-4 text-sm text-slate-800 shadow-sm transition focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 ${
+                      errors.city ? "border-rose-400" : "border-slate-200"
+                    }`}
+                  >
+                    <option value="">Select city</option>
+                    {cityOptions.map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    id="city"
+                    name="city"
+                    type="text"
+                    value={address.city}
+                    onChange={handleChange}
+                    autoComplete="address-level2"
+                    placeholder="Enter city"
+                    className={`h-11 w-full rounded-2xl border bg-white px-4 text-sm text-slate-800 shadow-sm transition focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 ${
+                      errors.city ? "border-rose-400" : "border-slate-200"
+                    }`}
+                  />
+                )}
+                {errors.city && (
+                  <p className="text-xs text-rose-500">{errors.city}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <label
+                htmlFor="postal-code"
+                className="text-sm font-medium text-slate-700"
               >
-                <option value="">Select state</option>
-                {stateOptions.map((state) => (
-                  <option key={state} value={state}>
-                    {state}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="sm:col-span-2">
-            <label
-              htmlFor="postal-code"
-              className="block text-sm font-medium leading-6 text-gray-900"
-            >
-              ZIP / Postal code
-            </label>
-            <div className="mt-2">
+                ZIP / Postal code
+              </label>
               <input
                 id="postal-code"
                 name="postalCode"
@@ -304,18 +349,33 @@ const AquaAddressDialog = ({ editData }) => {
                 onChange={handleChange}
                 type="text"
                 autoComplete="postal-code"
-                className="p-3 block w-full rounded-md border-0 py-1.5 bg-white text-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                placeholder="e.g. 500090"
+                className={`h-11 w-full rounded-2xl border bg-white px-4 text-sm text-slate-800 shadow-sm transition focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 ${
+                  errors.postalCode ? "border-rose-400" : "border-slate-200"
+                }`}
               />
+              {errors.postalCode && (
+                <p className="text-xs text-rose-500">{errors.postalCode}</p>
+              )}
             </div>
           </div>
+
+          <div className="flex flex-col gap-3 rounded-2xl bg-slate-50/80 p-4 text-xs text-slate-500">
+            <p className="font-medium text-slate-700">Pro tip</p>
+            <p>
+              Ensure the address matches your installation location so our service
+              engineers reach you without delays.
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            className="flex w-full items-center justify-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-emerald-400"
+            onClick={handleSubmit}
+          >
+            {addressData ? "Save changes" : "Save address"}
+          </button>
         </div>
-        <button
-          type="submit"
-          className="mt-8 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          onClick={handleSubmit}
-        >
-          {addressData ? "Edit Address" : "Add Address"}
-        </button>
       </AquaResponsiveDialog>
     </>
   );

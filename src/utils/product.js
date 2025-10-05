@@ -97,6 +97,34 @@ const useProduct = () => {
   const AddToFav = () => {};
 
   const RemoveFromFav = () => {};
+  const removeFavProduct = (productId) => {
+    if (!productId) {
+      AquaToast({
+        message: "Product ID is required",
+        type: "error",
+      });
+      return;
+    }
+
+    const exists = favData.some((item) => item._id === productId);
+    if (!exists) {
+      AquaToast({
+        message: "Product not found in favourites",
+        type: "error",
+      });
+      return;
+    }
+
+    dispatch({
+      type: "REMOVE_FROM_FAV",
+      payload: productId,
+    });
+
+    AquaToast({
+      message: "Removed from favourites",
+      type: "info",
+    });
+  };
   const EmptyCart = () => {
     dispatch({
       type: "EMPTY_CART",
@@ -148,6 +176,7 @@ const useProduct = () => {
     RemoveFromFav,
     EmptyCart,
     removeFromCart,
+    removeFavProduct,
   };
 };
 
