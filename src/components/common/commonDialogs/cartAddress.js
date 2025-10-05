@@ -151,7 +151,6 @@ const AquaAddressDialog = ({ editData }) => {
       const payload = {
         newDetails,
       };
-      console.log("address", payload);
       UserServiceOperations.UserUpdateDetails(
         userData.user._id,
         payload,

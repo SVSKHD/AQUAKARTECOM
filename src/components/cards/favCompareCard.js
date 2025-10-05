@@ -6,8 +6,6 @@ const AquaFavoriteCompareCard = ({ product, onCompare }) => {
 
   const { formatCurrencyINR } = useCurrency;
 
-  console.log("onCompare function:", onCompare);
-
   const ComparFunction = (e) => {
     e.preventDefault();
     onCompare(product);

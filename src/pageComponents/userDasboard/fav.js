@@ -7,11 +7,17 @@ import DashboardProductCard from "./layout/cards/cartCard";
 const AquaUserFavPageComponent = () => {
   const { favData, cartData } = useSelector((state) => ({ ...state }));
 
+  const safeFav = useMemo(
+    () => (Array.isArray(favData) ? favData : []),
+    [favData],
+  );
+  const safeCart = useMemo(
+    () => (Array.isArray(cartData) ? cartData : []),
+    [cartData],
+  );
+
   const { favouritesCount, inStockCount, inCartCount, viewedCount } = useMemo(
     () => {
-      const safeFav = Array.isArray(favData) ? favData : [];
-      const safeCart = Array.isArray(cartData) ? cartData : [];
-
       const inStock = safeFav.filter((item) =>
         item?.inStock === false ? false : true,
       ).length;
@@ -32,7 +38,7 @@ const AquaUserFavPageComponent = () => {
         viewedCount: viewed,
       };
     },
-    [favData, cartData],
+    [safeFav, safeCart],
   );
 
   const summaryCards = [
@@ -85,8 +91,8 @@ const AquaUserFavPageComponent = () => {
         </div>
 
         {favouritesCount > 0 ? (
-          <div className="grid grid-cols-1 gap-6 p-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {favData.map((item, index) => (
+          <div className="grid grid-cols-1 gap-6 p-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            {safeFav.map((item, index) => (
               <DashboardProductCard key={item._id || index} product={item} />
             ))}
           </div>

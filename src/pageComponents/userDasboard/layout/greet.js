@@ -40,12 +40,13 @@ const AquaUserGreet = ({ userName = "there" }) => {
       <div className="relative mt-4 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-50 via-white to-indigo-50 p-6 text-left shadow-sm">
         <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-emerald-200/40 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-12 left-6 h-28 w-28 rounded-full bg-indigo-200/50 blur-2xl" />
-        <div className="pointer-events-none absolute inset-0 z-0 opacity-25">
+        <div className="pointer-events-none absolute inset-0 z-0 opacity-85">
           <Image
             src={AquaLogo}
             alt="Aquakart logo"
             fill
-            className="object-contain object-right"
+            className="object-contain object-right opacity-95"
+            style={{ filter: "brightness(0.7) contrast(1.05)" }}
             sizes="(max-width: 768px) 100vw, 400px"
             priority
           />

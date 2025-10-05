@@ -32,11 +32,9 @@ const AquaLayout = (props) => {
   useEffect(() => {
     const fetchData = async () => {
       const catData = await CategoryServiceOperations.Allcategories();
-      console.log("catData", catData?.data?.data);
       setcategories(catData?.data?.data);
 
       const subCatData = await SubCategoryServiceOperations.AllSubcategories();
-      console.log("subCatData", subCatData?.data?.data);
       setsubcategories(subCatData?.data?.data);
     };
 
