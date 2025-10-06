@@ -1,8 +1,22 @@
 import AquaShopComponent from "@/pageComponents/shop";
 import ProductServiceOperations from "@/services/products";
+import CategoryServiceOperations from "@/services/category";
+import SubCategoryServiceOperations from "@/services/subcategory";
 
-const AquaShop = ({ products = [], error = "" }) => {
-  return <AquaShopComponent initialProducts={products} initialError={error} />;
+const AquaShop = ({
+  products = [],
+  error = "",
+  categories = [],
+  subcategories = [],
+}) => {
+  return (
+    <AquaShopComponent
+      initialProducts={products}
+      initialError={error}
+      initialCategories={categories}
+      initialSubcategories={subcategories}
+    />
+  );
 };
 
 export const getServerSideProps = async () => {
@@ -17,12 +31,28 @@ export const getServerSideProps = async () => {
       };
     }
 
-    const response = await ProductServiceOperations.AllProducts();
-    const products = Array.isArray(response?.data?.data) ? response.data.data : [];
+    const [productsResponse, categoriesResponse, subcategoriesResponse] =
+      await Promise.all([
+        ProductServiceOperations.AllProducts(),
+        CategoryServiceOperations.Allcategories().catch(() => null),
+        SubCategoryServiceOperations.AllSubcategories().catch(() => null),
+      ]);
+
+    const products = Array.isArray(productsResponse?.data?.data)
+      ? productsResponse.data.data
+      : [];
+    const categories = Array.isArray(categoriesResponse?.data?.data)
+      ? categoriesResponse.data.data
+      : [];
+    const subcategories = Array.isArray(subcategoriesResponse?.data?.data)
+      ? subcategoriesResponse.data.data
+      : [];
 
     return {
       props: {
         products,
+        categories,
+        subcategories,
         error: products.length === 0 ? "No products available at the moment." : "",
       },
     };
@@ -31,6 +61,8 @@ export const getServerSideProps = async () => {
     return {
       props: {
         products: [],
+        categories: [],
+        subcategories: [],
         error: "We couldn’t load the catalogue. Please refresh the page or visit later.",
       },
     };
