@@ -24,12 +24,13 @@ const getOrdersByUserId = async (id, token) => {
   }
 };
 
-const getOrdersByTransactionId = async (id, token) => {
+const getOrdersByTransactionId = async (id, token, config = {}) => {
   try {
     const response = await axios.get(`${BASE}/order/transaction-id/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      ...config,
     });
     return response.data;
   } catch (error) {

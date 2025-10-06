@@ -1,819 +1,506 @@
-import { Fragment, useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogPanel,
-  Tab,
-  TabGroup,
-  TabList,
-  TabPanel,
-  TabPanels,
-} from "@headlessui/react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import AquaLayout from "@/components/Layout/Layout";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import orderServiceOperations from "@/services/order";
-import useCurrency from "@/utils/currency";
-import moment from "moment";
 import Link from "next/link";
-import { useSelector, useDispatch } from "react-redux";
-import AquaToast from "@/components/reusables/react-toastify";
-import AquaBadge from "@/components/reusables/badge";
-import AquaPaymentDetails from "@/components/utils/paymentTypeDetails";
+import { useSelector } from "react-redux";
+import moment from "moment";
+import { nanoid } from "nanoid";
+import {
+  ArrowLeft,
+  CalendarClock,
+  CheckCircle2,
+  Circle,
+  CreditCard,
+  MapPin,
+  PackageCheck,
+  Receipt,
+  Wallet,
+  IndianRupee,
+} from "lucide-react";
+import AquaLayout from "@/components/Layout/Layout";
 import AquaSpinner from "@/components/common/spinner";
+import AquaToast from "@/components/reusables/react-toastify";
+import orderServiceOperations from "@/services/order";
 
-const currencies = ["CAD", "USD", "AUD", "EUR", "GBP"];
-const navigation = {
-  categories: [
-    {
-      name: "Women",
-      featured: [
-        { name: "Sleep", href: "#" },
-        { name: "Swimwear", href: "#" },
-        { name: "Underwear", href: "#" },
-      ],
-      collection: [
-        { name: "Everything", href: "#" },
-        { name: "Core", href: "#" },
-        { name: "New Arrivals", href: "#" },
-        { name: "Sale", href: "#" },
-      ],
-      categories: [
-        { name: "Basic Tees", href: "#" },
-        { name: "Artwork Tees", href: "#" },
-        { name: "Bottoms", href: "#" },
-        { name: "Underwear", href: "#" },
-        { name: "Accessories", href: "#" },
-      ],
-      brands: [
-        { name: "Full Nelson", href: "#" },
-        { name: "My Way", href: "#" },
-        { name: "Re-Arranged", href: "#" },
-        { name: "Counterfeit", href: "#" },
-        { name: "Significant Other", href: "#" },
-      ],
-    },
-    {
-      name: "Men",
-      featured: [
-        { name: "Casual", href: "#" },
-        { name: "Boxers", href: "#" },
-        { name: "Outdoor", href: "#" },
-      ],
-      collection: [
-        { name: "Everything", href: "#" },
-        { name: "Core", href: "#" },
-        { name: "New Arrivals", href: "#" },
-        { name: "Sale", href: "#" },
-      ],
-      categories: [
-        { name: "Artwork Tees", href: "#" },
-        { name: "Pants", href: "#" },
-        { name: "Accessories", href: "#" },
-        { name: "Boxers", href: "#" },
-        { name: "Basic Tees", href: "#" },
-      ],
-      brands: [
-        { name: "Significant Other", href: "#" },
-        { name: "My Way", href: "#" },
-        { name: "Counterfeit", href: "#" },
-        { name: "Re-Arranged", href: "#" },
-        { name: "Full Nelson", href: "#" },
-      ],
-    },
-  ],
-  pages: [
-    { name: "Company", href: "#" },
-    { name: "Stores", href: "#" },
-  ],
+const TIMELINE_STEPS = [
+  { key: "placed", label: "Order placed", description: "We’ve received your order." },
+  { key: "processing", label: "Processing", description: "Your items are being prepared." },
+  { key: "shipped", label: "Shipped", description: "Package handed over to the courier." },
+  { key: "out_for_delivery", label: "Out for delivery", description: "Courier is on the way." },
+  { key: "delivered", label: "Delivered", description: "Order delivered successfully." },
+];
+
+const statusRank = {
+  placed: 0,
+  pending: 0,
+  processing: 1,
+  packed: 1,
+  shipped: 2,
+  dispatched: 2,
+  out_for_delivery: 3,
+  "out for delivery": 3,
+  delivered: 4,
+  completed: 4,
+  cancelled: 0,
 };
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+const toLowerSafe = (value) => `${value || ""}`.toLowerCase();
 
-const AquaOrder = () => {
-  const dispatch = useDispatch();
+const formatCurrencyINR = (amount) => {
+  const numeric = Number(amount);
+  if (Number.isNaN(numeric)) return "₹0";
+  return numeric.toLocaleString("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  });
+};
+
+const composeAddress = (address) => {
+  if (!address) return "—";
+  return [address.street, address.city, address.state, address.postalCode]
+    .filter(Boolean)
+    .map((part) => `${part}`.trim())
+    .join(", ");
+};
+
+const deriveTimeline = (orderStatus = "") => {
+  const key = toLowerSafe(orderStatus);
+  let matchedKey = "placed";
+  if (key.includes("deliver")) matchedKey = "delivered";
+  else if (key.includes("out")) matchedKey = "out_for_delivery";
+  else if (key.includes("ship") || key.includes("dispatch")) matchedKey = "shipped";
+  else if (key.includes("process") || key.includes("pack")) matchedKey = "processing";
+
+  const currentIndex = statusRank[matchedKey] ?? 1;
+
+  return TIMELINE_STEPS.map((step, index) => ({
+    ...step,
+    completed: index <= currentIndex,
+    current: index === currentIndex,
+  }));
+};
+
+const AquaOrderPage = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [order, setOrder] = useState({});
-  const [mode, setMode] = useState({ COD: false, payment: false });
-  const [loading, setLoading] = useState(false);
-  const { formatCurrencyINR } = useCurrency;
-  const formattedDate = moment(order?.createdAt).format("DD MMM YYYY");
   const { userData } = useSelector((state) => ({ ...state }));
 
-  const handleRetryPayment = async (id) => {
-    console.log("order", order);
-  };
-  const handleRetryCOD = async (id) => {
-    console.log("order", order);
-    orderServiceOperations
-      .updateOrderStatus(id._id, userData.token, {
-        paymentMethod: "Cash On Delivery",
-      })
-      .then(() => {
-        AquaToast({
-          message: "Order is successfully accepted as COD",
-          type: "success",
-        });
-      })
-      .catch(() => {
-        AquaToast({
-          message: "Error in accepting COD",
-          type: "error",
-        });
-      });
-  };
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [retrying, setRetrying] = useState(false);
+  const [switchingToCod, setSwitchingToCod] = useState(false);
 
-  useEffect(() => {
-    if (!router.isReady || !userData?.token) return;
+  const token = userData?.token;
+  const userId = userData?.user?._id;
 
-    const { id } = router.query;
-    const paymentMode = id.includes("PGPP");
-    const CODMode = id.includes("COD");
-
+  const fetchOrder = async (signal) => {
+    if (!id || !token) return;
     setLoading(true);
+    setError("");
 
-    const fetchOrder = paymentMode
-      ? orderServiceOperations.verifyPayment(id, userData.token)
-      : orderServiceOperations.getOrdersByTransactionId(id, userData.token);
-
-    fetchOrder
-      .then((res) => {
-        const orderData = res.data;
-        setOrder(orderData);
-        dispatch({ type: "EMPTY_CART" });
-        setMode({ payment: paymentMode, COD: CODMode });
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Order fetch error:", err);
-        AquaToast({
-          message: "Oops! Something has gone wrong.",
-          type: "error",
-        });
-        setLoading(false);
-      });
-  }, [router.isReady, router.query, userData]);
-  const Seo = {
-    title: "Aquakart | orders",
-  };
-  const [open, setOpen] = useState(false);
-
-  const getOrderStep = (orderStatus) => {
-    switch (orderStatus) {
-      case "Pending":
-        return 0;
-      case "Processing":
-        return 1;
-      case "Shipped":
-        return 2;
-      case "Delivered":
-        return 3;
-      case "Completed":
-        return 4;
-      case "Cancelled":
-        return -1; // Optional: handle cancelled status separately if needed
-      default:
-        return 0;
+    try {
+      const response = await orderServiceOperations.getOrdersByTransactionId(
+        id,
+        token,
+        { signal },
+      );
+      const orderData = response?.data;
+      setOrder(orderData || null);
+    } catch (fetchError) {
+      if (signal?.aborted) return;
+      console.error("Order fetch error:", fetchError);
+      setError("We couldn’t load this order. Please try again later.");
+      AquaToast({ message: "Unable to load order details", type: "error" });
+      setOrder(null);
+    } finally {
+      if (!signal?.aborted) setLoading(false);
     }
   };
 
-  const AquaOrderTimeline = ({ order }) => {
-    const currentStep = getOrderStep(order.orderStatus);
+  useEffect(() => {
+    if (!router.isReady || !token) return;
+    const controller = new AbortController();
+    fetchOrder(controller.signal);
+    return () => controller.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady, id, token]);
 
+  const summary = useMemo(() => {
+    if (!order) return null;
+
+    const gateway = order.paymentGatewayDetails?.statusResponse;
+    const gatewayData = gateway?.data;
+
+    return {
+      orderId: order.orderId,
+      transactionId: order.transactionId,
+      orderDate: order.createdAt ? new Date(order.createdAt).toLocaleString("en-IN") : "—",
+      deliveryEta: order.estimatedDelivery
+        ? new Date(order.estimatedDelivery).toLocaleDateString("en-IN")
+        : "—",
+      orderStatus: order.orderStatus || "Processing",
+      paymentStatus: order.paymentStatus || gateway?.code || "Pending",
+      paymentState: gatewayData?.state || order.paymentStatus,
+      paymentMethod: order.orderType || order.paymentMethod,
+      totalAmount: formatCurrencyINR(order.totalAmount),
+      itemCount: Array.isArray(order.items)
+        ? order.items.reduce((acc, item) => acc + (item?.quantity || 0), 0)
+        : 0,
+      shippingCost: formatCurrencyINR(order.shippingCost || 0),
+      gatewayMessage: gateway?.message,
+      instrument: order.paymentInstrument || gatewayData?.paymentInstrument,
+    };
+  }, [order]);
+
+  const timeline = useMemo(
+    () => (order ? deriveTimeline(order.orderStatus) : []),
+    [order],
+  );
+
+  const paymentSettled = useMemo(() => {
+    const status = toLowerSafe(summary?.paymentStatus);
+    const state = toLowerSafe(summary?.paymentState);
     return (
-      <div className="border-t border-gray-200 px-4 py-6 sm:px-6 lg:p-8">
-        <h4 className="sr-only">Status</h4>
-        <p className="text-sm font-medium text-gray-900">
-          {order.orderStatus} on{" "}
-          <time dateTime={order.updatedAt}>
-            {new Date(order.updatedAt).toLocaleDateString()}
-          </time>
-        </p>
-        <div aria-hidden="true" className="mt-6">
-          <div className="overflow-hidden rounded-full bg-gray-200">
-            <div
-              style={{
-                width: `calc((${currentStep} * 2 + 1) / 8 * 100%)`,
-              }}
-              className="h-2 rounded-full bg-indigo-600"
-            />
-          </div>
-          <div className="mt-6 hidden grid-cols-4 text-sm font-medium text-gray-600 sm:grid">
-            <div
-              className={classNames(
-                "text-center",
-                currentStep >= 0 && "text-indigo-600",
-              )}
-            >
-              Order placed
-            </div>
-            <div
-              className={classNames(
-                "text-center",
-                currentStep >= 1 && "text-indigo-600",
-              )}
-            >
-              Processing
-            </div>
-            <div
-              className={classNames(
-                "text-center",
-                currentStep >= 2 && "text-indigo-600",
-              )}
-            >
-              Shipped
-            </div>
-            <div
-              className={classNames(
-                "text-right",
-                currentStep >= 3 && "text-indigo-600",
-              )}
-            >
-              Delivered
-            </div>
-          </div>
-        </div>
-      </div>
+      status.includes("paid") ||
+      status.includes("success") ||
+      state.includes("complete") ||
+      state.includes("success")
     );
+  }, [summary]);
+
+  const paymentFailed = useMemo(() => {
+    const status = toLowerSafe(summary?.paymentStatus);
+    return status.includes("fail");
+  }, [summary]);
+
+  const allowCod = useMemo(() => {
+    if (!order) return false;
+    const total = Number(order.totalAmount);
+    if (Number.isNaN(total)) return false;
+    return total <= 65000;
+  }, [order]);
+
+  const buildOrderPayload = (overrides = {}) => {
+    if (!order) return null;
+
+    const baseOrderId = order.orderId || `AQOD${moment().format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
+    const base = {
+      user: order.user || userId,
+      orderId: baseOrderId,
+      items: (order.items || []).map((item) => ({
+        productId: item.productId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+      totalAmount: order.totalAmount,
+      discountAmount: order.discountAmount || 0,
+      currency: order.currency || "INR",
+      billingAddress: order.billingAddress,
+      shippingAddress: order.shippingAddress,
+      shippingMethod: order.shippingMethod || "Standard",
+      shippingCost: order.shippingCost ?? 0,
+      estimatedDelivery:
+        order.estimatedDelivery ||
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      orderStatus: order.orderStatus || "Processing",
+      ...overrides,
+    };
+
+    return base;
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Failed":
-        return "red";
-      case "Paid":
-        return "green";
-      case "Pending":
-        return "yellow";
-      default:
-        return "gray";
+  const handleRetryPayment = async () => {
+    if (!order) return;
+    const payload = buildOrderPayload({
+      transactionId: `AQTR-PGPP${nanoid(5).toUpperCase()}R${moment().format("DDMMYYYY")}`,
+      orderType: "Payment Method(Phone Pe Gateway)",
+      paymentMethod: "OTHER THAN CASH ON DELIVERY",
+      paymentStatus: "Pending",
+    });
+
+    if (!payload) {
+      AquaToast({ message: "Unable to prepare payment", type: "error" });
+      return;
+    }
+
+    try {
+      setRetrying(true);
+      const response = await orderServiceOperations.createPhonePePayOrder(payload);
+      AquaToast({ message: "Redirecting to payment gateway", type: "success" });
+      if (response?.url) {
+        window.location.href = response.url;
+      }
+    } catch (retryError) {
+      console.error("Retry payment error:", retryError);
+      AquaToast({ message: "Failed to initiate payment retry", type: "error" });
+    } finally {
+      setRetrying(false);
+    }
+  };
+
+  const handleSwitchToCod = async () => {
+    if (!order) return;
+    const payload = buildOrderPayload({
+      transactionId: `AQTR-COD-${nanoid(5).toUpperCase()}${moment().format("DDMMYYYY")}`,
+      orderType: "Cash On Delivery",
+      paymentMethod: "Cash On Delivery",
+      paymentStatus: "Pending",
+    });
+
+    if (!payload) {
+      AquaToast({ message: "Unable to prepare COD order", type: "error" });
+      return;
+    }
+
+    try {
+      setSwitchingToCod(true);
+      const response = await orderServiceOperations.createCodOrder(payload);
+      AquaToast({
+        message: "Cash on delivery order created",
+        type: "success",
+      });
+
+      const nextTransaction = response?.data?.transactionId || payload.transactionId;
+      if (nextTransaction) {
+        router.push(`/order/${nextTransaction}`);
+      }
+    } catch (codError) {
+      console.error("Switch to COD error:", codError);
+      AquaToast({ message: "Failed to create COD order", type: "error" });
+    } finally {
+      setSwitchingToCod(false);
     }
   };
 
   return (
-    <>
-      {loading ? (
-        <div className="flex flex-col items-center justify-center h-screen bg-white">
-          <AquaSpinner color="blue" size="lg" />
-          <p className="mt-4 text-sm text-gray-500 animate-pulse">
-            Loading your order details...
-          </p>
-        </div>
-      ) : (
-        <div className="bg-gray-50">
-          {/* Mobile menu */}
-          <Dialog
-            open={open}
-            onClose={setOpen}
-            className="relative z-40 lg:hidden"
-          >
-            <DialogBackdrop
-              transition
-              className="fixed inset-0 bg-black bg-opacity-25 transition-opacity duration-300 ease-linear data-[closed]:opacity-0"
-            />
+    <AquaLayout>
+      <div className="min-h-screen bg-slate-50">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/dashboard/orders"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-white"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to orders
+            </Link>
+          </div>
 
-            <div className="fixed inset-0 z-40 flex">
-              <DialogPanel
-                transition
-                className="relative flex w-full max-w-xs transform flex-col overflow-y-auto bg-white pb-12 shadow-xl transition duration-300 ease-in-out data-[closed]:-translate-x-full"
-              >
-                <div className="flex px-4 pb-2 pt-5">
-                  <button
-                    type="button"
-                    onClick={() => setOpen(false)}
-                    className="-m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400"
-                  >
-                    <span className="sr-only">Close menu</span>
-                    <XMarkIcon aria-hidden="true" className="h-6 w-6" />
-                  </button>
-                </div>
-
-                {/* Links */}
-                <TabGroup className="mt-2">
-                  <div className="border-b border-gray-200">
-                    <TabList className="-mb-px flex space-x-8 px-4">
-                      {navigation.categories.map((category) => (
-                        <Tab
-                          key={category.name}
-                          className="flex-1 whitespace-nowrap border-b-2 border-transparent px-1 py-4 text-base font-medium text-gray-900 data-[selected]:border-indigo-600 data-[selected]:text-indigo-600"
-                        >
-                          {category.name}
-                        </Tab>
-                      ))}
-                    </TabList>
-                  </div>
-                  <TabPanels as={Fragment}>
-                    {navigation.categories.map((category, categoryIdx) => (
-                      <TabPanel
-                        key={category.name}
-                        className="space-y-12 px-4 pb-6 pt-10"
-                      >
-                        <div className="grid grid-cols-1 items-start gap-x-6 gap-y-10">
-                          <div className="grid grid-cols-1 gap-x-6 gap-y-10">
-                            <div>
-                              <p
-                                id={`mobile-featured-heading-${categoryIdx}`}
-                                className="font-medium text-gray-900"
-                              >
-                                Featured
-                              </p>
-                              <ul
-                                role="list"
-                                aria-labelledby={`mobile-featured-heading-${categoryIdx}`}
-                                className="mt-6 space-y-6"
-                              >
-                                {category.featured.map((item) => (
-                                  <li key={item.name} className="flex">
-                                    <a
-                                      href={item.href}
-                                      className="text-gray-500"
-                                    >
-                                      {item.name}
-                                    </a>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                            <div>
-                              <p
-                                id="mobile-categories-heading"
-                                className="font-medium text-gray-900"
-                              >
-                                Categories
-                              </p>
-                              <ul
-                                role="list"
-                                aria-labelledby="mobile-categories-heading"
-                                className="mt-6 space-y-6"
-                              >
-                                {category.categories.map((item) => (
-                                  <li key={item.name} className="flex">
-                                    <a
-                                      href={item.href}
-                                      className="text-gray-500"
-                                    >
-                                      {item.name}
-                                    </a>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-1 gap-x-6 gap-y-10">
-                            <div>
-                              <p
-                                id="mobile-collection-heading"
-                                className="font-medium text-gray-900"
-                              >
-                                Collection
-                              </p>
-                              <ul
-                                role="list"
-                                aria-labelledby="mobile-collection-heading"
-                                className="mt-6 space-y-6"
-                              >
-                                {category.collection.map((item) => (
-                                  <li key={item.name} className="flex">
-                                    <a
-                                      href={item.href}
-                                      className="text-gray-500"
-                                    >
-                                      {item.name}
-                                    </a>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-
-                            <div>
-                              <p
-                                id="mobile-brand-heading"
-                                className="font-medium text-gray-900"
-                              >
-                                Brands
-                              </p>
-                              <ul
-                                role="list"
-                                aria-labelledby="mobile-brand-heading"
-                                className="mt-6 space-y-6"
-                              >
-                                {category.brands.map((item) => (
-                                  <li key={item.name} className="flex">
-                                    <a
-                                      href={item.href}
-                                      className="text-gray-500"
-                                    >
-                                      {item.name}
-                                    </a>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </TabPanel>
-                    ))}
-                  </TabPanels>
-                </TabGroup>
-
-                <div className="space-y-6 border-t border-gray-200 px-4 py-6">
-                  {navigation.pages.map((page) => (
-                    <div key={page.name} className="flow-root">
-                      <a
-                        href={page.href}
-                        className="-m-2 block p-2 font-medium text-gray-900"
-                      >
-                        {page.name}
-                      </a>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="space-y-6 border-t border-gray-200 px-4 py-6">
-                  <div className="flow-root">
-                    <a
-                      href="#"
-                      className="-m-2 block p-2 font-medium text-gray-900"
-                    >
-                      Create an account
-                    </a>
-                  </div>
-                  <div className="flow-root">
-                    <a
-                      href="#"
-                      className="-m-2 block p-2 font-medium text-gray-900"
-                    >
-                      Sign in
-                    </a>
-                  </div>
-                </div>
-
-                <div className="space-y-6 border-t border-gray-200 px-4 py-6">
-                  {/* Currency selector */}
-                  <form>
-                    <div className="inline-block">
-                      <label htmlFor="mobile-currency" className="sr-only">
-                        Currency
-                      </label>
-                      <div className="group relative -ml-2 rounded-md border-transparent focus-within:ring-2 focus-within:ring-white">
-                        <select
-                          id="mobile-currency"
-                          name="currency"
-                          className="flex items-center rounded-md border-transparent bg-none py-0.5 pl-2 pr-5 text-sm font-medium text-gray-700 focus:border-transparent focus:outline-none focus:ring-0 group-hover:text-gray-800"
-                        >
-                          {currencies.map((currency) => (
-                            <option key={currency}>{currency}</option>
-                          ))}
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center">
-                          <ChevronDownIcon
-                            aria-hidden="true"
-                            className="h-5 w-5 text-gray-500"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-              </DialogPanel>
+          {loading ? (
+            <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 rounded-3xl border border-slate-100 bg-white p-10">
+              <AquaSpinner color="blue" size="lg" />
+              <p className="text-sm text-slate-500">Loading your order details…</p>
             </div>
-          </Dialog>
+          ) : error ? (
+            <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 rounded-3xl border border-rose-100 bg-rose-50 p-10 text-center">
+              <p className="text-lg font-semibold text-rose-700">{error}</p>
+              <button
+                type="button"
+                onClick={() => fetchOrder()}
+                className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
+              >
+                Try again
+              </button>
+            </div>
+          ) : !order ? (
+            <div className="rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center text-sm text-slate-500">
+              We couldn’t find this order.
+            </div>
+          ) : (
+            <div className="space-y-8">
+              <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Order ID
+                    </p>
+                    <h1 className="text-2xl font-semibold text-slate-900">
+                      #{summary?.orderId}
+                    </h1>
+                    <p className="text-sm text-slate-500">Placed on {summary?.orderDate}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">
+                      <PackageCheck className="h-4 w-4" /> {summary?.orderStatus}
+                    </span>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white">
+                      <Wallet className="h-4 w-4" /> {summary?.paymentMethod}
+                    </span>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+                      <CreditCard className="h-4 w-4" /> {summary?.paymentStatus}
+                    </span>
+                  </div>
+                </div>
 
-          <AquaLayout seo={Seo}>
-            {loading ? (
-              <div className="flex flex-col items-center justify-center h-screen bg-white">
-                <AquaSpinner color="blue" size="lg" />
-                <p className="mt-4 text-sm text-gray-500 animate-pulse">
-                  Loading your order details...
-                </p>
-              </div>
-            ) : (
-              <main className="mx-auto max-w-2xl pb-24 pt-8 sm:px-6 sm:pt-16 lg:max-w-7xl lg:px-8">
-                {mode.COD && (
-                  <>
-                    <div className="space-y-2 px-4 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
-                      <div className="flex sm:items-baseline sm:space-x-4">
-                        <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-                          Order #{order?.orderId} - Cash On Delivery
-                        </h1>
+                <div className="mt-6 grid gap-6 lg:grid-cols-3">
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Payment summary
+                    </p>
+                    <ul className="mt-3 space-y-2 text-sm text-slate-600">
+                      <li className="flex items-center justify-between">
+                        <span>Items ({summary?.itemCount})</span>
+                        <span>{formatCurrencyINR(order.totalAmount - (order.shippingCost || 0))}</span>
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <span>Shipping</span>
+                        <span>{summary?.shippingCost}</span>
+                      </li>
+                      <li className="flex items-center justify-between font-semibold text-slate-900">
+                        <span>Total</span>
+                        <span>{summary?.totalAmount}</span>
+                      </li>
+                    </ul>
+                  </div>
 
-                        <Link
-                          href="#"
-                          className="hidden text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:block"
-                        >
-                          View invoice
-                          <span aria-hidden="true"> &rarr;</span>
-                        </Link>
-                      </div>
-                      <p className="text-sm text-gray-600">
-                        Order placed{" "}
-                        <time
-                          dateTime="2021-03-22"
-                          className="font-medium text-gray-900"
-                        >
-                          {formattedDate}
-                        </time>
-                      </p>
-                      <a
-                        href="#"
-                        className="text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:hidden"
-                      >
-                        View invoice
-                        <span aria-hidden="true"> &rarr;</span>
-                      </a>
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Delivery details
+                    </p>
+                    <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
+                      <span className="inline-flex items-center gap-2">
+                        <CalendarClock className="h-4 w-4 text-slate-500" /> Estimated delivery: {summary?.deliveryEta}
+                      </span>
+                      <span className="inline-flex items-start gap-2">
+                        <MapPin className="mt-0.5 h-4 w-4 text-slate-500" />
+                        <span>{composeAddress(order.shippingAddress) || composeAddress(order.billingAddress)}</span>
+                      </span>
                     </div>
+                  </div>
 
-                    {/* Products */}
-                    <section
-                      aria-labelledby="products-heading"
-                      className="mt-6"
-                    >
-                      <h2 id="products-heading" className="sr-only">
-                        Products purchased
-                      </h2>
-
-                      <div className="space-y-8">
-                        {order?.items?.map((product) => (
-                          <div
-                            key={product.name}
-                            className="border-b border-t border-gray-200 bg-white shadow-sm sm:rounded-lg sm:border"
-                          >
-                            <div className="px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
-                              <div className="sm:flex lg:col-span-7">
-                                <div className="mt-6 sm:ml-6 sm:mt-0">
-                                  <h3 className="text-base font-medium text-gray-900">
-                                    <Link href={`/product/${product.name}`}>
-                                      {product.name}
-                                    </Link>
-                                  </h3>
-                                  <p className="mt-2 text-sm font-medium text-green-900">
-                                    {formatCurrencyINR(product.price)}
-                                  </p>
-                                  <p className="mt-3 text-sm text-gray-500">
-                                    {product.description}
-                                  </p>
-                                </div>
-                              </div>
-
-                              <div className="mt-6 lg:col-span-5 lg:mt-0">
-                                <dl className="grid grid-cols-2 gap-x-6 text-sm">
-                                  <div>
-                                    <dt className="font-medium text-gray-900">
-                                      Delivery address
-                                    </dt>
-                                    <dd className="mt-3 text-gray-500">
-                                      <p>{order.shippingAddress.street}</p>
-                                      <p>
-                                        {order.shippingAddress.city},{" "}
-                                        {order.shippingAddress.state}
-                                      </p>
-                                      <p>{order.shippingAddress.postalCode}</p>
-                                    </dd>
-                                  </div>
-                                  <div>
-                                    <dt className="font-medium text-gray-900">
-                                      Shipping updates
-                                    </dt>
-                                    <dd className="mt-3 space-y-3 text-gray-500">
-                                      <p>{order.email}</p>
-                                      <p>{order.phone}</p>
-                                      <button
-                                        type="button"
-                                        className="font-medium text-indigo-600 hover:text-indigo-500"
-                                      >
-                                        Edit
-                                      </button>
-                                    </dd>
-                                  </div>
-                                </dl>
-                              </div>
-                            </div>
-
-                            {AquaOrderTimeline({ order })}
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-
-                    <section
-                      aria-labelledby="summary-heading"
-                      className="mt-16"
-                    >
-                      <h2 id="summary-heading" className="sr-only">
-                        Billing Summary
-                      </h2>
-
-                      <div className="bg-white rounded-lg shadow-md p-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8 lg:py-8">
-                        <dl className="grid grid-cols-2 gap-6 text-lg sm:grid-cols-2 md:gap-x-8 lg:col-span-7">
-                          <div>
-                            <dt className="font-medium text-gray-900">
-                              Billing address
-                            </dt>
-                            <dd className="mt-3 text-gray-500">
-                              <span className="block">
-                                {order?.shippingAddress?.street}
-                              </span>
-                              <span className="block">
-                                {order?.shippingAddress?.city}
-                              </span>
-                              <span className="block">
-                                {order?.shippingAddress?.state}
-                              </span>
-                              <span className="block">
-                                {order?.shippingAddress?.postalCode}
-                              </span>
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="font-medium text-gray-900">
-                              Payment information
-                            </dt>
-                            <dd className="-ml-4 -mt-1 flex flex-wrap">
-                              <div className="ml-4 mt-4">COD</div>
-                            </dd>
-                          </div>
-                        </dl>
-                      </div>
-                    </section>
-
-                    {/* Billing */}
-                    {order?.orderType === "Cash On Delivery" ? (
-                      <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-                        <dl className="space-y-6 border-t border-gray-200 pt-10 text-lg">
-                          <div className="flex justify-between items-center">
-                            <dt className="font-medium text-gray-900 text-xl">
-                              Total
-                            </dt>
-                            <dd className="text-gray-900 font-bold text-2xl text-green-600">
-                              {formatCurrencyINR(order?.totalAmount)}
-                            </dd>
-                          </div>
-                        </dl>
-                      </div>
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Payment instrument
+                    </p>
+                    {summary?.instrument ? (
+                      <ul className="mt-3 space-y-2 text-sm text-slate-600">
+                        <li className="inline-flex items-center gap-2 text-slate-700">
+                          <CreditCard className="h-4 w-4 text-slate-500" /> Type: {summary.instrument.type || "—"}
+                        </li>
+                        {summary.instrument.utr ? (
+                          <li className="inline-flex items-center gap-2">
+                            <Receipt className="h-4 w-4 text-slate-500" /> UTR: {summary.instrument.utr}
+                          </li>
+                        ) : null}
+                        {summary.instrument.payerVpa ? (
+                          <li className="inline-flex items-center gap-2">
+                            <Wallet className="h-4 w-4 text-slate-500" /> Payer VPA: {summary.instrument.payerVpa}
+                          </li>
+                        ) : null}
+                        {summary.instrument.ifsc ? (
+                          <li className="inline-flex items-center gap-2">
+                            <IndianRupee className="h-4 w-4 text-slate-500" /> IFSC: {summary.instrument.ifsc}
+                          </li>
+                        ) : null}
+                      </ul>
                     ) : (
-                      ""
+                      <p className="mt-3 text-sm text-slate-500">No payment instrument details available.</p>
                     )}
-                  </>
-                )}
-                {mode.payment && (
-                  <>
-                    <div className="space-y-2 px-4 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
-                      <div className="flex sm:items-baseline sm:space-x-4">
-                        <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-                          Order #{order?.orderId} -{" "}
-                          {order?.orderType === "Cash On Delivery"
-                            ? "Cash On Delivery"
-                            : "Online Payment"}
-                          --
-                          <AquaBadge
-                            text={order?.paymentStatus}
-                            color={getStatusColor(order?.paymentStatus)}
-                            size="large" // Adjust size as needed
-                          />
-                        </h1>
-                      </div>
-                      <p className="text-sm text-gray-600">
-                        Order placed{" "}
-                        <time
-                          dateTime="2021-03-22"
-                          className="font-medium text-gray-900"
-                        >
-                          {formattedDate}
-                        </time>
-                      </p>
-                      <a
-                        href="#"
-                        className="text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:hidden"
-                      >
-                        View invoice
-                        <span aria-hidden="true"> &rarr;</span>
-                      </a>
-                    </div>
-                    {/* Products */}
-                    <section
-                      aria-labelledby="products-heading"
-                      className="mt-6"
+                  </div>
+                </div>
+              </section>
+
+              {paymentFailed || !paymentSettled ? (
+                <section className="rounded-3xl border border-amber-100 bg-amber-50/70 p-6 shadow-sm">
+                  <h2 className="text-lg font-semibold text-amber-900">Payment pending</h2>
+                  <p className="mt-1 text-sm text-amber-800">
+                    Your payment hasn’t been completed yet. You can retry the online payment or switch this purchase to cash on delivery.
+                  </p>
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={handleRetryPayment}
+                      disabled={retrying || switchingToCod}
+                      className={`inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow transition focus:outline-none focus:ring-2 focus:ring-offset-1 ${
+                        retrying
+                          ? "cursor-not-allowed bg-indigo-300 text-white"
+                          : "bg-indigo-600 text-white hover:bg-indigo-500 focus:ring-indigo-600"
+                      }`}
                     >
-                      <h2 id="products-heading" className="sr-only">
-                        Products purchased
-                      </h2>
+                      {retrying ? "Redirecting…" : "Retry payment"}
+                    </button>
+                    {allowCod ? (
+                      <button
+                        type="button"
+                        onClick={handleSwitchToCod}
+                        disabled={retrying || switchingToCod}
+                        className={`inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-1 ${
+                          switchingToCod
+                            ? "cursor-not-allowed border border-slate-200 bg-white text-slate-400"
+                            : "border border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600 focus:ring-emerald-400"
+                        }`}
+                      >
+                        {switchingToCod ? "Creating COD order…" : "Switch to cash on delivery"}
+                      </button>
+                    ) : null}
+                  </div>
+                </section>
+              ) : null}
 
-                      <div className="space-y-8">
-                        {order?.items?.map((product) => (
-                          <div
-                            key={product.name}
-                            className="border-b border-t border-gray-200 bg-white shadow-sm sm:rounded-lg sm:border"
-                          >
-                            <div className="px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
-                              <div className="sm:flex lg:col-span-7">
-                                <div className="mt-6 sm:ml-6 sm:mt-0">
-                                  <h3 className="text-base font-medium text-gray-900">
-                                    <Link href={`/product/${product.name}`}>
-                                      {product.name}
-                                    </Link>
-                                  </h3>
-                                  <p className="mt-3 text-sm text-gray-500">
-                                    Qunatity Placed : {product.quantity}
-                                  </p>
-                                  <p className="mt-2 text-sm font-medium text-green-900">
-                                    Price : {formatCurrencyINR(product.price)}
-                                  </p>
-                                </div>
-                              </div>
+              <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)]">
+                <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+                  <h2 className="text-lg font-semibold text-slate-900">Items in this order</h2>
+                  <ul className="mt-5 space-y-4">
+                    {(order.items || []).map((item) => (
+                      <li
+                        key={item?._id || item?.productId}
+                        className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50/60 p-4 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-slate-900">
+                            {item?.name || "Product"}
+                          </p>
+                          <p className="text-xs text-slate-500">Qty: {item?.quantity || 1}</p>
+                        </div>
+                        <div className="text-sm font-semibold text-slate-900">
+                          {formatCurrencyINR((item?.price || 0) * (item?.quantity || 1))}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-                              <div className="mt-6 lg:col-span-5 lg:mt-0">
-                                <dl className="grid grid-cols-2 gap-x-6 text-sm">
-                                  <div>
-                                    <dt className="font-medium text-gray-900">
-                                      Delivery address
-                                    </dt>
-                                    <dd className="mt-3 text-gray-500">
-                                      <p>{order.shippingAddress.street}</p>
-                                      <p>
-                                        {order.shippingAddress.city},{" "}
-                                        {order.shippingAddress.state}
-                                      </p>
-                                      <p>{order.shippingAddress.postalCode}</p>
-                                    </dd>
-                                  </div>
-                                  <div>
-                                    <dt className="font-medium text-gray-900">
-                                      Shipping updates
-                                    </dt>
-                                    <dd className="mt-3 space-y-3 text-gray-500">
-                                      <p>{order.email}</p>
-                                      <p>{order.phone}</p>
-                                    </dd>
-                                  </div>
-                                </dl>
-                              </div>
-                            </div>
-                            {order?.paymentGatewayDetails?.success ? (
-                              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6">
-                                <strong className="font-bold">
-                                  Payment Success!
-                                </strong>
-                                <p className="mt-2 text-sm">
-                                  Your payment was successfully processed. Thank
-                                  you for your order.
-                                </p>
-                              </div>
-                            ) : (
-                              <div className="bg-red-100 border border-red-400 text-red-700 p-6 rounded-lg mb-6 m-5">
-                                <strong className="font-bold">
-                                  Payment Pending or Failed
-                                </strong>
-                                <p className="mt-2 text-sm">
-                                  It looks like your payment did not go through.
-                                  You can try again or opt for Cash on Delivery.
-                                </p>
-                                <div className="mt-4 flex gap-4">
-                                  <button
-                                    onClick={() => handleRetryPayment(id)}
-                                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                                  >
-                                    Pay Again
-                                  </button>
-                                  <button
-                                    onClick={() => handleRetryCOD(id)}
-                                    className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
-                                  >
-                                    Switch to COD
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                            {AquaOrderTimeline({ order })}
-                          </div>
-                        ))}
-                      </div>
-                    </section>
+                <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+                  <h2 className="text-lg font-semibold text-slate-900">Order timeline</h2>
+                  <ol className="mt-5 space-y-4">
+                    {timeline.map((step) => (
+                      <li key={step.key} className="flex items-start gap-3">
+                        <span
+                          className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full ${
+                            step.completed ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-500"
+                          }`}
+                        >
+                          {step.completed ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <Circle className="h-4 w-4" />
+                          )}
+                        </span>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">{step.label}</p>
+                          <p className="text-xs text-slate-500">{step.description}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              </section>
 
-                    <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-                      <div className="flex justify-between items-center">
-                        <dt className="font-medium text-gray-900 text-xl">
-                          Total
-                        </dt>
-                        <dd className="text-gray-900 font-bold text-2xl text-green-600">
-                          {formatCurrencyINR(order?.totalAmount)}
-                        </dd>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </main>
-            )}
-          </AquaLayout>
+              {summary?.gatewayMessage ? (
+                <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+                  <h2 className="text-lg font-semibold text-slate-900">Payment gateway response</h2>
+                  <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/80 p-4 text-sm text-emerald-700">
+                    {summary.gatewayMessage}
+                  </div>
+                </section>
+              ) : null}
+            </div>
+          )}
         </div>
-      )}
-    </>
+      </div>
+    </AquaLayout>
   );
 };
 
-export default AquaOrder;
-
-// payment gateway code.
+export default AquaOrderPage;

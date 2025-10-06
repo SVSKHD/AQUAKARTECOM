@@ -1,9 +1,19 @@
 import { useSelector } from "react-redux";
 
 const ShopFiltersPanel = () => {
-  const { categories, subcategories } = useSelector(
-    (state) => state.dynamicData,
-  );
+  const { categories, subcategories } = useSelector((state) => {
+    const slice = state?.dynamicData;
+    if (!slice || typeof slice !== "object") {
+      return {
+        categories: { data: [] },
+        subcategories: { data: [] },
+      };
+    }
+    return {
+      categories: slice.categories || { data: [] },
+      subcategories: slice.subcategories || { data: [] },
+    };
+  });
   return (
     <div className="space-y-6 p-6 rounded-xl shadow-xl ring-1 ring-white/10">
       {["Category", "Subcategory", "Brand"].map((label) => (
@@ -16,7 +26,7 @@ const ShopFiltersPanel = () => {
               {label === "Category" && (
                 <>
                   <option>All</option>
-                  {categories?.data.map((r, i) => (
+                  {categories?.data?.map((r, i) => (
                     <option key={i}>{r.title}</option>
                   ))}
                 </>
@@ -24,7 +34,7 @@ const ShopFiltersPanel = () => {
               {label === "Subcategory" && (
                 <>
                   <option>All</option>
-                  {subcategories?.data.map((r, i) => (
+                  {subcategories?.data?.map((r, i) => (
                     <option key={i}>{r.title}</option>
                   ))}
                 </>
