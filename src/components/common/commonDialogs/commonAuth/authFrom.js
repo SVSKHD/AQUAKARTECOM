@@ -1,6 +1,6 @@
 import UserServiceOperations from "@/services/user";
 import useDialog from "@/utils/dialog";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import AquaToast from "@/components/reusables/react-toastify";
 import Image from "next/image";
@@ -11,10 +11,11 @@ import { Send, Loader2 } from "lucide-react";
 const AquaAuthMobileForm = ({ signup }) => {
   const [email, setEmail] = useState("");
   const [otpShow, setOtpShow] = useState(false);
-  const [otp, setOtp] = useState("");
+  const [otpDigits, setOtpDigits] = useState(Array(6).fill(""));
   const [loading, setLoading] = useState(false); // Track loading state
   const { closeAuthDialog } = useDialog();
   const dispatch = useDispatch();
+  const inputRefs = useRef([]);
 
   const handleKeyDown = (event) => {
     if (event.key === "Backspace") {
@@ -41,6 +42,7 @@ const AquaAuthMobileForm = ({ signup }) => {
 
         UserServiceOperations.UserEmailOtp({ email: emailToSend })
           .then((res) => {
+            setOtpDigits(Array(6).fill(""));
             setOtpShow(true);
             AquaToast({
               message: "Successfully sent OTP",
@@ -50,6 +52,7 @@ const AquaAuthMobileForm = ({ signup }) => {
               type: "SET_AUTH_STATUS_VISIBLE",
               payload: !res.data.userExist,
             });
+            setTimeout(() => inputRefs.current?.[0]?.focus(), 0);
           })
           .catch(() => {
             setOtpShow(false);
@@ -77,7 +80,7 @@ const AquaAuthMobileForm = ({ signup }) => {
   );
 
   // Function to trigger OTP request only on button click
-  const handleSendClick = (e) => {
+  const handleSendClick = () => {
     if (!email || !isValidEmail(email)) {
       AquaToast({
         message: "Enter a valid email before sending OTP!",
@@ -85,6 +88,11 @@ const AquaAuthMobileForm = ({ signup }) => {
       });
       return;
     }
+    if (loading) {
+      return;
+    }
+    setOtpShow(false);
+    setOtpDigits(Array(6).fill(""));
     requestOtp(email);
   };
 
@@ -96,7 +104,11 @@ const AquaAuthMobileForm = ({ signup }) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const data = { email, otp: Number(otp) };
+    const otpValue = otpDigits.join("");
+    if (!otpShow || otpValue.length !== 6) {
+      return;
+    }
+    const data = { email, otp: Number(otpValue) };
     UserServiceOperations.UserEmailVerify(data)
       .then((res) => {
         AquaToast({
@@ -116,6 +128,58 @@ const AquaAuthMobileForm = ({ signup }) => {
         });
       });
   };
+
+  const handleOtpChange = (index, value) => {
+    const sanitized = value.replace(/\D/g, "");
+    const updatedDigits = [...otpDigits];
+
+    if (!sanitized) {
+      updatedDigits[index] = "";
+      setOtpDigits(updatedDigits);
+      return;
+    }
+
+    updatedDigits[index] = sanitized.charAt(sanitized.length - 1);
+    setOtpDigits(updatedDigits);
+
+    if (index < inputRefs.current.length - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index, event) => {
+    if (event.key === "Backspace") {
+      event.preventDefault();
+      const updatedDigits = [...otpDigits];
+      if (updatedDigits[index]) {
+        updatedDigits[index] = "";
+        setOtpDigits(updatedDigits);
+      } else if (index > 0) {
+        updatedDigits[index - 1] = "";
+        setOtpDigits(updatedDigits);
+        inputRefs.current[index - 1]?.focus();
+      }
+    }
+  };
+
+  const handleOtpPaste = (event) => {
+    event.preventDefault();
+    const pasted = event.clipboardData.getData("text").replace(/\D/g, "");
+    if (!pasted) {
+      return;
+    }
+
+    const updatedDigits = Array(6)
+      .fill("")
+      .map((_, idx) => pasted[idx] || "");
+    setOtpDigits(updatedDigits);
+
+    const nextIndex = Math.min(pasted.length, 5);
+    inputRefs.current[nextIndex]?.focus();
+  };
+
+  const isOtpComplete = otpDigits.every((digit) => digit !== "");
+  const canSubmit = otpShow && isOtpComplete;
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
@@ -151,27 +215,32 @@ const AquaAuthMobileForm = ({ signup }) => {
                   onChange={(e) => setEmail(e.target.value)} // Only updates state
                   onKeyDown={handleKeyDown}
                   placeholder="example@example.com"
-                  className="block w-full pt-4 pb-4  p-4 rounded-md border-0 py-1.5 pr-12 text-gray-900 bg-white text-gray-700 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-full rounded-md border-0 bg-white p-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   disabled={loading} // Disable input when loading
                 />
-                <button
-                  type="button"
-                  onClick={handleSendClick}
-                  className={`absolute inset-y-0 right-3 flex items-center text-gray-500 ${
-                    loading
-                      ? "cursor-not-allowed opacity-50"
-                      : "hover:text-indigo-600"
-                  }`}
-                  disabled={loading} // Disable button while sending OTP
-                >
-                  {loading ? (
-                    <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
-                  ) : (
-                    <Send className="w-5 h-5 text-gray-500 hover:text-indigo-600" />
-                  )}
-                </button>
               </div>
             </div>
+
+            {isValidEmail(email) && !otpShow && (
+              <button
+                type="button"
+                onClick={handleSendClick}
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4" />
+                    <span>Send Email OTP</span>
+                  </>
+                )}
+              </button>
+            )}
 
             {otpShow && (
               <>
@@ -179,32 +248,23 @@ const AquaAuthMobileForm = ({ signup }) => {
                   Enter the OTP sent to your email
                 </h4>
                 <div className="relative mt-4 grid grid-cols-6 gap-2">
-                  {[...Array(6)].map((_, idx) => (
+                  {otpDigits.map((digit, index) => (
                     <input
-                      key={idx}
-                      id={`otp-${idx}`}
+                      key={index}
+                      ref={(el) => {
+                        inputRefs.current[index] = el;
+                      }}
                       type="text"
                       inputMode="numeric"
                       placeholder="_"
                       maxLength={1}
-                      value={otp[idx] || ""}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, ""); // Only allow digits
-                        if (val.length <= 1) {
-                          const newOtp = otp.split("");
-                          newOtp[idx] = val;
-                          setOtp(newOtp.join(""));
-                          if (val && idx < 5) {
-                            document.getElementById(`otp-${idx + 1}`).focus();
-                          }
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Backspace" && !otp[idx] && idx > 0) {
-                          document.getElementById(`otp-${idx - 1}`).focus();
-                        }
-                      }}
-                      className="w-12 h-12 text-center text-lg font-medium text-gray-900 bg-white border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600"
+                      value={digit}
+                      onChange={(event) =>
+                        handleOtpChange(index, event.target.value)
+                      }
+                      onKeyDown={(event) => handleOtpKeyDown(index, event)}
+                      onPaste={index === 0 ? handleOtpPaste : undefined}
+                      className="h-12 w-12 rounded-md border-2 border-gray-300 bg-white text-center text-lg font-medium text-gray-900 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
                     />
                   ))}
                 </div>
@@ -216,11 +276,11 @@ const AquaAuthMobileForm = ({ signup }) => {
             <button
               type="submit"
               className={`mt-6 flex w-full items-center justify-center rounded-md border border-transparent px-8 py-3 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                !otpShow
+                !canSubmit
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-indigo-600 hover:bg-indigo-700"
               }`}
-              disabled={!otpShow}
+              disabled={!canSubmit}
             >
               {signup ? "Sign Up" : "Sign In"}
             </button>
