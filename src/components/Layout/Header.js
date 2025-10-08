@@ -48,11 +48,11 @@ const AquaHeader = () => {
   const isActiveRoute = (href) => router.pathname === href;
 
   return (
-    <Disclosure as="nav" className="relative sticky top-0 z-50">
+    <Disclosure as="nav" className="sticky top-0 z-50 bg-white/80 backdrop-blur-md">
       {({ open }) => (
         <>
-          <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
-            <div className="relative flex h-16 items-center justify-between rounded-full border border-slate-200/70 bg-white/80 px-3 text-slate-800 shadow-xl backdrop-blur-lg transition-all duration-300">
+          <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6 py-2">
+            <div className="relative flex h-16 items-center justify-between rounded-full border border-slate-200/70 bg-white px-3 text-slate-800 shadow-lg transition-all duration-300">
               <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
                 <DisclosureButton className="relative inline-flex items-center justify-center rounded-full p-2 text-slate-600 transition hover:bg-slate-900/10 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:ring-offset-2 focus:ring-offset-white">
                   <span className="absolute -inset-0.5" />

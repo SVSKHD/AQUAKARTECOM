@@ -89,14 +89,13 @@ const AquaLayout = (props) => {
           <AquaUserAuthDialog />
           <AquaHeader />
 
-          <div className="relative min-h-screen overflow-hidden bg-white text-slate-900">
+          <AquaCartDrawer />
+          <AquafavDrawer />
+          <AquaTailwindToast />
+          <AquaToast />
 
-            <AquaCartDrawer />
-            <AquafavDrawer />
-            <AquaTailwindToast />
-            <AquaToast />
-
-            <main className="relative z-10 min-h-screen bg-white">
+          <div className="flex min-h-screen flex-col bg-white">
+            <main className="flex-1">
               {props.children}
             </main>
 
@@ -109,9 +108,9 @@ const AquaLayout = (props) => {
       ) : (
         <>
           <AquaHeader />
-          <div className="relative min-h-screen overflow-hidden bg-white text-slate-900">
 
-            <main className="relative z-10 flex min-h-screen flex-col items-center justify-center bg-white">
+          <div className="flex min-h-screen flex-col bg-white">
+            <main className="flex flex-1 flex-col items-center justify-center">
               <div className="text-center p-6">
                 <h1 className="text-2xl font-bold text-gray-800 mb-4">
                   Network Error
