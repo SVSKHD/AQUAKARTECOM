@@ -35,13 +35,14 @@ const AquaHomeHero = ({ data }) => {
   );
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-emerald-50">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-24 -right-24 h-60 w-60 rounded-full bg-emerald-100 blur-3xl" />
-        <div className="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-indigo-100 blur-3xl" />
-      </div>
+    <div className="px-3 py-6 sm:px-4 lg:px-6">
+      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-3xl bg-gradient-to-br from-white via-slate-50 to-emerald-50 shadow-lg">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-24 -right-24 h-60 w-60 rounded-full bg-emerald-100 blur-3xl" />
+          <div className="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-100 blur-3xl" />
+        </div>
 
-      <div className="relative mx-auto mt-8 max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
+        <div className="relative px-4 pb-12 pt-10 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2">
           <div className="relative order-2 lg:order-1">
             <div className="grid grid-cols-2 grid-rows-2 gap-4">
@@ -129,6 +130,7 @@ const AquaHomeHero = ({ data }) => {
               </div>
             )}
           </motion.div>
+        </div>
         </div>
       </div>
     </div>
