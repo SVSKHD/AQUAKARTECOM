@@ -182,111 +182,118 @@ const AquaAuthMobileForm = ({ signup }) => {
   const canSubmit = otpShow && isOtpComplete;
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <Image
-          alt="Aquakart"
-          src="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
-          className="mx-auto h-20 w-auto"
-          width={100}
-          height={100}
-        />
-        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          {signup ? "Sign up with email" : "Sign in with email"}
+    <div className="w-full">
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+          <Send className="w-8 h-8 text-blue-600" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          {signup ? "Create Account" : "Welcome Back"}
         </h2>
+        <p className="text-sm text-gray-600">
+          {signup
+            ? "Enter your email to get started"
+            : "Sign in to your account"}
+        </p>
       </div>
 
-      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label
-              htmlFor="email-address"
-              className="block text-sm font-medium leading-6 text-gray-900"
-            >
-              Email Address:
-            </label>
-            <div className="relative mt-2 rounded-md shadow-sm">
-              <div className="relative w-full">
-                <input
-                  id="email-address"
-                  name="email-address"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)} // Only updates state
-                  onKeyDown={handleKeyDown}
-                  placeholder="example@example.com"
-                  className="block w-full rounded-md border-0 bg-white p-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  disabled={loading} // Disable input when loading
-                />
-              </div>
-            </div>
+      <form className="space-y-6" onSubmit={handleSubmit}>
+        <div>
+          <label
+            htmlFor="email-address"
+            className="block text-sm font-semibold text-gray-900 mb-2"
+          >
+            Email Address
+          </label>
+          <div className="relative">
+            <input
+              id="email-address"
+              name="email-address"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="you@example.com"
+              className="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 focus:bg-white transition-all duration-200 sm:text-sm sm:leading-6"
+              disabled={loading}
+            />
+          </div>
 
-            {isValidEmail(email) && !otpShow && (
+          {isValidEmail(email) && !otpShow && (
+            <button
+              type="button"
+              onClick={handleSendClick}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 active:scale-98 transition-all duration-200 disabled:cursor-not-allowed disabled:bg-blue-300 disabled:scale-100"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Sending OTP...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="h-5 w-5" />
+                  <span>Send Verification Code</span>
+                </>
+              )}
+            </button>
+          )}
+
+          {otpShow && (
+            <div className="mt-6 space-y-4">
+              <div className="text-center">
+                <p className="text-sm font-medium text-gray-900 mb-1">
+                  Verification Code
+                </p>
+                <p className="text-xs text-gray-600">
+                  Enter the 6-digit code sent to {email}
+                </p>
+              </div>
+              <div className="flex justify-center gap-2">
+                {otpDigits.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => {
+                      inputRefs.current[index] = el;
+                    }}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(event) =>
+                      handleOtpChange(index, event.target.value)
+                    }
+                    onKeyDown={(event) => handleOtpKeyDown(index, event)}
+                    onPaste={index === 0 ? handleOtpPaste : undefined}
+                    className="h-12 w-12 rounded-xl border-2 border-gray-300 bg-white text-center text-lg font-bold text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all duration-200"
+                  />
+                ))}
+              </div>
               <button
                 type="button"
                 onClick={handleSendClick}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 disabled:cursor-not-allowed disabled:bg-emerald-300"
-                disabled={loading}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Sending...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4" />
-                    <span>Send Email OTP</span>
-                  </>
-                )}
+                Resend code
               </button>
-            )}
+            </div>
+          )}
+        </div>
 
-            {otpShow && (
-              <>
-                <h4 className="mt-4 text-sm font-medium text-gray-900">
-                  Enter the OTP sent to your email
-                </h4>
-                <div className="relative mt-4 grid grid-cols-6 gap-2">
-                  {otpDigits.map((digit, index) => (
-                    <input
-                      key={index}
-                      ref={(el) => {
-                        inputRefs.current[index] = el;
-                      }}
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="_"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(event) =>
-                        handleOtpChange(index, event.target.value)
-                      }
-                      onKeyDown={(event) => handleOtpKeyDown(index, event)}
-                      onPaste={index === 0 ? handleOtpPaste : undefined}
-                      className="h-12 w-12 rounded-md border-2 border-gray-300 bg-white text-center text-lg font-medium text-gray-900 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              className={`mt-6 flex w-full items-center justify-center rounded-md border border-transparent px-8 py-3 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                !canSubmit
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-indigo-600 hover:bg-indigo-700"
-              }`}
-              disabled={!canSubmit}
-            >
-              {signup ? "Sign Up" : "Sign In"}
-            </button>
-          </div>
-        </form>
-      </div>
+        <button
+          type="submit"
+          className={`w-full flex items-center justify-center rounded-xl px-8 py-3.5 text-base font-semibold transition-all duration-200 ${
+            !canSubmit
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-blue-600 text-white hover:bg-blue-700 active:scale-98 shadow-sm"
+          }`}
+          disabled={!canSubmit}
+        >
+          {signup ? "Create Account" : "Sign In"}
+        </button>
+      </form>
     </div>
   );
 };
