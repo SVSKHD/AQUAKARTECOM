@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import AquaImage from "../images/AquaImage";
 import { useRouter } from "next/router";
 
-const ReusableProductCard = ({ product }) => {
+const ReusableProductCard = ({ product, viewMode = "grid" }) => {
   const [fav, setAddFav] = useState(false);
   const [cart, setAddCart] = useState(false);
   const { formatCurrencyINR } = useCurrency;
@@ -76,13 +76,117 @@ const ReusableProductCard = ({ product }) => {
     AddAndRemoveCart(product, setAddCart);
   };
 
+  if (viewMode === "list") {
+    return (
+      <div
+        role="link"
+        tabIndex={0}
+        onClick={handleNavigate}
+        onKeyDown={handleKeyPress}
+        className="group relative flex cursor-pointer gap-6 rounded-2xl border border-slate-100 bg-white p-4 shadow-lg transition hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
+        aria-label={`View details for ${title}`}
+      >
+        {/* Image Section */}
+        <div className="relative h-48 w-48 flex-shrink-0 overflow-hidden rounded-xl">
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex h-full">
+              {displayPhotos.map((photo, index) => (
+                <motion.div
+                  key={index}
+                  className="flex h-full w-48 flex-shrink-0"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{
+                    opacity: activeIndex === index ? 1 : 0.5,
+                    scale: activeIndex === index ? 1 : 0.9,
+                  }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                >
+                  <AquaImage
+                    src={photo?.secure_url}
+                    alt={title}
+                    customClass="h-full w-full object-cover object-center"
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Favorite Button */}
+          <button
+            type="button"
+            onClick={handleFavToggle}
+            className={`absolute top-2 right-2 z-10 rounded-full border p-2 transition-all duration-300 shadow-lg ${
+              fav
+                ? "border-rose-500 bg-white/90 text-rose-600 hover:bg-rose-500 hover:text-white"
+                : "border-white/70 bg-white/80 text-slate-500 hover:border-rose-300 hover:text-rose-500"
+            }`}
+          >
+            <FaHeart size={16} />
+          </button>
+        </div>
+
+        {/* Content Section */}
+        <div className="flex flex-1 flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {product?.brand || product?.manufacturer || "Aquakart"}
+            </p>
+            <h3 className="text-xl font-semibold text-slate-900 transition group-hover:text-emerald-600">
+              {title}
+            </h3>
+          </div>
+
+          <p className="text-2xl font-bold text-slate-900">
+            {discountPriceStatus ? (
+              <>
+                <span className="text-red-600">
+                  {formatCurrencyINR(discountPrice)}
+                </span>
+                <span className="text-base text-gray-500 line-through ml-2">
+                  {formatCurrencyINR(price)}
+                </span>
+              </>
+            ) : (
+              formatCurrencyINR(price)
+            )}
+          </p>
+
+          <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+            <span>
+              {product?.coverage || product?.capacity
+                ? `${product.coverage || product.capacity} coverage`
+                : "For all water sources"}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600">
+              {product?.warranty || "1 year warranty"}
+            </span>
+          </div>
+
+          <div className="mt-auto flex gap-3">
+            <button
+              onClick={handleCartToggle}
+              type="button"
+              className={`flex-1 rounded-lg py-3 text-sm font-semibold shadow-md transition-all duration-300 ${
+                cart
+                  ? "bg-slate-900 text-white hover:bg-slate-800"
+                  : "bg-emerald-500 text-white hover:bg-emerald-400"
+              }`}
+            >
+              {cart ? "In Cart" : "Add to Cart"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       role="link"
       tabIndex={0}
       onClick={handleNavigate}
       onKeyDown={handleKeyPress}
-      className="group relative mb-5 flex h-full cursor-pointer flex-col rounded-2xl border border-slate-100 bg-white shadow-lg transition hover:-translate-y-1 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
+      className="group relative flex h-full cursor-pointer flex-col rounded-2xl border border-slate-100 bg-white shadow-lg transition hover:-translate-y-1 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
       aria-label={`View details for ${title}`}
     >
       {/* Full-Width Image Carousel */}
