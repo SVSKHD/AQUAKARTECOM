@@ -58,6 +58,36 @@ const AquaCheckoutComponent = () => {
   const hasAddresses = Boolean(userData?.user?.addresses?.length);
   const payableTotal = Math.max(getTotalPrice() - discount, 0);
 
+  const getPaymentDisabledReason = ({ processing, type }) => {
+    if (processing) {
+      return type === "cod"
+        ? "We are finalising your COD order. Please wait…"
+        : "Processing your payment. Please wait…";
+    }
+    if (!totalItems) {
+      return "Add products to your cart to enable checkout.";
+    }
+    if (!hasContactDetails) {
+      return "Add your email and phone number to continue.";
+    }
+    if (!hasAddresses) {
+      return "Add a delivery address to continue.";
+    }
+    if (!selectedAddress) {
+      return "Select a delivery address to continue.";
+    }
+    return undefined;
+  };
+
+  const payNowDisabledReason = getPaymentDisabledReason({
+    processing: buttonStatus.gateway,
+    type: "gateway",
+  });
+  const codDisabledReason = getPaymentDisabledReason({
+    processing: buttonStatus.cod,
+    type: "cod",
+  });
+
   const steps = useMemo(() => {
     const baseSteps = [
       {
@@ -863,55 +893,61 @@ const AquaCheckoutComponent = () => {
                     </div>
 
                     <div className="mt-6 grid gap-3">
-                      <button
-                        type="button"
-                        onClick={handlePhonePayment}
-                        disabled={
-                          buttonStatus.gateway ||
-                          !totalItems ||
-                          !hasContactDetails ||
-                          !selectedAddress
-                        }
-                        className={`inline-flex items-center justify-center rounded-full px-4 py-3 text-sm font-semibold shadow-sm transition ${
-                          buttonStatus.gateway || !totalItems || !hasContactDetails || !selectedAddress
-                            ? "cursor-not-allowed bg-indigo-300 text-white"
-                            : "bg-indigo-600 text-white hover:bg-indigo-500"
-                        }`}
-                      >
-                        {buttonStatus.gateway ? (
-                          <span className="flex items-center">
-                            <AquaSpinner color="white" />
-                            <span className="ml-2">Processing…</span>
+                      <div className="group relative">
+                        <button
+                          type="button"
+                          onClick={handlePhonePayment}
+                          disabled={Boolean(payNowDisabledReason)}
+                          title={payNowDisabledReason ?? undefined}
+                          className={`inline-flex w-full items-center justify-center rounded-full px-4 py-3 text-sm font-semibold shadow-sm transition ${
+                            payNowDisabledReason
+                              ? "cursor-not-allowed bg-indigo-300 text-white"
+                              : "bg-indigo-600 text-white hover:bg-indigo-500"
+                          }`}
+                        >
+                          {buttonStatus.gateway ? (
+                            <span className="flex items-center">
+                              <AquaSpinner color="white" />
+                              <span className="ml-2">Processing…</span>
+                            </span>
+                          ) : (
+                            "Pay now"
+                          )}
+                        </button>
+                        {payNowDisabledReason && (
+                          <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-max -translate-x-1/2 rounded-md bg-gray-900 px-3 py-2 text-xs font-medium text-white opacity-0 shadow-lg transition duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
+                            {payNowDisabledReason}
                           </span>
-                        ) : (
-                          "Pay now"
                         )}
-                      </button>
+                      </div>
 
-                      <button
-                        type="button"
-                        onClick={handleCashOnDelivery}
-                        disabled={
-                          buttonStatus.cod ||
-                          !totalItems ||
-                          !hasContactDetails ||
-                          !selectedAddress
-                        }
-                        className={`inline-flex items-center justify-center rounded-full border px-4 py-3 text-sm font-semibold transition ${
-                          buttonStatus.cod || !totalItems || !hasContactDetails || !selectedAddress
-                            ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400"
-                            : "border-gray-300 bg-white text-gray-900 hover:border-gray-400 hover:bg-gray-50"
-                        }`}
-                      >
-                        {buttonStatus.cod ? (
-                          <span className="flex items-center">
-                            <AquaSpinner color="gray" />
-                            <span className="ml-2">Processing…</span>
+                      <div className="group relative">
+                        <button
+                          type="button"
+                          onClick={handleCashOnDelivery}
+                          disabled={Boolean(codDisabledReason)}
+                          title={codDisabledReason ?? undefined}
+                          className={`inline-flex w-full items-center justify-center rounded-full border px-4 py-3 text-sm font-semibold transition ${
+                            codDisabledReason
+                              ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400"
+                              : "border-gray-300 bg-white text-gray-900 hover:border-gray-400 hover:bg-gray-50"
+                          }`}
+                        >
+                          {buttonStatus.cod ? (
+                            <span className="flex items-center">
+                              <AquaSpinner color="gray" />
+                              <span className="ml-2">Processing…</span>
+                            </span>
+                          ) : (
+                            "Cash on delivery"
+                          )}
+                        </button>
+                        {codDisabledReason && (
+                          <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-max -translate-x-1/2 rounded-md bg-gray-900 px-3 py-2 text-xs font-medium text-white opacity-0 shadow-lg transition duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
+                            {codDisabledReason}
                           </span>
-                        ) : (
-                          "Cash on delivery"
                         )}
-                      </button>
+                      </div>
 
                       <button
                         type="button"

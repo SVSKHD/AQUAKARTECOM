@@ -39,12 +39,12 @@ const AquaUserDashboardHeader = () => {
       href: "/dashboard/orders",
       icon: ShoppingBag,
     },
-    {
-      id: "settings",
-      label: "Settings",
-      href: "/dashboard/settings",
-      icon: Settings,
-    },
+    // {
+    //   id: "settings",
+    //   label: "Settings",
+    //   href: "/dashboard/settings",
+    //   icon: Settings,
+    // },
     {
       id: "cart",
       label: "Cart",
