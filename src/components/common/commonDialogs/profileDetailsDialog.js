@@ -75,9 +75,12 @@ const ProfileDetailsDialog = ({
     const today = dayjs();
     const ageYears = today.diff(dobDate, "year");
     const nextBirthday = dobDate.add(ageYears + 1, "year");
-    const daysUntilBirthday = nextBirthday.startOf("day").diff(today.startOf("day"), "day");
+    const daysUntilBirthday = nextBirthday
+      .startOf("day")
+      .diff(today.startOf("day"), "day");
 
-    const ageLabel = ageYears > 0 ? `${ageYears} year${ageYears > 1 ? "s" : ""}` : null;
+    const ageLabel =
+      ageYears > 0 ? `${ageYears} year${ageYears > 1 ? "s" : ""}` : null;
 
     return {
       ageLabel,
@@ -205,7 +208,9 @@ const ProfileDetailsDialog = ({
             {dobSummary && (
               <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-indigo-50/80 px-3 py-2 text-xs text-indigo-700">
                 {dobSummary.ageLabel && (
-                  <span className="font-semibold">{dobSummary.ageLabel} young</span>
+                  <span className="font-semibold">
+                    {dobSummary.ageLabel} young
+                  </span>
                 )}
                 {dobSummary.birthdayToday ? (
                   <span className="inline-flex items-center rounded-full bg-indigo-600 px-2 py-0.5 text-[11px] font-semibold text-white">
@@ -213,7 +218,9 @@ const ProfileDetailsDialog = ({
                   </span>
                 ) : (
                   <span className="text-indigo-600">
-                    {dobSummary.daysUntilBirthday} day{dobSummary.daysUntilBirthday !== 1 ? "s" : ""} until your next birthday
+                    {dobSummary.daysUntilBirthday} day
+                    {dobSummary.daysUntilBirthday !== 1 ? "s" : ""} until your
+                    next birthday
                   </span>
                 )}
               </div>

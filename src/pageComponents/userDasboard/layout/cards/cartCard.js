@@ -85,10 +85,16 @@ const getStockBadge = (product) => {
   }
 
   if (numericStock < 5) {
-    return { label: `Only ${numericStock} left`, tone: "bg-amber-100 text-amber-700" };
+    return {
+      label: `Only ${numericStock} left`,
+      tone: "bg-amber-100 text-amber-700",
+    };
   }
 
-  return { label: `In stock (${numericStock})`, tone: "bg-emerald-100 text-emerald-700" };
+  return {
+    label: `In stock (${numericStock})`,
+    tone: "bg-emerald-100 text-emerald-700",
+  };
 };
 
 const DashboardProductCard = ({ product = {}, variant = "default" }) => {
@@ -108,15 +114,24 @@ const DashboardProductCard = ({ product = {}, variant = "default" }) => {
   const normalized = useMemo(() => {
     const photos = normalizePhotos(product?.photos);
     const title =
-      product?.title || product?.name || product?.productName || "Aquakart product";
+      product?.title ||
+      product?.name ||
+      product?.productName ||
+      "Aquakart product";
     const slug = product?.slug || product?._id || product?.id;
     const href = slug ? `/product/${slug}` : "/product";
     const brand =
-      product?.brand || product?.manufacturer || product?.brandName || "Aquakart";
+      product?.brand ||
+      product?.manufacturer ||
+      product?.brandName ||
+      "Aquakart";
     const description =
       product?.shortDescription ||
       (typeof product?.description === "string"
-        ? product.description.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+        ? product.description
+            .replace(/<[^>]+>/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
         : "") ||
       "Discover Aquakart's trusted water solutions.";
 
@@ -131,8 +146,10 @@ const DashboardProductCard = ({ product = {}, variant = "default" }) => {
     const stockBadge = getStockBadge(product);
     const quantity = product?.quantity || product?.qty || 1;
 
-    const ratingValue = Number(product?.rating?.value || product?.rating) || null;
-    const ratingCount = Number(product?.rating?.count || product?.reviews) || null;
+    const ratingValue =
+      Number(product?.rating?.value || product?.rating) || null;
+    const ratingCount =
+      Number(product?.rating?.count || product?.reviews) || null;
 
     return {
       photos,
@@ -162,7 +179,10 @@ const DashboardProductCard = ({ product = {}, variant = "default" }) => {
   );
 
   const showPreviousPhoto = () => {
-    setPhotoIndex((prev) => (prev - 1 + normalized.photos.length) % normalized.photos.length);
+    setPhotoIndex(
+      (prev) =>
+        (prev - 1 + normalized.photos.length) % normalized.photos.length,
+    );
   };
 
   const showNextPhoto = () => {
@@ -259,7 +279,9 @@ const DashboardProductCard = ({ product = {}, variant = "default" }) => {
           >
             {normalized.title}
           </Link>
-          <p className="line-clamp-2 text-xs text-slate-500">{normalized.description}</p>
+          <p className="line-clamp-2 text-xs text-slate-500">
+            {normalized.description}
+          </p>
         </div>
 
         <div className="flex items-baseline gap-3">
@@ -276,7 +298,9 @@ const DashboardProductCard = ({ product = {}, variant = "default" }) => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
-          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 ${normalized.stockBadge.tone}`}>
+          <span
+            className={`inline-flex items-center gap-1 rounded-full px-2 py-1 ${normalized.stockBadge.tone}`}
+          >
             {normalized.stockBadge.label.includes("Out") ? (
               <PackageX className="h-3.5 w-3.5" />
             ) : (

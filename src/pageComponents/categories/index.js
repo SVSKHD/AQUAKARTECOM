@@ -47,7 +47,9 @@ const AquaAllCategoriesComponent = () => {
       } catch (error) {
         console.error("Failed to fetch categories", error);
         if (isMounted) {
-          setErrorMessage("We couldn’t load the categories right now. Please retry in a moment.");
+          setErrorMessage(
+            "We couldn’t load the categories right now. Please retry in a moment.",
+          );
         }
       } finally {
         if (isMounted) {
@@ -79,7 +81,9 @@ const AquaAllCategoriesComponent = () => {
                   Explore our catalogue
                 </h1>
                 <p className="max-w-2xl text-sm text-slate-600">
-                  Discover curated assortments across water solutions, appliances, and daily essentials. Each category is reviewed to ensure it meets Aquakart standards.
+                  Discover curated assortments across water solutions,
+                  appliances, and daily essentials. Each category is reviewed to
+                  ensure it meets Aquakart standards.
                 </p>
               </div>
               <div className="flex flex-col items-start gap-3 text-sm font-semibold text-slate-600 sm:items-end">
@@ -112,7 +116,9 @@ const AquaAllCategoriesComponent = () => {
                         })
                         .catch((error) => {
                           console.error("Retry fetch categories error", error);
-                          setErrorMessage("Still having trouble fetching categories. Please try again later.");
+                          setErrorMessage(
+                            "Still having trouble fetching categories. Please try again later.",
+                          );
                         })
                         .finally(() => {
                           setIsLoading(false);
@@ -129,9 +135,12 @@ const AquaAllCategoriesComponent = () => {
                 <>
                   <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-                      <h2 className="text-lg font-semibold text-slate-900">Looking for inspiration?</h2>
+                      <h2 className="text-lg font-semibold text-slate-900">
+                        Looking for inspiration?
+                      </h2>
                       <p className="mt-2 text-sm text-slate-600">
-                        Browse popular picks from across the store and see what other customers are exploring right now.
+                        Browse popular picks from across the store and see what
+                        other customers are exploring right now.
                       </p>
                       <Link
                         href="/shop"
@@ -141,9 +150,12 @@ const AquaAllCategoriesComponent = () => {
                       </Link>
                     </div>
                     <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-                      <h2 className="text-lg font-semibold text-slate-900">Stay organised</h2>
+                      <h2 className="text-lg font-semibold text-slate-900">
+                        Stay organised
+                      </h2>
                       <p className="mt-2 text-sm text-slate-600">
-                        Save categories you revisit often and get notified when new items land in your favourites.
+                        Save categories you revisit often and get notified when
+                        new items land in your favourites.
                       </p>
                       <Link
                         href="/auth"
@@ -153,9 +165,12 @@ const AquaAllCategoriesComponent = () => {
                       </Link>
                     </div>
                     <div className="rounded-2xl bg-slate-900 p-6 text-white shadow-sm">
-                      <h2 className="text-lg font-semibold">Aquakart Pro benefits</h2>
+                      <h2 className="text-lg font-semibold">
+                        Aquakart Pro benefits
+                      </h2>
                       <p className="mt-2 text-sm text-white/80">
-                        Unlock faster delivery windows, bundle offers, and seasonal deals across every category.
+                        Unlock faster delivery windows, bundle offers, and
+                        seasonal deals across every category.
                       </p>
                       <Link
                         href="/membership"
@@ -169,9 +184,12 @@ const AquaAllCategoriesComponent = () => {
                   <section className="mt-12 rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <h2 className="text-xl font-semibold text-slate-900">All categories</h2>
+                        <h2 className="text-xl font-semibold text-slate-900">
+                          All categories
+                        </h2>
                         <p className="text-sm text-slate-600">
-                          Navigate through the full catalogue and jump straight into the collection that fits your next purchase.
+                          Navigate through the full catalogue and jump straight
+                          into the collection that fits your next purchase.
                         </p>
                       </div>
                       <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -191,7 +209,8 @@ const AquaAllCategoriesComponent = () => {
                         ))
                       ) : (
                         <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-12 text-center text-sm font-medium text-slate-600">
-                          We are adding categories right now. Check back soon for a refreshed catalogue.
+                          We are adding categories right now. Check back soon
+                          for a refreshed catalogue.
                         </div>
                       )}
                     </div>

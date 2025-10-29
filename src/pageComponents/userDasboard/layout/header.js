@@ -8,7 +8,7 @@ import {
   ShoppingCart,
   Heart,
   ShoppingBag,
-  ShoppingBagIcon
+  ShoppingBagIcon,
 } from "lucide-react";
 
 const AquaUserDashboardHeader = () => {

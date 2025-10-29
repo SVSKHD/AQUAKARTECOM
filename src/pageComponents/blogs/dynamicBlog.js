@@ -44,7 +44,11 @@ const AquaDynamicBlogComponent = ({
   }, [initialBlog, initialRelated, initialError]);
 
   useEffect(() => {
-    if (!blog?.description || !contentRef.current || typeof window === "undefined") {
+    if (
+      !blog?.description ||
+      !contentRef.current ||
+      typeof window === "undefined"
+    ) {
       setToc([]);
       return;
     }
@@ -52,12 +56,12 @@ const AquaDynamicBlogComponent = ({
     const headings = Array.from(
       contentRef.current.querySelectorAll("h2, h3"),
     ).map((heading, index) => {
-      const baseId = heading.textContent
-        ?.toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "")
-        || `section-${index}`;
+      const baseId =
+        heading.textContent
+          ?.toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "") || `section-${index}`;
       const uniqueId = heading.id || `${baseId}-${index}`;
       heading.id = uniqueId;
       return {
@@ -79,7 +83,10 @@ const AquaDynamicBlogComponent = ({
       const elementTop = element.offsetTop;
       const elementHeight = element.offsetHeight;
       const viewportHeight = window.innerHeight;
-      const maxScroll = Math.max(elementTop + elementHeight - viewportHeight, 0);
+      const maxScroll = Math.max(
+        elementTop + elementHeight - viewportHeight,
+        0,
+      );
       const currentScroll = Math.min(
         Math.max(window.scrollY - elementTop, 0),
         maxScroll,
@@ -161,12 +168,13 @@ const AquaDynamicBlogComponent = ({
     if (!value || typeof value !== "string") return fallback;
     const cleaned = value.replace(/[._-]+/g, " ").trim();
     if (!cleaned) return fallback;
-    return cleaned
-      .toLowerCase()
-      .replace(/\b\w/g, (char) => char.toUpperCase());
+    return cleaned.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  const categoryLabel = formatTopicLabel(blog?.category, blog?.title || "Aquakart");
+  const categoryLabel = formatTopicLabel(
+    blog?.category,
+    blog?.title || "Aquakart",
+  );
 
   const keyHighlights = useMemo(() => {
     if (Array.isArray(blog?.keyHighlights)) {
@@ -225,11 +233,11 @@ const AquaDynamicBlogComponent = ({
 
           <div className="mx-auto mt-6 max-w-3xl text-center">
             {loading ? (
-                <div className="space-y-4">
-                  <div className="mx-auto h-10 w-40 animate-pulse rounded-full bg-slate-200" />
-                  <div className="mx-auto h-12 w-full max-w-xl animate-pulse rounded-lg bg-slate-200" />
-                  <div className="mx-auto h-6 w-1/2 animate-pulse rounded-full bg-slate-200" />
-                </div>
+              <div className="space-y-4">
+                <div className="mx-auto h-10 w-40 animate-pulse rounded-full bg-slate-200" />
+                <div className="mx-auto h-12 w-full max-w-xl animate-pulse rounded-lg bg-slate-200" />
+                <div className="mx-auto h-6 w-1/2 animate-pulse rounded-full bg-slate-200" />
+              </div>
             ) : error ? (
               <div className="rounded-2xl border border-rose-100 bg-rose-50 px-6 py-8 text-left">
                 <div className="flex items-center gap-3 text-rose-600">
@@ -331,7 +339,10 @@ const AquaDynamicBlogComponent = ({
                     </h2>
                     <ul className="mt-3 space-y-2 text-sm text-emerald-800">
                       {keyHighlights.map((highlight, index) => (
-                        <li key={`${highlight}-${index}`} className="flex items-start gap-2">
+                        <li
+                          key={`${highlight}-${index}`}
+                          className="flex items-start gap-2"
+                        >
                           <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500" />
                           <span>{highlight}</span>
                         </li>
@@ -399,7 +410,8 @@ const AquaDynamicBlogComponent = ({
                     </div>
                   ) : (
                     <p className="rounded-2xl border border-dashed border-slate-200 p-4 text-xs text-slate-500">
-                      We’ll update this section when matching products are available.
+                      We’ll update this section when matching products are
+                      available.
                     </p>
                   )}
                 </div>

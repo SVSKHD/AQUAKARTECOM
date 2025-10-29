@@ -59,12 +59,7 @@ const formatCurrency = (value) => {
 
 const composeAddress = (address = {}) => {
   if (!address || typeof address !== "object") return "—";
-  return [
-    address.street,
-    address.city,
-    address.state,
-    address.postalCode,
-  ]
+  return [address.street, address.city, address.state, address.postalCode]
     .filter(Boolean)
     .map((part) => `${part}`.trim())
     .join(", ");
@@ -103,7 +98,9 @@ const AquaOrdersPageComponent = () => {
         setOrders(fetchedOrders);
       } catch (fetchError) {
         if (!isMounted) return;
-        setError("Unable to load your orders right now. Please try again later.");
+        setError(
+          "Unable to load your orders right now. Please try again later.",
+        );
         console.error("Error fetching orders:", fetchError);
       } finally {
         if (isMounted) setLoading(false);
@@ -121,7 +118,9 @@ const AquaOrdersPageComponent = () => {
     () =>
       orders.map((order) => ({
         ...order,
-        paymentChipTone: toLowerSafe(order?.orderType).includes("cash on delivery")
+        paymentChipTone: toLowerSafe(order?.orderType).includes(
+          "cash on delivery",
+        )
           ? PAYMENT_TONES.cod
           : PAYMENT_TONES.online,
         paymentChipLabel: toLowerSafe(order?.orderType).includes(
@@ -164,8 +163,8 @@ const AquaOrdersPageComponent = () => {
 
   const pendingPaymentCount = useMemo(
     () =>
-      resolvedOrders.filter((order) =>
-        toLowerSafe(order?.paymentStatus) === "pending",
+      resolvedOrders.filter(
+        (order) => toLowerSafe(order?.paymentStatus) === "pending",
       ).length,
     [resolvedOrders],
   );
@@ -209,7 +208,8 @@ const AquaOrdersPageComponent = () => {
     },
   ];
 
-  const activeOrders = activeTab === "online" ? resolvedOnlineOrders : resolvedCodOrders;
+  const activeOrders =
+    activeTab === "online" ? resolvedOnlineOrders : resolvedCodOrders;
 
   const timelineSteps = useMemo(() => {
     if (!trackingOrder) return [];
@@ -285,7 +285,8 @@ const AquaOrdersPageComponent = () => {
               Your orders
             </h1>
             <p className="text-sm text-slate-500">
-              Track payments, delivery progress, and keep an eye on pending actions.
+              Track payments, delivery progress, and keep an eye on pending
+              actions.
             </p>
           </div>
 
@@ -295,12 +296,16 @@ const AquaOrdersPageComponent = () => {
                 key={label}
                 className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/60 p-4"
               >
-                <span className={`flex h-12 w-12 items-center justify-center rounded-full ${tone}`}>
+                <span
+                  className={`flex h-12 w-12 items-center justify-center rounded-full ${tone}`}
+                >
                   <Icon className="h-6 w-6" aria-hidden="true" />
                 </span>
                 <div>
                   <p className="text-sm text-slate-500">{label}</p>
-                  <p className="text-lg font-semibold text-slate-900">{value}</p>
+                  <p className="text-lg font-semibold text-slate-900">
+                    {value}
+                  </p>
                 </div>
               </div>
             ))}
@@ -322,7 +327,8 @@ const AquaOrdersPageComponent = () => {
           </div>
         ) : resolvedOrders.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center text-sm text-slate-500">
-            You haven’t placed any orders yet. Explore our catalogue to get started.
+            You haven’t placed any orders yet. Explore our catalogue to get
+            started.
           </div>
         ) : (
           <>
@@ -372,13 +378,19 @@ const AquaOrdersPageComponent = () => {
                         </h2>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold capitalize ${order.paymentChipTone}`}>
+                        <span
+                          className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold capitalize ${order.paymentChipTone}`}
+                        >
                           {order.paymentChipLabel}
                         </span>
-                        <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold capitalize ${order.paymentStatusTone}`}>
+                        <span
+                          className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold capitalize ${order.paymentStatusTone}`}
+                        >
                           {order?.paymentStatus || "Pending"}
                         </span>
-                        <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold capitalize ${order.orderStatusTone}`}>
+                        <span
+                          className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold capitalize ${order.orderStatusTone}`}
+                        >
                           {order?.orderStatus || "Processing"}
                         </span>
                       </div>
@@ -386,11 +398,19 @@ const AquaOrdersPageComponent = () => {
 
                     <div className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
                       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Items ({order.items.reduce((sum, item) => sum + (item?.quantity || 0), 0)})
+                        Items (
+                        {order.items.reduce(
+                          (sum, item) => sum + (item?.quantity || 0),
+                          0,
+                        )}
+                        )
                       </p>
                       <ul className="space-y-2">
                         {order.items.slice(0, 3).map((item) => (
-                          <li key={item?._id || item?.productId} className="flex items-center justify-between text-sm text-slate-600">
+                          <li
+                            key={item?._id || item?.productId}
+                            className="flex items-center justify-between text-sm text-slate-600"
+                          >
                             <span className="line-clamp-1 pr-3 font-medium text-slate-700">
                               {item?.name || "Product"}
                             </span>
@@ -437,7 +457,8 @@ const AquaOrdersPageComponent = () => {
 
                     <footer className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="text-sm font-semibold text-slate-900">
-                        Total payable: <span className="text-lg">{order.totalLabel}</span>
+                        Total payable:{" "}
+                        <span className="text-lg">{order.totalLabel}</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <button
@@ -490,7 +511,10 @@ const AquaOrdersPageComponent = () => {
                     Payment: {trackingOrder?.paymentStatus || "Pending"}
                   </span>
                   <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                    Method: {trackingOrder?.orderType || trackingOrder?.paymentMethod || "—"}
+                    Method:{" "}
+                    {trackingOrder?.orderType ||
+                      trackingOrder?.paymentMethod ||
+                      "—"}
                   </span>
                 </div>
               </div>
@@ -504,7 +528,9 @@ const AquaOrdersPageComponent = () => {
                     <li key={step.key} className="flex items-start gap-4">
                       <span
                         className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full ${
-                          step.completed ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-500"
+                          step.completed
+                            ? "bg-emerald-500 text-white"
+                            : "bg-slate-200 text-slate-500"
                         }`}
                       >
                         {step.completed ? (
@@ -517,7 +543,9 @@ const AquaOrdersPageComponent = () => {
                         <p className="text-sm font-semibold text-slate-900">
                           {step.label}
                         </p>
-                        <p className="text-xs text-slate-500">{step.description}</p>
+                        <p className="text-xs text-slate-500">
+                          {step.description}
+                        </p>
                       </div>
                     </li>
                   ))}

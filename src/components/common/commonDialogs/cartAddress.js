@@ -65,12 +65,16 @@ const AquaAddressDialog = ({ editData }) => {
 
   const handleStateChange = (event) => {
     const { value } = event.target;
-    const matchedState = STATE_CITY_OPTIONS.find((item) => item.state === value);
+    const matchedState = STATE_CITY_OPTIONS.find(
+      (item) => item.state === value,
+    );
     setAddress((prev) => ({
       ...prev,
       state: value,
       city:
-        matchedState && matchedState.cities.includes(prev.city) ? prev.city : "",
+        matchedState && matchedState.cities.includes(prev.city)
+          ? prev.city
+          : "",
     }));
   };
 
@@ -237,17 +241,23 @@ const AquaAddressDialog = ({ editData }) => {
             </span>
             <div>
               <h3 className="text-lg font-semibold text-slate-900">
-                {editData ? "Edit delivery address" : "Add new delivery address"}
+                {editData
+                  ? "Edit delivery address"
+                  : "Add new delivery address"}
               </h3>
               <p className="mt-1 text-sm text-slate-500">
-                Save an address for faster checkout and accurate installation support.
+                Save an address for faster checkout and accurate installation
+                support.
               </p>
             </div>
           </div>
 
           <div className="grid gap-5">
             <div className="grid gap-2">
-              <label htmlFor="street" className="text-sm font-medium text-slate-700">
+              <label
+                htmlFor="street"
+                className="text-sm font-medium text-slate-700"
+              >
                 Street address
               </label>
               <input
@@ -269,7 +279,10 @@ const AquaAddressDialog = ({ editData }) => {
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="grid gap-2">
-                <label htmlFor="region" className="text-sm font-medium text-slate-700">
+                <label
+                  htmlFor="region"
+                  className="text-sm font-medium text-slate-700"
+                >
                   State
                 </label>
                 <select
@@ -294,7 +307,10 @@ const AquaAddressDialog = ({ editData }) => {
               </div>
 
               <div className="grid gap-2">
-                <label htmlFor="city" className="text-sm font-medium text-slate-700">
+                <label
+                  htmlFor="city"
+                  className="text-sm font-medium text-slate-700"
+                >
                   City
                 </label>
                 {cityOptions.length ? (
@@ -362,8 +378,8 @@ const AquaAddressDialog = ({ editData }) => {
           <div className="flex flex-col gap-3 rounded-2xl bg-slate-50/80 p-4 text-xs text-slate-500">
             <p className="font-medium text-slate-700">Pro tip</p>
             <p>
-              Ensure the address matches your installation location so our service
-              engineers reach you without delays.
+              Ensure the address matches your installation location so our
+              service engineers reach you without delays.
             </p>
           </div>
 

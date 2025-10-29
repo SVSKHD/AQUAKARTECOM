@@ -40,7 +40,9 @@ const AquaHeader = () => {
   const router = useRouter();
   const { openCartDrawer, openFavDrawer } = useCartDrawer();
   const { openAuthDialog } = useDialog();
-  const { userData, cartData, favData } = useSelector((state) => ({ ...state }));
+  const { userData, cartData, favData } = useSelector((state) => ({
+    ...state,
+  }));
 
   const cartCount = Array.isArray(cartData) ? cartData.length : 0;
   const favCount = Array.isArray(favData) ? favData.length : 0;
@@ -48,7 +50,10 @@ const AquaHeader = () => {
   const isActiveRoute = (href) => router.pathname === href;
 
   return (
-    <Disclosure as="nav" className="sticky top-0 z-50 bg-white/80 backdrop-blur-md">
+    <Disclosure
+      as="nav"
+      className="sticky top-0 z-50 bg-white/80 backdrop-blur-md"
+    >
       {({ open }) => (
         <>
           <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6 py-2">
@@ -66,7 +71,10 @@ const AquaHeader = () => {
               </div>
 
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                <Link href="/" className="flex flex-shrink-0 items-center gap-2">
+                <Link
+                  href="/"
+                  className="flex flex-shrink-0 items-center gap-2"
+                >
                   <Image
                     className="h-9 w-auto drop-shadow"
                     src={LW}
@@ -102,7 +110,9 @@ const AquaHeader = () => {
                             aria-hidden="true"
                             className={classNames(
                               "absolute inset-0 rounded-full bg-slate-900/10 transition-transform duration-300 ease-out",
-                              active ? "scale-100 opacity-100" : "scale-50 opacity-0",
+                              active
+                                ? "scale-100 opacity-100"
+                                : "scale-50 opacity-0",
                             )}
                           />
                         </Link>
@@ -182,7 +192,9 @@ const AquaHeader = () => {
                               }
                               className={classNames(
                                 "block w-full rounded-lg px-4 py-2 text-left text-sm transition",
-                                focus ? "bg-red-50 text-red-600" : "text-slate-700",
+                                focus
+                                  ? "bg-red-50 text-red-600"
+                                  : "text-slate-700",
                               )}
                             >
                               Sign out

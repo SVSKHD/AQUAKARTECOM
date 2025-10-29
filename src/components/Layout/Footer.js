@@ -4,12 +4,7 @@ import Link from "next/link";
 import { isArray } from "lodash";
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import {
-  Facebook,
-  Instagram,
-  Twitter,
-  Youtube,
-} from "lucide-react";
+import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 
 const navigation = {
   policy: [
@@ -19,10 +14,22 @@ const navigation = {
     { name: "Contact us", href: "/contact-us" },
   ],
   social: [
-    { name: "Facebook", href: "https://www.facebook.com/AquaKart8/", icon: Facebook },
-    { name: "Instagram", href: "https://www.instagram.com/aquakart8/", icon: Instagram },
+    {
+      name: "Facebook",
+      href: "https://www.facebook.com/AquaKart8/",
+      icon: Facebook,
+    },
+    {
+      name: "Instagram",
+      href: "https://www.instagram.com/aquakart8/",
+      icon: Instagram,
+    },
     { name: "X", href: "https://x.com/aquakart8", icon: Twitter },
-    { name: "YouTube", href: "https://www.youtube.com/@aquakart", icon: Youtube },
+    {
+      name: "YouTube",
+      href: "https://www.youtube.com/@aquakart",
+      icon: Youtube,
+    },
   ],
 };
 
@@ -36,7 +43,10 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
   const formattedSubCategories = isArray(subcategories) ? subcategories : [];
 
   return (
-    <footer className="relative overflow-hidden bg-slate-950" aria-labelledby="footer-heading">
+    <footer
+      className="relative overflow-hidden bg-slate-950"
+      aria-labelledby="footer-heading"
+    >
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.25),_transparent_55%)]" />
       <div className="absolute -top-32 left-1/2 -z-10 h-64 w-64 -translate-x-1/2 rounded-full bg-indigo-500/20 blur-3xl" />
 
@@ -61,15 +71,19 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
               </div>
             </div>
             <p className="text-sm leading-6 text-white/60">
-              Softening, filtration, and purification systems designed for Indian water conditions.
-              Discover products, service support, and expert consultation from Aquakart.
+              Softening, filtration, and purification systems designed for
+              Indian water conditions. Discover products, service support, and
+              expert consultation from Aquakart.
             </p>
 
             {!userData && (
               <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-lg">
-                <h4 className="text-sm font-semibold text-white">Subscribe to our newsletter</h4>
+                <h4 className="text-sm font-semibold text-white">
+                  Subscribe to our newsletter
+                </h4>
                 <p className="mt-2 text-xs text-white/60">
-                  Product updates, maintenance guides, and water-care insights in your inbox.
+                  Product updates, maintenance guides, and water-care insights
+                  in your inbox.
                 </p>
                 <form className="mt-4 flex flex-col gap-3 sm:flex-row">
                   <label htmlFor="newsletter-email" className="sr-only">
@@ -97,7 +111,9 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
 
           <div className="grid gap-10 md:grid-cols-3">
             <div>
-              <h4 className="text-sm font-semibold text-white">Subcategories</h4>
+              <h4 className="text-sm font-semibold text-white">
+                Subcategories
+              </h4>
               <ul className="mt-4 space-y-2 text-sm text-white/60">
                 {formattedSubCategories.slice(0, 6).map((item) => (
                   <li key={item.title}>

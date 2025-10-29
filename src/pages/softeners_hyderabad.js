@@ -20,12 +20,16 @@ export const getServerSideProps = async () => {
       },
     };
   } catch (error) {
-    console.error("Failed to fetch Hyderabad softeners on the server:", error?.message || error);
+    console.error(
+      "Failed to fetch Hyderabad softeners on the server:",
+      error?.message || error,
+    );
 
     return {
       props: {
         initialSections: [],
-        initialError: "We couldn’t load the installation gallery right now. Please try again in a moment.",
+        initialError:
+          "We couldn’t load the installation gallery right now. Please try again in a moment.",
       },
     };
   }

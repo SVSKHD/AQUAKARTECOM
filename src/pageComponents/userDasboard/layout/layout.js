@@ -67,14 +67,10 @@ const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
               {resolvedTitle}
             </h1>
             {resolvedSubtitle && (
-              <p className="mt-1 text-sm text-gray-500">
-                {resolvedSubtitle}
-              </p>
+              <p className="mt-1 text-sm text-gray-500">{resolvedSubtitle}</p>
             )}
           </div>
-          <div className="min-h-[60vh]">
-            {children}
-          </div>
+          <div className="min-h-[60vh]">{children}</div>
         </div>
       </div>
     </div>

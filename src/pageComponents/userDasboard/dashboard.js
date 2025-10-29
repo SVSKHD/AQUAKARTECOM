@@ -38,8 +38,12 @@ const AquaUserDashbordPageComponent = () => {
   );
 
   const highlightCards = useMemo(() => {
-    const delivered = recentOrders.filter((order) => order?.status === "Delivered").length;
-    const pending = recentOrders.filter((order) => order?.status && order.status !== "Delivered").length;
+    const delivered = recentOrders.filter(
+      (order) => order?.status === "Delivered",
+    ).length;
+    const pending = recentOrders.filter(
+      (order) => order?.status && order.status !== "Delivered",
+    ).length;
 
     return [
       {
@@ -70,7 +74,8 @@ const AquaUserDashbordPageComponent = () => {
   }, [safeCart.length, safeFav.length, recentOrders]);
 
   const firstName = useMemo(() => {
-    const fullName = userData?.user?.name || userData?.user?.firstName || "there";
+    const fullName =
+      userData?.user?.name || userData?.user?.firstName || "there";
     return `${fullName}`.split(" ")[0];
   }, [userData?.user]);
 
@@ -90,7 +95,8 @@ const AquaUserDashbordPageComponent = () => {
                 Hi {firstName}, your water essentials are ready.
               </h1>
               <p className="mt-2 max-w-xl text-sm text-slate-600">
-                Track your orders, manage saved products, and keep your profile up to date for lightning-fast deliveries.
+                Track your orders, manage saved products, and keep your profile
+                up to date for lightning-fast deliveries.
               </p>
             </div>
             <Link
@@ -109,7 +115,9 @@ const AquaUserDashbordPageComponent = () => {
               key={title}
               className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
             >
-              <span className={`flex h-12 w-12 items-center justify-center rounded-full ${tone}`}>
+              <span
+                className={`flex h-12 w-12 items-center justify-center rounded-full ${tone}`}
+              >
                 <Icon className="h-6 w-6" aria-hidden="true" />
               </span>
               <div>
@@ -141,7 +149,11 @@ const AquaUserDashbordPageComponent = () => {
           {featuredCart.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               {featuredCart.map((item) => (
-                <DashboardProductCard key={item?._id} product={item} variant="cart" />
+                <DashboardProductCard
+                  key={item?._id}
+                  product={item}
+                  variant="cart"
+                />
               ))}
             </div>
           ) : (
@@ -154,7 +166,9 @@ const AquaUserDashbordPageComponent = () => {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">Saved favourites</h2>
+              <h2 className="text-lg font-semibold text-slate-900">
+                Saved favourites
+              </h2>
               <p className="text-sm text-slate-500">
                 Keep an eye on the products you love.
               </p>
@@ -170,12 +184,17 @@ const AquaUserDashbordPageComponent = () => {
           {featuredFav.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               {featuredFav.map((item) => (
-                <DashboardProductCard key={item?._id} product={item} variant="fav" />
+                <DashboardProductCard
+                  key={item?._id}
+                  product={item}
+                  variant="fav"
+                />
               ))}
             </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center text-sm text-slate-500">
-              You have no saved favourites yet. Tap the heart icon on a product to keep it here.
+              You have no saved favourites yet. Tap the heart icon on a product
+              to keep it here.
             </div>
           )}
         </section>

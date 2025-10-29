@@ -21,7 +21,10 @@ const LoadingState = () => (
         <div className="h-6 w-24 rounded-full bg-slate-200" />
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={`skeleton-${index}`} className="h-40 rounded-2xl bg-slate-200" />
+            <div
+              key={`skeleton-${index}`}
+              className="h-40 rounded-2xl bg-slate-200"
+            />
           ))}
         </div>
       </div>
@@ -149,7 +152,8 @@ const AquaDynamicSubCategoryComponent = () => {
                           )}
                           <div className="flex h-48 flex-col justify-between rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-600">
                             <p>
-                              Want to track this collection? Save it to your dashboard to revisit quickly next time.
+                              Want to track this collection? Save it to your
+                              dashboard to revisit quickly next time.
                             </p>
                             <Link
                               href="/dashboard"
@@ -166,10 +170,12 @@ const AquaDynamicSubCategoryComponent = () => {
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <h3 className="text-xl font-semibold text-slate-900">
-                            Popular picks in {category?.title ?? "this subcategory"}
+                            Popular picks in{" "}
+                            {category?.title ?? "this subcategory"}
                           </h3>
                           <p className="text-sm text-slate-600">
-                            Explore products customers frequently buy from this focused assortment.
+                            Explore products customers frequently buy from this
+                            focused assortment.
                           </p>
                         </div>
                         {related?.length > 0 && (
@@ -194,7 +200,8 @@ const AquaDynamicSubCategoryComponent = () => {
                           ))
                         ) : (
                           <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center text-sm text-slate-600">
-                            No products available in this subcategory at the moment. Please check back soon.
+                            No products available in this subcategory at the
+                            moment. Please check back soon.
                           </div>
                         )}
                       </div>
@@ -205,7 +212,10 @@ const AquaDynamicSubCategoryComponent = () => {
             )}
 
             <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-6 text-xs text-slate-500 sm:flex-row">
-              <span>Want to explore more? Browse all categories and uncover additional collections.</span>
+              <span>
+                Want to explore more? Browse all categories and uncover
+                additional collections.
+              </span>
               <Link
                 href="/categories"
                 className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:border-indigo-300 hover:text-indigo-600"

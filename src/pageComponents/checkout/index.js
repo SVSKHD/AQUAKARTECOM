@@ -34,7 +34,10 @@ const AquaCheckoutComponent = () => {
   const { EmptyCart, removeFromCart } = useProduct();
   const { openAuthDialog } = useDialog();
 
-  const [buttonStatus, setButtonStatus] = useState({ cod: false, gateway: false });
+  const [buttonStatus, setButtonStatus] = useState({
+    cod: false,
+    gateway: false,
+  });
   const [selectedAddress, setSelectedAddress] = useState(
     userData?.user?.selectedAddress,
   );
@@ -54,7 +57,9 @@ const AquaCheckoutComponent = () => {
     (count, item) => count + (item.quantity || 0),
     0,
   );
-  const hasContactDetails = Boolean(userData?.user?.email && userData?.user?.phone);
+  const hasContactDetails = Boolean(
+    userData?.user?.email && userData?.user?.phone,
+  );
   const hasAddresses = Boolean(userData?.user?.addresses?.length);
   const payableTotal = Math.max(getTotalPrice() - discount, 0);
 
@@ -426,7 +431,9 @@ const AquaCheckoutComponent = () => {
 
   const handleDeleteAddressDialog = (event) => {
     event.preventDefault();
-    const addresses = userData.user.addresses.filter((item) => item._id !== deleteId);
+    const addresses = userData.user.addresses.filter(
+      (item) => item._id !== deleteId,
+    );
     const payload = {
       newDetails: {
         addresses,
@@ -504,14 +511,18 @@ const AquaCheckoutComponent = () => {
                   Checkout
                 </h1>
                 <p className="mt-2 max-w-2xl text-sm text-gray-500">
-                  Confirm your details, choose an address, and pick a payment method.
+                  Confirm your details, choose an address, and pick a payment
+                  method.
                 </p>
               </div>
 
               <nav className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
                 <ol className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   {steps.map((step, index) => (
-                    <li key={step.name} className="flex w-full items-center gap-3">
+                    <li
+                      key={step.name}
+                      className="flex w-full items-center gap-3"
+                    >
                       <span
                         className={`flex h-10 w-10 items-center justify-center rounded-full border text-sm font-semibold ${stepStyles[step.status]}`}
                       >
@@ -525,7 +536,9 @@ const AquaCheckoutComponent = () => {
                         <span className="text-sm font-semibold text-gray-900">
                           {step.name}
                         </span>
-                        <span className="text-xs text-gray-500">{step.description}</span>
+                        <span className="text-xs text-gray-500">
+                          {step.description}
+                        </span>
                       </div>
                     </li>
                   ))}
@@ -537,7 +550,9 @@ const AquaCheckoutComponent = () => {
                   <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <h2 className="text-xl font-semibold text-gray-900">Cart items</h2>
+                        <h2 className="text-xl font-semibold text-gray-900">
+                          Cart items
+                        </h2>
                         <p className="mt-1 text-sm text-gray-500">
                           Review your selections before moving to payment.
                         </p>
@@ -584,15 +599,20 @@ const AquaCheckoutComponent = () => {
                                     {product.title}
                                   </h3>
                                   <p className="text-sm text-gray-500">
-                                    {product.subtitle || product.category || "Aquakart product"}
+                                    {product.subtitle ||
+                                      product.category ||
+                                      "Aquakart product"}
                                   </p>
                                   <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-600">
-                                    <CheckIcon className="h-4 w-4" aria-hidden="true" />
+                                    <CheckIcon
+                                      className="h-4 w-4"
+                                      aria-hidden="true"
+                                    />
                                     {product.inStock || product.stock
                                       ? "In stock"
                                       : product.leadTime
-                                      ? `Ships in ${product.leadTime}`
-                                      : "Ships soon"}
+                                        ? `Ships in ${product.leadTime}`
+                                        : "Ships soon"}
                                   </div>
                                 </div>
 
@@ -603,7 +623,9 @@ const AquaCheckoutComponent = () => {
                                   <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-2 py-1 text-sm font-semibold text-gray-900">
                                     <button
                                       type="button"
-                                      onClick={() => handleQuantityAdjust(productId, -1)}
+                                      onClick={() =>
+                                        handleQuantityAdjust(productId, -1)
+                                      }
                                       className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition hover:bg-gray-200"
                                     >
                                       -
@@ -613,7 +635,9 @@ const AquaCheckoutComponent = () => {
                                     </span>
                                     <button
                                       type="button"
-                                      onClick={() => handleQuantityAdjust(productId, 1)}
+                                      onClick={() =>
+                                        handleQuantityAdjust(productId, 1)
+                                      }
                                       className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition hover:bg-gray-200"
                                     >
                                       +
@@ -624,7 +648,10 @@ const AquaCheckoutComponent = () => {
                                     onClick={() => handleRemoveProduct(product)}
                                     className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 transition hover:text-red-600"
                                   >
-                                    <XMarkIcon className="h-4 w-4" aria-hidden="true" />
+                                    <XMarkIcon
+                                      className="h-4 w-4"
+                                      aria-hidden="true"
+                                    />
                                     Remove
                                   </button>
                                 </div>
@@ -635,7 +662,9 @@ const AquaCheckoutComponent = () => {
                       </ul>
                     ) : (
                       <div className="mt-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-10 text-center">
-                        <h3 className="text-lg font-semibold text-gray-900">Your cart is empty</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          Your cart is empty
+                        </h3>
                         <p className="mt-2 text-sm text-gray-500">
                           Add products to your cart to see them here.
                         </p>
@@ -653,9 +682,12 @@ const AquaCheckoutComponent = () => {
                   <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <h2 className="text-xl font-semibold text-gray-900">Contact details</h2>
+                        <h2 className="text-xl font-semibold text-gray-900">
+                          Contact details
+                        </h2>
                         <p className="mt-1 text-sm text-gray-500">
-                          We’ll use these details for order updates and delivery coordination.
+                          We’ll use these details for order updates and delivery
+                          coordination.
                         </p>
                       </div>
                       <button
@@ -708,7 +740,8 @@ const AquaCheckoutComponent = () => {
                           Alternate phone
                         </dt>
                         <dd className="mt-1 text-sm text-gray-900">
-                          {profileDialogInitialValues.alternatePhone || "Optional"}
+                          {profileDialogInitialValues.alternatePhone ||
+                            "Optional"}
                         </dd>
                       </div>
                       <div className="rounded-2xl border border-gray-100 p-4">
@@ -725,7 +758,8 @@ const AquaCheckoutComponent = () => {
 
                     {!hasContactDetails && (
                       <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
-                        Add your email and phone number to enable payment options.
+                        Add your email and phone number to enable payment
+                        options.
                       </div>
                     )}
                   </section>
@@ -733,7 +767,9 @@ const AquaCheckoutComponent = () => {
                   <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <h2 className="text-xl font-semibold text-gray-900">Delivery address</h2>
+                        <h2 className="text-xl font-semibold text-gray-900">
+                          Delivery address
+                        </h2>
                         <p className="mt-1 text-sm text-gray-500">
                           Select where you would like your order delivered.
                         </p>
@@ -775,14 +811,22 @@ const AquaCheckoutComponent = () => {
                                     {address?.label || "Saved address"}
                                   </p>
                                   <p className="mt-1 text-sm text-gray-600">
-                                    {[address.street, address.city, address.state, address.postalCode]
+                                    {[
+                                      address.street,
+                                      address.city,
+                                      address.state,
+                                      address.postalCode,
+                                    ]
                                       .filter(Boolean)
                                       .join(", ")}
                                   </p>
                                 </div>
                                 {isSelected && (
                                   <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-1 text-xs font-medium text-indigo-600">
-                                    <CheckIcon className="h-4 w-4" aria-hidden="true" />
+                                    <CheckIcon
+                                      className="h-4 w-4"
+                                      aria-hidden="true"
+                                    />
                                     Selected
                                   </span>
                                 )}
@@ -790,18 +834,28 @@ const AquaCheckoutComponent = () => {
                               <div className="flex items-center gap-4 text-sm font-medium">
                                 <button
                                   type="button"
-                                  onClick={(event) => handleEditAddress(event, address)}
+                                  onClick={(event) =>
+                                    handleEditAddress(event, address)
+                                  }
                                   className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-500"
                                 >
-                                  <PencilIcon className="h-4 w-4" aria-hidden="true" />
+                                  <PencilIcon
+                                    className="h-4 w-4"
+                                    aria-hidden="true"
+                                  />
                                   Edit
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={(event) => handleDeleteAddress(event, address)}
+                                  onClick={(event) =>
+                                    handleDeleteAddress(event, address)
+                                  }
                                   className="inline-flex items-center gap-1 text-red-600 hover:text-red-500"
                                 >
-                                  <TrashIcon className="h-4 w-4" aria-hidden="true" />
+                                  <TrashIcon
+                                    className="h-4 w-4"
+                                    aria-hidden="true"
+                                  />
                                   Delete
                                 </button>
                               </div>
@@ -814,7 +868,8 @@ const AquaCheckoutComponent = () => {
                             No address added
                           </h3>
                           <p className="mt-2 text-sm text-gray-500">
-                            Add a delivery address to speed up checkout next time.
+                            Add a delivery address to speed up checkout next
+                            time.
                           </p>
                           <button
                             type="button"
@@ -831,7 +886,9 @@ const AquaCheckoutComponent = () => {
 
                 <aside className="space-y-6 lg:sticky lg:top-28">
                   <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-                    <h2 className="text-lg font-semibold text-gray-900">Order summary</h2>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Order summary
+                    </h2>
                     <dl className="mt-6 space-y-4">
                       <div className="flex items-center justify-between text-sm text-gray-600">
                         <dt>Subtotal</dt>
@@ -849,7 +906,9 @@ const AquaCheckoutComponent = () => {
                       </div>
                       <div className="flex items-center justify-between text-sm text-gray-600">
                         <dt>Shipping</dt>
-                        <dd className="font-medium text-gray-900">Calculated at delivery</dd>
+                        <dd className="font-medium text-gray-900">
+                          Calculated at delivery
+                        </dd>
                       </div>
                       <div className="flex items-center justify-between border-t border-gray-200 pt-4 text-base font-semibold text-gray-900">
                         <dt>Total payable</dt>
@@ -870,7 +929,9 @@ const AquaCheckoutComponent = () => {
                           name="coupon-code"
                           type="text"
                           value={couponCode}
-                          onChange={(event) => setCouponCode(event.target.value.toUpperCase())}
+                          onChange={(event) =>
+                            setCouponCode(event.target.value.toUpperCase())
+                          }
                           placeholder="Enter coupon"
                           className="w-full rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
@@ -883,11 +944,14 @@ const AquaCheckoutComponent = () => {
                         </button>
                       </div>
                       {couponError && (
-                        <p className="mt-2 text-xs font-medium text-red-600">{couponError}</p>
+                        <p className="mt-2 text-xs font-medium text-red-600">
+                          {couponError}
+                        </p>
                       )}
                       {discount > 0 && !couponError && (
                         <p className="mt-2 text-xs font-medium text-emerald-600">
-                          Coupon applied! You saved {formatCurrencyINR(discount)}.
+                          Coupon applied! You saved{" "}
+                          {formatCurrencyINR(discount)}.
                         </p>
                       )}
                     </div>
@@ -973,7 +1037,9 @@ const AquaCheckoutComponent = () => {
                   <section className="rounded-3xl border border-indigo-100 bg-indigo-50/70 p-5 text-sm text-indigo-900">
                     <h3 className="text-base font-semibold">Need help?</h3>
                     <p className="mt-2 text-sm text-indigo-800">
-                      Call or WhatsApp us at <span className="font-semibold">+91 96186 06807</span> for any assistance with your order.
+                      Call or WhatsApp us at{" "}
+                      <span className="font-semibold">+91 96186 06807</span> for
+                      any assistance with your order.
                     </p>
                   </section>
                 </aside>
@@ -993,8 +1059,8 @@ const AquaCheckoutComponent = () => {
           !userData?.user?.email
             ? "email"
             : !userData?.user?.phone
-            ? "phone"
-            : undefined
+              ? "phone"
+              : undefined
         }
       />
     </AquaLayout>

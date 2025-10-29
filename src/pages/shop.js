@@ -26,7 +26,8 @@ export const getServerSideProps = async () => {
       return {
         props: {
           products: [],
-          error: "Shop catalogue is temporarily unavailable. Please try again soon.",
+          error:
+            "Shop catalogue is temporarily unavailable. Please try again soon.",
         },
       };
     }
@@ -53,7 +54,8 @@ export const getServerSideProps = async () => {
         products,
         categories,
         subcategories,
-        error: products.length === 0 ? "No products available at the moment." : "",
+        error:
+          products.length === 0 ? "No products available at the moment." : "",
       },
     };
   } catch (serverError) {
@@ -63,7 +65,8 @@ export const getServerSideProps = async () => {
         products: [],
         categories: [],
         subcategories: [],
-        error: "We couldn’t load the catalogue. Please refresh the page or visit later.",
+        error:
+          "We couldn’t load the catalogue. Please refresh the page or visit later.",
       },
     };
   }

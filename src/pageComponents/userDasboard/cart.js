@@ -16,8 +16,8 @@ const AquaUserCartPageComponent = () => {
     [favData],
   );
 
-  const { totalItems, inStockItems, outOfStockItems, favouritesCount } = useMemo(
-    () => {
+  const { totalItems, inStockItems, outOfStockItems, favouritesCount } =
+    useMemo(() => {
       const inStock = safeCart.filter((item) =>
         item?.inStock === false ? false : true,
       ).length;
@@ -29,9 +29,7 @@ const AquaUserCartPageComponent = () => {
         outOfStockItems: outOfStock,
         favouritesCount: safeFav.length,
       };
-    },
-    [safeCart, safeFav],
-  );
+    }, [safeCart, safeFav]);
 
   const summaryCards = [
     {

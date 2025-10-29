@@ -7,7 +7,12 @@ import Image from "next/image";
 import ProductGrid from "./productGrid";
 import ShopFiltersPanel from "./shopFilter";
 import { Dialog, Transition } from "@headlessui/react";
-import { FunnelIcon, XMarkIcon, Squares2X2Icon, ListBulletIcon } from "@heroicons/react/24/outline";
+import {
+  FunnelIcon,
+  XMarkIcon,
+  Squares2X2Icon,
+  ListBulletIcon,
+} from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 
 const AquaShopPageComponent = ({
@@ -105,18 +110,13 @@ const AquaShopPageComponent = ({
   };
 
   const categoryTitlesFromProps = useMemo(
-    () =>
-      (initialCategories || [])
-        .map((item) => item?.title)
-        .filter(Boolean),
+    () => (initialCategories || []).map((item) => item?.title).filter(Boolean),
     [initialCategories],
   );
 
   const subcategoryTitlesFromProps = useMemo(
     () =>
-      (initialSubcategories || [])
-        .map((item) => item?.title)
-        .filter(Boolean),
+      (initialSubcategories || []).map((item) => item?.title).filter(Boolean),
     [initialSubcategories],
   );
 
@@ -154,7 +154,10 @@ const AquaShopPageComponent = ({
     if (!Number.isFinite(minPrice)) minPrice = 0;
     if (maxPrice === 0) maxPrice = minPrice || 0;
 
-    const sortAlpha = (set) => Array.from(set).filter(Boolean).sort((a, b) => a.localeCompare(b));
+    const sortAlpha = (set) =>
+      Array.from(set)
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b));
 
     return {
       categories: sortAlpha(categoriesSet),
@@ -187,7 +190,10 @@ const AquaShopPageComponent = ({
         return false;
       }
 
-      if (filters.subcategory !== "All" && subcategory !== filters.subcategory) {
+      if (
+        filters.subcategory !== "All" &&
+        subcategory !== filters.subcategory
+      ) {
         return false;
       }
 
@@ -231,7 +237,8 @@ const AquaShopPageComponent = ({
     if (filters.category !== "All") count++;
     if (filters.subcategory !== "All") count++;
     if (filters.brand !== "All") count++;
-    if (filters.price > 0 && filters.price < derivedMeta.priceRange.max) count++;
+    if (filters.price > 0 && filters.price < derivedMeta.priceRange.max)
+      count++;
     return count;
   }, [filters, derivedMeta.priceRange.max]);
 
@@ -278,7 +285,9 @@ const AquaShopPageComponent = ({
         </div>
       ) : error ? (
         <div className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center gap-4 rounded-3xl border border-rose-100 bg-rose-50/80 p-8 text-center">
-          <h2 className="text-xl font-semibold text-rose-700">Something went wrong</h2>
+          <h2 className="text-xl font-semibold text-rose-700">
+            Something went wrong
+          </h2>
           <p className="text-sm text-rose-600">{error}</p>
           <button
             type="button"
@@ -301,7 +310,8 @@ const AquaShopPageComponent = ({
                 Discover Premium Water Solutions
               </h1>
               <p className="text-slate-600 text-lg">
-                Browse our collection of {products.length} professional-grade products
+                Browse our collection of {products.length} professional-grade
+                products
               </p>
             </motion.div>
 
@@ -335,7 +345,10 @@ const AquaShopPageComponent = ({
 
                 <div className="flex items-center gap-2 rounded-full bg-slate-50 px-4 py-2">
                   <span className="text-sm font-medium text-slate-600">
-                    {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? 'product' : 'products'}
+                    {filteredAndSortedProducts.length}{" "}
+                    {filteredAndSortedProducts.length === 1
+                      ? "product"
+                      : "products"}
                   </span>
                 </div>
               </div>
@@ -426,7 +439,10 @@ const AquaShopPageComponent = ({
             {/* Products Grid */}
             <section>
               {hasAnyProducts && hasFilteredProducts ? (
-                <ProductGrid products={filteredAndSortedProducts} viewMode={viewMode} />
+                <ProductGrid
+                  products={filteredAndSortedProducts}
+                  viewMode={viewMode}
+                />
               ) : hasAnyProducts ? (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -436,9 +452,12 @@ const AquaShopPageComponent = ({
                   <div className="rounded-full bg-slate-100 p-4">
                     <FunnelIcon className="h-12 w-12 text-slate-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-slate-700">No products found</h3>
+                  <h3 className="text-xl font-semibold text-slate-700">
+                    No products found
+                  </h3>
                   <p className="text-sm text-slate-500 max-w-md">
-                    No products match your current filters. Try adjusting your filters or clearing them to see more options.
+                    No products match your current filters. Try adjusting your
+                    filters or clearing them to see more options.
                   </p>
                   <button
                     onClick={clearAllFilters}
@@ -456,87 +475,87 @@ const AquaShopPageComponent = ({
 
             {/* Filter Sidebar */}
             <Transition appear show={showFilters} as={Fragment}>
-            <Dialog
-              as="div"
-              className="relative z-50"
-              onClose={() => setShowFilters(false)}
-            >
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0"
-                enterTo="opacity-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
+              <Dialog
+                as="div"
+                className="relative z-50"
+                onClose={() => setShowFilters(false)}
               >
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
-              </Transition.Child>
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+                </Transition.Child>
 
-              <div className="fixed inset-0 overflow-y-auto">
-                <div className="flex min-h-full justify-end">
-                  <Transition.Child
-                    as={Fragment}
-                    enter="ease-out duration-300"
-                    enterFrom="translate-x-full"
-                    enterTo="translate-x-0"
-                    leave="ease-in duration-200"
-                    leaveFrom="translate-x-0"
-                    leaveTo="translate-x-full"
-                  >
-                    <Dialog.Panel className="w-full max-w-md bg-white shadow-2xl">
-                      <div className="flex h-full flex-col">
-                        <div className="flex items-center justify-between border-b border-slate-200 p-6">
-                          <Dialog.Title className="text-2xl font-bold text-slate-900">
-                            Filters
-                          </Dialog.Title>
-                          <button
-                            onClick={() => setShowFilters(false)}
-                            className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                          >
-                            <XMarkIcon className="h-6 w-6" />
-                          </button>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-6">
-                          <ShopFiltersPanel
-                            filters={filters}
-                            onFilterChange={handleFilterChange}
-                            categoryOptions={derivedMeta.categories}
-                            subcategoryOptions={derivedMeta.subcategories}
-                            brandOptions={derivedMeta.brands}
-                            priceRange={{
-                              min: derivedMeta.priceRange.min,
-                              max: derivedMeta.priceRange.max,
-                              value: filters.price,
-                            }}
-                          />
-                        </div>
-
-                        <div className="border-t border-slate-200 p-6">
-                          <div className="flex gap-3">
-                            <button
-                              onClick={() => {
-                                clearAllFilters();
-                              }}
-                              className="flex-1 rounded-lg border-2 border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                            >
-                              Clear All
-                            </button>
+                <div className="fixed inset-0 overflow-y-auto">
+                  <div className="flex min-h-full justify-end">
+                    <Transition.Child
+                      as={Fragment}
+                      enter="ease-out duration-300"
+                      enterFrom="translate-x-full"
+                      enterTo="translate-x-0"
+                      leave="ease-in duration-200"
+                      leaveFrom="translate-x-0"
+                      leaveTo="translate-x-full"
+                    >
+                      <Dialog.Panel className="w-full max-w-md bg-white shadow-2xl">
+                        <div className="flex h-full flex-col">
+                          <div className="flex items-center justify-between border-b border-slate-200 p-6">
+                            <Dialog.Title className="text-2xl font-bold text-slate-900">
+                              Filters
+                            </Dialog.Title>
                             <button
                               onClick={() => setShowFilters(false)}
-                              className="flex-1 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-emerald-400"
+                              className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
                             >
-                              Show {filteredAndSortedProducts.length} Results
+                              <XMarkIcon className="h-6 w-6" />
                             </button>
                           </div>
+
+                          <div className="flex-1 overflow-y-auto p-6">
+                            <ShopFiltersPanel
+                              filters={filters}
+                              onFilterChange={handleFilterChange}
+                              categoryOptions={derivedMeta.categories}
+                              subcategoryOptions={derivedMeta.subcategories}
+                              brandOptions={derivedMeta.brands}
+                              priceRange={{
+                                min: derivedMeta.priceRange.min,
+                                max: derivedMeta.priceRange.max,
+                                value: filters.price,
+                              }}
+                            />
+                          </div>
+
+                          <div className="border-t border-slate-200 p-6">
+                            <div className="flex gap-3">
+                              <button
+                                onClick={() => {
+                                  clearAllFilters();
+                                }}
+                                className="flex-1 rounded-lg border-2 border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                              >
+                                Clear All
+                              </button>
+                              <button
+                                onClick={() => setShowFilters(false)}
+                                className="flex-1 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-emerald-400"
+                              >
+                                Show {filteredAndSortedProducts.length} Results
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </Dialog.Panel>
-                  </Transition.Child>
+                      </Dialog.Panel>
+                    </Transition.Child>
+                  </div>
                 </div>
-              </div>
-            </Dialog>
+              </Dialog>
             </Transition>
           </div>
         </div>

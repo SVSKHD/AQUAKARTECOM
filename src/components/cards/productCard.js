@@ -7,7 +7,15 @@ import { FaHeart, FaShoppingCart } from "react-icons/fa";
 import AquaImage from "../images/AquaImage";
 
 const AquaProductCard = ({ product }) => {
-  const { title, photos = [], price, slug, coverage, capacity, warranty } = product;
+  const {
+    title,
+    photos = [],
+    price,
+    slug,
+    coverage,
+    capacity,
+    warranty,
+  } = product;
   const { formatCurrencyINRWithK } = useCurrency;
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
   const { cartData, favData } = useSelector((state) => ({ ...state }));
@@ -112,7 +120,9 @@ const AquaProductCard = ({ product }) => {
           {formatCurrencyINRWithK(price)}
         </p>
         <div className="flex items-center justify-between text-xs text-slate-500">
-          <span>{product?.color || product?.application || "Fits kitchens & baths"}</span>
+          <span>
+            {product?.color || product?.application || "Fits kitchens & baths"}
+          </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
             {warranty || "1 yr warranty"}
           </span>

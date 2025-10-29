@@ -40,9 +40,7 @@ const formatTopicLabel = (value, fallback = "Featured") => {
     return fallback;
   }
 
-  return cleaned
-    .toLowerCase()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+  return cleaned.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
 const topicKey = (value, fallback) =>
@@ -85,13 +83,11 @@ const AquaBlogComponnet = ({ initialBlogs = [], initialError = "" }) => {
       const fallback = item?.title || item?.heading || item?.slug || "Featured";
 
       if (Array.isArray(item.tags)) {
-        item.tags
-          .filter(Boolean)
-          .forEach((tag) => {
-            const label = formatTopicLabel(tag, fallback);
-            const key = label.toLowerCase();
-            if (!unique.has(key)) unique.set(key, label);
-          });
+        item.tags.filter(Boolean).forEach((tag) => {
+          const label = formatTopicLabel(tag, fallback);
+          const key = label.toLowerCase();
+          if (!unique.has(key)) unique.set(key, label);
+        });
       }
 
       if (item?.category) {
@@ -105,29 +101,35 @@ const AquaBlogComponnet = ({ initialBlogs = [], initialError = "" }) => {
   }, [blogs]);
 
   const filteredBlogs = useMemo(() => {
-    const byTopic = topic === "All"
-      ? blogs
-      : blogs.filter((item) => {
-          const fallback = item?.title || item?.heading || item?.slug || "Featured";
-          const targetKey = topic.toLowerCase();
+    const byTopic =
+      topic === "All"
+        ? blogs
+        : blogs.filter((item) => {
+            const fallback =
+              item?.title || item?.heading || item?.slug || "Featured";
+            const targetKey = topic.toLowerCase();
 
-          if (
-            Array.isArray(item.tags) &&
-            item.tags.some((tag) => topicKey(tag, fallback) === targetKey)
-          ) {
-            return true;
-          }
+            if (
+              Array.isArray(item.tags) &&
+              item.tags.some((tag) => topicKey(tag, fallback) === targetKey)
+            ) {
+              return true;
+            }
 
-          const categoryMatch = item?.category && topicKey(item.category, fallback) === targetKey;
-          return Boolean(categoryMatch);
-        });
+            const categoryMatch =
+              item?.category && topicKey(item.category, fallback) === targetKey;
+            return Boolean(categoryMatch);
+          });
 
     if (!query.trim()) return byTopic;
 
     const lower = query.trim().toLowerCase();
     return byTopic.filter((item) => {
       const title = item?.title?.toLowerCase() || "";
-      const excerpt = item?.shortDescription?.toLowerCase() || item?.description?.replace(/<[^>]+>/g, " ").toLowerCase() || "";
+      const excerpt =
+        item?.shortDescription?.toLowerCase() ||
+        item?.description?.replace(/<[^>]+>/g, " ").toLowerCase() ||
+        "";
       return title.includes(lower) || excerpt.includes(lower);
     });
   }, [blogs, query, topic]);
@@ -136,18 +138,31 @@ const AquaBlogComponnet = ({ initialBlogs = [], initialError = "" }) => {
   const moreStories = useMemo(() => filteredBlogs.slice(3), [filteredBlogs]);
 
   const toPlainText = (html) =>
-    typeof html === "string" ? html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : "";
+    typeof html === "string"
+      ? html
+          .replace(/<[^>]+>/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+      : "";
 
   const buildBlogCard = (post, variant = "featured") => {
     const id = post?._id ?? post?.id;
     const href = id ? `/blog/${id}` : "/blogs";
     const image =
-      post?.photos?.[0]?.secure_url || post?.titleImages?.[0]?.secure_url || null;
-    const readTime = computeReadingTime(post?.description || post?.content || "");
+      post?.photos?.[0]?.secure_url ||
+      post?.titleImages?.[0]?.secure_url ||
+      null;
+    const readTime = computeReadingTime(
+      post?.description || post?.content || "",
+    );
     const dateLabel = formatDate(post?.createdAt || post?.publishedAt);
     const topicLabel = formatTopicLabel(post?.category, post?.title || "story");
     const excerpt =
-      post?.shortDescription || toPlainText(post?.description)?.slice(0, variant === "featured" ? 160 : 120) ||
+      post?.shortDescription ||
+      toPlainText(post?.description)?.slice(
+        0,
+        variant === "featured" ? 160 : 120,
+      ) ||
       "Dive into Aquakart’s perspective on water treatment.";
 
     return (
@@ -158,7 +173,9 @@ const AquaBlogComponnet = ({ initialBlogs = [], initialError = "" }) => {
           variant === "featured" ? "" : "sm:text-sm"
         }`}
       >
-        <div className={`relative overflow-hidden ${variant === "featured" ? "h-48" : "h-40"}`}>
+        <div
+          className={`relative overflow-hidden ${variant === "featured" ? "h-48" : "h-40"}`}
+        >
           {image ? (
             <Image
               src={image}
@@ -188,12 +205,15 @@ const AquaBlogComponnet = ({ initialBlogs = [], initialError = "" }) => {
           <h3 className="text-lg font-semibold text-slate-900 transition group-hover:text-emerald-600">
             {post?.title || "Untitled story"}
           </h3>
-          <p className={`${variant === "featured" ? "line-clamp-3" : "line-clamp-2"} text-sm text-slate-600`}>
+          <p
+            className={`${variant === "featured" ? "line-clamp-3" : "line-clamp-2"} text-sm text-slate-600`}
+          >
             {excerpt}
           </p>
           <div className="mt-auto flex items-center justify-between text-sm text-emerald-600">
             <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Aquakart Team
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />{" "}
+              Aquakart Team
             </span>
             <span className="inline-flex items-center gap-1 text-xs font-semibold">
               Read article
@@ -232,7 +252,8 @@ const AquaBlogComponnet = ({ initialBlogs = [], initialError = "" }) => {
               Insights on water care, softeners, and filtration
             </h1>
             <p className="mx-auto max-w-2xl text-base text-slate-600">
-              Explore expert guides, maintenance tips, and success stories to keep your water systems running flawlessly.
+              Explore expert guides, maintenance tips, and success stories to
+              keep your water systems running flawlessly.
             </p>
             <div className="mx-auto flex max-w-3xl flex-col gap-4 rounded-3xl border border-slate-100 bg-white p-4 shadow-lg sm:flex-row sm:items-start">
               <div className="relative flex w-full sm:w-52">
@@ -317,7 +338,9 @@ const AquaBlogComponnet = ({ initialBlogs = [], initialError = "" }) => {
           ) : (
             <div className="mt-14 space-y-16">
               <section>
-                <h2 className="text-lg font-semibold text-slate-900">Featured reads</h2>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Featured reads
+                </h2>
                 <div className="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                   {featured.map((post) => buildBlogCard(post, "featured"))}
                 </div>
@@ -326,7 +349,9 @@ const AquaBlogComponnet = ({ initialBlogs = [], initialError = "" }) => {
               {moreStories.length > 0 && (
                 <section>
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-slate-900">More stories</h2>
+                    <h2 className="text-lg font-semibold text-slate-900">
+                      More stories
+                    </h2>
                     <Link
                       href="#top"
                       className="text-sm font-medium text-emerald-600 hover:text-emerald-500"

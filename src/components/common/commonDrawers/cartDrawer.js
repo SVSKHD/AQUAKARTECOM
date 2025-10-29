@@ -17,7 +17,10 @@ const AquaCartDrawer = () => {
   const { EmptyCart, removeFromCart } = useProduct();
 
   const subtotal = getTotalPrice(cartData);
-  const totalItems = cartData.reduce((acc, item) => acc + (item.quantity || 0), 0);
+  const totalItems = cartData.reduce(
+    (acc, item) => acc + (item.quantity || 0),
+    0,
+  );
   const qualifiesForFreeShipping = subtotal >= 10000;
 
   const handleQuantityChange = (id, quantity) => {
@@ -46,7 +49,11 @@ const AquaCartDrawer = () => {
   );
 
   return (
-    <AquaReuseDrawer open={cartDrawer} close={closeCartDrawer} title="Your cart">
+    <AquaReuseDrawer
+      open={cartDrawer}
+      close={closeCartDrawer}
+      title="Your cart"
+    >
       <div className="flex h-full flex-col">
         <div className="flex justify-end px-4 pt-3">
           <button
@@ -60,7 +67,9 @@ const AquaCartDrawer = () => {
         </div>
         <div className="space-y-2 border-b border-slate-100 px-4 py-4 text-sm text-slate-600">
           <div className="flex items-center justify-between">
-            <span>{totalItems} item{totalItems === 1 ? "" : "s"}</span>
+            <span>
+              {totalItems} item{totalItems === 1 ? "" : "s"}
+            </span>
             <button
               type="button"
               onClick={EmptyCart}
@@ -93,7 +102,8 @@ const AquaCartDrawer = () => {
               {cartData.map((product) => {
                 const id = product._id || product.id;
                 const image = product?.photos?.[0]?.secure_url;
-                const productUrl = product?.href || (id ? `/product/${id}` : "#");
+                const productUrl =
+                  product?.href || (id ? `/product/${id}` : "#");
                 const quantity = product.quantity || 1;
 
                 return (
@@ -125,7 +135,9 @@ const AquaCartDrawer = () => {
                             {product?.title || "Unnamed product"}
                           </Link>
                           {product?.sub_title && (
-                            <p className="text-xs text-slate-500">{product.sub_title}</p>
+                            <p className="text-xs text-slate-500">
+                              {product.sub_title}
+                            </p>
                           )}
                           <p className="text-sm font-semibold text-emerald-600">
                             {formatCurrencyINR(product.price)}
@@ -146,7 +158,9 @@ const AquaCartDrawer = () => {
                         <div className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 text-xs">
                           <button
                             type="button"
-                            onClick={() => handleQuantityChange(id, quantity - 1)}
+                            onClick={() =>
+                              handleQuantityChange(id, quantity - 1)
+                            }
                             className="h-8 w-8 rounded-l-full text-slate-500 transition hover:bg-slate-100"
                             aria-label="Decrease quantity"
                           >
@@ -157,7 +171,9 @@ const AquaCartDrawer = () => {
                           </span>
                           <button
                             type="button"
-                            onClick={() => handleQuantityChange(id, quantity + 1)}
+                            onClick={() =>
+                              handleQuantityChange(id, quantity + 1)
+                            }
                             className="h-8 w-8 rounded-r-full text-slate-500 transition hover:bg-slate-100"
                             aria-label="Increase quantity"
                             disabled={quantity >= MAX_QTY}

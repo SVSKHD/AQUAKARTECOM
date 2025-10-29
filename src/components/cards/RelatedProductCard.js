@@ -51,8 +51,7 @@ const AquaRelatedProductCard = ({ product }) => {
       labelActual: price
         ? formatter.format(showDiscount ? discountPrice : price)
         : "",
-      labelOriginal:
-        showDiscount && price ? formatter.format(price) : "",
+      labelOriginal: showDiscount && price ? formatter.format(price) : "",
       discountPercent:
         showDiscount && price
           ? Math.max(1, Math.round(((price - discountPrice) / price) * 100))
@@ -65,8 +64,8 @@ const AquaRelatedProductCard = ({ product }) => {
       typeof product?.shortDescription === "string"
         ? product.shortDescription
         : typeof product?.description === "string"
-        ? product.description.replace(/<[^>]+>/g, " ")
-        : "";
+          ? product.description.replace(/<[^>]+>/g, " ")
+          : "";
 
     const trimmed = raw.replace(/\s+/g, " ").trim();
     return trimmed || "Well suited for modern water purification needs.";

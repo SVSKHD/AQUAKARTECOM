@@ -7,7 +7,10 @@ const FALLBACK_IMAGE =
 
 const stripHtml = (value) => {
   if (!value) return "";
-  return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 };
 
 const parseStockValue = (stock) => {
@@ -37,10 +40,10 @@ function AquaDynamicProduct({ product, related, error }) {
   if (error) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 p-6 text-center">
-        <h1 className="text-2xl font-semibold text-slate-900">Something went wrong</h1>
-        <p className="mt-3 max-w-md text-sm text-slate-600">
-          {error}
-        </p>
+        <h1 className="text-2xl font-semibold text-slate-900">
+          Something went wrong
+        </h1>
+        <p className="mt-3 max-w-md text-sm text-slate-600">{error}</p>
       </div>
     );
   }
@@ -78,7 +81,9 @@ function AquaDynamicProduct({ product, related, error }) {
         : [{ secure_url: FALLBACK_IMAGE }],
     follow: true,
     description: sanitizedDescription,
-    price: product?.discountPriceStatus ? product?.discountPrice : product?.price,
+    price: product?.discountPriceStatus
+      ? product?.discountPrice
+      : product?.price,
     priceCurrency: product?.currency || "INR",
     brand: product?.brand,
     sku: product?.sku,
@@ -126,7 +131,10 @@ export const getServerSideProps = async ({ params }) => {
       },
     };
   } catch (error) {
-    console.error(`Failed to fetch product "${id}" on server:`, error?.message || error);
+    console.error(
+      `Failed to fetch product "${id}" on server:`,
+      error?.message || error,
+    );
 
     if (error?.response?.status === 404) {
       return { notFound: true };

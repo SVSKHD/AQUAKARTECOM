@@ -92,7 +92,8 @@ const AquaHomeComponent = () => {
   const [activeGuideId, setActiveGuideId] = useState(waterGuides[0]?.id);
 
   const activeGuide = useMemo(
-    () => waterGuides.find((item) => item.id === activeGuideId) || waterGuides[0],
+    () =>
+      waterGuides.find((item) => item.id === activeGuideId) || waterGuides[0],
     [activeGuideId, waterGuides],
   );
   const ActiveGuideIcon = activeGuide?.icon || SparklesIcon;
@@ -206,7 +207,9 @@ const AquaHomeComponent = () => {
                       Plan, upgrade, or service in a few guided steps
                     </h2>
                     <p className="mt-3 text-sm text-slate-500">
-                      Choose a journey below to get instant recommendations, service slots, or project-ready documentation. Everything is mapped to real Indian water challenges.
+                      Choose a journey below to get instant recommendations,
+                      service slots, or project-ready documentation. Everything
+                      is mapped to real Indian water challenges.
                     </p>
                     <div className="mt-5 flex flex-wrap gap-3">
                       {waterGuides.map((guide) => {

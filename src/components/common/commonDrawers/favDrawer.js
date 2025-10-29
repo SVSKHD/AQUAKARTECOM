@@ -26,7 +26,8 @@ const AquafavDrawer = () => {
       </div>
       <p className="text-lg font-semibold text-slate-900">Nothing saved yet</p>
       <p className="text-sm text-slate-500">
-        Tap the heart on any Aquakart product to collect it here for quick comparisons.
+        Tap the heart on any Aquakart product to collect it here for quick
+        comparisons.
       </p>
       <Link
         href="/shop"
@@ -43,7 +44,11 @@ const AquafavDrawer = () => {
   };
 
   return (
-    <AquaReuseDrawer open={favDrawer} close={closeFavDrawer} title="Saved products">
+    <AquaReuseDrawer
+      open={favDrawer}
+      close={closeFavDrawer}
+      title="Saved products"
+    >
       <div className="flex h-full flex-col">
         <div className="flex justify-end px-4 pt-3">
           <button
@@ -67,7 +72,8 @@ const AquafavDrawer = () => {
               {favData.map((product) => {
                 const id = product?._id || product?.id;
                 const image = product?.photos?.[0]?.secure_url;
-                const productUrl = product?.href || (id ? `/product/${id}` : "#");
+                const productUrl =
+                  product?.href || (id ? `/product/${id}` : "#");
                 const inCart = isProductInCart(id);
 
                 return (

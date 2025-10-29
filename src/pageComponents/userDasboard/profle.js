@@ -15,7 +15,12 @@ const formatAddress = (address) => {
     return "";
   }
 
-  const parts = [address.street, address.city, address.state, address.postalCode]
+  const parts = [
+    address.street,
+    address.city,
+    address.state,
+    address.postalCode,
+  ]
     .filter(Boolean)
     .map((part) => part.trim());
 
@@ -100,8 +105,8 @@ const AquaUserProfilePageComponent = () => {
                 addressCount - 1 === 1 ? "" : "es"
               } saved.`
             : addressCount === 1
-            ? "Default address set for faster deliveries."
-            : "Add an address to speed up checkout and service visits.",
+              ? "Default address set for faster deliveries."
+              : "Add an address to speed up checkout and service visits.",
         actionLabel: addressCount ? "Edit address" : "Add address",
         focusField: "address",
         isComplete: Boolean(addressCount),
@@ -128,8 +133,7 @@ const AquaUserProfilePageComponent = () => {
         key: "alternate-phone",
         title: "Alternate Phone",
         value: alternatePhone,
-        helper:
-          "Add a backup number so service teams can always reach you.",
+        helper: "Add a backup number so service teams can always reach you.",
         actionLabel: alternatePhone ? "Update alternate" : "Add alternate",
         focusField: "alternatePhone",
         isComplete: Boolean(alternatePhone),
@@ -144,7 +148,14 @@ const AquaUserProfilePageComponent = () => {
         isComplete: Boolean(user?.dob),
       },
     ],
-    [addressCount, alternatePhone, primaryAddress, user?.dob, user?.email, user?.phone],
+    [
+      addressCount,
+      alternatePhone,
+      primaryAddress,
+      user?.dob,
+      user?.email,
+      user?.phone,
+    ],
   );
 
   const handleOpenDialog = (focusField) => {
@@ -162,8 +173,7 @@ const AquaUserProfilePageComponent = () => {
       return "";
     }
 
-    const stringValue =
-      typeof value === "string" ? value : String(value ?? "");
+    const stringValue = typeof value === "string" ? value : String(value ?? "");
     return stringValue.trim();
   };
 
@@ -199,7 +209,9 @@ const AquaUserProfilePageComponent = () => {
         if (updatedAddresses.length > 0) {
           updatedAddresses = updatedAddresses.map((addr, index) => {
             if (
-              (addr._id && primaryAddress?._id && addr._id === primaryAddress._id) ||
+              (addr._id &&
+                primaryAddress?._id &&
+                addr._id === primaryAddress._id) ||
               (!primaryAddress?._id && index === 0)
             ) {
               return { ...addr, street: trimmedAddress };
@@ -398,7 +410,12 @@ const AquaUserProfilePageComponent = () => {
                         {address?.label || "Saved address"}
                       </p>
                       <p className="mt-1 text-sm text-gray-600">
-                        {[address.street, address.city, address.state, address.postalCode]
+                        {[
+                          address.street,
+                          address.city,
+                          address.state,
+                          address.postalCode,
+                        ]
                           .filter(Boolean)
                           .join(", ")}
                       </p>
@@ -406,7 +423,10 @@ const AquaUserProfilePageComponent = () => {
                     <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-indigo-600">
                       {isDefault && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-1 text-xs font-medium text-indigo-600">
-                          <CheckCircleIcon className="h-4 w-4" aria-hidden="true" />
+                          <CheckCircleIcon
+                            className="h-4 w-4"
+                            aria-hidden="true"
+                          />
                           Default
                         </span>
                       )}
@@ -424,7 +444,9 @@ const AquaUserProfilePageComponent = () => {
                     </div>
                   </div>
                   {address.phone && (
-                    <p className="text-xs text-gray-500">Contact: {address.phone}</p>
+                    <p className="text-xs text-gray-500">
+                      Contact: {address.phone}
+                    </p>
                   )}
                   <button
                     type="button"
@@ -442,7 +464,8 @@ const AquaUserProfilePageComponent = () => {
                 No addresses saved yet
               </h3>
               <p className="mt-2 text-sm text-gray-500">
-                Add an address from the checkout page to enable default selection here.
+                Add an address from the checkout page to enable default
+                selection here.
               </p>
             </div>
           )}

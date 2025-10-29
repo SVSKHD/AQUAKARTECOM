@@ -191,8 +191,12 @@ const ShopFiltersPanel = ({
             />
           </div>
           <div className="rounded-lg bg-emerald-50 px-4 py-3 text-center">
-            <p className="text-xs font-medium text-emerald-600">Maximum Price</p>
-            <p className="mt-1 text-lg font-bold text-emerald-700">{formattedPrice}</p>
+            <p className="text-xs font-medium text-emerald-600">
+              Maximum Price
+            </p>
+            <p className="mt-1 text-lg font-bold text-emerald-700">
+              {formattedPrice}
+            </p>
           </div>
         </div>
       </FilterSection>

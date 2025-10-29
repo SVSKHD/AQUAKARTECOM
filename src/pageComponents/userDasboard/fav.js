@@ -16,13 +16,15 @@ const AquaUserFavPageComponent = () => {
     [cartData],
   );
 
-  const { favouritesCount, inStockCount, inCartCount, viewedCount } = useMemo(
-    () => {
+  const { favouritesCount, inStockCount, inCartCount, viewedCount } =
+    useMemo(() => {
       const inStock = safeFav.filter((item) =>
         item?.inStock === false ? false : true,
       ).length;
       const inCart = safeFav.filter((fav) =>
-        safeCart.some((cartItem) => cartItem._id === fav._id || cartItem.id === fav.id),
+        safeCart.some(
+          (cartItem) => cartItem._id === fav._id || cartItem.id === fav.id,
+        ),
       ).length;
       const viewed = safeFav.reduce((acc, item) => {
         if (typeof item.views === "number") {
@@ -37,9 +39,7 @@ const AquaUserFavPageComponent = () => {
         inCartCount: inCart,
         viewedCount: viewed,
       };
-    },
-    [safeFav, safeCart],
-  );
+    }, [safeFav, safeCart]);
 
   const summaryCards = [
     {

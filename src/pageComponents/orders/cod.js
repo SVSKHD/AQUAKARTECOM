@@ -112,9 +112,12 @@ const AquaCodOrderPageComponent = () => {
           <div className="flex items-center gap-3">
             <Truck className="h-5 w-5" aria-hidden="true" />
             <div>
-              <p className="font-semibold">Current status: {order.orderStatus}</p>
+              <p className="font-semibold">
+                Current status: {order.orderStatus}
+              </p>
               <p className="text-xs text-indigo-700">
-                Last updated {moment(order.updatedAt).format("DD MMM YYYY, hh:mm A")}
+                Last updated{" "}
+                {moment(order.updatedAt).format("DD MMM YYYY, hh:mm A")}
               </p>
             </div>
           </div>
@@ -124,7 +127,10 @@ const AquaCodOrderPageComponent = () => {
         </div>
 
         <div className="relative">
-          <div className="absolute left-[13px] top-0 h-full w-0.5 bg-gray-200" aria-hidden="true" />
+          <div
+            className="absolute left-[13px] top-0 h-full w-0.5 bg-gray-200"
+            aria-hidden="true"
+          />
           <ol className="space-y-6">
             {timelineSteps.map((step, index) => {
               const isCompleted = index <= currentStep;
@@ -143,13 +149,16 @@ const AquaCodOrderPageComponent = () => {
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </span>
                   <div className="flex flex-col gap-1">
-                    <p className={`text-sm font-semibold ${isCompleted ? "text-gray-900" : "text-gray-500"}`}>
+                    <p
+                      className={`text-sm font-semibold ${isCompleted ? "text-gray-900" : "text-gray-500"}`}
+                    >
                       {step.name}
                     </p>
                     <p className="text-xs text-gray-500">{step.description}</p>
                     {isCurrent && order.estimatedDelivery && (
                       <p className="text-xs font-medium text-indigo-600">
-                        Estimated delivery {moment(order.estimatedDelivery).format("DD MMM YYYY")}
+                        Estimated delivery{" "}
+                        {moment(order.estimatedDelivery).format("DD MMM YYYY")}
                       </p>
                     )}
                   </div>
@@ -174,7 +183,8 @@ const AquaCodOrderPageComponent = () => {
               Fetching your order
             </h2>
             <p className="mt-2 text-sm text-gray-500">
-              We’re pulling your COD order details. This might take a few seconds.
+              We’re pulling your COD order details. This might take a few
+              seconds.
             </p>
             <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-gray-100">
               <div className="h-full w-1/3 animate-[loading_1.5s_infinite] rounded-full bg-indigo-500"></div>
@@ -185,12 +195,15 @@ const AquaCodOrderPageComponent = () => {
         <main className="mx-auto flex max-w-6xl flex-col gap-10 pb-24 pt-12 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 rounded-3xl bg-white/90 p-6 shadow-lg ring-1 ring-gray-100 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-indigo-600">Order confirmed</p>
+              <p className="text-sm font-medium text-indigo-600">
+                Order confirmed
+              </p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900">
                 COD Order #{order?.orderId}
               </h1>
               <p className="mt-2 text-sm text-gray-500">
-                Placed on {moment(order?.createdAt).format("DD MMM YYYY, hh:mm A")}
+                Placed on{" "}
+                {moment(order?.createdAt).format("DD MMM YYYY, hh:mm A")}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -220,7 +233,9 @@ const AquaCodOrderPageComponent = () => {
                   >
                     <div className="flex-1 space-y-1">
                       <h3 className="text-base font-semibold text-gray-900">
-                        <Link href={`/product/${product.productId}`}>{product.name}</Link>
+                        <Link href={`/product/${product.productId}`}>
+                          {product.name}
+                        </Link>
                       </h3>
                       <p className="text-sm text-gray-500">
                         Qty: {product.quantity}
@@ -233,8 +248,9 @@ const AquaCodOrderPageComponent = () => {
                       <p className="font-semibold text-gray-900">Delivery to</p>
                       <p className="mt-2 flex items-center gap-2 text-xs">
                         <MapPin className="h-4 w-4 text-indigo-500" />
-                        {order.shippingAddress.street}, {" "}
-                        {order.shippingAddress.city}, {order.shippingAddress.state} {" "}
+                        {order.shippingAddress.street},{" "}
+                        {order.shippingAddress.city},{" "}
+                        {order.shippingAddress.state}{" "}
                         {order.shippingAddress.postalCode}
                       </p>
                       <p className="mt-2 flex items-center gap-2 text-xs">
@@ -291,8 +307,10 @@ const AquaCodOrderPageComponent = () => {
                 <h3 className="text-base font-semibold">Need help?</h3>
                 <p className="mt-2">
                   Reach our support team at
-                  <span className="font-semibold"> +91 96186 06807</span> or email
-                  <span className="font-semibold"> support@aquakart.co.in</span>.
+                  <span className="font-semibold"> +91 96186 06807</span> or
+                  email
+                  <span className="font-semibold"> support@aquakart.co.in</span>
+                  .
                 </p>
               </div>
             </aside>
@@ -306,7 +324,8 @@ const AquaCodOrderPageComponent = () => {
               Order not found
             </h2>
             <p className="mt-2 text-sm text-gray-500">
-              We couldn’t find an order with that reference. Double-check the link or go back to your orders.
+              We couldn’t find an order with that reference. Double-check the
+              link or go back to your orders.
             </p>
             <Link
               href="/dashboard/orders"

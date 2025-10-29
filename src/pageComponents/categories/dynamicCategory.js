@@ -21,7 +21,10 @@ const LoadingState = () => (
         <div className="h-6 w-24 rounded-full bg-slate-200" />
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={`skeleton-${index}`} className="h-40 rounded-2xl bg-slate-200" />
+            <div
+              key={`skeleton-${index}`}
+              className="h-40 rounded-2xl bg-slate-200"
+            />
           ))}
         </div>
       </div>
@@ -59,7 +62,9 @@ const AquaDynamicCategoryComponent = ({ id }) => {
         })
         .catch((err) => {
           console.error("Error fetching category:", err);
-          setErrorMessage("We couldn’t load this category right now. Please try again.");
+          setErrorMessage(
+            "We couldn’t load this category right now. Please try again.",
+          );
           setIsLoading(false);
         });
     }
@@ -145,7 +150,8 @@ const AquaDynamicCategoryComponent = ({ id }) => {
                           )}
                           <div className="flex h-48 flex-col justify-between rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-600">
                             <p>
-                              Need a quick recap? Save this category or share it with your team to keep everyone aligned.
+                              Need a quick recap? Save this category or share it
+                              with your team to keep everyone aligned.
                             </p>
                             <Link
                               href="/dashboard"
@@ -165,7 +171,8 @@ const AquaDynamicCategoryComponent = ({ id }) => {
                             Popular in {category?.title ?? "this category"}
                           </h3>
                           <p className="text-sm text-slate-600">
-                            Explore hand-picked items that customers frequently purchase from this category.
+                            Explore hand-picked items that customers frequently
+                            purchase from this category.
                           </p>
                         </div>
                         {related?.length > 0 && (
@@ -190,7 +197,8 @@ const AquaDynamicCategoryComponent = ({ id }) => {
                           ))
                         ) : (
                           <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center text-sm text-slate-600">
-                            No products available in this category at the moment. Please check back soon.
+                            No products available in this category at the
+                            moment. Please check back soon.
                           </div>
                         )}
                       </div>
@@ -201,7 +209,10 @@ const AquaDynamicCategoryComponent = ({ id }) => {
             )}
 
             <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-6 text-xs text-slate-500 sm:flex-row">
-              <span>Looking for something different? Explore all categories tailored for your needs.</span>
+              <span>
+                Looking for something different? Explore all categories tailored
+                for your needs.
+              </span>
               <Link
                 href="/categories"
                 className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:border-indigo-300 hover:text-indigo-600"

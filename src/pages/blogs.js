@@ -2,7 +2,12 @@ import AquaBlogComponnet from "@/pageComponents/blogs";
 import BlogServiceOperations from "@/services/blog";
 
 const AquaBlogIndex = ({ initialBlogs, initialError }) => {
-  return <AquaBlogComponnet initialBlogs={initialBlogs} initialError={initialError} />;
+  return (
+    <AquaBlogComponnet
+      initialBlogs={initialBlogs}
+      initialError={initialError}
+    />
+  );
 };
 
 export const getServerSideProps = async () => {

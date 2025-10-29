@@ -32,7 +32,10 @@ export const getServerSideProps = async ({ params }) => {
       },
     };
   } catch (error) {
-    console.error(`Failed to fetch blog ${id} on server:`, error?.message || error);
+    console.error(
+      `Failed to fetch blog ${id} on server:`,
+      error?.message || error,
+    );
 
     if (error?.response?.status === 404) {
       return { notFound: true };
@@ -42,7 +45,8 @@ export const getServerSideProps = async ({ params }) => {
       props: {
         initialBlog: null,
         initialRelated: [],
-        initialError: "We couldn't load this story. Please refresh and try again.",
+        initialError:
+          "We couldn't load this story. Please refresh and try again.",
       },
     };
   }

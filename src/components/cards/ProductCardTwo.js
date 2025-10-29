@@ -15,8 +15,14 @@ const ReusableProductCard = ({ product, viewMode = "grid" }) => {
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
   const { cartData, favData } = useSelector((state) => ({ ...state }));
   const router = useRouter();
-  const { title, photos = [], price, slug, discountPrice, discountPriceStatus } =
-    product;
+  const {
+    title,
+    photos = [],
+    price,
+    slug,
+    discountPrice,
+    discountPriceStatus,
+  } = product;
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [activeIndex, setActiveIndex] = useState(0);

@@ -90,7 +90,8 @@ const AquaPaymentOrderPageComponent = () => {
                 Current status: {currentOrder.orderStatus}
               </p>
               <p className="text-xs text-emerald-700">
-                Last updated {moment(currentOrder.updatedAt).format("DD MMM YYYY, hh:mm A")}
+                Last updated{" "}
+                {moment(currentOrder.updatedAt).format("DD MMM YYYY, hh:mm A")}
               </p>
             </div>
           </div>
@@ -100,7 +101,10 @@ const AquaPaymentOrderPageComponent = () => {
         </div>
 
         <div className="relative">
-          <div className="absolute left-[13px] top-0 h-full w-0.5 bg-gray-200" aria-hidden="true" />
+          <div
+            className="absolute left-[13px] top-0 h-full w-0.5 bg-gray-200"
+            aria-hidden="true"
+          />
           <ol className="space-y-6">
             {timelineSteps.map((step, index) => {
               const isCompleted = index <= currentStep;
@@ -119,13 +123,18 @@ const AquaPaymentOrderPageComponent = () => {
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </span>
                   <div className="flex flex-col gap-1">
-                    <p className={`text-sm font-semibold ${isCompleted ? "text-gray-900" : "text-gray-500"}`}>
+                    <p
+                      className={`text-sm font-semibold ${isCompleted ? "text-gray-900" : "text-gray-500"}`}
+                    >
                       {step.name}
                     </p>
                     <p className="text-xs text-gray-500">{step.description}</p>
                     {isCurrent && currentOrder.estimatedDelivery && (
                       <p className="text-xs font-medium text-emerald-600">
-                        Estimated delivery {moment(currentOrder.estimatedDelivery).format("DD MMM YYYY")}
+                        Estimated delivery{" "}
+                        {moment(currentOrder.estimatedDelivery).format(
+                          "DD MMM YYYY",
+                        )}
                       </p>
                     )}
                   </div>
@@ -167,9 +176,14 @@ const AquaPaymentOrderPageComponent = () => {
     fetchPaymentOrder();
   }, [router.isReady, router.query.id, userData?.token, dispatch]);
 
-  const shippingCharge = typeof order?.shippingCharge === "number" ? order.shippingCharge : 0;
-  const subtotal = typeof order?.totalAmount === "number" ? order.totalAmount : 0;
-  const amountPaid = typeof order?.amountPaid === "number" ? order.amountPaid : subtotal + shippingCharge;
+  const shippingCharge =
+    typeof order?.shippingCharge === "number" ? order.shippingCharge : 0;
+  const subtotal =
+    typeof order?.totalAmount === "number" ? order.totalAmount : 0;
+  const amountPaid =
+    typeof order?.amountPaid === "number"
+      ? order.amountPaid
+      : subtotal + shippingCharge;
   const paymentMethodLabel = order?.paymentMethod || PAYMENT_METHOD_LABEL;
   const addressParts = [
     order?.shippingAddress?.street,
@@ -195,7 +209,8 @@ const AquaPaymentOrderPageComponent = () => {
               Confirming your payment
             </h2>
             <p className="mt-2 text-sm text-gray-500">
-              We’re validating the transaction details. This should only take a moment.
+              We’re validating the transaction details. This should only take a
+              moment.
             </p>
             <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-gray-100">
               <div className="h-full w-1/3 animate-[loading_1.5s_infinite] rounded-full bg-emerald-500"></div>
@@ -206,12 +221,17 @@ const AquaPaymentOrderPageComponent = () => {
         <main className="mx-auto flex max-w-6xl flex-col gap-10 pb-24 pt-12 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 rounded-3xl bg-white/90 p-6 shadow-lg ring-1 ring-gray-100 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-emerald-600">Payment successful</p>
+              <p className="text-sm font-medium text-emerald-600">
+                Payment successful
+              </p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900">
                 Order #{order?.orderId}
               </h1>
               <p className="mt-2 text-sm text-gray-500">
-                Placed on {order?.createdAt ? moment(order.createdAt).format("DD MMM YYYY, hh:mm A") : "-"}
+                Placed on{" "}
+                {order?.createdAt
+                  ? moment(order.createdAt).format("DD MMM YYYY, hh:mm A")
+                  : "-"}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -230,7 +250,9 @@ const AquaPaymentOrderPageComponent = () => {
 
           <section className="grid gap-6 lg:grid-cols-7">
             <article className="col-span-4 space-y-6 rounded-3xl bg-white p-6 shadow-lg ring-1 ring-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900">Items in your order</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Items in your order
+              </h2>
               <div className="space-y-4">
                 {order?.items?.map((product, index) => (
                   <div
@@ -239,11 +261,17 @@ const AquaPaymentOrderPageComponent = () => {
                   >
                     <div className="flex-1 space-y-1">
                       <h3 className="text-base font-semibold text-gray-900">
-                        <Link href={`/product/${product.productId}`}>{product.name}</Link>
+                        <Link href={`/product/${product.productId}`}>
+                          {product.name}
+                        </Link>
                       </h3>
-                      <p className="text-sm text-gray-500">Qty: {product.quantity}</p>
+                      <p className="text-sm text-gray-500">
+                        Qty: {product.quantity}
+                      </p>
                       <p className="text-medium font-semibold text-gray-800">
-                        {formatCurrencyINR((product.price || 0) * (product.quantity || 0))}
+                        {formatCurrencyINR(
+                          (product.price || 0) * (product.quantity || 0),
+                        )}
                       </p>
                     </div>
                     <div className="w-full rounded-2xl bg-gray-50 p-4 text-sm text-gray-600 sm:w-64">
@@ -272,7 +300,9 @@ const AquaPaymentOrderPageComponent = () => {
 
             <aside className="col-span-3 space-y-6">
               <div className="rounded-3xl bg-white p-6 shadow-lg ring-1 ring-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900">Payment details</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Payment details
+                </h3>
                 <dl className="mt-4 space-y-3 text-sm text-gray-600">
                   <div className="flex items-center justify-between">
                     <dt>Subtotal</dt>
@@ -283,7 +313,9 @@ const AquaPaymentOrderPageComponent = () => {
                   <div className="flex items-center justify-between">
                     <dt>Shipping</dt>
                     <dd className="font-medium text-gray-900">
-                      {shippingCharge > 0 ? formatCurrencyINR(shippingCharge) : "Free"}
+                      {shippingCharge > 0
+                        ? formatCurrencyINR(shippingCharge)
+                        : "Free"}
                     </dd>
                   </div>
                   <div className="flex items-center justify-between">
@@ -306,8 +338,10 @@ const AquaPaymentOrderPageComponent = () => {
                 <h3 className="text-base font-semibold">Need help?</h3>
                 <p className="mt-2">
                   Reach our support team at
-                  <span className="font-semibold"> +91 96186 06807</span> or email
-                  <span className="font-semibold"> support@aquakart.co.in</span>.
+                  <span className="font-semibold"> +91 96186 06807</span> or
+                  email
+                  <span className="font-semibold"> support@aquakart.co.in</span>
+                  .
                 </p>
               </div>
             </aside>
@@ -321,7 +355,8 @@ const AquaPaymentOrderPageComponent = () => {
               Order not found
             </h2>
             <p className="mt-2 text-sm text-gray-500">
-              We couldn’t locate an order for this payment reference. Double-check the link or visit your orders page.
+              We couldn’t locate an order for this payment reference.
+              Double-check the link or visit your orders page.
             </p>
             <Link
               href="/dashboard/orders"

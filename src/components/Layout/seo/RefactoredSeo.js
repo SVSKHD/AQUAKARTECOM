@@ -6,7 +6,10 @@ const DEFAULT_LOGO =
 
 const stripHtml = (value) => {
   if (!value) return "";
-  return String(value).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return String(value)
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 };
 
 const toAbsoluteUrl = (baseUrl, value) => {
@@ -73,8 +76,9 @@ const AquaSeoRevamp = ({
     metaData = {
       title: `${blogPage?.title || "Aquakart Blog"}`,
       description:
-        stripHtml(blogPage?.shortDescription || blogPage?.description || "")
-          .slice(0, 160) || "Latest insights from Aquakart.",
+        stripHtml(
+          blogPage?.shortDescription || blogPage?.description || "",
+        ).slice(0, 160) || "Latest insights from Aquakart.",
       keywords: Array.isArray(blogPage?.keywords)
         ? blogPage.keywords.join(", ")
         : blogPage?.keywords || "",
@@ -208,7 +212,9 @@ const AquaSeoRevamp = ({
     productList.forEach((productRecord, index) => {
       const productNode = productNodeFromData(productRecord);
       if (!productNode) return;
-      const existing = graphNodes.find((node) => node["@id"] === productNode["@id"]);
+      const existing = graphNodes.find(
+        (node) => node["@id"] === productNode["@id"],
+      );
       if (!existing) {
         productNode.publisher = { "@id": `${baseUrl}#organization` };
         graphNodes.push(productNode);
@@ -254,9 +260,8 @@ const AquaSeoRevamp = ({
         headline: blogRecord?.title,
         image: blogImages.length ? blogImages : undefined,
         description:
-          stripHtml(
-            blogRecord?.shortDescription || blogRecord?.description,
-          ) || undefined,
+          stripHtml(blogRecord?.shortDescription || blogRecord?.description) ||
+          undefined,
         articleBody: stripHtml(blogRecord?.description),
         keywords: Array.isArray(blogRecord?.keywords)
           ? blogRecord.keywords.join(", ")
@@ -322,7 +327,9 @@ const AquaSeoRevamp = ({
         image: blogImages.length ? blogImages : undefined,
         description:
           stripHtml(
-            blogPage?.shortDescription || blogPage?.excerpt || blogPage?.description,
+            blogPage?.shortDescription ||
+              blogPage?.excerpt ||
+              blogPage?.description,
           ) || undefined,
         articleBody: stripHtml(blogPage?.description),
         keywords: Array.isArray(blogPage?.keywords)
@@ -403,7 +410,9 @@ const AquaSeoRevamp = ({
             <meta property="og:url" content={canonicalUrl} />
             <meta property="og:title" content={title} />
             <meta property="og:description" content={description} />
-            {primaryImage && <meta property="og:image" content={primaryImage} />}
+            {primaryImage && (
+              <meta property="og:image" content={primaryImage} />
+            )}
             <meta property="og:image:type" content="image/png" />
             <meta property="og:image:width" content="1200" />
             <meta property="og:image:height" content="630" />
@@ -413,9 +422,14 @@ const AquaSeoRevamp = ({
             <meta name="twitter:url" content={canonicalUrl} />
             <meta name="twitter:title" content={title} />
             <meta name="twitter:description" content={description} />
-            {primaryImage && <meta name="twitter:image" content={primaryImage} />}
+            {primaryImage && (
+              <meta name="twitter:image" content={primaryImage} />
+            )}
             <meta name="author" content="Aquakart" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1.0"
+            />
             <meta httpEquiv="content-language" content="en" />
             <link rel="canonical" href={canonicalUrl} />
           </>

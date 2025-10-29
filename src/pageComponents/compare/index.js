@@ -15,19 +15,19 @@ const AquaCompareComponent = () => {
       name: "Favourites",
       href: "#",
       current: activeTab === "Favourites",
-      icon: Heart
+      icon: Heart,
     },
     {
       name: "Cart",
       href: "#",
       current: activeTab === "Cart",
-      icon: ShoppingCart
+      icon: ShoppingCart,
     },
     {
       name: "Compare",
       href: "#",
       current: activeTab === "Compare",
-      icon: GitCompare
+      icon: GitCompare,
     },
   ];
 

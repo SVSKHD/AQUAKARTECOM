@@ -31,7 +31,10 @@ const DEFAULT_FALLBACK_IMAGE =
 
 const stripHtml = (value) => {
   if (!value) return "";
-  return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 };
 
 const resolveDisplayText = (input) => {
@@ -106,7 +109,10 @@ const extractHighlightText = (value) => {
 };
 
 const buildHighlights = (product) => {
-  if (Array.isArray(product?.keyHighlights) && product.keyHighlights.length > 0) {
+  if (
+    Array.isArray(product?.keyHighlights) &&
+    product.keyHighlights.length > 0
+  ) {
     return product.keyHighlights
       .map((item) => extractHighlightText(item))
       .filter((item) => item && item.length > 0)
@@ -242,18 +248,23 @@ function AquaServerDynamicProduct({
       },
       {
         Icon: ShieldCheck,
-        title: product?.warranty ? `${product.warranty} warranty support` : "Trusted warranty support",
-        description: "Genuine manufacturer warranty backed by Aquakart service assistance.",
+        title: product?.warranty
+          ? `${product.warranty} warranty support`
+          : "Trusted warranty support",
+        description:
+          "Genuine manufacturer warranty backed by Aquakart service assistance.",
       },
       {
         Icon: RefreshCcw,
         title: "Easy replacements",
-        description: "7-day doorstep assistance for manufacturing defects or transit issues.",
+        description:
+          "7-day doorstep assistance for manufacturing defects or transit issues.",
       },
       {
         Icon: PhoneCall,
         title: "Talk to water experts",
-        description: "Need help choosing? Our team is a call away for a personalised recommendation.",
+        description:
+          "Need help choosing? Our team is a call away for a personalised recommendation.",
       },
     ],
     [product?.warranty],
@@ -350,7 +361,9 @@ function AquaServerDynamicProduct({
                 type="button"
                 onClick={handleAddToFav}
                 className="absolute right-6 top-6 rounded-full bg-white/90 p-3 shadow-lg transition hover:bg-white"
-                aria-label={isFavorite ? "Remove from favourites" : "Add to favourites"}
+                aria-label={
+                  isFavorite ? "Remove from favourites" : "Add to favourites"
+                }
               >
                 <Heart
                   className={`h-6 w-6 transition ${
@@ -396,7 +409,9 @@ function AquaServerDynamicProduct({
                     <Icon className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+                    <h3 className="text-sm font-semibold text-slate-900">
+                      {title}
+                    </h3>
                     <p className="mt-1 text-xs text-slate-600">{description}</p>
                   </div>
                 </div>
@@ -416,9 +431,13 @@ function AquaServerDynamicProduct({
               {ratingValue && (
                 <div className="mt-3 flex items-center gap-2 text-sm text-amber-600">
                   <Star className="h-5 w-5 fill-current" />
-                  <span className="font-semibold">{ratingValue.toFixed(1)} / 5</span>
+                  <span className="font-semibold">
+                    {ratingValue.toFixed(1)} / 5
+                  </span>
                   {ratingCount ? (
-                    <span className="text-xs text-slate-500">({ratingCount} reviews)</span>
+                    <span className="text-xs text-slate-500">
+                      ({ratingCount} reviews)
+                    </span>
                   ) : null}
                 </div>
               )}
@@ -458,20 +477,22 @@ function AquaServerDynamicProduct({
                       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                         {item.label}
                       </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">
-                    {stripHtml(item.value)}
-                  </p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900">
+                        {stripHtml(item.value)}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
+              )}
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <motion.button
                   type="button"
                   onClick={handleAddToCart}
                   className={`flex-1 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${
-                    cart ? "bg-emerald-600 hover:bg-emerald-500" : "bg-slate-900 hover:bg-slate-800"
+                    cart
+                      ? "bg-emerald-600 hover:bg-emerald-500"
+                      : "bg-slate-900 hover:bg-slate-800"
                   }`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -518,7 +539,9 @@ function AquaServerDynamicProduct({
                       className="flex items-start gap-3 rounded-2xl bg-slate-50 p-4"
                     >
                       <CheckCircle2 className="mt-1 h-5 w-5 text-emerald-600" />
-                      <span className="text-sm text-slate-700">{highlight}</span>
+                      <span className="text-sm text-slate-700">
+                        {highlight}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -564,10 +587,7 @@ function AquaServerDynamicProduct({
               }
             >
               <div className="relative">
-                <div
-                  className="overflow-hidden"
-                  ref={relatedEmblaRef}
-                >
+                <div className="overflow-hidden" ref={relatedEmblaRef}>
                   <div className="flex gap-4 sm:gap-5">
                     {relatedProducts.map((relatedProduct) => (
                       <div

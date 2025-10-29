@@ -48,13 +48,16 @@ const AquaCompareTabContent = () => {
               Compare Products
             </h1>
             <p className="text-gray-600">
-              Compare {compare.length} {compare.length === 1 ? "product" : "products"} side by side
+              Compare {compare.length}{" "}
+              {compare.length === 1 ? "product" : "products"} side by side
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {compare.map((product) => {
-              const isInCart = cartData?.some((item) => item._id === product._id);
+              const isInCart = cartData?.some(
+                (item) => item._id === product._id,
+              );
               const isInFav = favData?.some((item) => item._id === product._id);
 
               return (
@@ -133,7 +136,9 @@ const AquaCompareTabContent = () => {
                           }`}
                           aria-label="Add to favorites"
                         >
-                          <Heart className={`w-4 h-4 ${isInFav ? "fill-current" : ""}`} />
+                          <Heart
+                            className={`w-4 h-4 ${isInFav ? "fill-current" : ""}`}
+                          />
                         </button>
                       </div>
                     </div>
@@ -164,7 +169,8 @@ const AquaCompareTabContent = () => {
             No Products to Compare
           </h3>
           <p className="text-gray-600 text-center max-w-md">
-            Add products from your favorites or cart to compare their features and prices side by side
+            Add products from your favorites or cart to compare their features
+            and prices side by side
           </p>
         </div>
       )}

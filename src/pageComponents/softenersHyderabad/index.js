@@ -20,7 +20,10 @@ const LoadingState = () => (
         <div className="h-6 w-24 rounded-full bg-slate-200" />
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={`skeleton-${index}`} className="h-40 rounded-2xl bg-slate-200" />
+            <div
+              key={`skeleton-${index}`}
+              className="h-40 rounded-2xl bg-slate-200"
+            />
           ))}
         </div>
       </div>
@@ -31,15 +34,18 @@ const LoadingState = () => (
 const highlightCards = [
   {
     title: "Verified Installations",
-    description: "Every image and testimonial comes from real Hyderabad customers satisfied with their setup.",
+    description:
+      "Every image and testimonial comes from real Hyderabad customers satisfied with their setup.",
   },
   {
     title: "Tailored For Hard Water",
-    description: "Engineered with premium MPV heads and resin to handle the city’s toughest water profiles.",
+    description:
+      "Engineered with premium MPV heads and resin to handle the city’s toughest water profiles.",
   },
   {
     title: "End-to-End Service",
-    description: "From assessment to installation and follow-up care, our experts support you at every step.",
+    description:
+      "From assessment to installation and follow-up care, our experts support you at every step.",
   },
 ];
 
@@ -69,13 +75,17 @@ const AquaSoftenerHyderabadComponent = ({
       setImageData(sections);
     } catch (error) {
       console.error("Retry softeners gallery fetch failed", error);
-      setErrorMessage("Still having trouble loading the gallery. Please try again later.");
+      setErrorMessage(
+        "Still having trouble loading the gallery. Please try again later.",
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const galleryCountLabel = isLoading ? "Loading…" : `${imageData.length} galleries`;
+  const galleryCountLabel = isLoading
+    ? "Loading…"
+    : `${imageData.length} galleries`;
 
   return (
     <AquaLayout>
@@ -90,8 +100,10 @@ const AquaSoftenerHyderabadComponent = ({
                 Premium Water Softeners Installed Across Hyderabad
               </h1>
               <p className="max-w-2xl text-sm text-slate-600">
-                Explore a curated gallery of real customer installations. Each project showcases Aquakart&apos;s commitment to
-                reliable water treatment, professional workmanship, and a seamless experience for Hyderabad homes and businesses.
+                Explore a curated gallery of real customer installations. Each
+                project showcases Aquakart&apos;s commitment to reliable water
+                treatment, professional workmanship, and a seamless experience
+                for Hyderabad homes and businesses.
               </p>
             </div>
             <div className="flex flex-col items-start gap-3 sm:items-end">
@@ -131,15 +143,25 @@ const AquaSoftenerHyderabadComponent = ({
               <>
                 <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {highlightCards.map((card) => (
-                    <div key={card.title} className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-                      <h2 className="text-lg font-semibold text-slate-900">{card.title}</h2>
-                      <p className="mt-2 text-sm text-slate-600">{card.description}</p>
+                    <div
+                      key={card.title}
+                      className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"
+                    >
+                      <h2 className="text-lg font-semibold text-slate-900">
+                        {card.title}
+                      </h2>
+                      <p className="mt-2 text-sm text-slate-600">
+                        {card.description}
+                      </p>
                     </div>
                   ))}
                   <div className="rounded-2xl bg-indigo-600 p-6 text-white shadow-sm">
-                    <h2 className="text-lg font-semibold">Request a site visit</h2>
+                    <h2 className="text-lg font-semibold">
+                      Request a site visit
+                    </h2>
                     <p className="mt-2 text-sm text-white/80">
-                      Our technicians can assess water hardness, suggest the ideal softener, and provide a custom quote.
+                      Our technicians can assess water hardness, suggest the
+                      ideal softener, and provide a custom quote.
                     </p>
                     <Link
                       href="/contact"
@@ -153,9 +175,12 @@ const AquaSoftenerHyderabadComponent = ({
                 <section className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <h2 className="text-xl font-semibold text-slate-900">Installation gallery</h2>
+                      <h2 className="text-xl font-semibold text-slate-900">
+                        Installation gallery
+                      </h2>
                       <p className="text-sm text-slate-600">
-                        Swipe through recent Hyderabad projects and explore how Aquakart softeners elevate every space.
+                        Swipe through recent Hyderabad projects and explore how
+                        Aquakart softeners elevate every space.
                       </p>
                     </div>
                     <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -168,7 +193,8 @@ const AquaSoftenerHyderabadComponent = ({
                       <ArtGallery sections={imageData} />
                     ) : (
                       <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-12 text-center text-sm text-slate-600">
-                        No gallery items to display yet. Check back soon for new Hyderabad installation showcases.
+                        No gallery items to display yet. Check back soon for new
+                        Hyderabad installation showcases.
                       </div>
                     )}
                   </div>
@@ -180,9 +206,12 @@ const AquaSoftenerHyderabadComponent = ({
           <section className="mt-12 rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-700 shadow-sm">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-slate-900">Need assistance choosing the right softener?</h3>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Need assistance choosing the right softener?
+                </h3>
                 <p className="text-sm text-slate-600">
-                  Share your water hardness report or schedule a quick call with our specialists for a tailored recommendation.
+                  Share your water hardness report or schedule a quick call with
+                  our specialists for a tailored recommendation.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-3">

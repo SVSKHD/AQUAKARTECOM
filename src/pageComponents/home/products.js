@@ -148,7 +148,8 @@ const AquaProducts = () => {
                     </ul>
                   ) : (
                     <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-gray-200 text-sm text-gray-500">
-                      Nothing to show for this filter just yet. Try another category.
+                      Nothing to show for this filter just yet. Try another
+                      category.
                     </div>
                   )}
                 </div>
@@ -164,10 +165,9 @@ const AquaProducts = () => {
                 </a>
               </div>
             </div>
-            </div>
+          </div>
         </section>
       )}
-      
     </>
   );
 };

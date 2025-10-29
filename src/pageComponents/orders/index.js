@@ -22,11 +22,31 @@ import AquaToast from "@/components/reusables/react-toastify";
 import orderServiceOperations from "@/services/order";
 
 const TIMELINE_STEPS = [
-  { key: "placed", label: "Order placed", description: "We’ve received your order." },
-  { key: "processing", label: "Processing", description: "Your items are being prepared." },
-  { key: "shipped", label: "Shipped", description: "Package handed over to the courier." },
-  { key: "out_for_delivery", label: "Out for delivery", description: "Courier is on the way." },
-  { key: "delivered", label: "Delivered", description: "Order delivered successfully." },
+  {
+    key: "placed",
+    label: "Order placed",
+    description: "We’ve received your order.",
+  },
+  {
+    key: "processing",
+    label: "Processing",
+    description: "Your items are being prepared.",
+  },
+  {
+    key: "shipped",
+    label: "Shipped",
+    description: "Package handed over to the courier.",
+  },
+  {
+    key: "out_for_delivery",
+    label: "Out for delivery",
+    description: "Courier is on the way.",
+  },
+  {
+    key: "delivered",
+    label: "Delivered",
+    description: "Order delivered successfully.",
+  },
 ];
 
 const statusRank = {
@@ -68,8 +88,10 @@ const deriveTimeline = (orderStatus = "") => {
   let matchedKey = "placed";
   if (key.includes("deliver")) matchedKey = "delivered";
   else if (key.includes("out")) matchedKey = "out_for_delivery";
-  else if (key.includes("ship") || key.includes("dispatch")) matchedKey = "shipped";
-  else if (key.includes("process") || key.includes("pack")) matchedKey = "processing";
+  else if (key.includes("ship") || key.includes("dispatch"))
+    matchedKey = "shipped";
+  else if (key.includes("process") || key.includes("pack"))
+    matchedKey = "processing";
 
   const currentIndex = statusRank[matchedKey] ?? 1;
 
@@ -135,7 +157,9 @@ const AquaOrderPage = () => {
     return {
       orderId: order.orderId,
       transactionId: order.transactionId,
-      orderDate: order.createdAt ? new Date(order.createdAt).toLocaleString("en-IN") : "—",
+      orderDate: order.createdAt
+        ? new Date(order.createdAt).toLocaleString("en-IN")
+        : "—",
       deliveryEta: order.estimatedDelivery
         ? new Date(order.estimatedDelivery).toLocaleDateString("en-IN")
         : "—",
@@ -184,7 +208,9 @@ const AquaOrderPage = () => {
   const buildOrderPayload = (overrides = {}) => {
     if (!order) return null;
 
-    const baseOrderId = order.orderId || `AQOD${moment().format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
+    const baseOrderId =
+      order.orderId ||
+      `AQOD${moment().format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
     const base = {
       user: order.user || userId,
       orderId: baseOrderId,
@@ -227,7 +253,8 @@ const AquaOrderPage = () => {
 
     try {
       setRetrying(true);
-      const response = await orderServiceOperations.createPhonePePayOrder(payload);
+      const response =
+        await orderServiceOperations.createPhonePePayOrder(payload);
       AquaToast({ message: "Redirecting to payment gateway", type: "success" });
       if (response?.url) {
         window.location.href = response.url;
@@ -262,7 +289,8 @@ const AquaOrderPage = () => {
         type: "success",
       });
 
-      const nextTransaction = response?.data?.transactionId || payload.transactionId;
+      const nextTransaction =
+        response?.data?.transactionId || payload.transactionId;
       if (nextTransaction) {
         router.push(`/order/${nextTransaction}`);
       }
@@ -290,7 +318,9 @@ const AquaOrderPage = () => {
           {loading ? (
             <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 rounded-3xl border border-slate-100 bg-white p-10">
               <AquaSpinner color="blue" size="lg" />
-              <p className="text-sm text-slate-500">Loading your order details…</p>
+              <p className="text-sm text-slate-500">
+                Loading your order details…
+              </p>
             </div>
           ) : error ? (
             <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 rounded-3xl border border-rose-100 bg-rose-50 p-10 text-center">
@@ -318,17 +348,21 @@ const AquaOrderPage = () => {
                     <h1 className="text-2xl font-semibold text-slate-900">
                       #{summary?.orderId}
                     </h1>
-                    <p className="text-sm text-slate-500">Placed on {summary?.orderDate}</p>
+                    <p className="text-sm text-slate-500">
+                      Placed on {summary?.orderDate}
+                    </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">
-                      <PackageCheck className="h-4 w-4" /> {summary?.orderStatus}
+                      <PackageCheck className="h-4 w-4" />{" "}
+                      {summary?.orderStatus}
                     </span>
                     <span className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white">
                       <Wallet className="h-4 w-4" /> {summary?.paymentMethod}
                     </span>
                     <span className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
-                      <CreditCard className="h-4 w-4" /> {summary?.paymentStatus}
+                      <CreditCard className="h-4 w-4" />{" "}
+                      {summary?.paymentStatus}
                     </span>
                   </div>
                 </div>
@@ -341,7 +375,11 @@ const AquaOrderPage = () => {
                     <ul className="mt-3 space-y-2 text-sm text-slate-600">
                       <li className="flex items-center justify-between">
                         <span>Items ({summary?.itemCount})</span>
-                        <span>{formatCurrencyINR(order.totalAmount - (order.shippingCost || 0))}</span>
+                        <span>
+                          {formatCurrencyINR(
+                            order.totalAmount - (order.shippingCost || 0),
+                          )}
+                        </span>
                       </li>
                       <li className="flex items-center justify-between">
                         <span>Shipping</span>
@@ -360,11 +398,15 @@ const AquaOrderPage = () => {
                     </p>
                     <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
                       <span className="inline-flex items-center gap-2">
-                        <CalendarClock className="h-4 w-4 text-slate-500" /> Estimated delivery: {summary?.deliveryEta}
+                        <CalendarClock className="h-4 w-4 text-slate-500" />{" "}
+                        Estimated delivery: {summary?.deliveryEta}
                       </span>
                       <span className="inline-flex items-start gap-2">
                         <MapPin className="mt-0.5 h-4 w-4 text-slate-500" />
-                        <span>{composeAddress(order.shippingAddress) || composeAddress(order.billingAddress)}</span>
+                        <span>
+                          {composeAddress(order.shippingAddress) ||
+                            composeAddress(order.billingAddress)}
+                        </span>
                       </span>
                     </div>
                   </div>
@@ -376,26 +418,32 @@ const AquaOrderPage = () => {
                     {summary?.instrument ? (
                       <ul className="mt-3 space-y-2 text-sm text-slate-600">
                         <li className="inline-flex items-center gap-2 text-slate-700">
-                          <CreditCard className="h-4 w-4 text-slate-500" /> Type: {summary.instrument.type || "—"}
+                          <CreditCard className="h-4 w-4 text-slate-500" />{" "}
+                          Type: {summary.instrument.type || "—"}
                         </li>
                         {summary.instrument.utr ? (
                           <li className="inline-flex items-center gap-2">
-                            <Receipt className="h-4 w-4 text-slate-500" /> UTR: {summary.instrument.utr}
+                            <Receipt className="h-4 w-4 text-slate-500" /> UTR:{" "}
+                            {summary.instrument.utr}
                           </li>
                         ) : null}
                         {summary.instrument.payerVpa ? (
                           <li className="inline-flex items-center gap-2">
-                            <Wallet className="h-4 w-4 text-slate-500" /> Payer VPA: {summary.instrument.payerVpa}
+                            <Wallet className="h-4 w-4 text-slate-500" /> Payer
+                            VPA: {summary.instrument.payerVpa}
                           </li>
                         ) : null}
                         {summary.instrument.ifsc ? (
                           <li className="inline-flex items-center gap-2">
-                            <IndianRupee className="h-4 w-4 text-slate-500" /> IFSC: {summary.instrument.ifsc}
+                            <IndianRupee className="h-4 w-4 text-slate-500" />{" "}
+                            IFSC: {summary.instrument.ifsc}
                           </li>
                         ) : null}
                       </ul>
                     ) : (
-                      <p className="mt-3 text-sm text-slate-500">No payment instrument details available.</p>
+                      <p className="mt-3 text-sm text-slate-500">
+                        No payment instrument details available.
+                      </p>
                     )}
                   </div>
                 </div>
@@ -403,9 +451,12 @@ const AquaOrderPage = () => {
 
               {paymentFailed || !paymentSettled ? (
                 <section className="rounded-3xl border border-amber-100 bg-amber-50/70 p-6 shadow-sm">
-                  <h2 className="text-lg font-semibold text-amber-900">Payment pending</h2>
+                  <h2 className="text-lg font-semibold text-amber-900">
+                    Payment pending
+                  </h2>
                   <p className="mt-1 text-sm text-amber-800">
-                    Your payment hasn’t been completed yet. You can retry the online payment or switch this purchase to cash on delivery.
+                    Your payment hasn’t been completed yet. You can retry the
+                    online payment or switch this purchase to cash on delivery.
                   </p>
                   <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                     <button
@@ -431,7 +482,9 @@ const AquaOrderPage = () => {
                             : "border border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600 focus:ring-emerald-400"
                         }`}
                       >
-                        {switchingToCod ? "Creating COD order…" : "Switch to cash on delivery"}
+                        {switchingToCod
+                          ? "Creating COD order…"
+                          : "Switch to cash on delivery"}
                       </button>
                     ) : null}
                   </div>
@@ -440,7 +493,9 @@ const AquaOrderPage = () => {
 
               <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)]">
                 <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-                  <h2 className="text-lg font-semibold text-slate-900">Items in this order</h2>
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    Items in this order
+                  </h2>
                   <ul className="mt-5 space-y-4">
                     {(order.items || []).map((item) => (
                       <li
@@ -451,10 +506,14 @@ const AquaOrderPage = () => {
                           <p className="text-sm font-semibold text-slate-900">
                             {item?.name || "Product"}
                           </p>
-                          <p className="text-xs text-slate-500">Qty: {item?.quantity || 1}</p>
+                          <p className="text-xs text-slate-500">
+                            Qty: {item?.quantity || 1}
+                          </p>
                         </div>
                         <div className="text-sm font-semibold text-slate-900">
-                          {formatCurrencyINR((item?.price || 0) * (item?.quantity || 1))}
+                          {formatCurrencyINR(
+                            (item?.price || 0) * (item?.quantity || 1),
+                          )}
                         </div>
                       </li>
                     ))}
@@ -462,13 +521,17 @@ const AquaOrderPage = () => {
                 </div>
 
                 <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-                  <h2 className="text-lg font-semibold text-slate-900">Order timeline</h2>
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    Order timeline
+                  </h2>
                   <ol className="mt-5 space-y-4">
                     {timeline.map((step) => (
                       <li key={step.key} className="flex items-start gap-3">
                         <span
                           className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full ${
-                            step.completed ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-500"
+                            step.completed
+                              ? "bg-emerald-500 text-white"
+                              : "bg-slate-200 text-slate-500"
                           }`}
                         >
                           {step.completed ? (
@@ -478,8 +541,12 @@ const AquaOrderPage = () => {
                           )}
                         </span>
                         <div>
-                          <p className="text-sm font-semibold text-slate-900">{step.label}</p>
-                          <p className="text-xs text-slate-500">{step.description}</p>
+                          <p className="text-sm font-semibold text-slate-900">
+                            {step.label}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {step.description}
+                          </p>
                         </div>
                       </li>
                     ))}
@@ -489,7 +556,9 @@ const AquaOrderPage = () => {
 
               {summary?.gatewayMessage ? (
                 <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-                  <h2 className="text-lg font-semibold text-slate-900">Payment gateway response</h2>
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    Payment gateway response
+                  </h2>
                   <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/80 p-4 text-sm text-emerald-700">
                     {summary.gatewayMessage}
                   </div>

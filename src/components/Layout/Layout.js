@@ -98,9 +98,7 @@ const AquaLayout = (props) => {
           <AquaToast />
 
           <div className="flex min-h-screen flex-col bg-white">
-            <main className="flex-1">
-              {props.children}
-            </main>
+            <main className="flex-1">{props.children}</main>
 
             <AquaFooter
               categories={setDataCategories}
