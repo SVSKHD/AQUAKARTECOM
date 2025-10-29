@@ -48,36 +48,35 @@ const formatTopicLabel = (value, fallback = "Featured") => {
 const topicKey = (value, fallback) =>
   formatTopicLabel(value, fallback).toLowerCase();
 
-const AquaBlogComponnet = () => {
+const AquaBlogComponnet = ({ initialBlogs = [], initialError = "" }) => {
   const router = useRouter();
-  const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [blogs, setBlogs] = useState(initialBlogs);
+  const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
   const [topic, setTopic] = useState("All");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(initialError);
 
   useEffect(() => {
-    let isMounted = true;
+    setBlogs(initialBlogs);
+  }, [initialBlogs]);
+
+  useEffect(() => {
+    setError(initialError);
+  }, [initialError]);
+
+  const handleRetry = async () => {
     setLoading(true);
     setError("");
-
-    BlogServiceOperations.AllBlogs()
-      .then((res) => {
-        if (!isMounted) return;
-        setBlogs(res.data.data || []);
-      })
-      .catch(() => {
-        if (!isMounted) return;
-        setError("Unable to load blogs at the moment. Please try again.");
-      })
-      .finally(() => {
-        if (isMounted) setLoading(false);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    try {
+      const response = await BlogServiceOperations.AllBlogs();
+      setBlogs(response?.data?.data || []);
+    } catch (fetchError) {
+      console.error("Retry fetching blogs failed", fetchError);
+      setError("Unable to load blogs at the moment. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const topics = useMemo(() => {
     const unique = new Map();
@@ -216,8 +215,13 @@ const AquaBlogComponnet = () => {
     image:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
   };
+  const schemaBlogs = useMemo(
+    () => (blogs.length ? blogs : initialBlogs),
+    [blogs, initialBlogs],
+  );
+
   return (
-    <AquaLayout seo={seoData}>
+    <AquaLayout seo={seoData} blogListData={schemaBlogs}>
       <div className="relative bg-white">
         <div className="mx-auto max-w-7xl px-6 pb-24 pt-16 lg:px-8">
           <header id="top" className="space-y-6 text-center">
@@ -297,7 +301,14 @@ const AquaBlogComponnet = () => {
             </div>
           ) : error ? (
             <div className="mt-14 rounded-3xl border border-rose-100 bg-rose-50 p-8 text-center text-rose-600">
-              {error}
+              <p>{error}</p>
+              <button
+                type="button"
+                onClick={handleRetry}
+                className="mt-4 inline-flex items-center justify-center rounded-full border border-transparent bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-500"
+              >
+                Try again
+              </button>
             </div>
           ) : filteredBlogs.length === 0 ? (
             <div className="mt-14 text-center text-slate-500">

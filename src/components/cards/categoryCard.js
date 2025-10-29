@@ -1,31 +1,64 @@
-import React from "react";
-import { FaShare } from "react-icons/fa";
+import Link from "next/link";
+import React, { useMemo } from "react";
+
+const getCategoryLink = (category) => {
+  if (!category) return "/categories";
+  if (category.slug) return `/category/${category.slug}`;
+  if (category.title) {
+    const safeTitle = encodeURIComponent(category.title.trim());
+    return `/category/${safeTitle}`;
+  }
+  return `/category/${category._id ?? "categories"}`;
+};
 
 const AquaCategoryCard = ({ category }) => {
-  const { title, photos, price, href, color, _id } = category;
+  const title = category?.title ?? "Category";
+  const imageUrl = category?.photos?.[0]?.secure_url ?? "";
+  const href = useMemo(() => getCategoryLink(category), [category]);
+
   return (
-    <div className="group relative">
-      <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none group-hover:opacity-75 lg:h-80">
-        <img
-          src={photos[0].secure_url}
-          alt={title}
-          className="h-full w-full object-cover object-center lg:h-full lg:w-full"
-        />
-      </div>
-      <div className="mt-4 flex justify-between">
-        <div>
-          <h3 className="text-md font-bold text-gray-700">
-            <a href={`/category/${title}`}>
-              <span aria-hidden="true" className="absolute inset-0" />
-              {title}
-            </a>
-          </h3>
+    <Link
+      href={href}
+      className="group relative block overflow-hidden rounded-3xl bg-white/80 shadow-sm ring-1 ring-indigo-100 transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+    >
+      <div className="relative h-60 overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-100 via-white to-indigo-50">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={title}
+            className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-200 via-indigo-100 to-white">
+            <span className="text-lg font-semibold uppercase tracking-wide text-indigo-700">
+              {title.slice(0, 1)}
+            </span>
+          </div>
+        )}
+
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-70 transition duration-300 group-hover:opacity-80" />
+
+        <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 p-4 text-white">
+          <span className="text-xs uppercase tracking-wide text-white/80">
+            Category
+          </span>
+          <h3 className="text-lg font-semibold">{title}</h3>
         </div>
-        <button className="text-sm font-medium text-gray-900">
-          <FaShare />
-        </button>
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-3xl bg-indigo-600/90 text-white opacity-0 transition duration-300 group-hover:opacity-100">
+          <span className="text-sm font-medium uppercase tracking-wide text-white/80">
+            Explore
+          </span>
+          <span className="text-base font-semibold">
+            {title.length > 30 ? `${title.slice(0, 30)}…` : title}
+          </span>
+          <span className="text-xs font-medium text-white/70">
+            View products →
+          </span>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 };
 

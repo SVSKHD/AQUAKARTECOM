@@ -1,6 +1,6 @@
-import axios from "axios";
 import AquaServerDynamicProduct from "@/pageComponents/products/ServerSideDynamicProduct";
 import AquaProductSeo from "@/components/Layout/seo/productSeo";
+import ProductServiceOperations from "@/services/products";
 
 const FALLBACK_IMAGE =
   "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png";
@@ -102,67 +102,44 @@ function AquaDynamicProduct({ product, related, error }) {
   );
 }
 
-// ----------------------------------------
-// getStaticPaths
-// ----------------------------------------
-export async function getStaticPaths() {
-  try {
-    // Fetch all products for pre-rendering paths
-    const response = await axios.get("https://api.aquakart.co.in/v1/products");
-    const products = response?.data || [];
+export const getServerSideProps = async ({ params }) => {
+  const { id } = params || {};
 
-    // Generate paths for products
-    const paths = products
-      .filter((product) => product?.slug)
-      .map((product) => ({
-        params: { id: product.slug },
-      }));
-
-    return {
-      paths, // Pre-render these paths
-      fallback: "blocking", // Dynamically generate pages on demand
-    };
-  } catch (err) {
-    console.error("Error fetching product paths:", err.message);
-    return {
-      paths: [],
-      fallback: "blocking", // Allow for on-demand generation
-    };
+  if (!id) {
+    return { notFound: true };
   }
-}
-
-// ----------------------------------------
-// getStaticProps
-// ----------------------------------------
-export async function getStaticProps({ params }) {
-  const { id } = params;
 
   try {
-    // Fetch product data for the given ID
-    const response = await axios.get(
-      `https://api.aquakart.co.in/v1/product?searchField=slug&value=${id}`,
-    );
+    const response = await ProductServiceOperations.ProductsByQuery(id);
+    const product = response?.data?.data ?? null;
+    const related = response?.data?.related ?? [];
 
-    const product = response?.data?.data || null;
-    const related = response?.data?.related || null;
+    if (!product) {
+      return { notFound: true };
+    }
 
     return {
       props: {
         product,
         related,
+        error: "",
       },
-      revalidate: 60, // Revalidate the page every 60 seconds
     };
-  } catch (err) {
-    console.error("Error fetching product data:", err.message);
+  } catch (error) {
+    console.error(`Failed to fetch product "${id}" on server:`, error?.message || error);
+
+    if (error?.response?.status === 404) {
+      return { notFound: true };
+    }
+
     return {
       props: {
         product: null,
-        related: null,
+        related: [],
         error: "Failed to fetch product data. Please try again later.",
       },
     };
   }
-}
+};
 
 export default AquaDynamicProduct;

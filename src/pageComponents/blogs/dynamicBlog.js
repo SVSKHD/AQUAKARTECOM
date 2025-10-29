@@ -19,13 +19,17 @@ import Link from "next/link";
 
 import AquaImage from "@/components/images/AquaImage";
 
-const AquaDynamicBlogComponent = () => {
+const AquaDynamicBlogComponent = ({
+  initialBlog = null,
+  initialRelated = [],
+  initialError = "",
+}) => {
   const router = useRouter();
   const { id } = router.query;
-  const [blog, setBlog] = useState({});
-  const [related, setRelated] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [blog, setBlog] = useState(initialBlog);
+  const [related, setRelated] = useState(initialRelated);
+  const [loading, setLoading] = useState(!initialBlog && !initialError);
+  const [error, setError] = useState(initialError);
   const [toc, setToc] = useState([]);
   const [progress, setProgress] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -33,32 +37,11 @@ const AquaDynamicBlogComponent = () => {
   const contentRef = useRef(null);
 
   useEffect(() => {
-    if (!id) return;
-
-    let isMounted = true;
-    setLoading(true);
-    setError("");
-
-    BlogServiceOperations.blogById(id)
-      .then((res) => {
-        if (!isMounted) return;
-        setBlog(res.data.data);
-        setRelated(res.data.relatedProduct || []);
-      })
-      .catch(() => {
-        if (!isMounted) return;
-        setError("We couldn't load this story. Please refresh and try again.");
-      })
-      .finally(() => {
-        if (isMounted) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [id]);
+    setBlog(initialBlog);
+    setRelated(initialRelated);
+    setError(initialError);
+    setLoading(!initialBlog && !initialError);
+  }, [initialBlog, initialRelated, initialError]);
 
   useEffect(() => {
     if (!blog?.description || !contentRef.current || typeof window === "undefined") {
@@ -148,11 +131,30 @@ const AquaDynamicBlogComponent = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleRetry = async () => {
+    if (!id) return;
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await BlogServiceOperations.blogById(id);
+      setBlog(response?.data?.data || null);
+      setRelated(response?.data?.relatedProduct || []);
+      setError("");
+    } catch (fetchError) {
+      console.error("Retry fetching blog failed", fetchError);
+      setBlog(null);
+      setError("We couldn't load this story. Please refresh and try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const seoData = {
-    title: `${blog.title || "Blog"} | Aquakart`,
+    title: `${blog?.title || "Blog"} | Aquakart`,
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
     image: blog?.titleImages?.[0]?.secure_url || "",
-    keywords: `Aquakart Product | ${blog.title || "Blog"}`,
+    keywords: `Aquakart Product | ${blog?.title || "Blog"}`,
   };
 
   const formatTopicLabel = (value, fallback = "Aquakart") => {
@@ -186,8 +188,10 @@ const AquaDynamicBlogComponent = () => {
     return [];
   }, [blog?.keyHighlights, blog?.summary]);
 
+  const schemaBlog = blog || initialBlog || null;
+
   return (
-    <AquaLayout seo={seoData}>
+    <AquaLayout seo={seoData} blogPageData={schemaBlog}>
       <Head>
         <title>{seoData.title}</title>
         <link rel="canonical" href={seoData.canonical} />
@@ -221,11 +225,11 @@ const AquaDynamicBlogComponent = () => {
 
           <div className="mx-auto mt-6 max-w-3xl text-center">
             {loading ? (
-              <div className="space-y-4">
-                <div className="mx-auto h-10 w-40 animate-pulse rounded-full bg-slate-200" />
-                <div className="mx-auto h-12 w-full max-w-xl animate-pulse rounded-lg bg-slate-200" />
-                <div className="mx-auto h-6 w-1/2 animate-pulse rounded-full bg-slate-200" />
-              </div>
+                <div className="space-y-4">
+                  <div className="mx-auto h-10 w-40 animate-pulse rounded-full bg-slate-200" />
+                  <div className="mx-auto h-12 w-full max-w-xl animate-pulse rounded-lg bg-slate-200" />
+                  <div className="mx-auto h-6 w-1/2 animate-pulse rounded-full bg-slate-200" />
+                </div>
             ) : error ? (
               <div className="rounded-2xl border border-rose-100 bg-rose-50 px-6 py-8 text-left">
                 <div className="flex items-center gap-3 text-rose-600">
@@ -233,6 +237,13 @@ const AquaDynamicBlogComponent = () => {
                   <p className="text-sm font-semibold">Something went wrong</p>
                 </div>
                 <p className="mt-3 text-sm text-rose-700">{error}</p>
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className="mt-4 inline-flex items-center justify-center rounded-full border border-transparent bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-500"
+                >
+                  Try again
+                </button>
               </div>
             ) : (
               <div className="space-y-5 rounded-3xl border border-emerald-100 bg-emerald-50/60 px-6 py-8 text-left shadow-sm">

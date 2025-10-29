@@ -83,6 +83,9 @@ const AquaLayout = (props) => {
             subcategoryData={props?.subcategoryData}
             product={seo?.product}
             productData={props?.productPageData}
+            productList={props?.productListData}
+            blogList={props?.blogListData}
+            blogPage={props?.blogPageData}
           />
           <AquaCartAddressDialog />
           <AquaUserDataDrawer />

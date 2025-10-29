@@ -251,8 +251,15 @@ const AquaShopPageComponent = ({
     }));
   };
 
+  const schemaProducts = useMemo(() => {
+    if (Array.isArray(initialProducts) && initialProducts.length > 0) {
+      return initialProducts;
+    }
+    return products;
+  }, [initialProducts, products]);
+
   return (
-    <AquaLayout path="shop">
+    <AquaLayout path="shop" productListData={schemaProducts}>
       {loading ? (
         <div className="flex h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">
           <div className="animate-bounce">
