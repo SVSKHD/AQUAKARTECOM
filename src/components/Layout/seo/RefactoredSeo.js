@@ -217,7 +217,10 @@ const AquaSeoRevamp = ({
         "@type": "ListItem",
         position: index + 1,
         url: productNode["@id"].replace("#product", ""),
-        item: { "@id": productNode["@id"] },
+        item: {
+          "@type": "Product",
+          "@id": productNode["@id"],
+        },
       });
     });
 
@@ -225,6 +228,7 @@ const AquaSeoRevamp = ({
       graphNodes.push({
         "@type": "ItemList",
         "@id": `${canonicalUrl}#product-list`,
+        itemListOrder: "https://schema.org/ItemListOrderAscending",
         itemListElement: productListItems,
       });
     }
@@ -283,7 +287,10 @@ const AquaSeoRevamp = ({
         "@type": "ListItem",
         position: index + 1,
         url: blogUrl,
-        item: { "@id": blogId },
+        item: {
+          "@type": "BlogPosting",
+          "@id": blogId,
+        },
       });
     });
 
@@ -291,6 +298,7 @@ const AquaSeoRevamp = ({
       graphNodes.push({
         "@type": "ItemList",
         "@id": `${canonicalUrl}#blog-list`,
+        itemListOrder: "https://schema.org/ItemListOrderAscending",
         itemListElement: blogListItems,
       });
     }
