@@ -578,6 +578,22 @@ const AquaCheckoutComponent = () => {
                             product?.image ||
                             product?.thumbnail ||
                             "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png";
+                          const resolvedSubtitle =
+                            typeof product?.subtitle === "string"
+                              ? product.subtitle
+                              : product?.subtitle?.label ||
+                                product?.subtitle?.title ||
+                                "";
+                          const resolvedCategory =
+                            typeof product?.category === "string"
+                              ? product.category
+                              : product?.category?.title ||
+                                product?.category?.name ||
+                                "";
+                          const secondaryLabel =
+                            resolvedSubtitle ||
+                            resolvedCategory ||
+                            "Aquakart product";
 
                           return (
                             <li
@@ -599,9 +615,7 @@ const AquaCheckoutComponent = () => {
                                     {product.title}
                                   </h3>
                                   <p className="text-sm text-gray-500">
-                                    {product.subtitle ||
-                                      product.category ||
-                                      "Aquakart product"}
+                                    {secondaryLabel}
                                   </p>
                                   <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-600">
                                     <CheckIcon

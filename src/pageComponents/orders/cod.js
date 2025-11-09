@@ -19,6 +19,13 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
+import priceUtils from "@/utils/price";
+
+const INVOICE_WATERMARK_URL =
+  "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png";
+const GST_RATE = 0.18;
+const roundToTwo = (value) =>
+  Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 
 const AquaCodOrderPageComponent = () => {
   const router = useRouter();
@@ -26,6 +33,8 @@ const AquaCodOrderPageComponent = () => {
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isPdfReady, setIsPdfReady] = useState(false);
+  const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
   const { userData } = useSelector((state) => ({ ...state }));
   const { formatCurrencyINR } = useCurrency;
 
@@ -57,6 +66,53 @@ const AquaCodOrderPageComponent = () => {
       fetchCodOrder(id);
     }
   }, [router.isReady, router.query.id, userData.token]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.jspdf?.jsPDF) {
+      setIsPdfReady(true);
+      return;
+    }
+
+    const scriptId = "jspdf-cdn";
+    const existingScript = document.getElementById(scriptId);
+
+    if (existingScript) {
+      if (existingScript.getAttribute("data-loaded") === "true") {
+        setIsPdfReady(true);
+      } else {
+        existingScript.addEventListener(
+          "load",
+          () => setIsPdfReady(true),
+          { once: true },
+        );
+      }
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.src =
+      "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+    script.async = true;
+    script.onload = () => {
+      script.setAttribute("data-loaded", "true");
+      setIsPdfReady(true);
+    };
+    script.onerror = () => {
+      AquaToast({
+        message:
+          "Invoice generator failed to load. Please refresh and try again.",
+        type: "error",
+      });
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      script.onload = null;
+      script.onerror = null;
+    };
+  }, []);
 
   const getOrderStep = (orderStatus) => {
     switch (orderStatus) {
@@ -171,6 +227,436 @@ const AquaCodOrderPageComponent = () => {
     );
   };
 
+  const orderSubtotal = useMemo(() => {
+    if (!order?.items?.length) return 0;
+    const total = order.items.reduce((sum, item) => {
+      const unitPrice = Number(item?.price) || 0;
+      const quantity = Number(item?.quantity) || 0;
+      const lineTotal = unitPrice * quantity;
+      return sum + lineTotal;
+    }, 0);
+    return roundToTwo(total);
+  }, [order?.items]);
+
+  const { itemsBaseTotal, itemsGstTotal } = useMemo(() => {
+    if (!order?.items?.length) {
+      return { itemsBaseTotal: 0, itemsGstTotal: 0 };
+    }
+
+    return order.items.reduce(
+      (acc, item) => {
+        const unitPrice = Number(item?.price) || 0;
+        const quantity = Number(item?.quantity) || 0;
+        const grossLine = roundToTwo(unitPrice * quantity);
+        const baseLine = roundToTwo(grossLine / (1 + GST_RATE));
+        const gstLine = roundToTwo(grossLine - baseLine);
+        return {
+          itemsBaseTotal: roundToTwo(acc.itemsBaseTotal + baseLine),
+          itemsGstTotal: roundToTwo(acc.itemsGstTotal + gstLine),
+        };
+      },
+      { itemsBaseTotal: 0, itemsGstTotal: 0 },
+    );
+  }, [order?.items]);
+
+  const shippingCharge = useMemo(() => {
+    if (!order) return 0;
+    if (typeof order.shippingCost === "number") {
+      return roundToTwo(order.shippingCost);
+    }
+    return 50;
+  }, [order]);
+
+  const payableTotal = useMemo(
+    () => roundToTwo(orderSubtotal + shippingCharge),
+    [orderSubtotal, shippingCharge],
+  );
+
+  const loadImageAsDataURL = async (url) =>
+    new Promise((resolve) => {
+      if (!url) {
+        resolve(null);
+        return;
+      }
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const context = canvas.getContext("2d");
+          context.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/png"));
+        } catch (error) {
+          console.error("Failed to convert image to data URL", error);
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+
+  const composeAddressLines = (address) => {
+    if (!address) return [];
+    const { fullName, street, landmark, city, state, postalCode, country } =
+      address;
+    return [
+      fullName,
+      street,
+      landmark,
+      [city, state].filter(Boolean).join(", "),
+      postalCode,
+      country,
+    ].filter(Boolean);
+  };
+
+  const handleDownloadInvoice = async () => {
+    if (!order) return;
+    if (typeof window === "undefined") return;
+    const jsPDFConstructor = window.jspdf?.jsPDF;
+
+    if (!jsPDFConstructor) {
+      AquaToast({
+        message: "Invoice generator is still preparing. Please try again.",
+        type: "warning",
+      });
+      return;
+    }
+
+    try {
+      setIsGeneratingInvoice(true);
+      const doc = new jsPDFConstructor({ unit: "pt", format: "a4" });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const marginX = 48;
+      const baseFont = "helvetica";
+
+      const watermark = await loadImageAsDataURL(INVOICE_WATERMARK_URL);
+      if (watermark) {
+        try {
+          if (doc.GState) {
+            const faded = new doc.GState({ opacity: 0.06 });
+            doc.setGState(faded);
+            doc.addImage(
+              watermark,
+              "PNG",
+              pageWidth / 2 - 180,
+              pageHeight / 2 - 180,
+              360,
+              360,
+            );
+            doc.setGState(new doc.GState({ opacity: 1 }));
+          } else {
+            doc.addImage(
+              watermark,
+              "PNG",
+              pageWidth / 2 - 180,
+              pageHeight / 2 - 180,
+              360,
+              360,
+            );
+          }
+        } catch (error) {
+          console.error("Failed to add watermark", error);
+        }
+      }
+
+      doc.setFillColor(43, 108, 176);
+      doc.rect(0, 0, pageWidth, 96, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont(baseFont, "bold");
+      doc.setFontSize(26);
+      doc.text("Aquakart", marginX, 54);
+      doc.setFont(baseFont, "normal");
+      doc.setFontSize(12);
+      doc.text("GST: 8074904635", marginX, 72);
+      doc.text("https://aquakart.co.in", marginX, 88);
+      doc.setFont(baseFont, "bold");
+      doc.setFontSize(26);
+      doc.text("Invoice", pageWidth - marginX, 60, { align: "right" });
+
+      doc.setTextColor(30, 41, 59);
+      let cursorY = 124;
+      doc.setFontSize(13);
+      doc.setFont(baseFont, "bold");
+      doc.text("Invoice details", marginX, cursorY);
+      cursorY += 18;
+      doc.setFont(baseFont, "normal");
+      doc.setFontSize(11);
+
+      const invoiceInfo = [
+        {
+          label: "Invoice #",
+          value: order?.orderId || "-",
+        },
+        {
+          label: "Invoice date",
+          value: moment(order?.createdAt).format("DD MMM YYYY"),
+        },
+      ];
+
+      if (order?.transactionId) {
+        invoiceInfo.push({
+          label: "Transaction ID",
+          value: order.transactionId,
+        });
+      }
+
+      invoiceInfo.push({
+        label: "Payment method",
+        value: "Cash on Delivery",
+      });
+
+      invoiceInfo.forEach((line) => {
+        doc.text(`${line.label}: ${line.value}`, marginX, cursorY);
+        cursorY += 16;
+      });
+      cursorY += 12;
+
+      doc.setFontSize(13);
+      doc.setFont(baseFont, "bold");
+      doc.text("Billed to", marginX, cursorY);
+      doc.text("Deliver to", marginX + 220, cursorY);
+      cursorY += 16;
+      doc.setFontSize(11);
+      doc.setFont(baseFont, "normal");
+      const billingLines = [
+        order?.customerName || order?.user?.name,
+        order?.email,
+        order?.phone,
+      ].filter(Boolean);
+      const shippingLines = composeAddressLines(order?.shippingAddress);
+
+      const writeLines = (lines, x, y, lineGap = 16) => {
+        let offsetY = y;
+        lines.forEach((line) => {
+          doc.text(line, x, offsetY);
+          offsetY += lineGap;
+        });
+        return offsetY;
+      };
+
+      const billingBottom = writeLines(billingLines, marginX, cursorY);
+      const shippingBottom = writeLines(
+        shippingLines,
+        marginX + 220,
+        cursorY,
+      );
+      cursorY = Math.max(billingBottom, shippingBottom) + 24;
+
+      const tableWidth = pageWidth - marginX * 2;
+      const headerHeight = 30;
+      const rowLineHeight = 18;
+      const indexX = marginX + 16;
+      const itemX = marginX + 56;
+      const qtyX = marginX + tableWidth - 210;
+      const unitPriceX = marginX + tableWidth - 170;
+      const basePriceX = marginX + tableWidth - 120;
+      const gstPriceX = marginX + tableWidth - 70;
+      const totalX = marginX + tableWidth - 20;
+      const descriptionWidth = qtyX - itemX - 24;
+
+      const drawTableHeader = (y) => {
+        doc.setFillColor(79, 70, 229);
+        doc.setTextColor(255, 255, 255);
+        doc.roundedRect(marginX, y, tableWidth, headerHeight, 8, 8, "F");
+        doc.setFontSize(11);
+        doc.text("#", indexX, y + 19);
+        doc.text("Item description", itemX, y + 19);
+        doc.text("Qty", qtyX, y + 19, { align: "right" });
+        doc.text("Unit price", unitPriceX, y + 19, { align: "right" });
+        doc.text("Base price", basePriceX, y + 19, { align: "right" });
+        doc.text(`GST (${Math.round(GST_RATE * 100)}%)`, gstPriceX, y + 19, {
+          align: "right",
+        });
+        doc.text("Line total", totalX, y + 19, { align: "right" });
+        doc.setTextColor(30, 41, 59);
+        return y + headerHeight + 6;
+      };
+
+      cursorY = drawTableHeader(cursorY);
+
+      const ensureSpace = (requiredHeight) => {
+        if (cursorY + requiredHeight > pageHeight - 120) {
+          doc.addPage();
+          doc.setFillColor(43, 108, 176);
+          doc.rect(0, 0, pageWidth, 40, "F");
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(12);
+          doc.text("Aquakart Invoice", marginX, 26);
+          doc.setTextColor(30, 41, 59);
+          cursorY = 80;
+          cursorY = drawTableHeader(cursorY);
+        }
+      };
+
+      order?.items?.forEach((product, index) => {
+        const name =
+          product?.name || product?.productName || `Item ${index + 1}`;
+        const qty = Number(product?.quantity) || 1;
+        const unitPrice = Number(product?.price) || 0;
+        const lineTotal = roundToTwo(qty * unitPrice);
+        const baseLine = roundToTwo(lineTotal / (1 + GST_RATE));
+        const gstLine = roundToTwo(lineTotal - baseLine);
+        const nameLines = doc.splitTextToSize(
+          name,
+          Math.max(descriptionWidth, 120),
+        );
+        const rowHeight = Math.max(
+          nameLines.length * rowLineHeight + 18,
+          52,
+        );
+
+        ensureSpace(rowHeight + 4);
+
+        doc.setDrawColor(226, 232, 240);
+        doc.roundedRect(marginX, cursorY, tableWidth, rowHeight, 6, 6, "S");
+        doc.setFontSize(11);
+        doc.setFont(baseFont, "normal");
+        const textBaseLine = cursorY + 26;
+        doc.text(String(index + 1).padStart(2, "0"), indexX, textBaseLine);
+        doc.text(nameLines, itemX, textBaseLine);
+        doc.text(String(qty), qtyX, textBaseLine, { align: "right" });
+        doc.text(formatCurrencyINR(unitPrice), unitPriceX, textBaseLine, {
+          align: "right",
+        });
+        doc.text(formatCurrencyINR(baseLine), basePriceX, textBaseLine, {
+          align: "right",
+        });
+        doc.text(formatCurrencyINR(gstLine), gstPriceX, textBaseLine, {
+          align: "right",
+        });
+        doc.text(formatCurrencyINR(lineTotal), totalX, textBaseLine, {
+          align: "right",
+        });
+
+        cursorY += rowHeight + 8;
+      });
+
+      ensureSpace(180);
+
+      const summaryBoxY = cursorY + 10;
+      const summaryBoxHeight = 150;
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(
+        marginX,
+        summaryBoxY,
+        tableWidth / 2 - 12,
+        summaryBoxHeight,
+        10,
+        10,
+        "F",
+      );
+      doc.roundedRect(
+        marginX + tableWidth / 2 + 12,
+        summaryBoxY,
+        tableWidth / 2 - 12,
+        summaryBoxHeight,
+        10,
+        10,
+        "F",
+      );
+
+      doc.setFontSize(12);
+      doc.setFont(baseFont, "bold");
+      doc.setTextColor(30, 41, 59);
+      doc.text("Delivery details", marginX + 18, summaryBoxY + 20);
+      doc.setFontSize(11);
+      doc.setFont(baseFont, "normal");
+      const shippingLinesForBox = [
+        ...(shippingLines.length ? shippingLines : ["N/A"]),
+        order?.phone ? `Phone: ${order.phone}` : null,
+        order?.email ? `Email: ${order.email}` : null,
+      ].filter(Boolean);
+      writeLines(shippingLinesForBox, marginX + 18, summaryBoxY + 40);
+
+      doc.setFontSize(12);
+      doc.setFont(baseFont, "bold");
+      doc.text(
+        "Invoice summary",
+        marginX + tableWidth / 2 + 30,
+        summaryBoxY + 20,
+      );
+      doc.setFontSize(11);
+      doc.setFont(baseFont, "normal");
+      const summaryLines = [
+        {
+          label: "Base amount",
+          value: formatCurrencyINR(itemsBaseTotal),
+        },
+        {
+          label: `GST (${Math.round(GST_RATE * 100)}%)`,
+          value: formatCurrencyINR(itemsGstTotal),
+        },
+        {
+          label: "Items total",
+          value: formatCurrencyINR(orderSubtotal),
+        },
+        {
+          label: "Shipping",
+          value: formatCurrencyINR(shippingCharge),
+        },
+        {
+          label: "Amount due on delivery",
+          value: formatCurrencyINR(payableTotal),
+          highlight: true,
+        },
+      ];
+
+      let summaryLineY = summaryBoxY + 40;
+      summaryLines.forEach((line) => {
+        if (line.highlight) {
+          doc.setFontSize(12);
+          doc.setFont(baseFont, "bold");
+        } else {
+          doc.setFontSize(11);
+          doc.setFont(baseFont, "normal");
+        }
+        doc.text(
+          line.label,
+          marginX + tableWidth / 2 + 30,
+          summaryLineY,
+        );
+        doc.text(line.value, marginX + tableWidth - 30, summaryLineY, {
+          align: "right",
+        });
+        summaryLineY += line.highlight ? 20 : 16;
+      });
+      doc.setFont(baseFont, "normal");
+
+      doc.setFontSize(10);
+      doc.setFont(baseFont, "normal");
+      doc.setTextColor(100, 116, 139);
+      doc.text(
+        "This is a system-generated invoice and does not require a physical signature.",
+        marginX,
+        pageHeight - 50,
+      );
+      doc.text(
+        "For support, reach us at support@aquakart.co.in or +91 9014774667",
+        marginX,
+        pageHeight - 35,
+      );
+
+      doc.save(
+        `Aquakart-invoice-${order?.orderId || order?.transactionId || "cod"}.pdf`,
+      );
+      AquaToast({
+        message: "Invoice downloaded successfully.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to generate invoice PDF", error);
+      AquaToast({
+        message: "Unable to generate the invoice right now. Please retry.",
+        type: "error",
+      });
+    } finally {
+      setIsGeneratingInvoice(false);
+    }
+  };
+
   return (
     <AquaLayout>
       {loading ? (
@@ -207,9 +693,17 @@ const AquaCodOrderPageComponent = () => {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <button className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-600 transition hover:border-indigo-300 hover:bg-indigo-50">
+              <button
+                onClick={handleDownloadInvoice}
+                disabled={!isPdfReady || isGeneratingInvoice}
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
+                  isPdfReady && !isGeneratingInvoice
+                    ? "border-indigo-200 bg-white text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50"
+                    : "cursor-not-allowed border-indigo-100 bg-indigo-50 text-indigo-300"
+                }`}
+              >
                 <Download className="h-4 w-4" aria-hidden="true" />
-                Download invoice
+                {isGeneratingInvoice ? "Preparing invoice..." : "Download invoice"}
               </button>
               <Link
                 href="/shop"
@@ -278,14 +772,28 @@ const AquaCodOrderPageComponent = () => {
                 </h3>
                 <dl className="mt-4 space-y-3 text-sm text-gray-600">
                   <div className="flex items-center justify-between">
-                    <dt>Subtotal</dt>
+                    <dt>Base amount</dt>
                     <dd className="font-medium text-gray-900">
-                      {formatCurrencyINR(order.totalAmount)}
+                      {formatCurrencyINR(itemsBaseTotal)}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <dt>GST ({Math.round(GST_RATE * 100)}%)</dt>
+                    <dd className="font-medium text-gray-900">
+                      {formatCurrencyINR(itemsGstTotal)}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <dt>Items total</dt>
+                    <dd className="font-medium text-gray-900">
+                      {formatCurrencyINR(orderSubtotal)}
                     </dd>
                   </div>
                   <div className="flex items-center justify-between">
                     <dt>Shipping</dt>
-                    <dd className="font-medium text-gray-900">₹50.00</dd>
+                    <dd className="font-medium text-gray-900">
+                      {formatCurrencyINR(shippingCharge)}
+                    </dd>
                   </div>
                   <div className="flex items-center justify-between">
                     <dt>Payment method</dt>
@@ -297,7 +805,7 @@ const AquaCodOrderPageComponent = () => {
                   <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-base font-semibold text-gray-900">
                     <dt>Total paid on delivery</dt>
                     <dd className="text-indigo-600">
-                      {formatCurrencyINR(order.totalAmount + 50)}
+                      {formatCurrencyINR(payableTotal)}
                     </dd>
                   </div>
                 </dl>
@@ -307,7 +815,7 @@ const AquaCodOrderPageComponent = () => {
                 <h3 className="text-base font-semibold">Need help?</h3>
                 <p className="mt-2">
                   Reach our support team at
-                  <span className="font-semibold"> +91 96186 06807</span> or
+                  <span className="font-semibold"> +91 9014774667</span> or
                   email
                   <span className="font-semibold"> support@aquakart.co.in</span>
                   .

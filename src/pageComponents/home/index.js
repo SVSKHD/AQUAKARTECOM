@@ -292,53 +292,41 @@ const AquaHomeComponent = () => {
                   </a>
                 </div>
 
-                <div className="mt-4 flow-root">
-                  <div className="-my-2">
-                    <div className="relative box-content h-80 overflow-x-auto py-2 xl:overflow-visible">
-                      <div className="absolute flex space-x-8 px-4 sm:px-6 lg:px-8 xl:relative xl:grid xl:grid-cols-5 xl:gap-x-8 xl:space-x-0 xl:px-0">
-                        {loading.category ? (
-                          <>
-                            <div className="flex items-center text-center justify-center p-20">
-                              <div className="text-center">
-                                <AquaSpinner color="blue" size="lg" />
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            {categoryData.map((category) => (
-                              <a
-                                key={category.title}
-                                href={`/category/${category.title}`}
-                                className="relative flex h-80 w-56 flex-col overflow-hidden rounded-lg p-6 hover:opacity-75 xl:w-auto"
-                              >
-                                <span
-                                  aria-hidden="true"
-                                  className="absolute inset-0"
-                                >
-                                  <img
-                                    src={category.photos[0].secure_url}
-                                    alt={category.title}
-                                    className="h-full w-full object-cover object-center"
-                                  />
-                                </span>
-                                <span
-                                  aria-hidden="true"
-                                  className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-gray-800 opacity-50"
-                                />
-                                <a
-                                  href={`/category/${category?.title}`}
-                                  className="relative mt-auto text-center text-xl font-bold text-white"
-                                >
-                                  {category.title}
-                                </a>
-                              </a>
-                            ))}
-                          </>
-                        )}
-                      </div>
+                <div className="mt-4 px-4 sm:px-6 lg:px-8 xl:px-0">
+                  {loading.category ? (
+                    <div className="flex h-80 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white">
+                      <AquaSpinner color="blue" size="lg" />
                     </div>
-                  </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                      {categoryData.map((category) => (
+                        <Link
+                          key={category.title}
+                          href={`/category/${category.title}`}
+                          className="group flex flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-100 transition duration-200 ease-out hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+                        >
+                          <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[5/4]">
+                            <img
+                              src={category.photos[0].secure_url}
+                              alt={category.title}
+                              className="h-full w-full object-cover object-center transition duration-200 ease-out group-hover:scale-105"
+                            />
+                          </div>
+                          <div className="flex flex-1 flex-col justify-between p-3 sm:p-4">
+                            <p className="text-sm font-semibold text-slate-900 sm:text-base">
+                              {category.title}
+                            </p>
+                            <span className="mt-2 inline-flex items-center text-xs font-semibold text-emerald-600 sm:text-sm">
+                              Explore
+                              <span className="ml-1 transition duration-200 group-hover:translate-x-0.5">
+                                →
+                              </span>
+                            </span>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-6 px-4 sm:hidden">
@@ -352,7 +340,7 @@ const AquaHomeComponent = () => {
                 </div>
               </section>
 
-              {/* Featured section */}
+            
               <section
                 aria-labelledby="social-impact-heading"
                 className="mx-auto p-10 max-w-7xl px-4 pt-24 sm:px-6 sm:pt-32 lg:px-8"
