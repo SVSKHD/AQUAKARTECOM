@@ -1,26 +1,42 @@
 import AquaResponsiveDialog from "@/components/reusables/dialog";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
-const AquaPromptDialog = ({ open, close, handleOk, handleCancel, title }) => {
+const AquaPromptDialog = ({
+  open,
+  close,
+  handleOk,
+  handleCancel,
+  title,
+  description = "This action cannot be undone. Are you sure you want to continue?",
+  confirmLabel = "Delete",
+  cancelLabel = "Don't Delete",
+}) => {
   return (
     <AquaResponsiveDialog open={open} close={close}>
-      <h4 className="font-bold text-xl text-gray-900 mb-5">{title}</h4>
-      <div className="text-center">
-        <span className="isolate inline-flex rounded-md shadow-sm">
+      <div className="w-full max-w-sm text-center px-2 pt-5 sm:px-4">
+        <div className="flex flex-col items-center text-center">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 shadow-inner">
+            <ExclamationTriangleIcon className="h-7 w-7" aria-hidden="true" />
+          </div>
+          <h4 className="mt-4 text-xl font-semibold text-gray-900">{title}</h4>
+          <p className="mt-2 text-sm text-gray-600">{description}</p>
+        </div>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
           <button
             type="button"
-            className="relative inline-flex items-center rounded-l-md bg-red-600 px-2 py-2 text-white ring-1 ring-inset ring-red-600 hover:bg-red-700 focus:z-10"
             onClick={handleOk}
+            className="inline-flex flex-1 items-center justify-center rounded-xl bg-rose-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
           >
-            Delete
+            {confirmLabel}
           </button>
           <button
             type="button"
-            className="relative -ml-px inline-flex items-center rounded-r-md bg-white px-2 py-2 text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
             onClick={handleCancel}
+            className="inline-flex flex-1 items-center justify-center rounded-xl border border-gray-200 bg-white/80 px-4 py-3 text-sm font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-white"
           >
-            Don't Delete
+            {cancelLabel}
           </button>
-        </span>
+        </div>
       </div>
     </AquaResponsiveDialog>
   );

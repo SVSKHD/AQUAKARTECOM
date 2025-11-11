@@ -109,25 +109,9 @@ const ProfileDetailsDialog = ({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label
-              htmlFor="address"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Address
-            </label>
-            <textarea
-              id="address"
-              name="address"
-              ref={addressRef}
-              rows={3}
-              value={formValues.address}
-              onChange={handleChange}
-              placeholder="Flat No, Street, Area, City"
-              className="mt-1 block w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              This will be used as your default delivery and service address.
-            </p>
+     
+  
+          
           </div>
 
           <div>

@@ -3,7 +3,6 @@ import useDialog from "@/utils/dialog";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import AquaToast from "@/components/reusables/react-toastify";
-import Image from "next/image";
 import debounce from "lodash.debounce";
 import { showToast } from "@/store/reducers/toastReducer";
 import { Send, Loader2 } from "lucide-react";
@@ -183,20 +182,6 @@ const AquaAuthMobileForm = ({ signup }) => {
 
   return (
     <div className="w-full">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-          <Send className="w-8 h-8 text-blue-600" />
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          {signup ? "Create Account" : "Welcome Back"}
-        </h2>
-        <p className="text-sm text-gray-600">
-          {signup
-            ? "Enter your email to get started"
-            : "Sign in to your account"}
-        </p>
-      </div>
-
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div>
           <label

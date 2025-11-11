@@ -24,6 +24,30 @@ import UserServiceOperations from "@/services/user";
 import AquaSpinner from "@/components/common/spinner";
 import ProfileDetailsDialog from "@/components/common/commonDialogs/profileDetailsDialog";
 
+const addressesMatch = (addressA, addressB) => {
+  if (!addressA || !addressB) {
+    return false;
+  }
+  if (addressA._id && addressB._id) {
+    return addressA._id === addressB._id;
+  }
+  return (
+    addressA.street === addressB.street &&
+    addressA.city === addressB.city &&
+    addressA.state === addressB.state &&
+    addressA.postalCode === addressB.postalCode
+  );
+};
+
+const AddressHandHint = ({ text }) => (
+  <div className="inline-flex w-full items-center gap-3 rounded-2xl bg-indigo-50/70 px-4 py-3 text-sm font-medium text-indigo-700 shadow-sm ring-1 ring-indigo-100 sm:max-w-md">
+    <span className="text-2xl animate-bounce" role="img" aria-hidden="true">
+      👆
+    </span>
+    <span className="text-left">{text}</span>
+  </div>
+);
+
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
   const router = useRouter();
@@ -60,8 +84,29 @@ const AquaCheckoutComponent = () => {
   const hasContactDetails = Boolean(
     userData?.user?.email && userData?.user?.phone,
   );
-  const hasAddresses = Boolean(userData?.user?.addresses?.length);
+  const savedAddresses = useMemo(
+    () => userData?.user?.addresses ?? [],
+    [userData?.user?.addresses],
+  );
+  const hasAddresses = Boolean(savedAddresses.length);
+  const hasSingleAddress = savedAddresses.length === 1;
+  const hasMultipleAddresses = savedAddresses.length > 1;
   const payableTotal = Math.max(getTotalPrice() - discount, 0);
+  const shouldPromptAddressSelection = hasMultipleAddresses && !selectedAddress;
+  const showAddressHandHint = !hasAddresses || shouldPromptAddressSelection;
+  const addressHandHintText = !hasAddresses
+    ? "Tap “Add address” to unlock delivery options."
+    : "Tap an address card to set it for this order.";
+
+  useEffect(() => {
+    if (!hasAddresses) return;
+    const selectedExists = savedAddresses.some((address) =>
+      addressesMatch(address, selectedAddress),
+    );
+    if (!selectedExists && hasSingleAddress) {
+      setSelectedAddress(savedAddresses[0]);
+    }
+  }, [hasAddresses, hasSingleAddress, savedAddresses, selectedAddress]);
 
   const getPaymentDisabledReason = ({ processing, type }) => {
     if (processing) {
@@ -614,9 +659,7 @@ const AquaCheckoutComponent = () => {
                                   <h3 className="text-base font-semibold text-gray-900">
                                     {product.title}
                                   </h3>
-                                  <p className="text-sm text-gray-500">
-                                    {secondaryLabel}
-                                  </p>
+                            
                                   <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-600">
                                     <CheckIcon
                                       className="h-4 w-4"
@@ -632,7 +675,7 @@ const AquaCheckoutComponent = () => {
 
                                 <div className="flex flex-col items-end gap-3">
                                   <p className="text-lg font-semibold text-gray-900">
-                                    {formatCurrencyINR(product.price)}
+                                    {formatCurrencyINR(product.discountPrice)}
                                   </p>
                                   <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-2 py-1 text-sm font-semibold text-gray-900">
                                     <button
@@ -797,16 +840,37 @@ const AquaCheckoutComponent = () => {
                       </button>
                     </div>
 
+                    {showAddressHandHint && (
+                      <div className="mt-4 flex items-center justify-start">
+                        <AddressHandHint text={addressHandHintText} />
+                      </div>
+                    )}
+
+                    {hasSingleAddress && selectedAddress && (
+                      <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+                        Using your saved address automatically. You can edit it
+                        below if needed.
+                      </div>
+                    )}
+
+                    {shouldPromptAddressSelection && (
+                      <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                        Multiple addresses found. Tap one of the cards to choose
+                        where we should deliver this order.
+                      </div>
+                    )}
+
                     <div className="mt-6 grid gap-4 sm:grid-cols-2">
                       {hasAddresses ? (
-                        userData.user.addresses.map((address) => {
-                          const isSelected =
-                            JSON.stringify(selectedAddress) ===
-                            JSON.stringify(address);
+                        savedAddresses.map((address) => {
+                          const isSelected = addressesMatch(
+                            selectedAddress,
+                            address,
+                          );
                           return (
                             <label
                               key={address._id || address.street}
-                              className={`relative flex cursor-pointer flex-col gap-3 rounded-2xl border p-4 transition ${
+                              className={`relative flex cursor-default flex-col gap-3 rounded-2xl border p-4 transition duration-200 ease-out transform hover:-translate-y-0.5 hover:shadow-md hover:cursor-pointer ${
                                 isSelected
                                   ? "border-indigo-500 bg-indigo-50 shadow-sm"
                                   : "border-gray-200 bg-white hover:border-indigo-200"

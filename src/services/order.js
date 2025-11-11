@@ -45,7 +45,7 @@ const createPhonePePayOrder = async (data) => {
     const response = await axios.post(`${BASE}/order/pay`, data);
     return response.data;
   } catch (error) {
-    throw new Error(`Error creating PhonePe pay order: ${error.message}`);
+    throw new Error(`Error creating PhonePe pay order: ${error}`);
   }
 };
 
