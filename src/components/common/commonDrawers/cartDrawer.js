@@ -105,6 +105,25 @@ const AquaCartDrawer = () => {
                 const productUrl =
                   product?.href || (id ? `/product/${id}` : "#");
                 const quantity = product.quantity || 1;
+                const listPrice = Number(product?.price) || 0;
+                const discountedPrice = Number(product?.discountPrice) || 0;
+                const hasDiscount = Boolean(
+                  product?.discountPriceStatus &&
+                    discountedPrice > 0 &&
+                    listPrice > 0 &&
+                    discountedPrice < listPrice,
+                );
+                const effectiveUnitPrice =
+                  hasDiscount && discountedPrice > 0
+                    ? discountedPrice
+                    : listPrice || discountedPrice;
+                const strikeUnitPrice =
+                  hasDiscount && listPrice ? listPrice : null;
+                const lineTotal = effectiveUnitPrice * quantity;
+                const strikeLineTotal =
+                  strikeUnitPrice && quantity
+                    ? strikeUnitPrice * quantity
+                    : null;
 
                 return (
                   <li
@@ -139,9 +158,16 @@ const AquaCartDrawer = () => {
                               {product.sub_title}
                             </p>
                           )}
-                          <p className="text-sm font-semibold text-emerald-600">
-                            {formatCurrencyINR(product.price)}
-                          </p>
+                          <div className="flex flex-col text-emerald-600">
+                            {strikeUnitPrice ? (
+                              <span className="text-xs text-slate-400 line-through">
+                                {formatCurrencyINR(strikeUnitPrice)}
+                              </span>
+                            ) : null}
+                            <p className="text-sm font-semibold">
+                              {formatCurrencyINR(effectiveUnitPrice || 0)}
+                            </p>
+                          </div>
                         </div>
 
                         <button
@@ -182,9 +208,16 @@ const AquaCartDrawer = () => {
                           </button>
                         </div>
 
-                        <span className="text-sm font-medium text-slate-600">
-                          Total {formatCurrencyINR(product.price * quantity)}
-                        </span>
+                        <div className="flex flex-col text-right text-slate-600">
+                          {strikeLineTotal ? (
+                            <span className="text-xs text-slate-400 line-through">
+                              Total {formatCurrencyINR(strikeLineTotal)}
+                            </span>
+                          ) : null}
+                          <span className="text-sm font-medium">
+                            Total {formatCurrencyINR(lineTotal || 0)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </li>

@@ -640,6 +640,21 @@ const AquaCheckoutComponent = () => {
                             resolvedCategory ||
                             "Aquakart product";
 
+                          const listPrice = Number(product?.price) || 0;
+                          const discountedPrice =
+                            Number(product?.discountPrice) || 0;
+                          const hasDiscount = Boolean(
+                            product?.discountPriceStatus &&
+                              discountedPrice > 0 &&
+                              listPrice > 0 &&
+                              discountedPrice < listPrice,
+                          );
+                          const displayPrice = hasDiscount
+                            ? discountedPrice
+                            : listPrice || discountedPrice;
+                          const strikePrice =
+                            hasDiscount && listPrice ? listPrice : null;
+
                           return (
                             <li
                               key={productId}
@@ -673,9 +688,14 @@ const AquaCheckoutComponent = () => {
                                   </div>
                                 </div>
 
-                                <div className="flex flex-col items-end gap-3">
+                                <div className="flex flex-col items-end gap-1 text-right">
+                                  {strikePrice ? (
+                                    <p className="text-sm text-gray-400 line-through">
+                                      {formatCurrencyINR(strikePrice)}
+                                    </p>
+                                  ) : null}
                                   <p className="text-lg font-semibold text-gray-900">
-                                    {formatCurrencyINR(product.discountPrice)}
+                                    {formatCurrencyINR(displayPrice || 0)}
                                   </p>
                                   <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-2 py-1 text-sm font-semibold text-gray-900">
                                     <button
@@ -1116,7 +1136,7 @@ const AquaCheckoutComponent = () => {
                     <h3 className="text-base font-semibold">Need help?</h3>
                     <p className="mt-2 text-sm text-indigo-800">
                       Call or WhatsApp us at{" "}
-                      <span className="font-semibold">+91 96186 06807</span> for
+                      <span className="font-semibold">+91 9014774667</span> for
                       any assistance with your order.
                     </p>
                   </section>
