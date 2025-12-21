@@ -26,6 +26,10 @@ const INVOICE_WATERMARK_URL =
 const GST_RATE = 0.18;
 const roundToTwo = (value) =>
   Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+const toNumber = (value, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
 
 const AquaCodOrderPageComponent = () => {
   const router = useRouter();
@@ -81,11 +85,9 @@ const AquaCodOrderPageComponent = () => {
       if (existingScript.getAttribute("data-loaded") === "true") {
         setIsPdfReady(true);
       } else {
-        existingScript.addEventListener(
-          "load",
-          () => setIsPdfReady(true),
-          { once: true },
-        );
+        existingScript.addEventListener("load", () => setIsPdfReady(true), {
+          once: true,
+        });
       }
       return;
     }
@@ -230,10 +232,9 @@ const AquaCodOrderPageComponent = () => {
   const orderSubtotal = useMemo(() => {
     if (!order?.items?.length) return 0;
     const total = order.items.reduce((sum, item) => {
-      const unitPrice = Number(item?.price) || 0;
-      const quantity = Number(item?.quantity) || 0;
-      const lineTotal = unitPrice * quantity;
-      return sum + lineTotal;
+      const unitPrice = toNumber(item?.price);
+      const quantity = toNumber(item?.quantity);
+      return sum + unitPrice * quantity;
     }, 0);
     return roundToTwo(total);
   }, [order?.items]);
@@ -245,8 +246,8 @@ const AquaCodOrderPageComponent = () => {
 
     return order.items.reduce(
       (acc, item) => {
-        const unitPrice = Number(item?.price) || 0;
-        const quantity = Number(item?.quantity) || 0;
+        const unitPrice = toNumber(item?.price);
+        const quantity = toNumber(item?.quantity);
         const grossLine = roundToTwo(unitPrice * quantity);
         const baseLine = roundToTwo(grossLine / (1 + GST_RATE));
         const gstLine = roundToTwo(grossLine - baseLine);
@@ -261,10 +262,12 @@ const AquaCodOrderPageComponent = () => {
 
   const shippingCharge = useMemo(() => {
     if (!order) return 0;
-    if (typeof order.shippingCost === "number") {
-      return roundToTwo(order.shippingCost);
-    }
-    return 50;
+    const rawShipping =
+      order.shippingCost ??
+      order.shippingCharge ??
+      order.deliveryCharge ??
+      order.shipping;
+    return roundToTwo(toNumber(rawShipping, 0));
   }, [order]);
 
   const payableTotal = useMemo(
@@ -326,6 +329,8 @@ const AquaCodOrderPageComponent = () => {
 
     try {
       setIsGeneratingInvoice(true);
+      const formatAmount = (value) =>
+        formatCurrencyINR(roundToTwo(toNumber(value, 0)));
       const doc = new jsPDFConstructor({ unit: "pt", format: "a4" });
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
@@ -370,7 +375,7 @@ const AquaCodOrderPageComponent = () => {
       doc.text("Aquakart", marginX, 54);
       doc.setFont(baseFont, "normal");
       doc.setFontSize(12);
-      doc.text("GST: 8074904635", marginX, 72);
+      doc.text("GST: 36AJOPH6387A1Z2", marginX, 72);
       doc.text("https://aquakart.co.in", marginX, 88);
       doc.setFont(baseFont, "bold");
       doc.setFontSize(26);
@@ -381,7 +386,7 @@ const AquaCodOrderPageComponent = () => {
       doc.setFontSize(13);
       doc.setFont(baseFont, "bold");
       doc.text("Invoice details", marginX, cursorY);
-      cursorY += 18;
+      cursorY += 20;
       doc.setFont(baseFont, "normal");
       doc.setFontSize(11);
 
@@ -420,7 +425,7 @@ const AquaCodOrderPageComponent = () => {
       doc.text("Deliver to", marginX + 220, cursorY);
       cursorY += 16;
       doc.setFontSize(11);
-      doc.setFont(baseFont, "normal");
+      doc.setFont(baseFont, "bold");
       const billingLines = [
         order?.customerName || order?.user?.name,
         order?.email,
@@ -438,16 +443,12 @@ const AquaCodOrderPageComponent = () => {
       };
 
       const billingBottom = writeLines(billingLines, marginX, cursorY);
-      const shippingBottom = writeLines(
-        shippingLines,
-        marginX + 220,
-        cursorY,
-      );
+      const shippingBottom = writeLines(shippingLines, marginX + 220, cursorY);
       cursorY = Math.max(billingBottom, shippingBottom) + 24;
 
       const tableWidth = pageWidth - marginX * 2;
       const headerHeight = 30;
-      const rowLineHeight = 18;
+      const rowLineHeight = 16;
       const indexX = marginX + 16;
       const itemX = marginX + 56;
       const qtyX = marginX + tableWidth - 210;
@@ -465,11 +466,7 @@ const AquaCodOrderPageComponent = () => {
         doc.text("#", indexX, y + 19);
         doc.text("Item description", itemX, y + 19);
         doc.text("Qty", qtyX, y + 19, { align: "right" });
-        doc.text("Unit price", unitPriceX, y + 19, { align: "right" });
-        doc.text("Base price", basePriceX, y + 19, { align: "right" });
-        doc.text(`GST (${Math.round(GST_RATE * 100)}%)`, gstPriceX, y + 19, {
-          align: "right",
-        });
+
         doc.text("Line total", totalX, y + 19, { align: "right" });
         doc.setTextColor(30, 41, 59);
         return y + headerHeight + 6;
@@ -494,8 +491,8 @@ const AquaCodOrderPageComponent = () => {
       order?.items?.forEach((product, index) => {
         const name =
           product?.name || product?.productName || `Item ${index + 1}`;
-        const qty = Number(product?.quantity) || 1;
-        const unitPrice = Number(product?.price) || 0;
+        const qty = toNumber(product?.quantity, 1);
+        const unitPrice = toNumber(product?.price, 0);
         const lineTotal = roundToTwo(qty * unitPrice);
         const baseLine = roundToTwo(lineTotal / (1 + GST_RATE));
         const gstLine = roundToTwo(lineTotal - baseLine);
@@ -503,10 +500,7 @@ const AquaCodOrderPageComponent = () => {
           name,
           Math.max(descriptionWidth, 120),
         );
-        const rowHeight = Math.max(
-          nameLines.length * rowLineHeight + 18,
-          52,
-        );
+        const rowHeight = Math.max(nameLines.length * rowLineHeight + 16, 54);
 
         ensureSpace(rowHeight + 4);
 
@@ -514,20 +508,14 @@ const AquaCodOrderPageComponent = () => {
         doc.roundedRect(marginX, cursorY, tableWidth, rowHeight, 6, 6, "S");
         doc.setFontSize(11);
         doc.setFont(baseFont, "normal");
-        const textBaseLine = cursorY + 26;
-        doc.text(String(index + 1).padStart(2, "0"), indexX, textBaseLine);
-        doc.text(nameLines, itemX, textBaseLine);
-        doc.text(String(qty), qtyX, textBaseLine, { align: "right" });
-        doc.text(formatCurrencyINR(unitPrice), unitPriceX, textBaseLine, {
-          align: "right",
+        const textTop = cursorY + 22;
+        doc.text(String(index + 1).padStart(2, "0"), indexX, textTop);
+        doc.text(nameLines, itemX, textTop, {
+          lineHeightFactor: rowLineHeight / 11,
         });
-        doc.text(formatCurrencyINR(baseLine), basePriceX, textBaseLine, {
-          align: "right",
-        });
-        doc.text(formatCurrencyINR(gstLine), gstPriceX, textBaseLine, {
-          align: "right",
-        });
-        doc.text(formatCurrencyINR(lineTotal), totalX, textBaseLine, {
+        doc.text(String(qty), qtyX, textTop, { align: "right" });
+
+        doc.text(`INR ${formatAmount(lineTotal)}`, totalX, textTop, {
           align: "right",
         });
 
@@ -583,23 +571,23 @@ const AquaCodOrderPageComponent = () => {
       const summaryLines = [
         {
           label: "Base amount",
-          value: formatCurrencyINR(itemsBaseTotal),
+          value: formatAmount(itemsBaseTotal),
         },
         {
           label: `GST (${Math.round(GST_RATE * 100)}%)`,
-          value: formatCurrencyINR(itemsGstTotal),
+          value: formatAmount(itemsGstTotal),
         },
         {
           label: "Items total",
-          value: formatCurrencyINR(orderSubtotal),
+          value: formatAmount(orderSubtotal),
         },
         {
           label: "Shipping",
-          value: formatCurrencyINR(shippingCharge),
+          value: formatAmount(shippingCharge),
         },
         {
           label: "Amount due on delivery",
-          value: formatCurrencyINR(payableTotal),
+          value: formatAmount(payableTotal),
           highlight: true,
         },
       ];
@@ -613,11 +601,7 @@ const AquaCodOrderPageComponent = () => {
           doc.setFontSize(11);
           doc.setFont(baseFont, "normal");
         }
-        doc.text(
-          line.label,
-          marginX + tableWidth / 2 + 30,
-          summaryLineY,
-        );
+        doc.text(line.label, marginX + tableWidth / 2 + 30, summaryLineY);
         doc.text(line.value, marginX + tableWidth - 30, summaryLineY, {
           align: "right",
         });
@@ -703,7 +687,9 @@ const AquaCodOrderPageComponent = () => {
                 }`}
               >
                 <Download className="h-4 w-4" aria-hidden="true" />
-                {isGeneratingInvoice ? "Preparing invoice..." : "Download invoice"}
+                {isGeneratingInvoice
+                  ? "Preparing invoice..."
+                  : "Download invoice"}
               </button>
               <Link
                 href="/shop"
@@ -803,7 +789,7 @@ const AquaCodOrderPageComponent = () => {
                     </dd>
                   </div>
                   <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-base font-semibold text-gray-900">
-                    <dt>Total paid on delivery</dt>
+                    <dt>Total Need to be paid on delivery</dt>
                     <dd className="text-indigo-600">
                       {formatCurrencyINR(payableTotal)}
                     </dd>

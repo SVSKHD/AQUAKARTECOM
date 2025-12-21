@@ -1,4 +1,4 @@
-import AquaServerDynamicProduct from "@/pageComponents/products/ServerSideDynamicProduct";
+import AquaProductRevamp from "@/pageComponents/products/AquaProductRevamp";
 import AquaProductSeo from "@/components/Layout/seo/productSeo";
 import ProductServiceOperations from "@/services/products";
 
@@ -97,7 +97,7 @@ function AquaDynamicProduct({ product, related, error }) {
   return (
     <>
       <AquaProductSeo product={seoPayload} />
-      <AquaServerDynamicProduct
+      <AquaProductRevamp
         product={product}
         related={related}
         stockCount={stockCount}

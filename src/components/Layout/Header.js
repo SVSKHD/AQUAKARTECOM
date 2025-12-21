@@ -122,7 +122,7 @@ const AquaHeader = () => {
                 </div>
               </div>
 
-              <div className="absolute inset-y-0 right-0 flex items-center space-x-2 pr-1 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+              <div className="absolute inset-y-0 right-0 flex items-center space-x-2 sm:static sm:inset-auto sm:ml-6">
                 <button
                   onClick={openFavDrawer}
                   type="button"

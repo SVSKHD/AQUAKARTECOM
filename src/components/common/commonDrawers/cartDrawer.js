@@ -100,18 +100,18 @@ const AquaCartDrawer = () => {
           ) : (
             <ul className="space-y-4">
               {cartData.map((product) => {
-                const id = product._id || product.id;
+                console.log(product);
+                const slug = product.slug || product.id;
                 const image = product?.photos?.[0]?.secure_url;
-                const productUrl =
-                  product?.href || (id ? `/product/${id}` : "#");
+                const productUrl = slug ? `/product/${slug}` : "#";
                 const quantity = product.quantity || 1;
                 const listPrice = Number(product?.price) || 0;
                 const discountedPrice = Number(product?.discountPrice) || 0;
                 const hasDiscount = Boolean(
                   product?.discountPriceStatus &&
-                    discountedPrice > 0 &&
-                    listPrice > 0 &&
-                    discountedPrice < listPrice,
+                  discountedPrice > 0 &&
+                  listPrice > 0 &&
+                  discountedPrice < listPrice,
                 );
                 const effectiveUnitPrice =
                   hasDiscount && discountedPrice > 0
@@ -127,7 +127,7 @@ const AquaCartDrawer = () => {
 
                 return (
                   <li
-                    key={id}
+                    key={slug}
                     className="group flex gap-4 rounded-3xl border border-slate-100 bg-white p-4 shadow-sm transition hover:border-emerald-200"
                   >
                     <div className="relative h-24 w-24 overflow-hidden rounded-2xl bg-slate-100">
