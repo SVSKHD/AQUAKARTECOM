@@ -1,0 +1,20 @@
+{
+  "name": "AquaKart E-Commerce",
+  "short_name": "AquaKart",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    }
+  ]
+}

@@ -8,6 +8,7 @@ export default function Document() {
           rel="icon"
           href="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408028/favicon_b3l7y1.ico" // Replace with the path to your favicon image
         />
+        <link rel="manifest" href="/manifest.json" />
       </Head>
       <body>
         <Main />
