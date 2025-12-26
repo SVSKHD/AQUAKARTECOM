@@ -4,7 +4,7 @@ const GST_RATE = 0.18;
 const BASE_MULTIPLIER = 0.8474594;
 
 const priceUtils = {
-  getBasePrice(price){
+  getBasePrice(price) {
     return Math.floor(price * BASE_MULTIPLIER);
   },
 

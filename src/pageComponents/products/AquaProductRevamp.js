@@ -474,8 +474,8 @@ function AquaProductRevamp({
                 Similar Products
               </h2>
 
-              {/* Mobile: Carousel View */}
-              <div className="relative group lg:hidden">
+              {/* Similar Products Carousel */}
+              <div className="relative group">
                 <div className="overflow-hidden p-2" ref={relatedProductRef}>
                   <div className="flex gap-6">
                     <Suspense
@@ -510,21 +510,6 @@ function AquaProductRevamp({
                 >
                   <ChevronRight size={24} />
                 </button>
-              </div>
-
-              {/* Desktop: Grid View */}
-              <div className="hidden flex-wrap justify-center gap-6 lg:flex">
-                <Suspense
-                  fallback={
-                    <div className="h-96 w-full animate-pulse rounded-2xl bg-white/50" />
-                  }
-                >
-                  {relatedProducts.map((item) => (
-                    <div key={item._id} className="w-full max-w-[300px]">
-                      <AquaRelatedProductCard product={item} />
-                    </div>
-                  ))}
-                </Suspense>
               </div>
             </div>
           )}

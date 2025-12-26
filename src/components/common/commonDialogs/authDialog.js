@@ -35,9 +35,7 @@ const AquaUserAuthDialog = () => {
               priority
             />
           </div>
-          <h2 className="mt-5 text-2xl font-bold text-gray-900">
-            AquaKart
-          </h2>
+          <h2 className="mt-5 text-2xl font-bold text-gray-900">AquaKart</h2>
           <p className="mt-1 text-sm text-gray-600 max-w-sm">
             Choose your preferred verification method to keep your account
             secure.

@@ -108,11 +108,7 @@ const ProfileDetailsDialog = ({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-     
-  
-          
-          </div>
+          <div className="sm:col-span-2"></div>
 
           <div>
             <label

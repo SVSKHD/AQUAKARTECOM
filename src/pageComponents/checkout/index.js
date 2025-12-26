@@ -645,9 +645,9 @@ const AquaCheckoutComponent = () => {
                             Number(product?.discountPrice) || 0;
                           const hasDiscount = Boolean(
                             product?.discountPriceStatus &&
-                              discountedPrice > 0 &&
-                              listPrice > 0 &&
-                              discountedPrice < listPrice,
+                            discountedPrice > 0 &&
+                            listPrice > 0 &&
+                            discountedPrice < listPrice,
                           );
                           const displayPrice = hasDiscount
                             ? discountedPrice
@@ -674,7 +674,7 @@ const AquaCheckoutComponent = () => {
                                   <h3 className="text-base font-semibold text-gray-900">
                                     {product.title}
                                   </h3>
-                            
+
                                   <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-600">
                                     <CheckIcon
                                       className="h-4 w-4"

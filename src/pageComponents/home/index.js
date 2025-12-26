@@ -340,7 +340,6 @@ const AquaHomeComponent = () => {
                 </div>
               </section>
 
-            
               <section
                 aria-labelledby="social-impact-heading"
                 className="mx-auto p-10 max-w-7xl px-4 pt-24 sm:px-6 sm:pt-32 lg:px-8"
