@@ -14,6 +14,7 @@ import { useRouter } from "next/router";
 import { useSelector, useDispatch } from "react-redux";
 import CategoryServiceOperations from "@/services/category";
 import SubCategoryServiceOperations from "@/services/subcategory";
+import FestivalCornerWidget from "../reusables/FestivalCornerWidget";
 
 const AquaLayout = (props) => {
   const router = useRouter();
@@ -96,8 +97,9 @@ const AquaLayout = (props) => {
           <AquafavDrawer />
           <AquaTailwindToast />
           <AquaToast />
+          <FestivalCornerWidget />
 
-          <div className="flex min-h-screen flex-col bg-white">
+          <div className="flex min-h-screen flex-col bg-white pt-24">
             <main className="flex-1">{props.children}</main>
 
             <AquaFooter

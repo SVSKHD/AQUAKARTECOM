@@ -3,7 +3,7 @@ const config = {
     title:
       "Aquakart | India's Leading Water Softening & Purification Solutions",
     keywords:
-      "Aquakart, Water Softeners, RO Purifiers, Best Water Filters, Hard Water Treatment, Home Water Solutions, Water Purification Systems, Whole House Filtration, Soft Water Treatment, Water Softeners in Hyderabad, RO Purifiers in Hyderabad, Water Filters Gachibowli, Water Filters Jubilee Hills, Hard Water Solution Madhapur, Softener Dealers Kondapur, Whole House RO Hyderabad",
+      "Aquakart, Water Softeners, RO Purifiers, Best Water Filters, water softeners near me, Hard Water Treatment, Home Water Solutions, Water Purification Systems, Whole House Filtration, Soft Water Treatment, Water Softeners in Hyderabad, RO Purifiers in Hyderabad, Water Filters Gachibowli, Water Filters Jubilee Hills, Hard Water Solution Madhapur, Softener Dealers Kondapur, Whole House RO Hyderabad",
     keyphrases:
       "Aquakart, Water Softeners, RO Purifiers, Home Water Solutions, Hard Water Treatment, Best Water Purifiers, Hyderabad Water Softener Services, RO Purifier Setup Gachibowli, Hard Water Fix Jubilee Hills, Water Filtration Experts Madhapur, Aquakart in Hyderabad",
     url: "https://aquakart.co.in",

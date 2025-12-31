@@ -2,37 +2,43 @@ import ReusableProductCard from "@/components/cards/ProductCardTwo";
 import ProductServiceOperations from "@/services/products";
 import { useEffect, useMemo, useState } from "react";
 import AquaSpinner from "@/components/common/spinner";
+import Link from "next/link";
+import { ArrowRightIcon } from "@heroicons/react/24/outline";
 
-const AquaProducts = () => {
-  const [products, setProducts] = useState([]);
+const AquaProducts = ({ initialProducts = [] }) => {
+  const [products, setProducts] = useState(initialProducts);
   const [loading, setLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("All");
 
+  // Fallback fetch if no initial products (e.g., client navigation fallback)
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const response = await ProductServiceOperations.AllProducts();
-        if (isMounted) {
-          setProducts(response.data?.data || []);
+    if (initialProducts.length === 0) {
+      let isMounted = true;
+      const fetchProducts = async () => {
+        setLoading(true);
+        try {
+          const response = await ProductServiceOperations.AllProducts();
+          if (isMounted) {
+            setProducts(response.data?.data || []);
+          }
+        } catch (error) {
+          console.error("Failed to load products", error);
+        } finally {
+          if (isMounted) {
+            setLoading(false);
+          }
         }
-      } catch (error) {
-        console.error("Failed to load products", error);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
+      };
 
-    fetchProducts();
+      fetchProducts();
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+      return () => {
+        isMounted = false;
+      };
+    } else {
+      setProducts(initialProducts);
+    }
+  }, [initialProducts]);
 
   useEffect(() => {
     setSelectedFilter("All");
@@ -81,94 +87,82 @@ const AquaProducts = () => {
   const visibleProducts = filteredProducts.slice(0, 4);
 
   return (
-    <>
-      {loading ? (
-        <>
-          <div className="flex items-center justify-center p-20">
-            <div className="text-center">
-              <AquaSpinner color="blue" size="lg" />
-            </div>
+    <section
+      aria-labelledby="trending-heading"
+      className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+    >
+      {/* Glass Header for Section */}
+      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+          <h2
+            id="trending-heading"
+            className="text-2xl font-bold tracking-tight text-slate-900"
+          >
+            Trending <span className="text-emerald-600">Essentials</span>
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Curated top-picks for your home water systems.
+          </p>
+        </div>
+
+        {/* Glass Filters */}
+        <div className="no-scrollbar flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
+          {categoryFilters.map((filter) => {
+            const isActive = filter === selectedFilter;
+            return (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setSelectedFilter(filter)}
+                className={`whitespace-nowrap px-4 py-1.5 text-xs font-bold uppercase tracking-wide rounded-full transition-all duration-300 ${
+                  isActive
+                    ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 scale-105"
+                    : "bg-white border border-slate-200 text-slate-500 hover:border-emerald-300 hover:text-emerald-600"
+                }`}
+              >
+                {filter}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="relative min-h-[300px]">
+        {loading ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-3xl z-10">
+            <AquaSpinner color="emerald" size="lg" />
           </div>
-        </>
-      ) : (
-        <section aria-labelledby="trending-heading" className="bg-white">
-          <div className="py-16 sm:py-24 lg:mx-auto lg:max-w-7xl lg:px-8 lg:py-32">
-            <div className="flex flex-col gap-6 px-4 sm:px-6 lg:px-0">
-              <div className="flex items-center justify-between">
-                <h2
-                  id="trending-heading"
-                  className="text-2xl font-bold tracking-tight text-gray-900"
+        ) : (
+          <div className="flex snap-x snap-mandatory overflow-x-auto gap-4 pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-y-10 sm:gap-x-6 xl:gap-x-8 no-scrollbar">
+            {visibleProducts.length ? (
+              visibleProducts.map((product) => (
+                <div
+                  key={product._id}
+                  className="group relative min-w-[280px] snap-center sm:min-w-0 sm:snap-align-none"
                 >
-                  Trending products
-                </h2>
-                <a
-                  href="/shop"
-                  className="hidden text-sm font-semibold text-indigo-600 hover:text-indigo-500 sm:block"
-                >
-                  Browse All Products
-                  <span aria-hidden="true"> &rarr;</span>
-                </a>
-              </div>
-
-              <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                {categoryFilters.map((filter) => {
-                  const isActive = filter === selectedFilter;
-                  return (
-                    <button
-                      key={filter}
-                      type="button"
-                      onClick={() => setSelectedFilter(filter)}
-                      className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold transition ${
-                        isActive
-                          ? "border-emerald-300 bg-emerald-50 text-emerald-700 shadow"
-                          : "border-slate-200 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-600"
-                      }`}
-                    >
-                      {filter}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="relative mt-6">
-                <div className="relative w-full overflow-x-auto">
-                  {visibleProducts.length ? (
-                    <ul
-                      role="list"
-                      className="mx-4 inline-flex space-x-8 sm:mx-6 lg:mx-0 lg:grid lg:grid-cols-4 lg:gap-x-8 lg:space-x-0"
-                    >
-                      {visibleProducts.map((product) => (
-                        <li
-                          key={product.id || product._id}
-                          className="inline-flex w-64 flex-col text-center lg:w-auto"
-                        >
-                          <ReusableProductCard product={product} />
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-gray-200 text-sm text-gray-500">
-                      Nothing to show for this filter just yet. Try another
-                      category.
-                    </div>
-                  )}
+                  <ReusableProductCard product={product} />
                 </div>
+              ))
+            ) : (
+              <div className="col-span-full flex h-40 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-slate-500">
+                No products found for this filter.
               </div>
-
-              <div className="mt-12 px-4 sm:hidden">
-                <a
-                  href="/shop"
-                  className="text-sm font-semibold text-indigo-600 hover:text-indigo-500"
-                >
-                  Browse All Products
-                  <span aria-hidden="true"> &rarr;</span>
-                </a>
-              </div>
-            </div>
+            )}
           </div>
-        </section>
-      )}
-    </>
+        )}
+      </div>
+
+      <div className="mt-10 flex justify-center">
+        <Link
+          href="/shop"
+          className="group flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all hover:border-emerald-300 hover:text-emerald-700 hover:shadow-emerald-100"
+        >
+          Browse Full Catalog{" "}
+          <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+        </Link>
+      </div>
+    </section>
   );
 };
+
 export default AquaProducts;

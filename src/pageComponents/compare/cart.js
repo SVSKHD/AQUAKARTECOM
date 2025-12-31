@@ -2,6 +2,7 @@ import useCurrency from "@/utils/currency";
 import { useDispatch, useSelector } from "react-redux";
 import React, { useEffect } from "react";
 import AquaToast from "@/components/reusables/react-toastify";
+import { ShoppingCart } from "lucide-react";
 
 const AquaCartTabContent = () => {
   const { cartData, compare } = useSelector((state) => ({ ...state }));
@@ -9,7 +10,7 @@ const AquaCartTabContent = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    console.log("Compare List Updated:", compare); // Check the updated compare list in the console
+    console.log("Compare List Updated:", compare);
   }, [compare]);
 
   const AddToCompare = (product) => {
@@ -21,59 +22,81 @@ const AquaCartTabContent = () => {
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
-      <div className="mt-6 grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 sm:gap-y-10 lg:grid-cols-4">
-        {cartData?.length <= 0 ? (
-          <h4 className="text-2xl text-black">No Favorites Yet</h4>
-        ) : (
-          <>
-            {cartData.map((r, i) => {
-              const isInCompare = compare?.some((item) => item._id === r._id); // Check if the product is in compare
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {cartData && cartData.length > 0 ? (
+        <>
+          <div className="mb-8 text-center sm:text-left">
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">
+              Your Cart
+            </h1>
+            <p className="text-slate-600">
+              {cartData.length} {cartData.length === 1 ? "item" : "items"} ready
+              for checkout or comparison
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {cartData.map((r) => {
+              const isInCompare = compare?.some((item) => item._id === r._id);
 
               return (
-                <div key={r._id}>
-                  <div className="relative">
-                    <div className="relative h-72 w-full overflow-hidden rounded-lg">
-                      <img
-                        alt={r.imageAlt}
-                        src={r?.photos[0].secure_url}
-                        className="h-full w-full object-cover object-center"
-                      />
-                    </div>
-                    <div className="relative mt-4">
-                      <h3 className="text-sm font-medium text-gray-900">
-                        {r.title}
-                      </h3>
-                    </div>
-                    <div className="absolute inset-x-0 top-0 flex h-72 items-end justify-end overflow-hidden rounded-lg p-4">
-                      <div
-                        aria-hidden="true"
-                        className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black opacity-50"
-                      />
-                      <p className="bg-gray-800 rounded-md p-1 relative text-lg font-semibold text-white">
-                        {formatCurrencyINRWithK(r.price)}
-                      </p>
+                <div
+                  key={r._id}
+                  className="group relative flex flex-col rounded-[2rem] border border-white/60 bg-white/60 backdrop-blur-2xl shadow-xl transition-all duration-500 hover:scale-[1.02] hover:bg-white/80 overflow-hidden"
+                >
+                  <div className="relative aspect-square m-4 rounded-[1.5rem] overflow-hidden bg-white">
+                    <img
+                      alt={r.title}
+                      src={r?.photos[0].secure_url}
+                      className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-indigo-900 shadow-sm">
+                      {formatCurrencyINRWithK(r.price)}
                     </div>
                   </div>
-                  <div className="mt-6">
-                    <button
-                      onClick={() => AddToCompare(r)}
-                      disabled={isInCompare} // Disable button if product is already in compare
-                      className={`relative flex items-center justify-center rounded-md border border-transparent px-8 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 ${
-                        isInCompare
-                          ? "bg-green-300 cursor-not-allowed"
-                          : "bg-gray-100"
-                      }`}
-                    >
-                      {isInCompare ? "Already in Compare" : "Add to Compare"}
-                    </button>
+
+                  <div className="flex flex-1 flex-col p-5 pt-2">
+                    <h3 className="text-lg font-bold text-slate-900 mb-2 line-clamp-1">
+                      {r.title}
+                    </h3>
+                    <div className="mt-auto pt-4">
+                      <button
+                        onClick={() => AddToCompare(r)}
+                        disabled={isInCompare}
+                        className={`w-full relative flex items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition-all duration-300 shadow-lg ${
+                          isInCompare
+                            ? "bg-emerald-100 text-emerald-800 cursor-not-allowed shadow-none"
+                            : "bg-white text-indigo-900 hover:bg-indigo-50 border border-indigo-100 active:scale-95"
+                        }`}
+                      >
+                        {isInCompare
+                          ? "Added for Comparison"
+                          : "Add to Compare"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
             })}
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-24 px-4">
+          <div className="w-32 h-32 rounded-full flex items-center justify-center mb-6 bg-white/40 backdrop-blur-md border border-white/50 shadow-xl">
+            <ShoppingCart
+              className="w-12 h-12 text-indigo-400"
+              strokeWidth={1.5}
+            />
+          </div>
+          <h3 className="text-2xl font-bold text-slate-900 mb-2">
+            Your Cart is Empty
+          </h3>
+          <p className="text-slate-500 text-center max-w-md font-light">
+            Looks like you haven't added anything to your cart yet. Browse our
+            catalog to find the perfect water solution.
+          </p>
+        </div>
+      )}
     </div>
   );
 };

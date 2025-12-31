@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import logo from "@/assests/logo.png";
 import AquaImage from "@/components/images/AquaImage";
+import { getFestivalWish } from "@/utils/festival";
 
 const rotatingHighlights = [
   "99% scale removal with reduced salt consumption",
@@ -13,8 +14,11 @@ const rotatingHighlights = [
 
 const AquaHomeHero = ({ data }) => {
   const [activeHighlight, setActiveHighlight] = useState(0);
+  const [festival, setFestival] = useState(null);
 
   useEffect(() => {
+    setFestival(getFestivalWish());
+
     const timer = setInterval(() => {
       setActiveHighlight((prev) => (prev + 1) % rotatingHighlights.length);
     }, 4200);
@@ -37,6 +41,13 @@ const AquaHomeHero = ({ data }) => {
   return (
     <div className="px-3 py-6 sm:px-4 lg:px-6">
       <div className="relative mx-auto max-w-7xl overflow-hidden rounded-3xl bg-gradient-to-br from-white via-slate-50 to-emerald-50 shadow-lg">
+        {/* Dynamic Festival Background Overlay */}
+        {festival && (
+          <div
+            className={`absolute inset-0 pointer-events-none opacity-10 bg-gradient-to-br ${festival.gradient}`}
+          />
+        )}
+
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-24 -right-24 h-60 w-60 rounded-full bg-emerald-100 blur-3xl" />
           <div className="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-100 blur-3xl" />
@@ -88,6 +99,34 @@ const AquaHomeHero = ({ data }) => {
                 alt="Aquakart"
                 customClass="mx-auto max-w-[180px]"
               />
+
+              {/* Festival Banner */}
+              {festival && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className={`mx-auto lg:mx-0 mt-4 max-w-sm rounded-2xl border border-white/40 bg-white/60 p-1 backdrop-blur-md shadow-lg ring-1 ring-black/5 ${festival.animation}`}
+                >
+                  <div
+                    className={`rounded-xl bg-gradient-to-r ${festival.gradient} p-0.5`}
+                  >
+                    <div className="flex items-center gap-3 rounded-[0.7rem] bg-white px-4 py-2">
+                      <span className="text-2xl">{festival.icon}</span>
+                      <div className="text-left">
+                        <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                          {festival.subText}
+                        </p>
+                        <p
+                          className={`text-base font-black bg-gradient-to-r ${festival.gradient} bg-clip-text text-transparent leading-tight`}
+                        >
+                          {festival.text}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
                 Elevate your water experience
               </h1>

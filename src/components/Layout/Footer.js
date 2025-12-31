@@ -2,9 +2,16 @@ import LW from "@/assests/logo-white.png";
 import Image from "next/image";
 import Link from "next/link";
 import { isArray } from "lodash";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import {
+  Facebook,
+  Instagram,
+  Twitter,
+  ArrowRight,
+  Mail,
+  Sparkles,
+} from "lucide-react";
 
 const navigation = {
   policy: [
@@ -25,157 +32,254 @@ const navigation = {
       icon: Instagram,
     },
     { name: "X", href: "https://x.com/aquakart8", icon: Twitter },
-    {
-      name: "YouTube",
-      href: "https://www.youtube.com/@aquakart",
-      icon: Youtube,
-    },
   ],
 };
 
 const year = new Date().getFullYear();
 
+const SkeletonPill = () => (
+  <div className="h-8 w-24 animate-pulse rounded-full bg-white/5" />
+);
+
+import { getFestivalWish } from "@/utils/festival";
+
 const AquaFooter = ({ categories = [], subcategories = [] }) => {
   const { userData } = useSelector((state) => ({ ...state }));
   const [email, setEmail] = useState("");
+  const [mounted, setMounted] = useState(false);
+  const [festival, setFestival] = useState(null);
+
+  useEffect(() => {
+    setMounted(true);
+    setFestival(getFestivalWish());
+  }, []);
 
   const formattedCategories = isArray(categories) ? categories : [];
   const formattedSubCategories = isArray(subcategories) ? subcategories : [];
 
+  // Determine if we should show skeletons (loading state or just empty initially)
+  const isLoading =
+    !mounted ||
+    (formattedCategories.length === 0 && formattedSubCategories.length === 0);
+
   return (
     <footer
-      className="relative overflow-hidden bg-slate-950"
       aria-labelledby="footer-heading"
+      className="bg-white px-2 pb-2 pt-10"
     >
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.25),_transparent_55%)]" />
-      <div className="absolute -top-32 left-1/2 -z-10 h-64 w-64 -translate-x-1/2 rounded-full bg-indigo-500/20 blur-3xl" />
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 px-6 pb-8 pt-16 shadow-2xl sm:px-12 lg:px-16">
+        {/* Ambient Background Effects */}
+        <div className="absolute top-0 left-1/2 -ml-[40rem] h-[30rem] w-[50rem] rounded-full bg-indigo-900/20 blur-[100px]" />
+        <div className="absolute bottom-0 right-0 -mr-20 h-[30rem] w-[40rem] rounded-full bg-blue-900/10 blur-[80px]" />
 
-      <div className="mx-auto max-w-7xl px-6 pb-10 pt-20 sm:px-8 lg:px-10">
-        <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-white/5 p-3 ring-1 ring-white/10">
-                <Image
-                  src={LW}
-                  alt="Aquakart"
-                  height={42}
-                  width={42}
-                  className="h-10 w-10"
-                />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white">Aquakart</h3>
-                <p className="text-sm text-white/60">
-                  Premium water solutions for every home and industry.
+        {/* Glass Grid Texture */}
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-125"></div>
+
+        {/* Festival Banner */}
+        {festival && (
+          <div className="relative z-20 -mt-8 mb-12 flex justify-center animate-fade-in-up">
+            <div
+              className={`relative overflow-hidden rounded-full p-[1px] bg-gradient-to-r ${festival.gradient}`}
+            >
+              <div className="relative rounded-full bg-slate-950/80 backdrop-blur-xl px-6 py-2">
+                <p
+                  className={`text-sm font-bold bg-gradient-to-r ${festival.gradient} bg-clip-text text-transparent flex items-center gap-2`}
+                >
+                  <Sparkles className="w-4 h-4 text-yellow-400" />
+                  {festival.text}
                 </p>
               </div>
             </div>
-            <p className="text-sm leading-6 text-white/60">
-              Softening, filtration, and purification systems designed for
-              Indian water conditions. Discover products, service support, and
-              expert consultation from Aquakart.
-            </p>
+          </div>
+        )}
+
+        <div className="relative z-10 grid gap-12 lg:grid-cols-[1fr_2fr] lg:gap-24">
+          {/* Brand & Newsletter Column */}
+          <div className="flex flex-col justify-between gap-10">
+            <div>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-inner ring-1 ring-white/20">
+                  <Image
+                    src={LW}
+                    alt="Aquakart"
+                    height={48}
+                    width={48}
+                    className="h-8 w-8 object-contain"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold tracking-tight text-white">
+                    Aquakart
+                  </h3>
+                  <p className="text-xs font-medium text-indigo-200/60 uppercase tracking-widest">
+                    Premium Water Solutions
+                  </p>
+                </div>
+              </div>
+              <p className="max-w-md text-base leading-7 text-slate-400">
+                Advanced softening, filtration, and purification systems
+                designed specifically for Indian water conditions. Experience
+                the clarity of pure water.
+              </p>
+            </div>
 
             {!userData && (
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-lg">
-                <h4 className="text-sm font-semibold text-white">
-                  Subscribe to our newsletter
-                </h4>
-                <p className="mt-2 text-xs text-white/60">
-                  Product updates, maintenance guides, and water-care insights
-                  in your inbox.
-                </p>
-                <form className="mt-4 flex flex-col gap-3 sm:flex-row">
-                  <label htmlFor="newsletter-email" className="sr-only">
-                    Email address
-                  </label>
-                  <input
-                    id="newsletter-email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="you@domain.com"
-                    className="w-full rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm text-white placeholder:text-white/40 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
-                  />
-                  <button
-                    type="submit"
-                    className="inline-flex items-center justify-center rounded-full bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-                  >
-                    Subscribe
-                  </button>
-                </form>
+              <div className="group relative rounded-[2rem] border border-white/10 bg-white/5 p-2 backdrop-blur-xl transition-all hover:bg-white/10">
+                <div className="absolute inset-0 -z-10 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 opacity-0 transition-opacity group-hover:opacity-100 rounded-[2rem]" />
+                <div className="px-6 py-6">
+                  <h4 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Mail className="h-5 w-5 text-indigo-400" /> Stay Updated
+                  </h4>
+                  <p className="mt-2 text-sm text-slate-400">
+                    Get expert water-care guides and product launches directly
+                    to your inbox.
+                  </p>
+                  <form className="mt-6">
+                    <div className="relative flex items-center">
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter your email"
+                        className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5 pr-32 text-sm text-white placeholder:text-slate-500 focus:border-indigo-500/50 focus:bg-black/40 focus:outline-none focus:ring-0 transition-all"
+                      />
+                      <button
+                        type="submit"
+                        className="absolute right-1.5 top-1.5 bottom-1.5 rounded-xl bg-indigo-600 px-5 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-500 hover:scale-105 active:scale-95"
+                      >
+                        Join
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             )}
           </div>
 
-          <div className="grid gap-10 md:grid-cols-3">
-            <div>
-              <h4 className="text-sm font-semibold text-white">
-                Subcategories
+          {/* Links & Instagram Grid */}
+          <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
+            {/* Subcategories */}
+            <div className="flex flex-col gap-4">
+              <h4 className="text-sm font-bold uppercase tracking-widest text-white/40">
+                Solutions
               </h4>
-              <ul className="mt-4 space-y-2 text-sm text-white/60">
-                {formattedSubCategories.slice(0, 6).map((item) => (
-                  <li key={item.title}>
-                    <Link
-                      href={`/subcategory/${item.title}`}
-                      className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:bg-white/10 hover:text-white"
-                    >
-                      <span>{item.title}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              <div className="flex flex-col gap-3">
+                {isLoading && formattedSubCategories.length === 0
+                  ? Array(5)
+                      .fill(0)
+                      .map((_, i) => <SkeletonPill key={i} />)
+                  : formattedSubCategories.slice(0, 8).map((item) => (
+                      <Link
+                        key={item.title}
+                        href={`/subcategory/${item.title}`}
+                        className="group flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:scale-[1.02]"
+                      >
+                        <span className="truncate">{item.title}</span>
+                        <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0 text-indigo-400" />
+                      </Link>
+                    ))}
+              </div>
             </div>
-            <div>
-              <h4 className="text-sm font-semibold text-white">Categories</h4>
-              <ul className="mt-4 space-y-2 text-sm text-white/60">
-                {formattedCategories.slice(0, 6).map((item) => (
-                  <li key={item.title}>
-                    <Link
-                      href={`/category/${item.title}`}
-                      className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:bg-white/10 hover:text-white"
-                    >
-                      <span>{item.title}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+
+            {/* Categories */}
+            <div className="flex flex-col gap-4">
+              <h4 className="text-sm font-bold uppercase tracking-widest text-white/40">
+                Collections
+              </h4>
+              <div className="flex flex-col gap-3">
+                {isLoading && formattedCategories.length === 0
+                  ? Array(5)
+                      .fill(0)
+                      .map((_, i) => <SkeletonPill key={i} />)
+                  : formattedCategories.slice(0, 5).map((item) => (
+                      <Link
+                        key={item.title}
+                        href={`/category/${item.title}`}
+                        className="group flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:scale-[1.02]"
+                      >
+                        <span className="truncate">{item.title}</span>
+                      </Link>
+                    ))}
+              </div>
             </div>
-            <div>
-              <h4 className="text-sm font-semibold text-white">Quick links</h4>
-              <ul className="mt-4 space-y-2 text-sm text-white/60">
+
+            {/* Instagram Feed */}
+            <div className="flex flex-col gap-4">
+              <h4 className="text-sm font-bold uppercase tracking-widest text-white/40">
+                On Instagram
+              </h4>
+              <div className="grid grid-cols-2 gap-2">
+                {[...Array(6)].map((_, i) => (
+                  <a
+                    key={i}
+                    href="https://www.instagram.com/aquakart8/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group relative aspect-square overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10 transition-all hover:ring-white/30 hover:scale-105"
+                  >
+                    {/* Placeholder Gradient representing image */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/0 opacity-50" />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/40 backdrop-blur-sm">
+                      <Instagram className="h-5 w-5 text-white" />
+                    </div>
+                  </a>
+                ))}
+              </div>
+              <a
+                href="https://www.instagram.com/aquakart8/"
+                target="_blank"
+                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
+              >
+                View Profile <ArrowRight className="w-3 h-3" />
+              </a>
+            </div>
+
+            {/* Company */}
+            <div className="flex flex-col gap-4">
+              <h4 className="text-sm font-bold uppercase tracking-widest text-white/40">
+                Company
+              </h4>
+              <div className="flex flex-col gap-2">
                 {navigation.policy.map((item) => (
-                  <li key={item.name}>
-                    <Link
-                      href={item.href}
-                      className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:bg-white/10 hover:text-white"
-                    >
-                      <span>{item.name}</span>
-                    </Link>
-                  </li>
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className="group flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-slate-400 transition-colors hover:text-white"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 opacity-0 transition-opacity group-hover:opacity-100" />
+                    {item.name}
+                  </Link>
                 ))}
-              </ul>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-6 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3 text-xs text-white/50">
-            <span className="rounded-full border border-white/10 px-3 py-1">
-              Made in India
-            </span>
-            <span>&copy; {year} Aquakart. All rights reserved.</span>
+        {/* Footer Bottom */}
+        <div className="relative z-10 mt-16 flex flex-col items-center justify-between gap-6 border-t border-white/5 pt-8 sm:flex-row">
+          <div className="flex flex-wrap justify-center gap-6">
+            <p className="text-xs font-medium text-slate-500">
+              &copy; {year} Aquakart. All rights reserved.
+            </p>
+            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wide text-slate-300">
+                Made in India
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
+
+          <div className="flex gap-4">
             {navigation.social.map(({ name, href, icon: Icon }) => (
               <Link
                 key={name}
                 href={href}
-                aria-label={name}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/70 transition hover:border-white/30 hover:text-white"
+                className="group relative flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-slate-400 transition-all hover:bg-white hover:text-slate-900 hover:scale-110"
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-5 w-5" />
               </Link>
             ))}
           </div>

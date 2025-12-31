@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect, useMemo } from "react";
+import { Fragment, useState, useMemo } from "react";
 import {
   Dialog,
   DialogBackdrop,
@@ -14,24 +14,21 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import AquaProducts from "./products";
 import AquaHomeHero from "./homeHeroSection";
-import CategoryServiceOperations from "@/services/category";
-import SubCategoryServiceOperations from "@/services/subcategory";
 import {
   SparklesIcon,
   WrenchScrewdriverIcon,
   ShieldCheckIcon,
   RocketLaunchIcon,
+  ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 
-const AquaHomeComponent = () => {
-  const [categoryData, setCategoryData] = useState([]);
-  const [subCategoryData, setSubCategoryData] = useState([]);
+const AquaHomeComponent = ({
+  initialCategories = [],
+  initialSubCategories = [],
+  initialProducts = [],
+}) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [loading, setLoading] = useState({
-    category: false,
-    subcategory: false,
-    product: false,
-  });
+
   const waterGuides = useMemo(
     () => [
       {
@@ -98,26 +95,11 @@ const AquaHomeComponent = () => {
   );
   const ActiveGuideIcon = activeGuide?.icon || SparklesIcon;
 
-  useEffect(() => {
-    const fetchAllCategories = async () => {
-      CategoryServiceOperations.Allcategories().then((res) => {
-        setCategoryData(res.data?.data);
-      });
-    };
-    const fetchAllSubCategories = async () => {
-      SubCategoryServiceOperations.AllSubcategories().then((res) => {
-        setSubCategoryData(res.data?.data);
-      });
-    };
-    fetchAllCategories();
-    fetchAllSubCategories();
-  }, []);
-
   const router = useRouter();
   const SeoData = {
-    title: "Aquakart | Top Water Softeners, Purifiers & More for Your Home",
+    title: "Aquakart | Premium Water Solutions & Purifiers",
     description:
-      "Discover top-quality water softeners and purifiers at Aquakart. Revolutionizing water quality, we ensure pure, soft water for a healthier lifestyle.",
+      "Transform your water quality with Aquakart's advanced softeners and purifiers. Engineered for Indian homes.",
     image:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
     canonical: `${process.env.NEXT_PUBLIC_URL || "https://aquakart.co.in"}${router.asPath}`,
@@ -130,17 +112,23 @@ const AquaHomeComponent = () => {
   return (
     <>
       <AquaLayout seo={SeoData}>
-        <div>
-          <div className="bg-white">
+        <div className="bg-slate-50 relative selection:bg-emerald-500 selection:text-white">
+          {/* Global Background Elements */}
+          <div className="fixed inset-0 pointer-events-none z-0">
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-200/20 blur-[120px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-100/30 blur-[120px]" />
+          </div>
+
+          <div className="relative z-10">
             {/* Mobile menu */}
             <Dialog
-              className="relative z-40 lg:hidden"
+              className="relative z-50 lg:hidden"
               open={mobileMenuOpen}
               onClose={setMobileMenuOpen}
             >
               <DialogBackdrop
                 transition
-                className="fixed inset-0 bg-black bg-opacity-25 transition-opacity duration-300 ease-linear data-[closed]:opacity-0"
+                className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ease-linear data-[closed]:opacity-0"
               />
 
               <div className="fixed inset-0 z-40 flex">
@@ -158,11 +146,10 @@ const AquaHomeComponent = () => {
                       <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                     </button>
                   </div>
-                  {/* {categoryData.length} */}
-                  {/* Links */}
+
                   <TabGroup className="mt-2">
                     <TabPanels as={Fragment}>
-                      {categoryData?.map((category) => (
+                      {initialCategories?.map((category) => (
                         <TabPanel
                           key={category.name}
                           className="space-y-12 px-4 py-6"
@@ -174,15 +161,7 @@ const AquaHomeComponent = () => {
                   <div className="space-y-6 border-t border-gray-200 px-4 py-6">
                     <div className="flow-root">
                       <a
-                        href="#"
-                        className="-m-2 block p-2 font-medium text-gray-900"
-                      >
-                        Create an account
-                      </a>
-                    </div>
-                    <div className="flow-root">
-                      <a
-                        href="#"
+                        href="/auth/login"
                         className="-m-2 block p-2 font-medium text-gray-900"
                       >
                         Sign in
@@ -194,188 +173,231 @@ const AquaHomeComponent = () => {
             </Dialog>
 
             {/* Hero section */}
-            <AquaHomeHero data={categoryData} />
+            <AquaHomeHero data={initialCategories} />
 
-            <main>
-              <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-                <div className="flex flex-col gap-8 rounded-3xl bg-white px-6 py-8 shadow-lg ring-1 ring-slate-100 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="max-w-xl">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
-                      Aquakart concierge
-                    </p>
-                    <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">
-                      Plan, upgrade, or service in a few guided steps
-                    </h2>
-                    <p className="mt-3 text-sm text-slate-500">
-                      Choose a journey below to get instant recommendations,
-                      service slots, or project-ready documentation. Everything
-                      is mapped to real Indian water challenges.
-                    </p>
-                    <div className="mt-5 flex flex-wrap gap-3">
-                      {waterGuides.map((guide) => {
-                        const Icon = guide.icon;
-                        const isActive = guide.id === activeGuideId;
-                        return (
-                          <button
-                            key={guide.id}
-                            type="button"
-                            onClick={() => setActiveGuideId(guide.id)}
-                            className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                              isActive
-                                ? "border-emerald-300 bg-emerald-50 text-emerald-700 shadow"
-                                : "border-slate-200 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-600"
-                            }`}
-                          >
-                            <Icon className="h-4 w-4" />
-                            {guide.title}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+            <main className="space-y-24 pb-24">
+              {/* Concierge Section - Glass UI */}
+              <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-12">
+                <div className="relative overflow-hidden rounded-[2rem] border border-white/60 bg-white/40 backdrop-blur-xl shadow-2xl p-8 lg:p-12">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-white/40 opacity-80" />
 
-                  <div className="w-full max-w-lg rounded-3xl bg-slate-900/95 p-6 text-white shadow-xl lg:w-auto">
-                    <div className="flex items-center gap-3 text-sm font-semibold uppercase tracking-wide text-emerald-200">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
-                        <ActiveGuideIcon className="h-5 w-5" />
-                      </span>
-                      Guided experience
-                    </div>
-                    <h3 className="mt-3 text-2xl font-semibold tracking-tight">
-                      {activeGuide.title}
-                    </h3>
-                    <p className="mt-2 text-sm text-slate-200">
-                      {activeGuide.description}
-                    </p>
-                    <ul className="mt-4 space-y-2 text-sm text-emerald-100">
-                      {activeGuide.bullets.map((item) => (
-                        <li key={item} className="flex items-start gap-2">
-                          <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-300" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                    {activeGuide.cta && (
-                      <Link
-                        href={activeGuide.cta.href}
-                        className="mt-6 inline-flex items-center justify-center rounded-full bg-white px-5 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
-                      >
-                        {activeGuide.cta.label}
-                        <span className="ml-1" aria-hidden="true">
-                          →
+                  <div className="relative flex flex-col gap-12 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="max-w-xl">
+                      <p className="inline-flex items-center gap-2 rounded-full bg-emerald-100/50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-emerald-700 backdrop-blur-sm">
+                        <SparklesIcon className="w-3 h-3" /> Aquakart Concierge
+                      </p>
+
+                      <h2 className="mt-6 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                        Your water journey,{" "}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">
+                          simplified.
                         </span>
-                      </Link>
-                    )}
+                      </h2>
+                      <p className="mt-4 text-base leading-relaxed text-slate-600">
+                        Choose a path below to get instant recommendations,
+                        service slots, or project-ready documentation. Tailored
+                        specifically for Indian water conditions.
+                      </p>
+
+                      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {waterGuides.map((guide) => {
+                          const Icon = guide.icon;
+                          const isActive = guide.id === activeGuideId;
+                          return (
+                            <button
+                              key={guide.id}
+                              type="button"
+                              onClick={() => setActiveGuideId(guide.id)}
+                              className={`group relative flex items-center gap-3 rounded-xl border p-4 text-left transition-all duration-300 ${
+                                isActive
+                                  ? "border-emerald-500/30 bg-emerald-50/80 text-emerald-900 shadow-lg shadow-emerald-500/10 scale-[1.02]"
+                                  : "border-white/50 bg-white/50 text-slate-600 hover:border-emerald-200 hover:bg-white/80 hover:shadow-md"
+                              }`}
+                            >
+                              <div
+                                className={`rounded-lg p-2 transition-colors ${isActive ? "bg-emerald-200" : "bg-slate-100 group-hover:bg-emerald-100"}`}
+                              >
+                                <Icon
+                                  className={`h-5 w-5 ${isActive ? "text-emerald-700" : "text-slate-500 group-hover:text-emerald-600"}`}
+                                />
+                              </div>
+                              <span className="font-semibold text-sm">
+                                {guide.title}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="w-full max-w-lg lg:w-[450px]">
+                      <div className="relative overflow-hidden rounded-[1.5rem] bg-slate-900 p-8 text-white shadow-2xl ring-1 ring-white/10 transition-all duration-500">
+                        {/* Decorative blobs inside card */}
+                        <div className="absolute top-0 right-0 -mt-10 -mr-10 h-32 w-32 rounded-full bg-emerald-500/30 blur-2xl" />
+                        <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-32 w-32 rounded-full bg-indigo-500/30 blur-2xl" />
+
+                        <div className="relative">
+                          <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-6">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 backdrop-blur-md ring-1 ring-white/20">
+                              <ActiveGuideIcon className="h-4 w-4" />
+                            </span>
+                            Guided Experience
+                          </div>
+                          <h3 className="text-2xl font-bold">
+                            {activeGuide.title}
+                          </h3>
+                          <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                            {activeGuide.description}
+                          </p>
+                          <ul className="mt-6 space-y-3">
+                            {activeGuide.bullets.map((item) => (
+                              <li
+                                key={item}
+                                className="flex items-start gap-3 text-sm text-slate-200"
+                              >
+                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                          {activeGuide.cta && (
+                            <Link
+                              href={activeGuide.cta.href}
+                              className="group mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-white text-slate-900 px-6 py-3 text-sm font-bold shadow-lg transition-all hover:bg-emerald-50 hover:shadow-emerald-500/20 active:scale-95"
+                            >
+                              {activeGuide.cta.label}
+                              <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </section>
 
-              <AquaProducts />
+              {/* Products Section */}
+              <div className="relative">
+                {/* Section Background Decoration */}
+                <div className="absolute top-1/2 left-0 w-full h-[500px] bg-gradient-to-b from-transparent via-emerald-50/50 to-transparent -z-10 blur-3xl" />
+                <AquaProducts initialProducts={initialProducts} />
+              </div>
 
+              {/* Categories Section - Glass Grid */}
               <section
                 aria-labelledby="category-heading"
-                className="pt-2 sm:pt-2 xl:mx-auto xl:max-w-7xl xl:px-8"
+                className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
               >
-                <div className="px-4 sm:flex sm:items-center sm:justify-between sm:px-6 lg:px-8 xl:px-0">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
                   <h2
                     id="category-heading"
-                    className="text-2xl font-bold tracking-tight text-gray-900"
+                    className="text-2xl font-bold tracking-tight text-slate-900"
                   >
-                    Shop by Category
+                    Shop by <span className="text-emerald-600">Collection</span>
                   </h2>
-                  <a
+                  <Link
                     href="/categories"
-                    className="hidden text-sm font-semibold text-indigo-600 hover:text-indigo-500 sm:block"
+                    className="hidden text-sm font-semibold text-slate-600 hover:text-emerald-600 sm:flex items-center gap-1 transition-colors"
                   >
-                    Browse All categories
-                    <span aria-hidden="true"> &rarr;</span>
-                  </a>
+                    Browse all collections
+                    <ArrowRightIcon className="w-4 h-4" />
+                  </Link>
                 </div>
 
-                <div className="mt-4 px-4 sm:px-6 lg:px-8 xl:px-0">
-                  {loading.category ? (
-                    <div className="flex h-80 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white">
-                      <AquaSpinner color="blue" size="lg" />
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                  {initialCategories.length === 0 ? (
+                    <div className="col-span-full h-40 flex items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/50">
+                      <AquaSpinner color="emerald" size="lg" />
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                      {categoryData.map((category) => (
+                    initialCategories.slice(0, 10).map((category, idx) => {
+                      // Fix: Provide valid fallback if photos array is empty or undefined
+                      const imageUrl =
+                        category.photos?.[0]?.secure_url ||
+                        "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-512x512_kfw439.png";
+                      return (
                         <Link
                           key={category.title}
                           href={`/category/${category.title}`}
-                          className="group flex flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-100 transition duration-200 ease-out hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+                          className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-emerald-200/50 hover:ring-2 hover:ring-emerald-500/20"
                         >
-                          <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[5/4]">
+                          <div className="aspect-[4/3] overflow-hidden bg-slate-100 relative">
                             <img
-                              src={category.photos[0].secure_url}
+                              src={imageUrl}
                               alt={category.title}
-                              className="h-full w-full object-cover object-center transition duration-200 ease-out group-hover:scale-105"
+                              className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-110"
                             />
+                            {/* Gradient Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-40" />
                           </div>
-                          <div className="flex flex-1 flex-col justify-between p-3 sm:p-4">
-                            <p className="text-sm font-semibold text-slate-900 sm:text-base">
+
+                          <div className="absolute bottom-0 inset-x-0 p-4">
+                            <p className="text-sm font-bold text-white drop-shadow-md">
                               {category.title}
                             </p>
-                            <span className="mt-2 inline-flex items-center text-xs font-semibold text-emerald-600 sm:text-sm">
-                              Explore
-                              <span className="ml-1 transition duration-200 group-hover:translate-x-0.5">
-                                →
-                              </span>
+                            <span className="mt-1 inline-flex items-center gap-1 text-[10px] uppercase font-bold text-emerald-300 opacity-0 transform translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
+                              View Collection{" "}
+                              <ArrowRightIcon className="w-3 h-3" />
                             </span>
                           </div>
                         </Link>
-                      ))}
-                    </div>
+                      );
+                    })
                   )}
                 </div>
 
-                <div className="mt-6 px-4 sm:hidden">
-                  <a
+                <div className="mt-6 sm:hidden">
+                  <Link
                     href="/categories"
-                    className="block text-sm font-semibold text-indigo-600 hover:text-indigo-500"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold shadow-sm transition-colors hover:bg-slate-50"
                   >
-                    Browse All categories
-                    <span aria-hidden="true"> &rarr;</span>
-                  </a>
+                    View All Collections
+                  </Link>
                 </div>
               </section>
 
-              <section
-                aria-labelledby="social-impact-heading"
-                className="mx-auto p-10 max-w-7xl px-4 pt-24 sm:px-6 sm:pt-32 lg:px-8"
-              >
-                <div className="relative overflow-hidden rounded-lg">
+              {/* Social Impact / Blog Banner - Glass & Gradient */}
+              <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="relative overflow-hidden rounded-[2.5rem] bg-indigo-900 shadow-2xl">
+                  {/* Background Image with heavy blur and overlay */}
                   <div className="absolute inset-0">
                     <img
                       src="https://res.cloudinary.com/aquakartproducts/image/upload/v1741968501/Blogs/jhkfgdhd9yatyml1bz4j.jpg"
-                      alt="Aquakart | Blogs"
-                      className="h-full w-full object-cover object-center"
+                      alt="Background"
+                      className="h-full w-full object-cover opacity-40 blur-sm scale-110"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-950/90 via-indigo-900/80 to-transparent" />
                   </div>
-                  <div className="relative bg-gray-900 bg-opacity-75 px-6 py-32 sm:px-12 sm:py-40 lg:px-16">
-                    <div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
-                      <h2
-                        id="social-impact-heading"
-                        className="text-3xl font-bold tracking-tight text-white sm:text-4xl"
-                      >
-                        <span className="block sm:inline">Level up Water </span>
+
+                  <div className="relative px-6 py-16 sm:px-12 sm:py-24 lg:flex lg:items-center lg:px-16">
+                    <div className="max-w-2xl">
+                      <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/30 border border-indigo-400/30 px-3 py-1 text-xs font-bold text-indigo-200 backdrop-blur-md mb-6">
+                        <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />{" "}
+                        Knowledge Hub
+                      </div>
+                      <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                        Why Water Softeners Matter?
                       </h2>
-                      <p className="mt-3 text-xl text-white">
-                        Softeners are chemical agents used to reduce the
-                        hardness of water by removing or neutralizing minerals
-                        such as calcium and magnesium. These minerals can cause
-                        scaling, buildup, and inefficiency in plumbing and
-                        appliances, as well as less effective cleaning with
-                        soaps and detergents. By replacing the hard minerals
-                        with sodium or potassium ions through a process called
-                        ion exchange, water softeners improve water quality,
+                      <p className="mt-6 text-lg leading-relaxed text-indigo-100">
+                        Hard water minerals like calcium and magnesium can
+                        damage appliances (`efficiency loss`) and irritate skin.
+                        Discover how ion-exchange technology transforms your
+                        daily water quality.
                       </p>
-                      <Link
-                        href="/blogs"
-                        className="mt-8 block w-full rounded-md border border-transparent bg-white px-8 py-3 text-base font-medium text-gray-900 hover:bg-gray-100 sm:w-auto"
-                      >
-                        Know More
-                      </Link>
+                      <div className="mt-8 flex flex-wrap gap-4">
+                        <Link
+                          href="/blogs"
+                          className="rounded-xl bg-white px-6 py-3 text-sm font-bold text-indigo-900 shadow-lg shadow-indigo-900/20 transition-all hover:bg-indigo-50 hover:scale-105 active:scale-95"
+                        >
+                          Read Full Article
+                        </Link>
+                        <Link
+                          href="/water-report"
+                          className="rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-bold text-white backdrop-blur-md transition-all hover:bg-white/20"
+                        >
+                          Upload Water Report
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -387,4 +409,5 @@ const AquaHomeComponent = () => {
     </>
   );
 };
+
 export default AquaHomeComponent;

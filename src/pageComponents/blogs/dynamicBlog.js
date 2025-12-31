@@ -12,11 +12,13 @@ import {
   ClockIcon,
   LinkIcon,
   SparklesIcon,
+  ArrowRightIcon,
+  CalendarIcon,
 } from "@heroicons/react/24/outline";
 import Head from "next/head";
 import AquaProductCard from "@/components/cards/productCard";
 import Link from "next/link";
-
+import Image from "next/image";
 import AquaImage from "@/components/images/AquaImage";
 
 const AquaDynamicBlogComponent = ({
@@ -113,7 +115,7 @@ const AquaDynamicBlogComponent = ({
     try {
       return new Date(blog.createdAt).toLocaleDateString("en-IN", {
         year: "numeric",
-        month: "short",
+        month: "long",
         day: "numeric",
       });
     } catch {
@@ -173,7 +175,7 @@ const AquaDynamicBlogComponent = ({
 
   const categoryLabel = formatTopicLabel(
     blog?.category,
-    blog?.title || "Aquakart",
+    blog?.title || "Story",
   );
 
   const keyHighlights = useMemo(() => {
@@ -206,214 +208,193 @@ const AquaDynamicBlogComponent = ({
         {seoData.image && <meta property="og:image" content={seoData.image} />}
         <meta name="keywords" content={seoData.keywords} />
       </Head>
-      <div className="relative bg-white">
+
+      {/* Global Background */}
+      <div className="fixed inset-0 bg-slate-50 z-[-1]">
+        <div className="absolute top-[0%] left-[0%] w-[50%] h-[50%] rounded-full bg-emerald-100/40 blur-[120px]" />
+        <div className="absolute bottom-[0%] right-[0%] w-[50%] h-[50%] rounded-full bg-indigo-100/40 blur-[120px]" />
+      </div>
+
+      <div className="relative min-h-screen">
         <div
-          className="pointer-events-none fixed inset-x-0 top-16 z-40 h-1 bg-emerald-100"
+          className="fixed top-0 left-0 right-0 z-50 h-1.5 bg-slate-100/50"
           aria-hidden="true"
         >
-          <span
-            className="block h-full w-0 bg-emerald-500 transition-all"
+          <div
+            className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all duration-300 ease-out shadow-[0_0_10px_rgba(52,211,153,0.5)]"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-        <div className="relative mx-auto max-w-6xl px-4 pb-24 pt-12 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-emerald-600">
+        <div className="relative mx-auto max-w-7xl px-4 pb-24 pt-24 sm:px-6 lg:px-8">
+          {/* Breadcrumb / Navigation */}
+          <div className="mb-8 flex items-center gap-2 text-sm font-medium">
             <Link
               href="/blogs"
-              className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-emerald-600 transition hover:border-emerald-200 hover:bg-emerald-100"
+              className="text-slate-500 hover:text-emerald-600 transition-colors"
             >
-              ← Back to insights
+              Insights
             </Link>
-            <span className="hidden text-slate-400 sm:inline">/</span>
-            <span className="hidden rounded-full bg-emerald-50 px-3 py-1 text-emerald-600 sm:inline">
+            <span className="text-slate-300">/</span>
+            <span className="text-emerald-700 font-semibold">
               {categoryLabel}
             </span>
           </div>
 
-          <div className="mx-auto mt-6 max-w-3xl text-center">
+          <div className="mx-auto text-center max-w-4xl">
             {loading ? (
-              <div className="space-y-4">
-                <div className="mx-auto h-10 w-40 animate-pulse rounded-full bg-slate-200" />
-                <div className="mx-auto h-12 w-full max-w-xl animate-pulse rounded-lg bg-slate-200" />
-                <div className="mx-auto h-6 w-1/2 animate-pulse rounded-full bg-slate-200" />
+              <div className="space-y-6 animate-pulse">
+                <div className="h-4 w-32 mx-auto bg-slate-200 rounded-full" />
+                <div className="h-12 w-3/4 mx-auto bg-slate-200 rounded-xl" />
+                <div className="h-6 w-1/2 mx-auto bg-slate-200 rounded-full" />
               </div>
             ) : error ? (
-              <div className="rounded-2xl border border-rose-100 bg-rose-50 px-6 py-8 text-left">
-                <div className="flex items-center gap-3 text-rose-600">
-                  <SparklesIcon className="h-6 w-6" />
-                  <p className="text-sm font-semibold">Something went wrong</p>
-                </div>
-                <p className="mt-3 text-sm text-rose-700">{error}</p>
+              <div className="rounded-3xl border border-rose-200 bg-rose-50/50 p-12 backdrop-blur-sm">
+                <p className="text-rose-600 font-semibold">{error}</p>
                 <button
-                  type="button"
                   onClick={handleRetry}
-                  className="mt-4 inline-flex items-center justify-center rounded-full border border-transparent bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-500"
+                  className="mt-4 px-6 py-2 bg-rose-600 text-white rounded-full text-sm font-bold shadow-lg shadow-rose-600/20 hover:bg-rose-500 transition-all"
                 >
-                  Try again
+                  Try Again
                 </button>
               </div>
             ) : (
-              <div className="space-y-5 rounded-3xl border border-emerald-100 bg-emerald-50/60 px-6 py-8 text-left shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-600">
-                    <SparklesIcon className="h-4 w-4" />
-                    {categoryLabel}
-                  </span>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-emerald-700">
-                    {publishedDate && (
-                      <span className="inline-flex items-center gap-2">
-                        <ClockIcon className="h-4 w-4" />
-                        {publishedDate}
-                      </span>
-                    )}
-                    <span className="inline-flex items-center gap-2">
-                      <SparklesIcon className="h-4 w-4" />
-                      {estimatedReadMinutes} min read
-                    </span>
-                    <button
-                      type="button"
-                      onClick={copyToClipboard}
-                      className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100"
-                    >
-                      {copied ? (
-                        <>
-                          <ClipboardDocumentCheckIcon className="h-4 w-4" />
-                          Link copied
-                        </>
-                      ) : (
-                        <>
-                          <ClipboardDocumentIcon className="h-4 w-4" />
-                          Share
-                        </>
-                      )}
-                    </button>
-                  </div>
+              <div className="relative">
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/60 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 backdrop-blur-md shadow-sm mb-6">
+                  <SparklesIcon className="h-4 w-4" />
+                  {categoryLabel}
                 </div>
-                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-600">
-                  Inspiration
-                </span>
-                <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+
+                <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl leading-tight mb-8">
                   {blog.title}
                 </h1>
-                <p className="text-sm text-slate-600">
-                  {blog?.excerpt ||
-                    blog?.shortDescription ||
-                    "Expert guidance to keep every drop of water in your space pure, soft, and reliable."}
-                </p>
+
+                <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-sm font-medium text-slate-500 mb-12">
+                  {publishedDate && (
+                    <div className="flex items-center gap-2">
+                      <CalendarIcon className="w-5 h-5 text-emerald-500" />
+                      {publishedDate}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <ClockIcon className="w-5 h-5 text-emerald-500" />
+                    {estimatedReadMinutes} min read
+                  </div>
+                  <button
+                    onClick={copyToClipboard}
+                    className="flex items-center gap-2 hover:text-emerald-600 transition-colors"
+                  >
+                    {copied ? (
+                      <ClipboardDocumentCheckIcon className="w-5 h-5 text-emerald-500" />
+                    ) : (
+                      <ClipboardDocumentIcon className="w-5 h-5" />
+                    )}
+                    {copied ? "Copied" : "Share"}
+                  </button>
+                </div>
               </div>
             )}
           </div>
 
           {!loading && !error && (
-            <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
-              <article
-                ref={contentRef}
-                className="space-y-10 rounded-3xl bg-white p-6 shadow-lg ring-1 ring-slate-100"
-              >
-                <figure className="overflow-hidden rounded-3xl">
+            <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_360px] lg:gap-16">
+              <article className="min-w-0">
+                {/* Main Image with Glass Effect */}
+                <div className="relative aspect-video w-full overflow-hidden rounded-[2rem] shadow-2xl mb-12 group">
                   <AquaImage
-                    customClass="h-full w-full object-cover"
+                    customClass="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     src={
                       blog?.titleImages?.[0]?.secure_url || "/default-image.jpg"
                     }
-                    alt={blog.title || "Aquakart blog"}
+                    alt={blog.title}
                     width={1280}
                     height={720}
                   />
-                  <figcaption className="flex items-center gap-2 px-2 py-3 text-xs text-slate-500">
-                    <CameraIcon className="h-4 w-4" aria-hidden="true" />
-                    Aquakart Media Team
-                  </figcaption>
-                </figure>
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-6">
+                    <p className="text-white/90 text-xs font-medium flex items-center gap-2">
+                      <CameraIcon className="w-4 h-4" /> Aquakart Editorial
+                    </p>
+                  </div>
+                </div>
 
                 <div
-                  className="prose prose-lg max-w-none prose-headings:text-slate-900 prose-a:text-emerald-600 hover:prose-a:text-emerald-500"
+                  ref={contentRef}
+                  className="prose prose-lg  prose-slate max-w-none 
+                    prose-headings:font-bold prose-headings:text-slate-900 
+                    prose-p:text-slate-600 prose-p:leading-relaxed
+                    prose-a:text-emerald-600 prose-a:font-semibold prose-a:no-underline hover:prose-a:underline
+                    prose-img:rounded-3xl prose-img:shadow-lg
+                    prose-blockquote:border-l-4 prose-blockquote:border-emerald-500 prose-blockquote:bg-emerald-50/50 prose-blockquote:px-6 prose-blockquote:py-4 prose-blockquote:rounded-r-xl prose-blockquote:not-italic"
                   dangerouslySetInnerHTML={{ __html: blog.description }}
                 />
 
+                {/* Key Highlights Glass Card */}
                 {keyHighlights.length > 0 && (
-                  <section className="rounded-3xl border border-emerald-100 bg-emerald-50/70 p-6 shadow-inner">
-                    <h2 className="text-lg font-semibold text-emerald-900">
-                      Key takeaways
-                    </h2>
-                    <ul className="mt-3 space-y-2 text-sm text-emerald-800">
-                      {keyHighlights.map((highlight, index) => (
-                        <li
-                          key={`${highlight}-${index}`}
-                          className="flex items-start gap-2"
-                        >
-                          <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500" />
-                          <span>{highlight}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                )}
-              </article>
-
-              <aside className="flex flex-col gap-8">
-                {toc.length > 0 && (
-                  <div className="rounded-3xl border border-slate-100 bg-slate-50/80 p-6 text-sm text-slate-600 shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-base font-semibold text-slate-900">
-                        On this page
-                      </h2>
-                      <button
-                        type="button"
-                        className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:bg-white"
-                        onClick={handleScrollToTop}
-                      >
-                        Back to top
-                      </button>
-                    </div>
-                    <ul className="mt-4 space-y-3">
-                      {toc.map((item) => (
-                        <li key={item.id} className="leading-snug">
-                          <a
-                            href={`#${item.id}`}
-                            className={`inline-flex items-start gap-2 rounded-lg px-2 py-1 transition hover:bg-white hover:text-emerald-600 ${
-                              item.level === "h3" ? "pl-4 text-xs" : "text-sm"
-                            }`}
-                          >
-                            <LinkIcon className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                            <span>{item.text}</span>
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-slate-900">
-                      Related products
-                    </h2>
-                    <span className="text-xs font-medium text-slate-500">
-                      Curated for this guide
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500">
-                    Explore systems featured or recommended in this article.
-                  </p>
-                  {related.length > 0 ? (
-                    <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 sm:grid sm:grid-cols-1 sm:gap-4 sm:overflow-visible sm:pb-0">
-                      {related.map((item, index) => (
-                        <div
-                          key={item?._id || `${item?.name}-${index}`}
-                          className="min-w-[260px] snap-start sm:min-w-0"
-                        >
-                          <AquaProductCard product={item} />
+                  <div className="mt-12 rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50/80 to-teal-50/50 p-8 shadow-sm backdrop-blur-sm">
+                    <h3 className="text-xl font-bold text-emerald-900 mb-6 flex items-center gap-2">
+                      <SparklesIcon className="w-6 h-6 text-emerald-600" />
+                      Key Takeaways
+                    </h3>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {keyHighlights.map((item, idx) => (
+                        <div key={idx} className="flex gap-3 items-start">
+                          <div className="mt-1.5 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(52,211,153,0.8)] shrink-0" />
+                          <p className="text-sm font-medium text-emerald-800 leading-snug">
+                            {item}
+                          </p>
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <p className="rounded-2xl border border-dashed border-slate-200 p-4 text-xs text-slate-500">
-                      We’ll update this section when matching products are
-                      available.
-                    </p>
-                  )}
+                  </div>
+                )}
+              </article>
+
+              {/* Sticky Sidebar */}
+              <aside className="space-y-8 lg:sticky lg:top-32 lg:h-fit lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto no-scrollbar">
+                {/* TOC Glass Card */}
+                {toc.length > 0 && (
+                  <div className="rounded-3xl border border-white/50 bg-white/60 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-xl">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">
+                      Contents
+                    </h3>
+                    <nav className="flex flex-col gap-1">
+                      {toc.map((item) => (
+                        <a
+                          key={item.id}
+                          href={`#${item.id}`}
+                          className={`text-sm font-medium transition-all duration-200 py-1.5 px-3 rounded-lg block truncate
+                                    ${item.level === "h3" ? "pl-6 text-slate-500" : "text-slate-700"}
+                                    hover:bg-emerald-50 hover:text-emerald-700
+                                    `}
+                        >
+                          {item.text}
+                        </a>
+                      ))}
+                    </nav>
+                  </div>
+                )}
+
+                {/* Related Products */}
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    Recommended Gear
+                  </h3>
+                  <div className="space-y-4">
+                    {related.length > 0 ? (
+                      related.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="group relative overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all"
+                        >
+                          <AquaProductCard product={item} />
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 text-center text-sm text-slate-500">
+                        No specific recommendations for this article yet.
+                      </div>
+                    )}
+                  </div>
                 </div>
               </aside>
             </div>
@@ -424,7 +405,7 @@ const AquaDynamicBlogComponent = ({
           <button
             type="button"
             onClick={handleScrollToTop}
-            className="fixed bottom-6 right-6 z-40 inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-400"
+            className="fixed bottom-6 right-6 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-white shadow-xl shadow-slate-900/30 transition hover:scale-110 hover:bg-emerald-600"
             aria-label="Back to top"
           >
             <ArrowUpIcon className="h-5 w-5" />
