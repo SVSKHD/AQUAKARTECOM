@@ -514,9 +514,8 @@ function AquaProductRevamp({
             </div>
           )}
         </div>
-
-        <AquaFooter />
       </div>
+      <AquaFooter />
     </>
   );
 }

@@ -27,16 +27,17 @@ const config = {
     follow: true,
   },
   softeners_hyderabad: {
-    title: "Aquakart | Water Softeners in Hyderabad",
+    title:
+      "Best Water Softeners in Hyderabad | Hard Water Solutions | Aquakart",
     keywords:
-      "Water Softeners Hyderabad, RO Purifiers Hyderabad, Hard Water Treatment Hyderabad, Best Water Filters Hyderabad, RO Systems Gachibowli, Water Softeners Jubilee Hills, Water Filters Kukatpally, RO Dealers Kondapur",
+      "Water Softeners Hyderabad, hard water solutions Hyderabad, whole house water softener, salt-free water softener, automatic water softener, water softener installation Hyderabad, RO purifiers Hyderabad, best water filter for hair and skin, water conditioner Hyderabad, Gachibowli water softener, Jubilee Hills water treatment, Madhapur soft water, Kondapur water filters, Kukatpally water softener services",
     keyphrases:
-      "Aquakart Hyderabad, Water Softening Solutions, RO Purifiers in Hyderabad, RO Systems for Borewell Water Hyderabad, Softener Installation Gachibowli, Water Treatment Services Jubilee Hills",
+      "Best Water Softener Dealers in Hyderabad, Hard Water Treatment for Home, Automatic Water Softener Price in Hyderabad, Whole House Water Filtration System Hyderabad, Water Softener Installation near me, Aquakart Hyderabad Reviews, Soft water for hair fall Hyderabad",
     url: "https://aquakart.co.in/softeners_hyderabad",
     photos:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg",
     description:
-      "Discover the best water softeners and RO purifiers in Hyderabad. Aquakart offers advanced filtration solutions for hard water treatment and pure drinking water.",
+      "Looking for the best water softener in Hyderabad? Aquakart offers premium automatic and manual water softeners to treat hard water, protect your appliances, and improve skin & hair health. Get a free consultation today!",
     follow: true,
   },
   compare: {

@@ -3,6 +3,7 @@ import Link from "next/link";
 import AquaLayout from "@/components/Layout/Layout";
 import ArtGallery from "@/components/reusables/artGalery";
 import AquaSoftnerOperations from "@/services/softenersHyderabad";
+import ProductGrid from "../shop/productGrid";
 
 const LoadingState = () => (
   <div className="animate-pulse space-y-12">
@@ -52,6 +53,7 @@ const highlightCards = [
 const AquaSoftenerHyderabadComponent = ({
   initialSections = [],
   initialError = "",
+  initialProducts = [],
 }) => {
   const [imageData, setImageData] = useState(initialSections);
   const [isLoading, setIsLoading] = useState(false);
@@ -170,6 +172,30 @@ const AquaSoftenerHyderabadComponent = ({
                       Schedule consultation
                     </Link>
                   </div>
+                </section>
+
+                <section className="space-y-6">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold text-slate-900">
+                        Our Premium Collection
+                      </h2>
+                      <p className="text-sm text-slate-600">
+                        Explore our range of high-performance water softeners
+                        and purifiers.
+                      </p>
+                    </div>
+                    <Link
+                      href="/shop"
+                      className="group inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:text-indigo-500"
+                    >
+                      View full catalogue
+                      <span className="transition-transform group-hover:translate-x-1">
+                        &rarr;
+                      </span>
+                    </Link>
+                  </div>
+                  <ProductGrid products={initialProducts} viewMode="grid" />
                 </section>
 
                 <section className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
