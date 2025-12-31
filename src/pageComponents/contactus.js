@@ -1,177 +1,162 @@
 import AquaLayout from "@/components/Layout/Layout";
 import { useRouter } from "next/router";
-import { FaInstagram, FaPhone } from "react-icons/fa";
+import {
+  EnvelopeIcon,
+  PhoneIcon,
+  MapPinIcon,
+  ChatBubbleLeftRightIcon,
+} from "@heroicons/react/24/outline";
+import Link from "next/link";
+import { FaInstagram, FaWhatsapp } from "react-icons/fa"; // Keep brand icons
 
 const AquaContactComponent = () => {
   const router = useRouter();
 
   const seo = {
-    title: "Aquakart | Contact us",
+    title: "Aquakart | Contact Us",
     description:
-      "Get in touch with Aquakart for any inquiries, support, or feedback. We're here to help you with all your questions and concerns.",
+      "Get in touch with Aquakart. dedicated support for all your water solution needs.",
     keywords:
-      "contact Aquakart, customer support, inquiries, feedback, help, customer service",
-    keyphrases:
-      "contact Aquakart, get in touch with Aquakart, Aquakart support",
+      "contact Aquakart, customer support, water softener support hyderabad",
+    keyphrases: "contact-us, support",
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.pathname}`,
   };
+
+  const contactMethods = [
+    {
+      title: "Email Support",
+      detail: "customercare@aquakart.co.in",
+      action: "mailto:customercare@aquakart.co.in",
+      icon: <EnvelopeIcon className="h-6 w-6 text-indigo-600" />,
+      color: "bg-indigo-50 border-indigo-100 text-indigo-700",
+      description:
+        "Drop us a line anytime. We usually respond within 24 hours.",
+    },
+    {
+      title: "Phone Support",
+      detail: "+91 90147 74667",
+      action: "tel:+919014774667",
+      icon: <PhoneIcon className="h-6 w-6 text-emerald-600" />,
+      color: "bg-emerald-50 border-emerald-100 text-emerald-700",
+      description:
+        "Talk to our water experts directly. Available Mon-Sat, 9am - 7pm.",
+    },
+    {
+      title: "Instagram",
+      detail: "@aquakart.co.in",
+      action: "https://www.instagram.com/aquakart.co.in",
+      icon: <FaInstagram className="h-6 w-6 text-pink-600" />,
+      color: "bg-pink-50 border-pink-100 text-pink-700",
+      description:
+        "Follow us for tips, installation showcases, and latest updates.",
+    },
+    {
+      title: "WhatsApp",
+      detail: "Chat with us",
+      action: "https://wa.me/919014774667",
+      icon: <FaWhatsapp className="h-6 w-6 text-green-600" />,
+      color: "bg-green-50 border-green-100 text-green-700",
+      description: "Quick queries? WhatsApp is the fastest way to reach us.",
+    },
+  ];
+
   return (
     <AquaLayout seo={seo}>
-      <div className="bg-white py-24 sm:py-32">
+      {/* Global Background */}
+      <div className="fixed inset-0 bg-slate-50 z-[-1]">
+        <div className="absolute top-[20%] left-[10%] w-[60%] h-[60%] rounded-full bg-indigo-100/40 blur-[120px]" />
+        <div className="absolute bottom-[10%] right-[10%] w-[50%] h-[50%] rounded-full bg-cyan-100/40 blur-[120px]" />
+      </div>
+
+      <div className="relative isolate py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl space-y-16 divide-y divide-gray-100 lg:mx-0 lg:max-w-none">
-            <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-3">
-              <div>
-                <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-                  Get in touch
-                </h2>
-                <p className="mt-4 leading-7 text-gray-600">Contact us at</p>
-              </div>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:col-span-2 lg:gap-8">
-                <div className="rounded-2xl bg-gray-50 p-10">
-                  <h3 className="text-base font-semibold leading-7 text-gray-900">
-                    Email us at
-                  </h3>
-                  <dl className="mt-3 space-y-1 text-sm leading-6 text-gray-600">
-                    <div>
-                      <dt className="sr-only">Email</dt>
-                      <dd>
-                        <a
-                          href="mailto:customercare@aquakart.co.in"
-                          className="font-semibold text-indigo-600"
-                        >
-                          customercare@aquakart.co.in
-                        </a>
-                      </dd>
-                    </div>
-                    {/* <div className="mt-1">
-                      <dt className="sr-only">Phone number</dt>
-                      <dd>+1 (555) 905-2345</dd>
-                    </div> */}
-                  </dl>
-                </div>
-                <div className="rounded-2xl bg-gray-50 p-10">
-                  <h3 className="text-base font-semibold leading-7 text-gray-900">
-                    Follow us at
-                  </h3>
-                  <dl className="mt-3 space-y-1 text-sm leading-6 text-gray-600">
-                    <div>
-                      <dt className="sr-only">Email</dt>
-                      <dd>
-                        <a
-                          href="https://www.instagram.com/aquakart.co.in"
-                          target="_blank"
-                          className="font-semibold text-indigo-600"
-                        >
-                          <FaInstagram size={20} />
-                        </a>
-                      </dd>
-                    </div>
-                    {/* <div className="mt-1">
-                      <dt className="sr-only">Phone number</dt>
-                      <dd>+1 (555) 905-3456</dd>
-                    </div> */}
-                  </dl>
-                </div>
-                <div className="rounded-2xl bg-gray-50 p-10">
-                  <h3 className="text-base font-semibold leading-7 text-gray-900">
-                    Call us at
-                  </h3>
-                  <dl className="mt-3 space-y-1 text-sm leading-6 text-gray-600">
-                    <div>
-                      <dt className="sr-only">Email</dt>
-                      <dd>
-                        <a
-                          href="tel:+919014774667"
-                          target="_blank"
-                          className="font-semibold text-indigo-600"
-                        >
-                          <FaPhone size={20} />
-                        </a>
-                      </dd>
-                    </div>
-                    {/* <div className="mt-1">
-                      <dt className="sr-only">Phone number</dt>
-                      <dd>+1 (555) 905-3456</dd>
-                    </div> */}
-                  </dl>
-                </div>
-                {/* <div className="rounded-2xl bg-gray-50 p-10">
-                  <h3 className="text-base font-semibold leading-7 text-gray-900">Join our team</h3>
-                  <dl className="mt-3 space-y-1 text-sm leading-6 text-gray-600">
-                    <div>
-                      <dt className="sr-only">Email</dt>
-                      <dd>
-                        <a href="mailto:careers@example.com" className="font-semibold text-indigo-600">
-                          careers@example.com
-                        </a>
-                      </dd>
-                    </div>
-                    <div className="mt-1">
-                      <dt className="sr-only">Phone number</dt>
-                      <dd>+1 (555) 905-4567</dd>
-                    </div>
-                  </dl>
-                </div>
-                <div className="rounded-2xl bg-gray-50 p-10">
-                  <h3 className="text-base font-semibold leading-7 text-gray-900">Say hello</h3>
-                  <dl className="mt-3 space-y-1 text-sm leading-6 text-gray-600">
-                    <div>
-                      <dt className="sr-only">Email</dt>
-                      <dd>
-                        <a href="mailto:hello@example.com" className="font-semibold text-indigo-600">
-                          hello@example.com
-                        </a>
-                      </dd>
-                    </div>
-                    <div className="mt-1">
-                      <dt className="sr-only">Phone number</dt>
-                      <dd>+1 (555) 905-5678</dd>
-                    </div>
-                  </dl>
-                </div> */}
-              </div>
+          <div className="mx-auto max-w-2xl text-center mb-16">
+            <div className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800 mb-6">
+              <ChatBubbleLeftRightIcon className="mr-2 h-4 w-4" /> We're here to
+              help
             </div>
-            <div className="grid grid-cols-1 gap-x-8 gap-y-10 pt-16 lg:grid-cols-3">
-              <div>
-                <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-                  Locations
-                </h2>
-                <p className="mt-4 leading-7 text-gray-600">
-                  At Present we deliver and offer our services at{" "}
-                  <strong>Telangana</strong> and <strong>Andhra Pradesh</strong>
-                </p>
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-6xl">
+              Get in Touch
+            </h1>
+            <p className="mt-6 text-lg leading-8 text-slate-600">
+              Have questions about water softeners or need support? Our team is
+              ready to assist you.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-2 lg:gap-12">
+            {contactMethods.map((method) => (
+              <a
+                key={method.title}
+                href={method.action}
+                target={method.action.startsWith("http") ? "_blank" : "_self"}
+                rel={
+                  method.action.startsWith("http") ? "noopener noreferrer" : ""
+                }
+                className="group relative flex flex-col gap-6 rounded-[2rem] border border-white/60 bg-white/60 p-10 shadow-xl shadow-slate-200/50 backdrop-blur-xl transition-all hover:-translate-y-2 hover:shadow-2xl hover:border-indigo-200/50"
+              >
+                <div className="flex items-start justify-between">
+                  <div
+                    className={`flex h-14 w-14 items-center justify-center rounded-2xl border ${method.color} shadow-sm group-hover:scale-110 transition-transform`}
+                  >
+                    {method.icon}
+                  </div>
+                  <span className="text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M17 8l4 4m0 0l-4 4m4-4H3"
+                      ></path>
+                    </svg>
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-1">
+                    {method.title}
+                  </h3>
+                  <p className="text-base font-medium text-emerald-600 mb-3">
+                    {method.detail}
+                  </p>
+                  <p className="text-sm text-slate-500 leading-relaxed">
+                    {method.description}
+                  </p>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          <div className="mt-24 rounded-[2.5rem] bg-indigo-900 py-16 px-6 sm:px-16 text-center shadow-2xl overflow-hidden relative">
+            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+            <div className="relative z-10">
+              <h2 className="text-3xl font-bold tracking-tight text-white mb-6">
+                Service Locations
+              </h2>
+              <p className="text-indigo-200 text-lg max-w-2xl mx-auto mb-10">
+                We currently provide sales and service across{" "}
+                <strong>Telangana</strong> and <strong>Andhra Pradesh</strong>.
+              </p>
+              <div className="flex flex-wrap justify-center gap-4">
+                <span className="px-6 py-2 rounded-full bg-white/10 border border-white/20 text-white backdrop-blur-md">
+                  Hyderabad
+                </span>
+                <span className="px-6 py-2 rounded-full bg-white/10 border border-white/20 text-white backdrop-blur-md">
+                  Vijayawada
+                </span>
+                <span className="px-6 py-2 rounded-full bg-white/10 border border-white/20 text-white backdrop-blur-md">
+                  Visakhapatnam
+                </span>
+                <span className="px-6 py-2 rounded-full bg-white/10 border border-white/20 text-white backdrop-blur-md">
+                  Warangal
+                </span>
               </div>
-              {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:col-span-2 lg:gap-8">
-                <div className="rounded-2xl bg-gray-50 p-10">
-                  <h3 className="text-base font-semibold leading-7 text-gray-900">Hyderabad</h3>
-                  <address className="mt-3 space-y-1 text-sm not-italic leading-6 text-gray-600">
-                    <p>4556 Brendan Ferry</p>
-                    <p>Los Angeles, CA 90210</p>
-                  </address>
-                </div>
-                <div className="rounded-2xl bg-gray-50 p-10">
-                  <h3 className="text-base font-semibold leading-7 text-gray-900">New York</h3>
-                  <address className="mt-3 space-y-1 text-sm not-italic leading-6 text-gray-600">
-                    <p>886 Walter Street</p>
-                    <p>New York, NY 12345</p>
-                  </address>
-                </div>
-                <div className="rounded-2xl bg-gray-50 p-10">
-                  <h3 className="text-base font-semibold leading-7 text-gray-900">Toronto</h3>
-                  <address className="mt-3 space-y-1 text-sm not-italic leading-6 text-gray-600">
-                    <p>7363 Cynthia Pass</p>
-                    <p>Toronto, ON N3Y 4H8</p>
-                  </address>
-                </div>
-                <div className="rounded-2xl bg-gray-50 p-10">
-                  <h3 className="text-base font-semibold leading-7 text-gray-900">Chicago</h3>
-                  <address className="mt-3 space-y-1 text-sm not-italic leading-6 text-gray-600">
-                    <p>726 Mavis Island</p>
-                    <p>Chicago, IL 60601</p>
-                  </address>
-                </div>
-              </div> */}
             </div>
           </div>
         </div>

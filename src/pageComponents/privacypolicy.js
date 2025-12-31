@@ -1,97 +1,121 @@
 import AquaLayout from "@/components/Layout/Layout";
 import { useRouter } from "next/router";
+import {
+  ShieldCheckIcon,
+  FingerPrintIcon,
+  LockClosedIcon,
+  UsersIcon,
+  EyeSlashIcon,
+  DocumentTextIcon,
+} from "@heroicons/react/24/outline";
 
 export default function AquaPrivacyPolicyComponent() {
   const router = useRouter();
   const seo = {
     title: "Aquakart | Privacy Policy",
     description:
-      "Explore Aquakart's Privacy Policy to understand how we protect your data. Learn about your rights, our secure practices, and commitment to privacy.",
+      "Explore Aquakart's Privacy Policy. Understand our data protection, secure practices, and commitment to your privacy.",
     keywords:
-      "online ecom privacy store , Privacy policy store , online shopping",
-    keyphrases: "privacy-policy, policy-store",
+      "privacy policy, data protection, secure shopping, aquakart privacy, user data",
+    keyphrases: "privacy-policy, secure-data",
     image:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.pathname}`,
   };
+
   const PrivacyPolicy = [
     {
-      title: "Introduction to the Privacy Policy",
+      title: "Introduction",
       description:
-        "At Aquakart, we recognize the importance of privacy and are committed to maintaining the confidentiality of our website visitors and customers. This Privacy Policy outlines our practices and principles in collecting, using, and safeguarding personal information, aligning with our core values and legal obligations.",
+        "At Aquakart, maintaining your confidentiality is paramount. This policy outlines our committed practices in collecting, using, and safeguarding your personal information, aligning with legal obligations and our core values.",
+      icon: <DocumentTextIcon className="w-6 h-6 text-slate-600" />,
     },
     {
-      title: "Purpose and Scope",
+      title: "Purpose & Scope",
       description:
-        "The purpose of this Privacy Policy is to inform you about how Aquakart collects, processes, and protects your personal data when you interact with our website. Whether you're browsing our products, signing up for an account, or making a purchase, we want you to understand our practices to ensure a transparent and trustworthy environment.",
+        "We collect data to enhance your shopping experience—from browsing to purchase. We aim for transparency in all our interactions so you can shop with confidence.",
+      icon: <EyeSlashIcon className="w-6 h-6 text-emerald-600" />,
     },
     {
-      title: "Collectables",
+      title: "Data Collection",
       description:
-        "For authentication and identification purposes, Aquakart requires users to provide their email addresses and passwords. This allows us to determine whether a user is returning or new to our app. We collect phone numbers to confirm orders and facilitate communication for delivery purposes, ensuring accuracy in navigation and prompt service. Additionally, we offer the option to save payment card details for the convenience of users, streamlining future purchases.",
+        "We collect emails and passwords for authentication, phone numbers for accurate delivery updates, and offer optional saved payment methods for your convenience. This ensures a seamless and personalized experience.",
+      icon: <FingerPrintIcon className="w-6 h-6 text-indigo-600" />,
     },
     {
-      title: "Security and privacy",
+      title: "Security Measures",
       description:
-        "Aquakart employs state-of-the-art databases and cutting-edge technologies to ensure the utmost security of collected data, making it resilient to breaches. Furthermore, we utilize multi-factor authentication methods to maintain the stability and security of our data.",
+        "Aquakart employs state-of-the-art encryption and multi-factor authentication to make our databases resilient against breaches. Your data security is our top priority.",
+      icon: <LockClosedIcon className="w-6 h-6 text-rose-600" />,
     },
     {
-      title: "Contact and Contact Sharing",
+      title: "Information Sharing",
       description:
-        "Contact details are provided to our transit partners to facilitate navigation and delivery. This ensures they can effectively communicate and locate the specified types of properties through the app",
+        "Contact details are shared only with trusted transit partners to ensure your order reaches the right doorstep. We do not sell your data to third parties.",
+      icon: <UsersIcon className="w-6 h-6 text-blue-600" />,
     },
     {
-      title: "COPPA (Children Privacy)",
+      title: "Children's Privacy (COPPA)",
       description:
-        "Regarding the privacy of children, Aquakart is committed to safeguarding the personal information of those under 13 years of age (or the applicable minimum age as per local laws), in strict adherence to regulations such as the Children's Online Privacy Protection Act (COPPA).",
+        "We strictly adhere to COPPA regulations and are committed to safeguarding the personal information of children under 13. Our services are not directed towards children.",
+      icon: <ShieldCheckIcon className="w-6 h-6 text-orange-600" />,
     },
+    // {
+    //   title: "Cookies & Tracking",
+    //   description: "We utilize cookies to understand user preferences and enhance site functionality, allowing us to tailor our services to better suit your individual needs.",
+    //    icon: <GlobeAltIcon className="w-6 h-6 text-cyan-600" />
+    // },
     {
-      title: "Cookies and Tracking Technologies",
+      title: "Your Rights",
       description:
-        "Aquakart utilizes cookies, web beacons, and various tracking technologies to gather information regarding user interactions and preferences. This data aids in enhancing user experiences by allowing us to tailor our services and content to better suit individual needs.",
-    },
-    {
-      title: "User Rights",
-      description:
-        "Aquakart ensures users are aware of their entitlements concerning their personal information, including the abilities to access, amend, erase, or withdraw consent for specific data uses",
+        "You retain full control over your data. You have the right to access, amend, erase, or withdraw consent for specific data uses at any time.",
+      icon: <ShieldCheckIcon className="w-6 h-6 text-purple-600" />,
     },
   ];
+
   return (
     <AquaLayout seo={seo}>
-      <div className="bg-gray-900 py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl px-6 text-center lg:px-8">
-          <div className="mx-auto max-w-2xl">
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Privacy - Policy
-            </h2>
-            <p className="mt-4 text-lg leading-8 text-gray-400">
-              “Your privacy is our priority. We are committed to protecting your
-              personal information and ensuring transparency in how we collect,
-              use, and safeguard your data.”
+      {/* Global Background */}
+      <div className="fixed inset-0 bg-slate-50 z-[-1]">
+        <div className="absolute top-[10%] right-[10%] w-[50%] h-[50%] rounded-full bg-emerald-100/40 blur-[120px]" />
+        <div className="absolute bottom-[10%] left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-100/40 blur-[120px]" />
+      </div>
+
+      <div className="relative isolate py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <div className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800 mb-6">
+              <ShieldCheckIcon className="mr-2 h-4 w-4" /> Trusted & Secure
+            </div>
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-6xl">
+              Privacy Policy
+            </h1>
+            <p className="mt-6 text-lg leading-8 text-slate-600">
+              Your privacy is our priority. We are committed to transparency in
+              how we collect, use, and safeguard your data.
             </p>
           </div>
-          <ul
-            role="list"
-            className="mx-auto mt-20 grid max-w-2xl grid-cols-1 gap-6 sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:grid-cols-3 lg:gap-8"
-          >
+
+          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-6 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-2 lg:gap-8">
             {PrivacyPolicy.map((item) => (
-              <li
+              <div
                 key={item.title}
-                className="rounded-2xl bg-gray-800 px-8 py-10"
+                className="relative flex flex-col gap-6 rounded-3xl border border-white/60 bg-white/60 p-8 shadow-xl shadow-slate-200/50 backdrop-blur-xl transition-all hover:-translate-y-1 hover:shadow-2xl hover:border-emerald-200/50"
               >
-                <h3 className="mt-6 text-base font-semibold leading-7 tracking-tight text-white">
-                  {item.title}
-                </h3>
-                <p className="text-sm leading-6 text-gray-400">
-                  {item.description}
-                </p>
-                <ul
-                  role="list"
-                  className="mt-6 flex justify-center gap-x-6"
-                ></ul>
-              </li>
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-white shadow-sm">
+                  {item.icon}
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">
+                    {item.title}
+                  </h3>
+                  <p className="mt-3 text-base leading-relaxed text-slate-600">
+                    {item.description}
+                  </p>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       </div>
     </AquaLayout>

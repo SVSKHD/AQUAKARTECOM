@@ -1,117 +1,124 @@
 import AquaLayout from "@/components/Layout/Layout";
 import { useRouter } from "next/router";
+import { ScaleIcon, DocumentCheckIcon } from "@heroicons/react/24/outline";
 
 export default function AquaTermsAndConditionsComponent() {
   const router = useRouter();
   const seo = {
-    title: "Aquakart | Privacy Policy",
+    title: "Aquakart | Terms & Conditions",
     description:
-      "Explore Aquakart's Privacy Policy to understand how we protect your data. Learn about your rights, our secure practices, and commitment to privacy.",
+      "Read Aquakart's Terms & Conditions. Understand your rights, our policies on shipping, returns, and usage.",
     keywords:
-      "online ecom privacy store , Privacy policy store , online shopping",
-    keyphrases: "privacy-policy, policy-store",
+      "terms and conditions, user agreement, purchase policy, aquakart terms",
+    keyphrases: "terms-conditions, user-policy",
     image:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.pathname}`,
   };
+
   const termsAndConditons = [
     {
       title: "Introduction",
       description:
-        "Welcome to AquaKart, your reliable source for aquatic products. These Terms and Conditions govern your use of the AquaKart website and its services. By accessing AquaKart, you agree to be bound by these terms and all applicable laws and regulations.",
+        "Welcome to AquaKart. By accessing our platform, you agree to be bound by these terms. These rules ensure a safe and reliable environment for all users.",
     },
     {
-      title: "Shipping and Delivery",
+      title: "Shipping & Delivery",
       description:
-        "AquaKart is committed to delivering your products in a timely and efficient manner. We offer various shipping options to meet your needs. Shipping costs and delivery times vary based on the shipping method selected and your location. Please note that delivery times are estimates and may be subject to delays.",
+        "We are committed to efficient delivery. Timelines depend on location and selected method. While we strive for punctuality, please note that delivery times are estimates.",
     },
     {
-      title: "Returns, Refunds, and Exchanges",
+      title: "Returns & Refunds",
       description:
-        "We strive for your complete satisfaction with our products. If for any reason you are not satisfied with your purchase, you may return the item within 30 days for a full refund or exchange. Items must be in their original condition and packaging. Refunds will be processed to the original method of payment within a specified number of days after receiving the returned item.",
+        "Your satisfaction is key. You may return items within 30 days for a full refund or exchange, provided they are in original condition. Refunds are processed promptly to the original payment method.",
     },
     {
-      title: "Intellectual Property Rights",
+      title: "Intellectual Property",
       description:
-        "The content on AquaKart, including text, graphics, logos, images, as well as the compilation thereof, and any software used on the site, is the property of AquaKart or its suppliers and protected by copyright and other intellectual property laws. You may not reproduce, duplicate, copy, sell, resell, or exploit any portion of the service, use of the service, or access to the service without express written permission by us.",
+        "All content—logos, images, and text—is the exclusive property of AquaKart. Unauthourized reproduction or exploitation of our content is strictly prohibited.",
     },
     {
-      title: "Purchasing and Payment",
+      title: "Purchasing & Payment",
       description:
-        "AquaKart offers various payment methods, including credit card, debit card, and PayPal. All transactions are encrypted for your security. Please ensure that the billing information you provide is accurate to avoid delays in order processing.",
+        "We support secure payments via credit/debit cards and other gateways. Ensure your billing info is accurate to prevent processing delays. All transactions are encrypted.",
     },
     {
-      title: "User Accounts and Responsibilities",
+      title: "User Accounts",
       description:
-        "To use certain features of AquaKart, you may be required to create an account and provide accurate and complete information. You are responsible for maintaining the confidentiality of your account and password and for restricting access to your computer.",
+        "Creating an account requires accurate information. You are responsible for maintaining the confidentiality of your credentials and restrict access to your account.",
     },
     {
-      title: "Disclaimers and Limitations of Liability",
+      title: "Disclaimers",
       description:
-        "AquaKart does not guarantee that the website will be uninterrupted or error-free, and we will not be liable for any interruptions, errors, or other inconveniences. The website and all products and services delivered to you through the website are (except as expressly stated by us) provided 'as is' and 'as available' for your use, without any representation, warranties, or conditions of any kind, either express or implied.",
+        "Services are provided 'as is'. While we strive for uptime, we do not guarantee uninterrupted access and are not liable for errors or inconveniences beyond our control.",
     },
     {
       title: "Privacy Policy",
       description:
-        "Your privacy is of utmost importance to AquaKart. Our Privacy Policy outlines how we collect, use, protect, or otherwise handle your Personally Identifiable Information in accordance with our website. This includes information collected when you register on our site, place an order, subscribe to a newsletter, or enter information on our site.",
+        "Your data protection is governed by our Privacy Policy. We are transparent about how we collect and use your information for orders and improvements.",
     },
     {
       title: "Dispute Resolution",
       description:
-        "Any disputes related to your use of the AquaKart website or purchases made through AquaKart will be governed by the laws of the jurisdiction from which the products were purchased. We strongly encourage users to contact us directly to seek a resolution before resorting to any legal action. If a dispute cannot be resolved through direct negotiation, it may be required to submit the dispute to binding arbitration or small claims court.",
+        "Governed by local jurisdiction laws. We encourage direct contact for quick resolutions. Arbitration may be required if disputes cannot be settled amicably.",
     },
     {
-      title: "Changes to Terms and Conditions",
+      title: "Policy Updates",
       description:
-        "AquaKart reserves the right, at our sole discretion, to update, change, or replace any part of these Terms and Conditions by posting updates and changes to our website. It is your responsibility to check our website periodically for changes. Your continued use of or access to our website or the Service following the posting of any changes to these Terms and Conditions constitutes acceptance of those changes.",
-    },
-    {
-      title: "Contact Information for Complaints and Legal Notices",
-      description:
-        "Should you have any complaints or need to deliver legal notices to AquaKart, please contact us via our provided email address or phone number listed on our website. We are committed to resolving any issues in a timely and satisfactory manner.",
-    },
-    {
-      title: "Summary",
-      description:
-        "The Terms and Conditions outlined here govern your use of the AquaKart platform and services. By accessing and using AquaKart, you agree to comply with these terms, including our policies on user accounts, purchases, shipping, returns, intellectual property, and dispute resolution. We aim to provide a secure and satisfactory experience for all our users and encourage you to contact us with any concerns or questions regarding these terms.",
+        "We reserve the right to update these terms. Continued use of the platform constitutes acceptance of any changes. Please review periodically.",
     },
   ];
 
   return (
     <AquaLayout seo={seo}>
-      <div className="bg-gray-900 py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl px-6 text-center lg:px-8">
-          <div className="mx-auto max-w-2xl">
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+      {/* Global Background */}
+      <div className="fixed inset-0 bg-slate-50 z-[-1]">
+        <div className="absolute top-[30%] left-[20%] w-[40%] h-[40%] rounded-full bg-emerald-100/40 blur-[120px]" />
+        <div className="absolute bottom-[20%] right-[30%] w-[40%] h-[40%] rounded-full bg-cyan-100/40 blur-[120px]" />
+      </div>
+
+      <div className="relative isolate py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <div className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-800 mb-6">
+              <ScaleIcon className="mr-2 h-4 w-4" /> Legal
+            </div>
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-6xl">
               Terms & Conditions
-            </h2>
-            <p className="mt-4 text-lg leading-8 text-gray-400">
-              “Understanding your rights. Our terms and conditions outline the
-              rules and guidelines for using our website.”
+            </h1>
+            <p className="mt-6 text-lg leading-8 text-slate-600">
+              Clear guidelines for a seamless experience. Understanding our
+              policies helps us serve you better.
             </p>
           </div>
-          <ul
-            role="list"
-            className="mx-auto mt-20 grid max-w-2xl grid-cols-1 gap-6 sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:grid-cols-3 lg:gap-8"
-          >
+
+          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-6 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-2 lg:gap-8">
             {termsAndConditons.map((item) => (
-              <li
+              <div
                 key={item.title}
-                className="rounded-2xl bg-gray-800 px-8 py-10"
+                className="relative flex flex-col gap-4 rounded-3xl border border-white/60 bg-white/60 p-8 shadow-xl shadow-slate-200/50 backdrop-blur-xl transition-all hover:-translate-y-1 hover:shadow-2xl hover:border-slate-300"
               >
-                <h3 className="mt-6 text-base font-semibold leading-7 tracking-tight text-white">
-                  {item.title}
-                </h3>
-                <p className="text-sm leading-6 text-gray-400">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                    <DocumentCheckIcon className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900">
+                    {item.title}
+                  </h3>
+                </div>
+                <p className="text-base leading-relaxed text-slate-600">
                   {item.description}
                 </p>
-                <ul
-                  role="list"
-                  className="mt-6 flex justify-center gap-x-6"
-                ></ul>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
+
+          <div className="mt-16 text-center">
+            <p className="text-sm text-slate-500">
+              Last updated: December 2025. If you have any questions, please
+              contact our support team.
+            </p>
+          </div>
         </div>
       </div>
     </AquaLayout>
