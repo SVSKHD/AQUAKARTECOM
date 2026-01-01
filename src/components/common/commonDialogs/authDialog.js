@@ -23,123 +23,90 @@ const AquaUserAuthDialog = () => {
 
   return (
     <AquaResponsiveDialog open={authDialog} close={closeDialog}>
-      <div className="w-full max-w-md mx-auto">
-        <div className="flex flex-col items-center text-center mt-3 mb-6">
-          <div className="relative w-20 h-20 rounded-3xl bg-blue-50 ring-4 ring-blue-100 shadow-inner flex items-center justify-center">
+      <div className="w-full max-w-sm mx-auto">
+        {/* Minimal Header */}
+        <div className="flex flex-col items-center mb-6">
+          <div className="relative h-10 w-10 mb-2">
             <Image
               src={AquaLogo}
-              alt="AquaKart logo"
+              alt="Logo"
               fill
-              sizes="80px"
-              className="object-contain p-2"
+              className="object-contain"
               priority
             />
           </div>
-          <h2 className="mt-5 text-2xl font-bold text-gray-900">AquaKart</h2>
-          <p className="mt-1 text-sm text-gray-600 max-w-sm">
-            Choose your preferred verification method to keep your account
-            secure.
+          <h2 className="text-lg font-bold text-slate-900">
+            {userSignupStatus ? "Welcome Back" : "Join Aquakart"}
+          </h2>
+          <p className="text-xs text-slate-500">
+            Secure access to your water solutions
           </p>
-          <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-blue-700">
-            {authMethod === "email" ? (
-              <>
-                <Mail className="w-3.5 h-3.5" />
-                Email verification
-              </>
-            ) : (
-              <>
-                <Smartphone className="w-3.5 h-3.5" />
-                Phone verification
-              </>
-            )}
-          </span>
         </div>
 
-        <div className="mb-6">
-          <div className="flex items-center justify-center gap-3 p-1.5 bg-gray-100 rounded-xl">
-            <button
-              onClick={() => setAuthMethod("email")}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                authMethod === "email"
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              <Mail className="w-4 h-4" />
-              <span>Email</span>
-            </button>
-            <button
-              onClick={() => setAuthMethod("phone")}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                authMethod === "phone"
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              <Smartphone className="w-4 h-4" />
-              <span>Phone</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="grid">
+        {/* Sleek Toggle Switch */}
+        <div className="mb-6 rounded-lg bg-slate-100 p-1 flex relative">
           <div
-            className={`row-start-1 col-start-1 transition-opacity duration-300 ${
+            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-md shadow-sm transition-all duration-300 ease-out left-1 ${authMethod === "phone" ? "translate-x-full" : ""}`}
+          />
+          <button
+            onClick={() => setAuthMethod("email")}
+            className={`relative z-10 flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${
               authMethod === "email"
-                ? "opacity-100"
-                : "opacity-0 pointer-events-none"
+                ? "text-slate-900"
+                : "text-slate-500 hover:text-slate-700"
             }`}
-            aria-hidden={authMethod !== "email"}
-            {...(authMethod === "email" ? {} : { inert: "true" })}
+          >
+            <Mail size={14} /> Email
+          </button>
+          <button
+            onClick={() => setAuthMethod("phone")}
+            className={`relative z-10 flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+              authMethod === "phone"
+                ? "text-slate-900"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            <Smartphone size={14} /> Phone
+          </button>
+        </div>
+
+        {/* Content Area */}
+        <div className="grid min-h-[280px] relative">
+          <div
+            className={`row-start-1 col-start-1 transition-all duration-300 ${
+              authMethod === "email"
+                ? "opacity-100 scale-100"
+                : "opacity-0 scale-95 pointer-events-none absolute inset-0"
+            }`}
           >
             <AquaAuthEmailForm signup={userSignupStatus} />
           </div>
           <div
-            className={`row-start-1 col-start-1 transition-opacity duration-300 ${
+            className={`row-start-1 col-start-1 transition-all duration-300 ${
               authMethod === "phone"
-                ? "opacity-100"
-                : "opacity-0 pointer-events-none"
+                ? "opacity-100 scale-100"
+                : "opacity-0 scale-95 pointer-events-none absolute inset-0"
             }`}
-            aria-hidden={authMethod !== "phone"}
-            {...(authMethod === "phone" ? {} : { inert: "true" })}
           >
             <AquaAuthPhoneForm signup={userSignupStatus} />
           </div>
         </div>
 
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-600">
-            {userSignupStatus ? (
-              <>
-                Already have an account?{" "}
-                <button
-                  onClick={() =>
-                    dispatch({
-                      type: "SET_AUTH_STATUS_VISIBLE",
-                      payload: false,
-                    })
-                  }
-                  className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-                >
-                  Sign in
-                </button>
-              </>
-            ) : (
-              <>
-                Don't have an account?{" "}
-                <button
-                  onClick={() =>
-                    dispatch({
-                      type: "SET_AUTH_STATUS_VISIBLE",
-                      payload: true,
-                    })
-                  }
-                  className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-                >
-                  Sign up
-                </button>
-              </>
-            )}
+        {/* Footer Toggle */}
+        <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+          <p className="text-xs text-slate-500">
+            {userSignupStatus ? "No account yet?" : "Already have an account?"}{" "}
+            <button
+              onClick={() =>
+                dispatch({
+                  type: "SET_AUTH_STATUS_VISIBLE",
+                  payload: !userSignupStatus,
+                })
+              }
+              className="font-bold text-indigo-600 hover:text-indigo-700 transition-colors ml-1"
+            >
+              {userSignupStatus ? "Sign up" : "Sign in"}
+            </button>
           </p>
         </div>
       </div>

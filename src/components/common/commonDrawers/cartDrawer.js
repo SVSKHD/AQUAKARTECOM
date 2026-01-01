@@ -172,7 +172,7 @@ const AquaCartDrawer = () => {
 
                         <button
                           type="button"
-                          onClick={() => removeFromCart(id)}
+                          onClick={() => removeFromCart(product._id)}
                           className="rounded-full p-2 text-xs text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
                           aria-label="Remove item"
                         >
@@ -185,7 +185,7 @@ const AquaCartDrawer = () => {
                           <button
                             type="button"
                             onClick={() =>
-                              handleQuantityChange(id, quantity - 1)
+                              handleQuantityChange(product._id, quantity - 1)
                             }
                             className="h-8 w-8 rounded-l-full text-slate-500 transition hover:bg-slate-100"
                             aria-label="Decrease quantity"
@@ -198,7 +198,7 @@ const AquaCartDrawer = () => {
                           <button
                             type="button"
                             onClick={() =>
-                              handleQuantityChange(id, quantity + 1)
+                              handleQuantityChange(product._id, quantity + 1)
                             }
                             className="h-8 w-8 rounded-r-full text-slate-500 transition hover:bg-slate-100"
                             aria-label="Increase quantity"

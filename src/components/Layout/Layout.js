@@ -27,20 +27,27 @@ const AquaLayout = (props) => {
     subCategory: "",
   });
 
-  const [setDataCategories, setcategories] = useState([]);
-  const [setDataSubCategories, setsubcategories] = useState([]);
+  const { categories, subcategories } = useSelector(
+    (state) => state.dynamicData,
+  );
 
   useEffect(() => {
     const fetchData = async () => {
-      const catData = await CategoryServiceOperations.Allcategories();
-      setcategories(catData?.data?.data);
-
-      const subCatData = await SubCategoryServiceOperations.AllSubcategories();
-      setsubcategories(subCatData?.data?.data);
+      if (!categories || categories.length === 0) {
+        const catData = await CategoryServiceOperations.Allcategories();
+        dispatch({ type: "SET_CATEGORIES", payload: catData?.data?.data });
+      }
+      if (!subcategories || subcategories.length === 0) {
+        const subCatData =
+          await SubCategoryServiceOperations.AllSubcategories();
+        dispatch({
+          type: "SET_SUBCATEGORIES",
+          payload: subCatData?.data?.data,
+        });
+      }
     };
-
     fetchData();
-  }, [setDataCategories.length, setDataSubCategories.length]);
+  }, [categories, subcategories, dispatch]);
 
   useEffect(() => {
     const { pathname } = router;
@@ -102,10 +109,7 @@ const AquaLayout = (props) => {
           <div className="flex min-h-screen flex-col bg-white pt-24">
             <main className="flex-1">{props.children}</main>
 
-            <AquaFooter
-              categories={setDataCategories}
-              subcategories={setDataSubCategories}
-            />
+            <AquaFooter categories={categories} subcategories={subcategories} />
           </div>
         </>
       ) : (
@@ -130,10 +134,7 @@ const AquaLayout = (props) => {
               </div>
             </main>
 
-            <AquaFooter
-              categories={setDataCategories}
-              subcategories={setDataSubCategories}
-            />
+            <AquaFooter categories={categories} subcategories={subcategories} />
           </div>
         </>
       )}

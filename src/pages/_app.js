@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+import AquaPreloader from "@/components/reusables/preloader";
 import { useEffect, useState } from "react";
 import { Provider } from "react-redux";
 import { createStore } from "redux";
@@ -84,7 +85,7 @@ export default function App({ Component, pageProps }) {
 
   return (
     <Provider store={store}>
-      <PersistGate persistor={persistor} loading={<div>Loading...</div>}>
+      <PersistGate persistor={persistor} loading={<AquaPreloader />}>
         <Component {...pageProps} />
         <Toaster position="top-right" richColors closeButton />
       </PersistGate>

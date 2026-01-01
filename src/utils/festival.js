@@ -13,7 +13,7 @@ export const getFestivalWish = () => {
     return {
       id: "new-year",
       text: "Happy New Year!",
-      subText: `Welcome ${year}`,
+      subText: `Welcome ${month === 11 ? year + 1 : year}`,
       longText: "Wishing you a sparkling Happy New Year! ✨",
       gradient: "from-rose-500 via-purple-500 to-indigo-500",
       icon: "✨",

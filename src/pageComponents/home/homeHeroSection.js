@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import logo from "@/assests/logo.png";
@@ -12,18 +12,34 @@ const rotatingHighlights = [
   "Custom plans for apartments, villas, and industries",
 ];
 
+const headings = [
+  "Experience cleaner, healthier water every day",
+  "Healthier hair and naturally glowing skin",
+  "Helps reduce hair fall caused by hard water",
+  "Gentle on skin, reduces dryness and irritation",
+  "Prevents white scale stains in your home and bathroom",
+];
+
 const AquaHomeHero = ({ data }) => {
   const [activeHighlight, setActiveHighlight] = useState(0);
+  const [activeHeading, setActiveHeading] = useState(0);
   const [festival, setFestival] = useState(null);
 
   useEffect(() => {
     setFestival(getFestivalWish());
 
-    const timer = setInterval(() => {
+    const highlightTimer = setInterval(() => {
       setActiveHighlight((prev) => (prev + 1) % rotatingHighlights.length);
     }, 4200);
 
-    return () => clearInterval(timer);
+    const headingTimer = setInterval(() => {
+      setActiveHeading((prev) => (prev + 1) % headings.length);
+    }, 5000);
+
+    return () => {
+      clearInterval(highlightTimer);
+      clearInterval(headingTimer);
+    };
   }, []);
 
   const quickLinks = useMemo(
@@ -40,7 +56,7 @@ const AquaHomeHero = ({ data }) => {
 
   return (
     <div className="px-3 py-6 sm:px-4 lg:px-6">
-      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-3xl bg-gradient-to-br from-white via-slate-50 to-emerald-50 shadow-lg">
+      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[3rem] bg-gradient-to-br from-indigo-50 via-purple-50 to-emerald-50 shadow-2xl ring-1 ring-black/5">
         {/* Dynamic Festival Background Overlay */}
         {festival && (
           <div
@@ -55,8 +71,8 @@ const AquaHomeHero = ({ data }) => {
 
         <div className="relative px-4 pb-12 pt-10 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2">
-            <div className="relative order-2 lg:order-1">
-              <div className="grid grid-cols-2 grid-rows-2 gap-4">
+            <div className="relative order-2 lg:order-1 h-full">
+              <div className="grid grid-cols-2 grid-rows-2 gap-6 h-full">
                 {(data || []).slice(0, 4).map((category, index) => (
                   <motion.div
                     key={
@@ -64,21 +80,29 @@ const AquaHomeHero = ({ data }) => {
                     }
                     initial={{
                       opacity: 0,
-                      x: -12 * (index + 1),
-                      y: -12 * (index + 1),
+                      scale: 0.9,
+                      y: 20,
                     }}
-                    animate={{ opacity: 1, x: 0, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.18 }}
-                    className="relative"
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{
+                      duration: 0.6,
+                      delay: index * 0.1,
+                      ease: "easeOut",
+                    }}
+                    className="relative group overflow-hidden rounded-[2.5rem] shadow-lg border border-white/50 bg-white/30 backdrop-blur-sm"
                   >
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 z-10 opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
                     <AquaImage
                       src={category?.photos?.[0]?.secure_url}
                       alt={category?.title || "Aquakart Water Solutions"}
-                      customClass="h-full w-full rounded-lg object-cover shadow-lg"
+                      customClass="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                    <Link href={`/category/${category?.title || ""}`}>
-                      <div className="absolute inset-x-0 bottom-0 flex items-center justify-center rounded-b-lg bg-black/45 p-2">
-                        <span className="text-sm font-semibold text-white">
+                    <Link
+                      href={`/category/${category?.title || ""}`}
+                      className="absolute inset-0 z-20 flex items-end justify-center pb-6"
+                    >
+                      <div className="px-4 text-center">
+                        <span className="inline-block rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-4 py-1.5 text-sm font-bold text-white shadow-lg">
                           {category?.title || "Explore"}
                         </span>
                       </div>
@@ -91,13 +115,13 @@ const AquaHomeHero = ({ data }) => {
             <motion.div
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="order-1 text-center lg:order-2 lg:text-left"
+              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+              className="order-1 lg:order-2 flex flex-col justify-center rounded-[2.5rem] bg-white/40 backdrop-blur-2xl border border-white/60 p-8 lg:p-12 shadow-2xl lg:min-h-[500px]"
             >
               <AquaImage
                 src={logo}
                 alt="Aquakart"
-                customClass="mx-auto max-w-[180px]"
+                customClass="mx-auto lg:mx-0 max-w-[160px] drop-shadow-md mb-6"
               />
 
               {/* Festival Banner */}
@@ -127,20 +151,36 @@ const AquaHomeHero = ({ data }) => {
                 </motion.div>
               )}
 
-              <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-                Elevate your water experience
-              </h1>
+              <div className="min-h-[120px]">
+                <AnimatePresence mode="wait">
+                  <motion.h1
+                    key={activeHeading}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.5 }}
+                    className="mt-4 text-4xl font-black tracking-tight text-slate-900 sm:text-5xl lg:text-6xl drop-shadow-sm"
+                  >
+                    {headings[activeHeading]}
+                  </motion.h1>
+                </AnimatePresence>
+              </div>
 
-              <motion.div
-                key={activeHighlight}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35 }}
-                className="mt-5 inline-flex items-center gap-3 rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-emerald-600 shadow"
-              >
-                <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
-                {rotatingHighlights[activeHighlight]}
-              </motion.div>
+              <div className="mt-5 min-h-[40px]">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeHighlight}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.35 }}
+                    className="inline-flex items-center gap-3 rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-emerald-600 shadow"
+                  >
+                    <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
+                    {rotatingHighlights[activeHighlight]}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
               <p className="mt-4 max-w-xl text-base text-slate-600 lg:max-w-md">
                 Discover tailored softeners, filtration, and RO systems
@@ -148,7 +188,7 @@ const AquaHomeHero = ({ data }) => {
                 we keep every tap pristine and hassle-free.
               </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center justify-center lg:justify-start">
                 <Link
                   href="/shop"
                   className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-8 py-3 text-sm font-semibold text-white shadow transition hover:bg-emerald-400"

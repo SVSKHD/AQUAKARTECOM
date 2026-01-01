@@ -543,7 +543,7 @@ const AquaCheckoutComponent = () => {
           </div>
         </div>
       ) : (
-        <div className="bg-slate-50">
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 selection:bg-emerald-100 text-slate-900 rounded-2xl mobile:m-5">
           <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
             <div className="flex flex-col gap-8">
               <div>
@@ -561,7 +561,7 @@ const AquaCheckoutComponent = () => {
                 </p>
               </div>
 
-              <nav className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+              <nav className="rounded-[2rem] bg-white/60 backdrop-blur-xl border border-white/50 p-4 shadow-xl">
                 <ol className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   {steps.map((step, index) => (
                     <li
@@ -569,7 +569,13 @@ const AquaCheckoutComponent = () => {
                       className="flex w-full items-center gap-3"
                     >
                       <span
-                        className={`flex h-10 w-10 items-center justify-center rounded-full border text-sm font-semibold ${stepStyles[step.status]}`}
+                        className={`flex h-10 w-10 items-center justify-center rounded-full border text-sm font-bold shadow-sm transition-all duration-300 ${
+                          step.status === "complete"
+                            ? "border-emerald-200 bg-emerald-100 text-emerald-700"
+                            : step.status === "current"
+                              ? "border-indigo-200 bg-indigo-600 text-white shadow-lg shadow-indigo-200"
+                              : "border-white/40 bg-white/40 text-slate-400"
+                        }`}
                       >
                         {step.status === "complete" ? (
                           <CheckIcon className="h-5 w-5" aria-hidden="true" />
@@ -578,10 +584,16 @@ const AquaCheckoutComponent = () => {
                         )}
                       </span>
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-gray-900">
+                        <span
+                          className={`text-sm font-bold ${
+                            step.status === "upcoming"
+                              ? "text-slate-400"
+                              : "text-slate-900"
+                          }`}
+                        >
                           {step.name}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-slate-500 font-medium">
                           {step.description}
                         </span>
                       </div>
@@ -592,7 +604,7 @@ const AquaCheckoutComponent = () => {
 
               <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
                 <div className="space-y-8">
-                  <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                  <section className="rounded-[2.5rem] bg-white/60 backdrop-blur-2xl border border-white/50 p-6 shadow-xl transition-all duration-500 hover:shadow-2xl">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <h2 className="text-xl font-semibold text-gray-900">
@@ -658,7 +670,7 @@ const AquaCheckoutComponent = () => {
                           return (
                             <li
                               key={productId}
-                              className="flex flex-col gap-4 rounded-2xl border border-gray-100 p-4 shadow-sm transition hover:border-indigo-200 hover:shadow-md sm:flex-row sm:items-start sm:gap-6"
+                              className="flex flex-col gap-4 rounded-3xl border border-white/40 bg-white/40 p-4 shadow-sm transition-all duration-300 hover:bg-white/60 hover:shadow-md hover:-translate-y-1 sm:flex-row sm:items-start sm:gap-6"
                             >
                               <div className="relative h-28 w-full overflow-hidden rounded-2xl bg-gray-100 sm:h-24 sm:w-28">
                                 <Image
@@ -738,7 +750,7 @@ const AquaCheckoutComponent = () => {
                         })}
                       </ul>
                     ) : (
-                      <div className="mt-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-10 text-center">
+                      <div className="mt-6 rounded-[2rem] border-2 border-dashed border-slate-200 bg-white/30 p-10 text-center backdrop-blur-sm">
                         <h3 className="text-lg font-semibold text-gray-900">
                           Your cart is empty
                         </h3>
@@ -756,7 +768,7 @@ const AquaCheckoutComponent = () => {
                     )}
                   </section>
 
-                  <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                  <section className="rounded-[2.5rem] bg-white/60 backdrop-blur-2xl border border-white/50 p-6 shadow-xl transition-all duration-500 hover:shadow-2xl">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <h2 className="text-xl font-semibold text-gray-900">
@@ -778,7 +790,7 @@ const AquaCheckoutComponent = () => {
                     </div>
 
                     <dl className="mt-6 grid gap-4 sm:grid-cols-2">
-                      <div className="rounded-2xl border border-gray-100 p-4">
+                      <div className="rounded-2xl border border-white/40 bg-white/40 p-4 shadow-sm backdrop-blur-sm">
                         <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                           Email
                         </dt>
@@ -795,7 +807,7 @@ const AquaCheckoutComponent = () => {
                           {userData?.user?.email ? "Verified" : "Required"}
                         </span>
                       </div>
-                      <div className="rounded-2xl border border-gray-100 p-4">
+                      <div className="rounded-2xl border border-white/40 bg-white/40 p-4 shadow-sm backdrop-blur-sm">
                         <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                           Phone
                         </dt>
@@ -812,7 +824,7 @@ const AquaCheckoutComponent = () => {
                           {userData?.user?.phone ? "Verified" : "Required"}
                         </span>
                       </div>
-                      <div className="rounded-2xl border border-gray-100 p-4">
+                      <div className="rounded-2xl border border-white/40 bg-white/40 p-4 shadow-sm backdrop-blur-sm">
                         <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                           Alternate phone
                         </dt>
@@ -821,7 +833,7 @@ const AquaCheckoutComponent = () => {
                             "Optional"}
                         </dd>
                       </div>
-                      <div className="rounded-2xl border border-gray-100 p-4">
+                      <div className="rounded-2xl border border-white/40 bg-white/40 p-4 shadow-sm backdrop-blur-sm">
                         <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                           Date of birth
                         </dt>
@@ -841,7 +853,7 @@ const AquaCheckoutComponent = () => {
                     )}
                   </section>
 
-                  <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                  <section className="rounded-[2.5rem] bg-white/60 backdrop-blur-2xl border border-white/50 p-6 shadow-xl transition-all duration-500 hover:shadow-2xl">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <h2 className="text-xl font-semibold text-gray-900">
@@ -890,10 +902,10 @@ const AquaCheckoutComponent = () => {
                           return (
                             <label
                               key={address._id || address.street}
-                              className={`relative flex cursor-default flex-col gap-3 rounded-2xl border p-4 transition duration-200 ease-out transform hover:-translate-y-0.5 hover:shadow-md hover:cursor-pointer ${
+                              className={`relative flex cursor-default flex-col gap-3 rounded-2xl border p-4 transition-all duration-300 ease-out hover:cursor-pointer ${
                                 isSelected
-                                  ? "border-indigo-500 bg-indigo-50 shadow-sm"
-                                  : "border-gray-200 bg-white hover:border-indigo-200"
+                                  ? "border-emerald-500/50 bg-emerald-50/50 shadow-lg ring-4 ring-emerald-500/10 backdrop-blur-sm"
+                                  : "border-white/40 bg-white/40 hover:bg-white/60 hover:shadow-md"
                               }`}
                             >
                               <input
@@ -961,7 +973,7 @@ const AquaCheckoutComponent = () => {
                           );
                         })
                       ) : (
-                        <div className="col-span-full rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-10 text-center">
+                        <div className="col-span-full rounded-[2rem] border-2 border-dashed border-slate-200 bg-white/30 p-10 text-center backdrop-blur-sm">
                           <h3 className="text-lg font-semibold text-gray-900">
                             No address added
                           </h3>
@@ -983,7 +995,7 @@ const AquaCheckoutComponent = () => {
                 </div>
 
                 <aside className="space-y-6 lg:sticky lg:top-28">
-                  <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                  <section className="rounded-[2.5rem] bg-white/70 backdrop-blur-3xl border border-white/60 p-6 shadow-2xl transition-all">
                     <h2 className="text-lg font-semibold text-gray-900">
                       Order summary
                     </h2>
@@ -1031,7 +1043,7 @@ const AquaCheckoutComponent = () => {
                             setCouponCode(event.target.value.toUpperCase())
                           }
                           placeholder="Enter coupon"
-                          className="w-full rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full rounded-full border border-white/40 bg-white/50 px-4 py-2 text-sm text-slate-900 shadow-inner focus:bg-white focus:ring-4 focus:ring-emerald-500/20 backdrop-blur-sm placeholder:text-slate-400 focus:outline-none focus:border-emerald-500/50"
                         />
                         <button
                           type="button"
@@ -1092,7 +1104,7 @@ const AquaCheckoutComponent = () => {
                           className={`inline-flex w-full items-center justify-center rounded-full border px-4 py-3 text-sm font-semibold transition ${
                             codDisabledReason
                               ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400"
-                              : "border-gray-300 bg-white text-gray-900 hover:border-gray-400 hover:bg-gray-50"
+                              : "border border-white/60 bg-white/70 backdrop-blur-sm text-slate-900 shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-50/50 hover:shadow-md"
                           }`}
                         >
                           {buttonStatus.cod ? (
@@ -1132,7 +1144,7 @@ const AquaCheckoutComponent = () => {
                     )}
                   </section>
 
-                  <section className="rounded-3xl border border-indigo-100 bg-indigo-50/70 p-5 text-sm text-indigo-900">
+                  <section className="rounded-3xl border border-indigo-100 bg-white/60 backdrop-blur-md p-5 text-sm text-indigo-900 shadow-lg">
                     <h3 className="text-base font-semibold">Need help?</h3>
                     <p className="mt-2 text-sm text-indigo-800">
                       Call or WhatsApp us at{" "}
