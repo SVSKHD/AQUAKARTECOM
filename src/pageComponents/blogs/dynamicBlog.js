@@ -14,6 +14,10 @@ import {
   SparklesIcon,
   ArrowRightIcon,
   CalendarIcon,
+  ShareIcon,
+  ChatBubbleOvalLeftEllipsisIcon,
+  GlobeAltIcon,
+  HashtagIcon,
 } from "@heroicons/react/24/outline";
 import Head from "next/head";
 import AquaProductCard from "@/components/cards/productCard";
@@ -35,6 +39,7 @@ const AquaDynamicBlogComponent = ({
   const [toc, setToc] = useState([]);
   const [progress, setProgress] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   const contentRef = useRef(null);
 
@@ -133,6 +138,29 @@ const AquaDynamicBlogComponent = ({
       console.error("Copy link failed", err);
       setCopied(false);
     }
+  };
+
+  const handleShare = (platform) => {
+    if (typeof window === "undefined") return;
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent(blog?.title || "Check this out!");
+
+    let shareUrl = "";
+    switch (platform) {
+      case "whatsapp":
+        shareUrl = `https://wa.me/?text=${title} - ${url}`;
+        break;
+      case "facebook":
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        break;
+      case "twitter":
+        shareUrl = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
+        break;
+      default:
+        return;
+    }
+    window.open(shareUrl, "_blank", "noopener,noreferrer");
+    setShowShareMenu(false);
   };
 
   const handleScrollToTop = () => {
@@ -280,17 +308,57 @@ const AquaDynamicBlogComponent = ({
                     <ClockIcon className="w-5 h-5 text-emerald-500" />
                     {estimatedReadMinutes} min read
                   </div>
-                  <button
-                    onClick={copyToClipboard}
-                    className="flex items-center gap-2 hover:text-emerald-600 transition-colors"
-                  >
-                    {copied ? (
-                      <ClipboardDocumentCheckIcon className="w-5 h-5 text-emerald-500" />
-                    ) : (
-                      <ClipboardDocumentIcon className="w-5 h-5" />
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowShareMenu(!showShareMenu)}
+                      className="flex items-center gap-2 hover:text-emerald-600 transition-colors"
+                    >
+                      <ShareIcon className="w-5 h-5 text-emerald-500" />
+                      Share
+                    </button>
+
+                    {showShareMenu && (
+                      <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-white/50 bg-white/80 backdrop-blur-xl shadow-xl z-50 overflow-hidden">
+                        <div className="p-1 flex flex-col gap-1">
+                          <button
+                            onClick={() => handleShare("whatsapp")}
+                            className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-lg transition-colors text-left w-full"
+                          >
+                            <ChatBubbleOvalLeftEllipsisIcon className="w-4 h-4" />
+                            WhatsApp
+                          </button>
+                          <button
+                            onClick={() => handleShare("facebook")}
+                            className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors text-left w-full"
+                          >
+                            <GlobeAltIcon className="w-4 h-4" />
+                            Facebook
+                          </button>
+                          <button
+                            onClick={() => handleShare("twitter")}
+                            className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors text-left w-full"
+                          >
+                            <HashtagIcon className="w-4 h-4" />X (Twitter)
+                          </button>
+                          <div className="h-px bg-slate-100 my-1" />
+                          <button
+                            onClick={() => {
+                              copyToClipboard();
+                              setShowShareMenu(false);
+                            }}
+                            className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-lg transition-colors text-left w-full"
+                          >
+                            {copied ? (
+                              <ClipboardDocumentCheckIcon className="w-4 h-4 text-emerald-500" />
+                            ) : (
+                              <ClipboardDocumentIcon className="w-4 h-4" />
+                            )}
+                            {copied ? "Copied!" : "Copy Link"}
+                          </button>
+                        </div>
+                      </div>
                     )}
-                    {copied ? "Copied" : "Share"}
-                  </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -319,12 +387,17 @@ const AquaDynamicBlogComponent = ({
 
                 <div
                   ref={contentRef}
-                  className="prose prose-lg  prose-slate max-w-none 
+                  className="prose prose-lg prose-slate max-w-none 
                     prose-headings:font-bold prose-headings:text-slate-900 
-                    prose-p:text-slate-600 prose-p:leading-relaxed
+                    prose-h2:mt-12 prose-h2:mb-6 prose-h2:border-b prose-h2:border-slate-200 prose-h2:pb-3 prose-h2:text-3xl
+                    prose-h3:mt-8 prose-h3:mb-4 prose-h3:text- emerald-900 prose-h3:text-2xl
+                    prose-p:text-slate-600 prose-p:leading-8 prose-p:my-6
                     prose-a:text-emerald-600 prose-a:font-semibold prose-a:no-underline hover:prose-a:underline
-                    prose-img:rounded-3xl prose-img:shadow-lg
-                    prose-blockquote:border-l-4 prose-blockquote:border-emerald-500 prose-blockquote:bg-emerald-50/50 prose-blockquote:px-6 prose-blockquote:py-4 prose-blockquote:rounded-r-xl prose-blockquote:not-italic"
+                    prose-strong:font-extrabold prose-strong:text-slate-900
+                    prose-ul:my-6 prose-ul:list-disc prose-ul:pl-6
+                    prose-li:my-2 prose-li:marker:text-emerald-500 prose-li:text-slate-700
+                    prose-img:rounded-3xl prose-img:shadow-xl prose-img:my-8
+                    prose-blockquote:border-l-4 prose-blockquote:border-emerald-500 prose-blockquote:bg-emerald-50/50 prose-blockquote:px-8 prose-blockquote:py-6 prose-blockquote:rounded-r-2xl prose-blockquote:not-italic prose-blockquote:text-slate-700 prose-blockquote:shadow-sm"
                   dangerouslySetInnerHTML={{ __html: blog.description }}
                 />
 
