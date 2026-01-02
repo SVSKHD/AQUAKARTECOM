@@ -224,7 +224,7 @@ const AquaAuthMobileForm = ({ signup }) => {
                   Enter the 6-digit code sent to +91 {phone}
                 </p>
               </div>
-              <div className="flex justify-center gap-2">
+              <div className="grid grid-cols-6 gap-1 sm:gap-2">
                 {otpDigits.map((digit, index) => (
                   <input
                     key={index}
@@ -240,7 +240,7 @@ const AquaAuthMobileForm = ({ signup }) => {
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(event) => handleOtpKeyDown(index, event)}
                     onPaste={index === 0 ? handleOtpPaste : undefined}
-                    className="h-12 w-12 rounded-xl border-2 border-gray-300 bg-white text-center text-lg font-bold text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all duration-200"
+                    className="block w-full h-10 sm:h-12 rounded-xl border-2 border-gray-300 bg-white text-center text-base sm:text-lg font-bold text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all duration-200 p-0"
                   />
                 ))}
               </div>

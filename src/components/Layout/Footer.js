@@ -23,15 +23,15 @@ const navigation = {
   social: [
     {
       name: "Facebook",
-      href: "https://www.facebook.com/AquaKart8/",
+      href: "https://www.facebook.com/AquaKart.co.in/",
       icon: Facebook,
     },
     {
       name: "Instagram",
-      href: "https://www.instagram.com/aquakart8/",
+      href: "https://www.instagram.com/aquakart.co.in/",
       icon: Instagram,
     },
-    { name: "X", href: "https://x.com/aquakart8", icon: Twitter },
+    { name: "X", href: "https://x.com/aquakart.co.in", icon: Twitter },
   ],
 };
 
@@ -212,7 +212,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
                 {[...Array(6)].map((_, i) => (
                   <a
                     key={i}
-                    href="https://www.instagram.com/aquakart8/"
+                    href="https://www.instagram.com/aquakart.co.in/"
                     target="_blank"
                     rel="noreferrer"
                     className="group relative aspect-square overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10 transition-all hover:ring-white/30 hover:scale-105"
@@ -226,7 +226,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
                 ))}
               </div>
               <a
-                href="https://www.instagram.com/aquakart8/"
+                href="https://www.instagram.com/aquakart.co.in/"
                 target="_blank"
                 className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
               >
