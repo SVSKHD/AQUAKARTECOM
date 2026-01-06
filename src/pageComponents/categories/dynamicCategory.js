@@ -11,6 +11,11 @@ import {
   ShareIcon,
 } from "@heroicons/react/24/outline";
 import AquaImage from "@/components/images/AquaImage";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 const LoadingState = () => (
   <div className="grid gap-8 lg:grid-cols-2 animate-pulse">
@@ -156,13 +161,38 @@ const AquaDynamicCategoryComponent = ({ id }) => {
               </div>
 
               {related?.length > 0 ? (
-                <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
+                <Swiper
+                  modules={[Autoplay]}
+                  spaceBetween={24}
+                  slidesPerView={1}
+                  autoplay={{
+                    delay: 3500,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true,
+                  }}
+                  breakpoints={{
+                    640: {
+                      slidesPerView: 2,
+                      spaceBetween: 24,
+                    },
+                    1024: {
+                      slidesPerView: 3,
+                      spaceBetween: 32,
+                    },
+                  }}
+                  className="!pb-12"
+                >
                   {related.map((product) => (
-                    <div key={product._id} className="group relative">
-                      <AquaProductCard product={product} />
-                    </div>
+                    <SwiperSlide
+                      key={product._id}
+                      className="!h-auto flex pt-4 pb-4 px-1"
+                    >
+                      <div className="h-full flex-1 group relative">
+                        <AquaProductCard product={product} />
+                      </div>
+                    </SwiperSlide>
                   ))}
-                </div>
+                </Swiper>
               ) : (
                 <div className="rounded-[2rem] border-2 border-dashed border-slate-300 bg-white/30 p-12 text-center">
                   <ShoppingBagIcon className="mx-auto h-12 w-12 text-slate-300 mb-4" />

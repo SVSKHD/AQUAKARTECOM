@@ -11,6 +11,9 @@ import {
   FunnelIcon,
 } from "@heroicons/react/24/outline";
 import AquaImage from "@/components/images/AquaImage";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay } from "swiper/modules";
+import "swiper/css";
 
 const LoadingState = () => (
   <div className="grid gap-8 lg:grid-cols-2 animate-pulse">
@@ -150,13 +153,38 @@ const AquaDynamicSubCategoryComponent = () => {
               </div>
 
               {related?.length > 0 ? (
-                <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
+                <Swiper
+                  modules={[Autoplay]}
+                  spaceBetween={24}
+                  slidesPerView={1}
+                  autoplay={{
+                    delay: 3500,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true,
+                  }}
+                  breakpoints={{
+                    640: {
+                      slidesPerView: 2,
+                      spaceBetween: 24,
+                    },
+                    1024: {
+                      slidesPerView: 3,
+                      spaceBetween: 32,
+                    },
+                  }}
+                  className="!pb-12"
+                >
                   {related.map((product) => (
-                    <div key={product._id} className="group relative">
-                      <AquaProductCard product={product} />
-                    </div>
+                    <SwiperSlide
+                      key={product._id}
+                      className="!h-auto flex pt-4 pb-4 px-1"
+                    >
+                      <div className="h-full flex-1 group relative">
+                        <AquaProductCard product={product} />
+                      </div>
+                    </SwiperSlide>
                   ))}
-                </div>
+                </Swiper>
               ) : (
                 <div className="rounded-[2rem] border-2 border-dashed border-slate-300 bg-white/30 p-16 text-center">
                   <ShoppingCartIcon className="mx-auto h-16 w-16 text-slate-300 mb-6" />
