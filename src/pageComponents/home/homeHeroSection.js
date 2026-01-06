@@ -196,7 +196,7 @@ const AquaHomeHero = ({ data }) => {
                   Shop solutions
                 </Link>
                 <Link
-                  href="/consultation"
+                  href="/shop"
                   className="inline-flex items-center justify-center rounded-full border border-emerald-200 px-6 py-3 text-sm font-semibold text-emerald-600 transition hover:border-emerald-300 hover:bg-emerald-50"
                 >
                   Book a free water test

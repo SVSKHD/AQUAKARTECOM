@@ -279,7 +279,7 @@ const AquaBlogComponnet = ({ initialBlogs = [], initialError = "" }) => {
         </header>
 
         {/* Search & Filter Glass Bar */}
-        <div className="sticky top-24 sm:top-28 z-40 mb-12 -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="mb-12 -mx-4 px-4 sm:mx-0 sm:px-0">
           <div className="mx-auto max-w-4xl rounded-2xl border border-white/50 bg-white/70 backdrop-blur-xl shadow-lg shadow-slate-200/50 p-2 sm:p-3 flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
