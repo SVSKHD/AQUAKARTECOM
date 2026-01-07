@@ -1,6 +1,7 @@
 import UserServiceOperations from "@/services/user";
 import useDialog from "@/utils/dialog";
 import { useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { useDispatch } from "react-redux";
 import AquaToast from "@/components/reusables/react-toastify";
 
@@ -13,6 +14,8 @@ const AquaAuthMobileForm = ({ signup }) => {
   const inputRefs = useRef([]);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
+  const [verifying, setVerifying] = useState(false);
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const phoneFormat = Number(phone);
@@ -20,6 +23,7 @@ const AquaAuthMobileForm = ({ signup }) => {
     if (otpValue.length !== 6) {
       return;
     }
+    setVerifying(true);
     const otpFormat = Number(otpValue);
     const data = { phone: phoneFormat, otp: otpFormat };
     UserServiceOperations.UserMobileVerify(data)
@@ -39,8 +43,13 @@ const AquaAuthMobileForm = ({ signup }) => {
           message: "Verification failed",
           type: "error",
         });
+      })
+      .finally(() => {
+        setVerifying(false);
       });
   };
+
+  // ... rest of code
 
   const isValidPhone = (phone) => {
     const phoneRegex = /^\d{10}$/;
@@ -256,17 +265,29 @@ const AquaAuthMobileForm = ({ signup }) => {
           )}
         </div>
 
-        <button
+        <motion.button
           type="submit"
-          className={`w-full flex items-center justify-center rounded-xl px-8 py-3.5 text-base font-semibold transition-all duration-200 ${
-            canSubmit
-              ? "bg-blue-600 text-white hover:bg-blue-700 active:scale-98 shadow-sm"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.96 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          className={`w-full flex items-center justify-center rounded-xl px-8 py-3.5 text-base font-bold tracking-wide shadow-lg transition-all ${
+            canSubmit && !verifying
+              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-blue-200/50 hover:shadow-blue-300/60"
+              : "bg-slate-100 text-slate-400 shadow-none cursor-not-allowed"
           }`}
-          disabled={!canSubmit}
+          disabled={!canSubmit || verifying}
         >
-          {signup ? "Create Account" : "Sign In"}
-        </button>
+          {verifying ? (
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="text-white/90">Verifying...</span>
+            </div>
+          ) : signup ? (
+            "Create Account"
+          ) : (
+            "Sign In"
+          )}
+        </motion.button>
       </form>
     </div>
   );

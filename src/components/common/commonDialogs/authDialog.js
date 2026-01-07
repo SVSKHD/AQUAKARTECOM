@@ -75,8 +75,8 @@ const AquaUserAuthDialog = () => {
           <div
             className={`row-start-1 col-start-1 transition-all duration-300 ${
               authMethod === "email"
-                ? "opacity-100 scale-100"
-                : "opacity-0 scale-95 pointer-events-none absolute inset-0"
+                ? "opacity-100 scale-100 relative z-10"
+                : "opacity-0 scale-95 pointer-events-none absolute inset-0 z-0 invisible"
             }`}
           >
             <AquaAuthEmailForm signup={userSignupStatus} />
@@ -84,8 +84,8 @@ const AquaUserAuthDialog = () => {
           <div
             className={`row-start-1 col-start-1 transition-all duration-300 ${
               authMethod === "phone"
-                ? "opacity-100 scale-100"
-                : "opacity-0 scale-95 pointer-events-none absolute inset-0"
+                ? "opacity-100 scale-100 relative z-10"
+                : "opacity-0 scale-95 pointer-events-none absolute inset-0 z-0 invisible"
             }`}
           >
             <AquaAuthPhoneForm signup={userSignupStatus} />

@@ -6,6 +6,7 @@ import AquaToast from "@/components/reusables/react-toastify";
 import debounce from "lodash.debounce";
 import { showToast } from "@/store/reducers/toastReducer";
 import { Send, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 const AquaAuthMobileForm = ({ signup }) => {
   const [email, setEmail] = useState("");
@@ -101,12 +102,15 @@ const AquaAuthMobileForm = ({ signup }) => {
     }
   }, [email, requestOtp]);
 
+  const [verifying, setVerifying] = useState(false); // New state
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const otpValue = otpDigits.join("");
     if (!otpShow || otpValue.length !== 6) {
       return;
     }
+    setVerifying(true); // Start loading
     const data = { email, otp: Number(otpValue) };
     UserServiceOperations.UserEmailVerify(data)
       .then((res) => {
@@ -125,8 +129,13 @@ const AquaAuthMobileForm = ({ signup }) => {
           message: "Verification failed",
           type: "error",
         });
+      })
+      .finally(() => {
+        setVerifying(false); // Stop loading
       });
   };
+
+  // ... (rest of code)
 
   const handleOtpChange = (index, value) => {
     const sanitized = value.replace(/\D/g, "");
@@ -235,7 +244,7 @@ const AquaAuthMobileForm = ({ signup }) => {
                   Enter the 6-digit code sent to {email}
                 </p>
               </div>
-              <div className="flex justify-center gap-2">
+              <div className="grid grid-cols-6 gap-1 sm:gap-2">
                 {otpDigits.map((digit, index) => (
                   <input
                     key={index}
@@ -252,7 +261,7 @@ const AquaAuthMobileForm = ({ signup }) => {
                     }
                     onKeyDown={(event) => handleOtpKeyDown(index, event)}
                     onPaste={index === 0 ? handleOtpPaste : undefined}
-                    className="h-12 w-12 rounded-xl border-2 border-gray-300 bg-white text-center text-lg font-bold text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all duration-200"
+                    className="block w-full h-10 sm:h-12 rounded-xl border-2 border-gray-300 bg-white text-center text-base sm:text-lg font-bold text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all duration-200 p-0"
                   />
                 ))}
               </div>
@@ -267,17 +276,29 @@ const AquaAuthMobileForm = ({ signup }) => {
           )}
         </div>
 
-        <button
+        <motion.button
           type="submit"
-          className={`w-full flex items-center justify-center rounded-xl px-8 py-3.5 text-base font-semibold transition-all duration-200 ${
-            !canSubmit
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700 active:scale-98 shadow-sm"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.96 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          className={`w-full flex items-center justify-center rounded-xl px-8 py-3.5 text-base font-bold tracking-wide shadow-lg transition-all ${
+            !canSubmit || verifying
+              ? "bg-slate-100 text-slate-400 shadow-none cursor-not-allowed"
+              : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-blue-200/50 hover:shadow-blue-300/60"
           }`}
-          disabled={!canSubmit}
+          disabled={!canSubmit || verifying}
         >
-          {signup ? "Create Account" : "Sign In"}
-        </button>
+          {verifying ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-5 w-5 animate-spin text-white/90" />
+              <span className="text-white/90">Verifying...</span>
+            </div>
+          ) : signup ? (
+            "Create Account"
+          ) : (
+            "Sign In"
+          )}
+        </motion.button>
       </form>
     </div>
   );
