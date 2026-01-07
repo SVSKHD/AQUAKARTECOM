@@ -26,7 +26,13 @@ const AquaAuthMobileForm = ({ signup }) => {
     setVerifying(true);
     const otpFormat = Number(otpValue);
     const data = { phone: phoneFormat, otp: otpFormat };
-    UserServiceOperations.UserMobileVerify(data)
+
+    const otpPromise = UserServiceOperations.UserMobileVerify(data);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Request timed out")), 15000),
+    );
+
+    Promise.race([otpPromise, timeoutPromise])
       .then((res) => {
         AquaToast({
           message: "Verification successful",
@@ -39,8 +45,11 @@ const AquaAuthMobileForm = ({ signup }) => {
         closeAuthDialog();
       })
       .catch((err) => {
+        const isTimeout = err.message === "Request timed out";
         AquaToast({
-          message: "Verification failed",
+          message: isTimeout
+            ? "Server is taking too long. Please try again."
+            : "Verification failed",
           type: "error",
         });
       })
@@ -107,6 +116,28 @@ const AquaAuthMobileForm = ({ signup }) => {
 
   const handleOtpChange = (index, value) => {
     const sanitized = value.replace(/\D/g, "");
+
+    // Handle multi-digit input (mobile auto-fill)
+    if (sanitized.length > 1) {
+      const updatedDigits = [...otpDigits];
+      const chars = sanitized.split("");
+
+      let currentIndex = index;
+      chars.forEach((char) => {
+        if (currentIndex < 6) {
+          updatedDigits[currentIndex] = char;
+          currentIndex++;
+        }
+      });
+
+      setOtpDigits(updatedDigits);
+
+      // Focus the next empty input or the last input
+      const nextFocusIndex = Math.min(currentIndex, 5);
+      inputRefs.current[nextFocusIndex]?.focus();
+      return;
+    }
+
     const updatedDigits = [...otpDigits];
 
     if (!sanitized) {
@@ -243,6 +274,7 @@ const AquaAuthMobileForm = ({ signup }) => {
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]*"
+                    autoComplete="one-time-code"
                     maxLength="1"
                     placeholder="0"
                     value={digit}
