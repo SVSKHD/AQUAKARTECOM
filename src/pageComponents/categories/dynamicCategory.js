@@ -188,7 +188,7 @@ const AquaDynamicCategoryComponent = ({ id }) => {
                       className="!h-auto flex pt-4 pb-4 px-1"
                     >
                       <div className="h-full flex-1 group relative">
-                        <AquaProductCard product={product} />
+                        <AquaProductCard product={product} padded={true} />
                       </div>
                     </SwiperSlide>
                   ))}

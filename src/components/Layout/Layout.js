@@ -116,7 +116,7 @@ const AquaLayout = (props) => {
         <>
           <AquaHeader />
 
-          <div className="flex min-h-screen flex-col bg-white">
+          <div className="flex min-h-screen pt-24 flex-col bg-white">
             <main className="flex flex-1 flex-col items-center justify-center">
               <div className="text-center p-6">
                 <h1 className="text-2xl font-bold text-gray-800 mb-4">
