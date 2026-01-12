@@ -309,7 +309,7 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
           }}
         >
           {/* IMAGE */}
-          <div ref={emblaRef} className="absolute inset-0">
+          <div ref={emblaRef} className="absolute inset-0 rounded-3xl">
             <div className="flex h-full">
               {displayPhotos.map((p, i) => (
                 <motion.div
@@ -321,7 +321,7 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
                   <AquaImage
                     src={p.secure_url}
                     alt={title}
-                    customClass="h-full w-full object-cover"
+                    customClass="h-full w-full object-cover rounded-3xl p-1"
                   />
                 </motion.div>
               ))}
@@ -338,81 +338,91 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
             <FaHeart size={18} />
           </button>
 
-          {/* HOVER OVERLAY */}
+          {/* INFO OVERLAY (Always Visible) */}
           <div
             className="
               absolute inset-0 z-10
               flex flex-col justify-end
-              bg-black/0
-              opacity-0
+              bg-gradient-to-t from-black/90 via-black/20 to-transparent
               transition-all duration-300
-              group-hover:bg-black/45
-              group-hover:opacity-100
             "
           >
-            <div className="translate-y-8 px-5 pb-6 text-white transition-all duration-300 group-hover:translate-y-0">
-              <h3 className="text-2xl font-bold">{title}</h3>
-
-              <div className="mt-4 flex items-center gap-2">
-                <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur">
-                  Best Seller
-                </span>
-
-                <span className="ml-auto rounded-full bg-white px-3 py-1 text-sm font-bold text-slate-900">
-                  {discountPriceStatus
-                    ? formatCurrencyINR(discountPrice)
-                    : formatCurrencyINR(price)}
-                </span>
+            <div className="px-5 pb-5 text-white">
+              <div className="flex flex-col gap-1 mb-3">
+                <h3 className="text-lg font-bold leading-snug drop-shadow-sm line-clamp-2">
+                  {title}
+                </h3>
+                <p className="text-xs text-white/80 font-medium uppercase tracking-wider">
+                  {product?.brand || "Aquakart"}
+                </p>
               </div>
 
-              {/* Rich CTA */}
-              <button
-                onClick={handleCartToggle}
-                className={`mt-4 flex w-full items-center justify-center gap-3 rounded-full py-4 text-sm font-semibold shadow-xl transition-all duration-300 ${
-                  cart
-                    ? "bg-emerald-500 text-white"
-                    : "bg-white text-slate-900 hover:bg-white/90"
-                }`}
-              >
-                <FaShoppingCart
-                  size={16}
-                  className={cart ? "text-white" : "text-slate-900"}
-                />
-                <span>{cart ? "In Cart" : "Add to Cart"}</span>
-                {cart && <FaCheck size={14} className="text-white/90" />}
-              </button>
-            </div>
-          </div>
+              {/* Timer Filler - Relative */}
+              <div className="flex gap-1.5 mb-3 opacity-80">
+                {displayPhotos.map((_, i) => {
+                  const isPast = i < activeIndex;
+                  const isActive = i === activeIndex;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        emblaApi?.scrollTo(i);
+                      }}
+                      className="relative h-0.5 flex-1 overflow-hidden rounded-full bg-white/30 transition-all duration-300 hover:h-1 hover:bg-white/50"
+                      aria-label={`Go to slide ${i + 1}`}
+                    >
+                      <span
+                        className="absolute inset-y-0 left-0 rounded-full bg-white transition-[width] duration-150"
+                        style={{
+                          width: isPast
+                            ? "100%"
+                            : isActive
+                              ? `${progress * 100}%`
+                              : "0%",
+                        }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
 
-          {/* TIMER FILLER (no dots) */}
-          <div className="absolute bottom-4 left-4 right-4 z-20 flex gap-2">
-            {displayPhotos.map((_, i) => {
-              const isPast = i < activeIndex;
-              const isActive = i === activeIndex;
-              return (
+              <div className="flex items-end justify-between border-t border-white/20 pt-3">
+                {/* Price - Left */}
+                <div className="flex flex-col">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-lg font-bold">
+                      {discountPriceStatus
+                        ? formatCurrencyINR(discountPrice)
+                        : formatCurrencyINR(price)}
+                    </span>
+                    {discountPriceStatus && (
+                      <span className="text-xs text-white/60 line-through">
+                        {formatCurrencyINR(price)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Cart Button - Right */}
                 <button
-                  key={i}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    emblaApi?.scrollTo(i);
-                  }}
-                  className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/35"
-                  aria-label={`Go to slide ${i + 1}`}
+                  onClick={handleCartToggle}
+                  className={`flex items-center justify-center rounded-full p-3 shadow-lg transition-all duration-300 active:scale-95 ${
+                    cart
+                      ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                      : "bg-white text-slate-900 hover:bg-slate-200"
+                  }`}
+                  aria-label={cart ? "Remove from cart" : "Add to cart"}
                 >
-                  <span
-                    className="absolute inset-y-0 left-0 rounded-full bg-white transition-[width] duration-150"
-                    style={{
-                      width: isPast
-                        ? "100%"
-                        : isActive
-                          ? `${progress * 100}%`
-                          : "0%",
-                    }}
+                  <FaShoppingCart
+                    size={16}
+                    className={cart ? "text-white" : "text-slate-900"}
                   />
+                  {cart && <FaCheck size={12} className="ml-1 text-white" />}
                 </button>
-              );
-            })}
+              </div>
+            </div>
           </div>
         </div>
       ) : (
@@ -431,7 +441,7 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
                 {displayPhotos.map((photo, index) => (
                   <motion.div
                     key={index}
-                    className="flex h-72 w-full flex-shrink-0"
+                    className="flex h-72 w-full flex-shrink-0 rounded-3xl"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{
                       opacity: activeIndex === index ? 1 : 0.5,
@@ -442,7 +452,7 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
                     <AquaImage
                       src={photo?.secure_url}
                       alt={title}
-                      customClass="h-full w-full object-cover object-center"
+                      customClass="h-full w-full object-cover object-center rounded-3xl p-3"
                     />
                   </motion.div>
                 ))}
@@ -461,59 +471,89 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
             >
               <FaHeart size={20} />
             </button>
+            {/* TIMER FILLER (no dots) - Shared with padded mode */}
+            <div className="absolute bottom-4 left-4 right-4 z-20 flex gap-2">
+              {displayPhotos.map((_, i) => {
+                const isPast = i < activeIndex;
+                const isActive = i === activeIndex;
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      emblaApi?.scrollTo(i);
+                    }}
+                    className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/35"
+                    aria-label={`Go to slide ${i + 1}`}
+                  >
+                    <span
+                      className="absolute inset-y-0 left-0 rounded-full bg-white transition-[width] duration-150"
+                      style={{
+                        width: isPast
+                          ? "100%"
+                          : isActive
+                            ? `${progress * 100}%`
+                            : "0%",
+                      }}
+                    />
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="flex flex-1 flex-col gap-3 p-4">
-            <div className="flex flex-col gap-1 text-left">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                {product?.brand || product?.manufacturer || "Aquakart"}
-              </p>
-              <h3 className="text-lg font-semibold text-slate-900 transition group-hover:text-emerald-600">
-                {title}
-              </h3>
+          <div className="flex flex-1 flex-col justify-between p-4">
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1 text-left">
+                <h3 className="text-sm font-semibold text-slate-900 line-clamp-2 transition group-hover:text-emerald-600">
+                  {title}
+                </h3>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  {product?.brand || product?.manufacturer || "Aquakart"}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
+                  {product?.warranty || "1 yr warranty"}
+                </span>
+              </div>
             </div>
 
-            <p className="text-lg font-bold text-slate-900">
-              {discountPriceStatus ? (
-                <>
-                  <span className="text-red-600">
-                    {formatCurrencyINR(discountPrice)}
-                  </span>
-                  <span className="ml-2 text-sm text-gray-500 line-through">
+            <div className="mt-3 flex items-center justify-between gap-3 pt-3 border-t border-slate-50">
+              {/* Price - Left */}
+              <div className="flex flex-col">
+                <p className="text-sm font-bold text-slate-900">
+                  {discountPriceStatus ? (
+                    <>
+                      <span className="text-red-600">
+                        {formatCurrencyINR(discountPrice)}
+                      </span>
+                    </>
+                  ) : (
+                    formatCurrencyINR(price)
+                  )}
+                </p>
+                {discountPriceStatus && (
+                  <span className="text-[10px] text-gray-400 line-through">
                     {formatCurrencyINR(price)}
                   </span>
-                </>
-              ) : (
-                formatCurrencyINR(price)
-              )}
-            </p>
+                )}
+              </div>
 
-            <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
-              <span>
-                {product?.coverage || product?.capacity
-                  ? `${product.coverage || product.capacity} coverage`
-                  : "For all water sources"}
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-600">
-                {product?.warranty || "1 year warranty"}
-              </span>
-            </div>
-
-            <div className="mt-auto flex w-full">
+              {/* Cart Button - Right */}
               <button
                 onClick={handleCartToggle}
                 type="button"
-                className={`w-full rounded-full py-3 text-sm font-semibold shadow-md transition-all duration-300 ${
+                className={`flex items-center justify-center rounded-full p-2.5 shadow-md transition-all duration-300 ${
                   cart
                     ? "bg-emerald-500 text-white hover:bg-emerald-600"
                     : "bg-slate-900 text-white hover:bg-slate-800"
                 }`}
+                aria-label={cart ? "Remove from cart" : "Add to cart"}
               >
-                <span className="inline-flex items-center justify-center gap-2">
-                  <FaShoppingCart size={16} className="text-white" />
-                  {cart ? "In Cart" : "Add to Cart"}
-                  {cart && <FaCheck size={14} className="text-white/90" />}
-                </span>
+                {cart ? <FaCheck size={14} /> : <FaShoppingCart size={14} />}
               </button>
             </div>
           </div>

@@ -133,7 +133,7 @@ const AquaProducts = ({ initialProducts = [] }) => {
             <AquaSpinner color="emerald" size="lg" />
           </div>
         ) : (
-          <div className="flex snap-x snap-mandatory overflow-x-auto gap-4 pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-y-10 sm:gap-x-6 xl:gap-x-8 no-scrollbar">
+          <div className="flex snap-x snap-mandatory overflow-x-auto gap-4 pb-4 p-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-y-10 sm:gap-x-6 xl:gap-x-8 no-scrollbar">
             {visibleProducts.length ? (
               visibleProducts.map((product) => (
                 <div
