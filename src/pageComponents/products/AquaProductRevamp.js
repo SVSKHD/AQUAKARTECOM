@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  Button,
   Disclosure,
   DisclosureButton,
   DisclosurePanel,
@@ -21,15 +22,7 @@ import {
 import useEmblaCarousel from "embla-carousel-react";
 import { useSelector } from "react-redux";
 import useProduct from "@/utils/product";
-import AquaHeader from "@/components/Layout/Header";
-import AquaFooter from "@/components/Layout/Footer";
-import AquaCartDrawer from "@/components/common/commonDrawers/cartDrawer";
-import AquafavDrawer from "@/components/common/commonDrawers/favDrawer";
-import AquaUserDataDrawer from "@/components/common/commonDrawers/userDataDrawer";
-import AquaUserAuthDialog from "@/components/common/commonDialogs/authDialog";
-import AquaCartAddressDialog from "@/components/common/commonDialogs/cartAddress";
-import AquaTailwindToast from "@/components/toast/TailwindToast";
-import AquaToast from "@/components/reusables/toast";
+import { useRouter } from "next/navigation";
 import AquaLayout from "@/components/Layout/Layout";
 import AquaPreloader from "@/components/reusables/preloader";
 
@@ -220,6 +213,8 @@ function AquaProductRevamp({
     return () => clearTimeout(timer);
   }, []);
 
+  const router = useRouter();
+
   // Data Preparation
   const images = useMemo(
     () => normalizeImages(product?.photos, fallbackImage),
@@ -268,6 +263,13 @@ function AquaProductRevamp({
     } catch (e) {
       console.log("Share failed", e);
     }
+  };
+
+  const handleRedirectToCheckout = () => {
+    if (!isInCart) {
+      AddAndRemoveCart(product, setIsInCart);
+    }
+    router.push("/checkout");
   };
 
   // Derived Values
@@ -393,11 +395,14 @@ function AquaProductRevamp({
                       }`}
                     >
                       <ShoppingCart size={20} />
-                      {isInCart ? "Go to Cart" : "Add to Cart"}
+                      {isInCart ? "Added to Cart" : "Add to Cart"}
                     </button>
-                    <button className="flex-1 flex items-center justify-center gap-2 rounded-xl border-2 border-slate-900 bg-transparent py-3.5 font-bold text-slate-900 transition-all hover:bg-slate-50 active:scale-95">
+                    <Button
+                      onClick={handleRedirectToCheckout}
+                      className="flex-1 flex items-center justify-center gap-2 rounded-xl border-2 border-slate-900 bg-transparent py-3.5 font-bold text-slate-900 transition-all hover:bg-slate-50 active:scale-95"
+                    >
                       Buy Now
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
