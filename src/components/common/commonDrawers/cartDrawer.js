@@ -59,10 +59,10 @@ const AquaCartDrawer = () => {
           <button
             type="button"
             onClick={closeCartDrawer}
-            className="rounded-full bg-slate-100 p-2 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700"
+            className="rounded-full bg-slate-100 p-3 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700 active:scale-95"
             aria-label="Close cart drawer"
           >
-            ×
+            <span className="text-xl leading-none">×</span>
           </button>
         </div>
         <div className="space-y-2 border-b border-slate-100 px-4 py-4 text-sm text-slate-600">
@@ -73,7 +73,7 @@ const AquaCartDrawer = () => {
             <button
               type="button"
               onClick={EmptyCart}
-              className="text-xs font-semibold text-rose-500 hover:text-rose-600"
+              className="rounded-full bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-100 active:scale-95"
               disabled={!cartData.length}
             >
               Clear cart
@@ -98,9 +98,8 @@ const AquaCartDrawer = () => {
           {cartData.length === 0 ? (
             renderEmptyState()
           ) : (
-            <ul className="space-y-4">
+            <ul className="space-y-4 pr-1">
               {cartData.map((product) => {
-                console.log(product);
                 const slug = product.slug || product.id;
                 const image = product?.photos?.[0]?.secure_url;
                 const productUrl = slug ? `/product/${slug}` : "#";
@@ -128,20 +127,22 @@ const AquaCartDrawer = () => {
                 return (
                   <li
                     key={slug}
-                    className="group flex gap-4 rounded-3xl border border-slate-100 bg-white p-4 shadow-sm transition hover:border-emerald-200"
+                    className="group flex flex-col gap-4 rounded-3xl border border-slate-100 bg-white p-3 shadow-sm transition hover:border-emerald-200 sm:flex-row sm:p-4"
                   >
-                    <div className="relative h-24 w-24 overflow-hidden rounded-2xl bg-slate-100">
-                      {image ? (
-                        <AquaImage
-                          src={image}
-                          alt={product?.title || "Aquakart product"}
-                          customClass="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-xs text-slate-400">
-                          No image
-                        </div>
-                      )}
+                    <div className="relative h-full w-full overflow-hidden rounded-2xl bg-slate-100 sm:h-24 sm:w-24">
+                      <div className="aspect-square sm:aspect-auto sm:h-full sm:w-full">
+                        {image ? (
+                          <AquaImage
+                            src={image}
+                            alt={product?.title || "Aquakart product"}
+                            customClass="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-xs text-slate-400">
+                            No image
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex flex-1 flex-col justify-between gap-3">
@@ -173,10 +174,10 @@ const AquaCartDrawer = () => {
                         <button
                           type="button"
                           onClick={() => removeFromCart(product._id)}
-                          className="rounded-full p-2 text-xs text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500 active:scale-95"
                           aria-label="Remove item"
                         >
-                          ×
+                          <span className="text-lg leading-none">×</span>
                         </button>
                       </div>
 

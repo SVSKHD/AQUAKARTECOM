@@ -54,10 +54,10 @@ const AquafavDrawer = () => {
           <button
             type="button"
             onClick={closeFavDrawer}
-            className="rounded-full bg-slate-100 p-2 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700"
+            className="rounded-full bg-slate-100 p-3 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700 active:scale-95"
             aria-label="Close favourites drawer"
           >
-            ×
+            <span className="text-xl leading-none">×</span>
           </button>
         </div>
         <div className="border-b border-slate-100 px-4 py-4 text-sm text-slate-600">
@@ -79,20 +79,22 @@ const AquafavDrawer = () => {
                 return (
                   <li
                     key={id}
-                    className="group flex gap-4 rounded-3xl border border-slate-100 bg-white p-4 shadow-sm transition hover:border-emerald-200"
+                    className="group flex flex-col gap-4 rounded-3xl border border-slate-100 bg-white p-3 shadow-sm transition hover:border-emerald-200 sm:flex-row sm:p-4"
                   >
-                    <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-slate-100">
-                      {image ? (
-                        <AquaImage
-                          src={image}
-                          alt={product?.title || "Favourite product"}
-                          customClass="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-xs text-slate-400">
-                          No image
-                        </div>
-                      )}
+                    <div className="relative h-full w-full overflow-hidden rounded-2xl bg-slate-100 sm:h-24 sm:w-24">
+                      <div className="aspect-square sm:aspect-auto sm:h-full sm:w-full">
+                        {image ? (
+                          <AquaImage
+                            src={image}
+                            alt={product?.title || "Favourite product"}
+                            customClass="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-xs text-slate-400">
+                            No image
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex flex-1 flex-col gap-3">
@@ -112,10 +114,10 @@ const AquafavDrawer = () => {
                         <button
                           type="button"
                           onClick={() => removeFavProduct(id)}
-                          className="rounded-full p-2 text-xs text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500 active:scale-95"
                           aria-label="Remove from favourites"
                         >
-                          ×
+                          <span className="text-lg leading-none">×</span>
                         </button>
                       </div>
 
