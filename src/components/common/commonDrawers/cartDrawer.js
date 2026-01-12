@@ -131,17 +131,19 @@ const AquaCartDrawer = () => {
                   >
                     <div className="relative h-full w-full overflow-hidden rounded-2xl bg-slate-100 sm:h-24 sm:w-24">
                       <div className="aspect-square sm:aspect-auto sm:h-full sm:w-full">
-                        {image ? (
-                          <AquaImage
-                            src={image}
-                            alt={product?.title || "Aquakart product"}
-                            customClass="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center text-xs text-slate-400">
-                            No image
-                          </div>
-                        )}
+                        <Link href={productUrl} onClick={closeCartDrawer}>
+                          {image ? (
+                            <AquaImage
+                              src={image}
+                              alt={product?.title || "Aquakart product"}
+                              customClass="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-xs text-slate-400">
+                              No image
+                            </div>
+                          )}
+                        </Link>
                       </div>
                     </div>
 
@@ -150,6 +152,7 @@ const AquaCartDrawer = () => {
                         <div className="space-y-1">
                           <Link
                             href={productUrl}
+                            onClick={closeCartDrawer}
                             className="text-sm font-medium text-slate-900 hover:text-emerald-600"
                           >
                             {product?.title || "Unnamed product"}

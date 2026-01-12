@@ -71,9 +71,10 @@ const AquafavDrawer = () => {
             <ul className="space-y-4">
               {favData.map((product) => {
                 const id = product?._id || product?.id;
+                const slug = product?.slug || product?.name;
                 const image = product?.photos?.[0]?.secure_url;
                 const productUrl =
-                  product?.href || (id ? `/product/${id}` : "#");
+                  product?.href || (id ? `/product/${slug}` : "#");
                 const inCart = isProductInCart(id);
 
                 return (
