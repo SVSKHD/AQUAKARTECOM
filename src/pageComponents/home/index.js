@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import { Fragment, useState, useMemo } from "react";
 import {
   Dialog,
@@ -12,7 +13,7 @@ import AquaLayout from "@/components/Layout/Layout";
 import AquaSpinner from "@/components/common/spinner";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import AquaProducts from "./products";
+import LazyImage from "@/components/image/LazyImage";
 import AquaHomeHero from "./homeHeroSection";
 import {
   SparklesIcon,
@@ -21,8 +22,8 @@ import {
   RocketLaunchIcon,
   ArrowRightIcon,
 } from "@heroicons/react/24/outline";
-import LazyImage from "@/components/image/LazyImage";
 
+const AquaProducts = dynamic(() => import("./products"));
 const AquaHomeComponent = ({
   initialCategories = [],
   initialSubCategories = [],
@@ -366,10 +367,11 @@ const AquaHomeComponent = ({
                 <div className="relative overflow-hidden rounded-[2.5rem] bg-indigo-900 shadow-2xl">
                   {/* Background Image with heavy blur and overlay */}
                   <div className="absolute inset-0">
-                    <img
+                    <LazyImage
                       src="https://res.cloudinary.com/aquakartproducts/image/upload/v1741968501/Blogs/jhkfgdhd9yatyml1bz4j.jpg"
-                      alt="Background"
-                      className="h-full w-full object-cover opacity-40 blur-sm scale-110"
+                      alt="Aquakart-blog-Background"
+                      fill
+                      imgClassName="h-full w-full object-cover opacity-40 blur-sm scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-950/90 via-indigo-900/80 to-transparent" />
                   </div>

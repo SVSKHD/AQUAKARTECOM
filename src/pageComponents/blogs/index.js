@@ -10,6 +10,7 @@ import {
   ArrowRightIcon,
   BookOpenIcon,
 } from "@heroicons/react/24/outline";
+import LazyImage from "@/components/image/LazyImage";
 
 const computeReadingTime = (content) => {
   if (!content) return 3;
@@ -171,15 +172,15 @@ const AquaBlogComponnet = ({ initialBlogs = [], initialError = "" }) => {
         }`}
       >
         <div
-          className={`relative overflow-hidden bg-slate-100 ${variant === "featured" ? "h-56" : "h-48"}`}
+          className={`rounded-3xl relative overflow-hidden bg-slate-100 ${variant === "featured" ? "h-56" : "h-48"}`}
         >
           {image ? (
-            <Image
+            <LazyImage
               src={image}
               alt={post?.title || "Aquakart blog"}
               fill
               sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-              className="object-cover transition duration-700 group-hover:scale-110"
+              imgClassName="rounded-3xl object-cover transition duration-700 group-hover:scale-110"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">
