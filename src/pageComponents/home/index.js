@@ -21,6 +21,7 @@ import {
   RocketLaunchIcon,
   ArrowRightIcon,
 } from "@heroicons/react/24/outline";
+import LazyImage from "@/components/image/LazyImage";
 
 const AquaHomeComponent = ({
   initialCategories = [],
@@ -322,10 +323,14 @@ const AquaHomeComponent = ({
                           className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-emerald-200/50 hover:ring-2 hover:ring-emerald-500/20"
                         >
                           <div className="aspect-[4/3] overflow-hidden bg-slate-100 relative">
-                            <img
+                            <LazyImage
                               src={imageUrl}
                               alt={category.title}
-                              className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-110"
+                              fill
+                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                              className="absolute inset-0"
+                              imgClassName="object-cover object-center transition duration-500 group-hover:scale-110"
+                              priority={false}
                             />
                             {/* Gradient Overlay */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-40" />

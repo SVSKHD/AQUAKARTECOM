@@ -25,6 +25,7 @@ import useProduct from "@/utils/product";
 import { useRouter } from "next/navigation";
 import AquaLayout from "@/components/Layout/Layout";
 import AquaPreloader from "@/components/reusables/preloader";
+import LazyImage from "@/components/image/LazyImage";
 
 // Lazy load related products to improve initial load
 const AquaRelatedProductCard = React.lazy(
@@ -119,41 +120,134 @@ const AccordionItem = ({ title, children, defaultOpen = false }) => (
 
 const ImageGallery = ({ images, title }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start" });
+  const [progress, setProgress] = useState(0);
+  const AUTOPLAY_DURATION = 5000; // 5 seconds per slide
+  const progressBarRef = React.useRef(null);
+  const startTimeRef = React.useRef(null);
+  const animationFrameRef = React.useRef(null);
+  const isPausedRef = React.useRef(true); // Default to PAUSED
 
-  useEffect(() => {
-    if (emblaApi) {
-      emblaApi.on("select", () => {
-        setSelectedIndex(emblaApi.selectedScrollSnap());
-      });
-    }
+  // Store progress in ref for logic, in state for UI
+  const progressRef = React.useRef(0);
+
+  const onSelect = React.useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+    setProgress(0);
+    progressRef.current = 0;
+    startTimeRef.current = null;
   }, [emblaApi]);
 
-  const scrollTo = (index) => emblaApi && emblaApi.scrollTo(index);
+  const scrollTo = React.useCallback(
+    (index) => emblaApi && emblaApi.scrollTo(index),
+    [emblaApi],
+  );
+
+  const startAutoplay = React.useCallback(() => {
+    const animate = (timestamp) => {
+      if (isPausedRef.current) {
+        // Just update startTime so we pick up where we left off when unpaused
+        // current_time - (elapsed_time_we_want_to_preserve)
+        const elapsedSoFar = (progressRef.current / 100) * AUTOPLAY_DURATION;
+        startTimeRef.current = timestamp - elapsedSoFar;
+        animationFrameRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
+      if (!startTimeRef.current) startTimeRef.current = timestamp;
+      const elapsed = timestamp - startTimeRef.current;
+      const newProgress = Math.min((elapsed / AUTOPLAY_DURATION) * 100, 100);
+
+      // Only update state if value changed significantly to avoid over-rendering if strictly same
+      if (Math.abs(newProgress - progressRef.current) > 0.1) {
+        setProgress(newProgress);
+        progressRef.current = newProgress;
+      }
+
+      if (elapsed >= AUTOPLAY_DURATION) {
+        emblaApi?.scrollNext();
+        startTimeRef.current = null;
+        progressRef.current = 0;
+        setProgress(0);
+      }
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+    // Cancel any existing loop before ensuring a new one
+    if (animationFrameRef.current)
+      cancelAnimationFrame(animationFrameRef.current);
+    animationFrameRef.current = requestAnimationFrame(animate);
+  }, [emblaApi, AUTOPLAY_DURATION]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on("select", onSelect);
+    // Play on interaction (Hover/Touch)
+    emblaApi.on("pointerDown", () => (isPausedRef.current = false));
+    emblaApi.on("pointerUp", () => (isPausedRef.current = true));
+
+    startAutoplay();
+
+    return () => {
+      if (animationFrameRef.current)
+        cancelAnimationFrame(animationFrameRef.current);
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi, onSelect, startAutoplay]);
 
   return (
     <div className="flex flex-col gap-4">
       {/* Mobile/Main Carousel */}
       <div
-        className="relative overflow-hidden bg-white lg:rounded-2xl lg:border lg:border-white/50 lg:bg-white/40 lg:shadow-glass lg:backdrop-blur-xl"
+        className="relative overflow-hidden bg-white rounded-2xl lg:border lg:border-white/50 lg:bg-white/40 lg:shadow-glass lg:backdrop-blur-xl"
         ref={emblaRef}
+        onMouseEnter={() => (isPausedRef.current = false)} // Play
+        onMouseLeave={() => (isPausedRef.current = true)} // Pause
+        onTouchStart={() => (isPausedRef.current = false)} // Play
+        onTouchEnd={() => (isPausedRef.current = true)} // Pause
       >
+        {/* Story Timer Bars */}
+        <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-2">
+          {images.map((_, idx) => (
+            <div
+              key={idx}
+              className="h-1 flex-1 overflow-hidden rounded-full bg-black/20 backdrop-blur-sm"
+            >
+              <div
+                className="h-full bg-white transition-all duration-100 ease-linear shadow-sm"
+                style={{
+                  width:
+                    idx < selectedIndex
+                      ? "100%"
+                      : idx === selectedIndex
+                        ? `${progress}%`
+                        : "0%",
+                }}
+              />
+            </div>
+          ))}
+        </div>
+
         <div className="flex touch-pan-y">
-          {images.map((img) => (
+          {images.map((img, idx) => (
             <div className="relative flex-[0_0_100%] min-w-0" key={img.id}>
               <div className="relative flex aspect-square w-full items-center justify-center bg-white">
-                <img
+                <LazyImage
                   src={img.url}
                   alt={title}
-                  className="max-h-full max-w-full object-contain"
+                  className="h-full w-full"
+                  imgClassName="max-h-full max-w-full object-contain"
+                  fill
+                  priority={idx === 0}
                 />
               </div>
             </div>
           ))}
         </div>
 
-        {/* Mobile Dots */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 lg:hidden">
+        {/* Mobile Dots (Optional backup if needed, but bars usually suffice) */}
+        {/* <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 lg:hidden">
           {images.map((_, idx) => (
             <button
               key={idx}
@@ -161,7 +255,7 @@ const ImageGallery = ({ images, title }) => {
               onClick={() => scrollTo(idx)}
             />
           ))}
-        </div>
+        </div> */}
       </div>
 
       {/* Desktop Thumbnails */}
@@ -169,7 +263,11 @@ const ImageGallery = ({ images, title }) => {
         {images.map((img, idx) => (
           <button
             key={img.id}
-            onClick={() => scrollTo(idx)}
+            onClick={() => {
+              scrollTo(idx);
+              setProgress(0);
+              startTimeRef.current = null;
+            }}
             className={`relative aspect-square overflow-hidden rounded-xl border-2 transition-all ${idx === selectedIndex ? "border-emerald-500 bg-white/80 ring-4 ring-emerald-500/20" : "border-transparent bg-white/30 hover:bg-white/50"}`}
           >
             <img

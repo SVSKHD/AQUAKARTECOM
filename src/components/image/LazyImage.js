@@ -80,7 +80,7 @@ export default function LazyImage({
       {visible ? (
         <Image
           src={safeSrc}
-          alt={alt || "image"}
+          alt={`Aquakart-${alt}` || "Aquakart products"}
           fill={fill}
           width={!fill ? width : undefined}
           height={!fill ? height : undefined}

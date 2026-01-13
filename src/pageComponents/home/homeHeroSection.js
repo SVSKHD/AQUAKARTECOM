@@ -99,6 +99,7 @@ const AquaHomeHero = ({ data }) => {
                       sizes="(max-width: 1024px) 50vw, 25vw"
                       className="absolute inset-0"
                       imgClassName="object-cover transition-transform duration-700 group-hover:scale-110"
+                      priority={index === 0}
                     />
 
                     <Link

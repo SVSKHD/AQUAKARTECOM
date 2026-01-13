@@ -340,109 +340,130 @@ const AquaOrderPage = () => {
           ) : (
             <div className="space-y-8">
               <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Order ID
-                    </p>
-                    <h1 className="text-2xl font-semibold text-slate-900">
-                      #{summary?.orderId}
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                      <span>Order placed on {summary?.orderDate}</span>
+                      <span>•</span>
+                      <span>#{summary?.orderId}</span>
+                    </div>
+                    <h1 className="text-3xl font-bold text-slate-900">
+                      Order Details
                     </h1>
-                    <p className="text-sm text-slate-500">
-                      Placed on {summary?.orderDate}
-                    </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">
-                      <PackageCheck className="h-4 w-4" />{" "}
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-700">
+                      <PackageCheck className="h-4 w-4" />
                       {summary?.orderStatus}
                     </span>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
                       <Wallet className="h-4 w-4" /> {summary?.paymentMethod}
                     </span>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
-                      <CreditCard className="h-4 w-4" />{" "}
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${
+                        paymentSettled
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-amber-100 text-amber-700"
+                      }`}
+                    >
+                      <CreditCard className="h-4 w-4" />
                       {summary?.paymentStatus}
                     </span>
                   </div>
                 </div>
 
                 <div className="mt-6 grid gap-6 lg:grid-cols-3">
-                  <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Payment summary
-                    </p>
-                    <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                      <li className="flex items-center justify-between">
-                        <span>Items ({summary?.itemCount})</span>
-                        <span>
-                          {formatCurrencyINR(
-                            order.totalAmount - (order.shippingCost || 0),
-                          )}
-                        </span>
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <span>Shipping</span>
-                        <span>{summary?.shippingCost}</span>
-                      </li>
-                      <li className="flex items-center justify-between font-semibold text-slate-900">
-                        <span>Total</span>
-                        <span>{summary?.totalAmount}</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Delivery details
-                    </p>
-                    <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
-                      <span className="inline-flex items-center gap-2">
-                        <CalendarClock className="h-4 w-4 text-slate-500" />{" "}
-                        Estimated delivery: {summary?.deliveryEta}
-                      </span>
-                      <span className="inline-flex items-start gap-2">
-                        <MapPin className="mt-0.5 h-4 w-4 text-slate-500" />
-                        <span>
-                          {composeAddress(order.shippingAddress) ||
-                            composeAddress(order.billingAddress)}
-                        </span>
-                      </span>
+                  <div className="flex h-full flex-col justify-between rounded-2xl border border-slate-200 bg-slate-50/50 p-5 hover:border-slate-300 transition-colors">
+                    <div>
+                      <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                        <CreditCard className="h-4 w-4" /> Payment Summary
+                      </p>
+                      <ul className="mt-4 space-y-3 text-sm text-slate-600">
+                        <li className="flex items-center justify-between">
+                          <span>Items Total</span>
+                          <span>
+                            {formatCurrencyINR(
+                              order.totalAmount - (order.shippingCost || 0),
+                            )}
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between">
+                          <span>Shipping</span>
+                          <span>{summary?.shippingCost}</span>
+                        </li>
+                        <li className="border-t border-slate-200 pt-3 flex items-center justify-between font-bold text-slate-900 text-base">
+                          <span>Grand Total</span>
+                          <span>{summary?.totalAmount}</span>
+                        </li>
+                      </ul>
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Payment instrument
+                  <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-slate-50/50 p-5 hover:border-slate-300 transition-colors">
+                    <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                      <MapPin className="h-4 w-4" /> Delivery Details
+                    </p>
+                    <div className="mt-4 flex flex-1 flex-col gap-4 text-sm text-slate-600">
+                      <div className="flex gap-3">
+                        <CalendarClock className="h-5 w-5 flex-shrink-0 text-slate-400" />
+                        <div>
+                          <p className="font-medium text-slate-900">
+                            Estimated Delivery
+                          </p>
+                          <p>{summary?.deliveryEta}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <MapPin className="h-5 w-5 flex-shrink-0 text-slate-400" />
+                        <div>
+                          <p className="font-medium text-slate-900">
+                            Shipping Address
+                          </p>
+                          <p className="leading-relaxed">
+                            {composeAddress(order.shippingAddress) ||
+                              composeAddress(order.billingAddress)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-slate-50/50 p-5 hover:border-slate-300 transition-colors">
+                    <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                      <Receipt className="h-4 w-4" /> Payment Info
                     </p>
                     {summary?.instrument ? (
-                      <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                        <li className="inline-flex items-center gap-2 text-slate-700">
-                          <CreditCard className="h-4 w-4 text-slate-500" />{" "}
-                          Type: {summary.instrument.type || "—"}
-                        </li>
-                        {summary.instrument.utr ? (
-                          <li className="inline-flex items-center gap-2">
-                            <Receipt className="h-4 w-4 text-slate-500" /> UTR:{" "}
-                            {summary.instrument.utr}
-                          </li>
-                        ) : null}
-                        {summary.instrument.payerVpa ? (
-                          <li className="inline-flex items-center gap-2">
-                            <Wallet className="h-4 w-4 text-slate-500" /> Payer
-                            VPA: {summary.instrument.payerVpa}
-                          </li>
-                        ) : null}
-                        {summary.instrument.ifsc ? (
-                          <li className="inline-flex items-center gap-2">
-                            <IndianRupee className="h-4 w-4 text-slate-500" />{" "}
-                            IFSC: {summary.instrument.ifsc}
-                          </li>
-                        ) : null}
-                      </ul>
+                      <div className="mt-4 space-y-3 text-sm text-slate-600">
+                        <div className="flex gap-2">
+                          <span className="font-medium text-slate-900 min-w-[60px]">
+                            Type:
+                          </span>
+                          <span>{summary.instrument.type || "—"}</span>
+                        </div>
+                        {summary.instrument.utr && (
+                          <div className="flex gap-2">
+                            <span className="font-medium text-slate-900 min-w-[60px]">
+                              UTR:
+                            </span>
+                            <span className="break-all">
+                              {summary.instrument.utr}
+                            </span>
+                          </div>
+                        )}
+                        {summary.instrument.payerVpa && (
+                          <div className="flex gap-2">
+                            <span className="font-medium text-slate-900 min-w-[60px]">
+                              VPA:
+                            </span>
+                            <span className="break-all">
+                              {summary.instrument.payerVpa}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     ) : (
-                      <p className="mt-3 text-sm text-slate-500">
-                        No payment instrument details available.
+                      <p className="mt-4 text-sm text-slate-500 italic">
+                        No additional payment details available.
                       </p>
                     )}
                   </div>
@@ -493,31 +514,41 @@ const AquaOrderPage = () => {
 
               <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)]">
                 <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-                  <h2 className="text-lg font-semibold text-slate-900">
-                    Items in this order
+                  <h2 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-4 mb-4">
+                    Items Ordered
                   </h2>
-                  <ul className="mt-5 space-y-4">
+                  <div className="space-y-4">
                     {(order.items || []).map((item) => (
-                      <li
+                      <div
                         key={item?._id || item?.productId}
-                        className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50/60 p-4 sm:flex-row sm:items-center sm:justify-between"
+                        className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-slate-50/30 p-4 transition-colors hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div className="flex-1">
-                          <p className="text-sm font-semibold text-slate-900">
+                          <p className="text-base font-semibold text-slate-900">
                             {item?.name || "Product"}
                           </p>
-                          <p className="text-xs text-slate-500">
-                            Qty: {item?.quantity || 1}
+                          <p className="mt-1 text-sm text-slate-500">
+                            Quantity:{" "}
+                            <span className="font-medium text-slate-700">
+                              {item?.quantity || 1}
+                            </span>
                           </p>
                         </div>
-                        <div className="text-sm font-semibold text-slate-900">
-                          {formatCurrencyINR(
-                            (item?.price || 0) * (item?.quantity || 1),
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-slate-900">
+                            {formatCurrencyINR(
+                              (item?.price || 0) * (item?.quantity || 1),
+                            )}
+                          </p>
+                          {item?.quantity > 1 && (
+                            <p className="text-xs text-slate-500">
+                              {formatCurrencyINR(item?.price || 0)} each
+                            </p>
                           )}
                         </div>
-                      </li>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
 
                 <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
