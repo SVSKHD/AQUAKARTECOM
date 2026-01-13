@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import logo from "@/assests/logo.png";
-import AquaImage from "@/components/images/AquaImage";
+import LazyImage from "@/components/image/LazyImage";
 import { getFestivalWish } from "@/utils/festival";
 
 const rotatingHighlights = [
@@ -92,11 +92,15 @@ const AquaHomeHero = ({ data }) => {
                     className="relative group overflow-hidden rounded-[2.5rem] shadow-lg border border-white/50 bg-white/30 backdrop-blur-sm"
                   >
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 z-10 opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
-                    <AquaImage
+                    <LazyImage
                       src={category?.photos?.[0]?.secure_url}
                       alt={category?.title || "Aquakart Water Solutions"}
-                      customClass="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      fill
+                      sizes="(max-width: 1024px) 50vw, 25vw"
+                      className="absolute inset-0"
+                      imgClassName="object-cover transition-transform duration-700 group-hover:scale-110"
                     />
+
                     <Link
                       href={`/category/${category?.title || ""}`}
                       className="absolute inset-0 z-20 flex items-end justify-center pb-6"
@@ -118,10 +122,10 @@ const AquaHomeHero = ({ data }) => {
               transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
               className="order-1 lg:order-2 flex flex-col justify-center rounded-[2.5rem] bg-white/40 backdrop-blur-2xl border border-white/60 p-8 lg:p-12 shadow-2xl lg:min-h-[500px]"
             >
-              <AquaImage
+              <LazyImage
                 src={logo}
                 alt="Aquakart"
-                customClass="mx-auto lg:mx-0 max-w-[160px] drop-shadow-md mb-6"
+                imgClassName="mx-auto lg:mx-0 max-w-[160px] drop-shadow-md mb-6"
               />
 
               {/* Festival Banner */}

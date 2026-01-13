@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -17,7 +17,6 @@ import {
   XMarkIcon,
   ShoppingCartIcon,
   HeartIcon,
-  UserIcon,
 } from "@heroicons/react/24/outline";
 import { FaUser } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
@@ -41,56 +40,67 @@ const AquaHeader = () => {
   const router = useRouter();
   const { openCartDrawer, openFavDrawer } = useCartDrawer();
   const { openAuthDialog } = useDialog();
+
   const { userData, cartData, favData } = useSelector((state) => ({
     ...state,
   }));
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+
   const [festival, setFestival] = useState(null);
+  const [isVisible, setIsVisible] = useState(true);
+
+  const lastScrollYRef = useRef(0);
+  const tickingRef = useRef(false);
 
   const cartCount = Array.isArray(cartData) ? cartData.length : 0;
   const favCount = Array.isArray(favData) ? favData.length : 0;
 
-  const isActiveRoute = (href) => router.pathname === href;
+  const isActiveRoute = useCallback(
+    (href) => router.pathname === href,
+    [router.pathname],
+  );
 
+  // Festival wish only on mount (or when you decide to change it)
   useEffect(() => {
     setFestival(getFestivalWish());
+  }, []);
 
-    const controlNavbar = () => {
-      if (typeof window !== "undefined") {
-        const currentScrollY = window.scrollY;
+  // Scroll handler optimized: no state updates per scroll tick, no re-binding listener
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
-        // Show if near top or scrolling up
-        if (currentScrollY < 10 || currentScrollY < lastScrollY) {
-          setIsVisible(true);
-        } else {
-          // Hide if scrolling down and not at top
-          setIsVisible(false);
-        }
+    lastScrollYRef.current = window.scrollY;
 
-        setLastScrollY(currentScrollY);
-      }
+    const onScroll = () => {
+      if (tickingRef.current) return;
+      tickingRef.current = true;
+
+      requestAnimationFrame(() => {
+        const current = window.scrollY;
+        const last = lastScrollYRef.current;
+
+        const nextVisible = current < 10 || current < last;
+
+        setIsVisible((prev) => (prev === nextVisible ? prev : nextVisible));
+
+        lastScrollYRef.current = current;
+        tickingRef.current = false;
+      });
     };
 
-    if (typeof window !== "undefined") {
-      window.addEventListener("scroll", controlNavbar);
-
-      return () => {
-        window.removeEventListener("scroll", controlNavbar);
-      };
-    }
-  }, [lastScrollY]);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <Disclosure
       as="nav"
-      className={`fixed inset-x-4 z-50 mx-auto max-w-7xl transition-all duration-300 ease-in-out ${
-        isVisible ? "top-4 translate-y-0" : "-translate-y-[150%] top-4"
+      className={`fixed inset-x-4 z-50 mx-auto max-w-7xl top-4 transition-transform duration-300 ease-in-out ${
+        isVisible ? "translate-y-0" : "-translate-y-[150%]"
       }`}
     >
       {({ open }) => (
         <>
-          <div className="relative rounded-full border border-white/40 bg-white/70 backdrop-blur-2xl shadow-xl shadow-indigo-500/5 transition-all duration-500 hover:bg-white/80 hover:shadow-indigo-500/10 hover:border-white/60">
+          <div className="relative rounded-full border border-white/40 bg-white/70 backdrop-blur-2xl shadow-xl shadow-indigo-500/5 transition-colors duration-500 hover:bg-white/80 hover:shadow-indigo-500/10 hover:border-white/60">
             <div className="relative flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
               {/* Mobile Menu Button */}
               <div className="absolute inset-y-0 left-0 flex items-center sm:hidden pl-2">
@@ -124,6 +134,7 @@ const AquaHeader = () => {
                       alt="Aquakart"
                       height={100}
                       width={100}
+                      priority
                     />
                   </div>
                   <span className="hidden text-xl font-bold tracking-tight text-slate-900 sm:block">
@@ -133,7 +144,7 @@ const AquaHeader = () => {
                   {/* Header Festival Pill */}
                   {festival && (
                     <div
-                      className={`hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r ${festival.gradient} bg-opacity-10 opacity-90 transition-all hover:scale-105 ml-2 cursor-pointer`}
+                      className={`hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r ${festival.gradient} bg-opacity-10 opacity-90 transition-transform hover:scale-105 ml-2 cursor-pointer`}
                     >
                       <span className="text-xs">{festival.icon}</span>
                       <span className="text-[10px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700 uppercase tracking-wider">
@@ -200,10 +211,11 @@ const AquaHeader = () => {
                 {/* Profile Dropdown */}
                 {userData ? (
                   <Menu as="div" className="relative ml-2">
-                    <MenuButton className="relative flex h-10 w-10 items-center justify-center rounded-full  bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-200 transition-transform duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 active:scale-95">
+                    <MenuButton className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-200 transition-transform duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 active:scale-95">
                       <span className="sr-only">Open user menu</span>
                       <FaUser className="h-4 w-4" />
                     </MenuButton>
+
                     <Transition
                       enter="transition ease-out duration-200"
                       enterFrom="transform opacity-0 scale-95 translate-y-2"
@@ -221,6 +233,7 @@ const AquaHeader = () => {
                             {userData?.user?.name || "User"}
                           </p>
                         </div>
+
                         <MenuItem>
                           {({ focus }) => (
                             <Link
@@ -236,6 +249,7 @@ const AquaHeader = () => {
                             </Link>
                           )}
                         </MenuItem>
+
                         <MenuItem>
                           {({ focus }) => (
                             <button
