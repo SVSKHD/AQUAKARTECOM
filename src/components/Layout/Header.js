@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import {
@@ -25,6 +24,7 @@ import LW from "@/assests/logo.png";
 import useCartDrawer from "@/utils/drawer";
 import useDialog from "@/utils/dialog";
 import { getFestivalWish } from "@/utils/festival";
+import LazyImage from "../image/LazyImage";
 
 const navigation = [
   { name: "Shop", href: "/shop" },
@@ -128,8 +128,8 @@ const AquaHeader = () => {
                   className="flex flex-shrink-0 items-center gap-3 group"
                 >
                   <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-white shadow-sm transition-transform duration-300 group-hover:scale-105">
-                    <Image
-                      className="h-full w-full object-contain p-1"
+                    <LazyImage
+                      imgClassName="h-full w-full object-contain p-1"
                       src={LW}
                       alt="Aquakart"
                       height={100}
@@ -183,6 +183,8 @@ const AquaHeader = () => {
                 <button
                   onClick={openFavDrawer}
                   type="button"
+                  aria-label="Open favourites"
+                  name="Open favourites"
                   className="group relative flex h-10 w-10 items-center justify-center rounded-full bg-white/50 text-slate-500 transition-all duration-300 hover:bg-white hover:text-rose-500 hover:shadow-md hover:scale-105 focus:outline-none"
                 >
                   <span className="sr-only">Open favourites</span>
@@ -197,6 +199,8 @@ const AquaHeader = () => {
                 <button
                   onClick={openCartDrawer}
                   type="button"
+                  aria-label="Open cart"
+                  name="Open cart"
                   className="group relative flex h-10 w-10 items-center justify-center rounded-full bg-white/50 text-slate-500 transition-all duration-300 hover:bg-white hover:text-emerald-600 hover:shadow-md hover:scale-105 focus:outline-none"
                 >
                   <span className="sr-only">Open cart</span>
@@ -254,6 +258,8 @@ const AquaHeader = () => {
                           {({ focus }) => (
                             <button
                               type="button"
+                              aria-label="Logout"
+                              name="Logout"
                               onClick={() =>
                                 dispatch({
                                   type: "LOGOUT",

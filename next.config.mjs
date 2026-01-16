@@ -1,5 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "index, follow, noai, noimageai",
+          },
+        ],
+      },
+    ];
+  },
   reactStrictMode: true,
   env: {
     NEXT_PUBLIC_URL: "https://aquakart.co.in/",
