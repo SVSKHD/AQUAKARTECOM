@@ -24,6 +24,7 @@ const FestivalCornerWidget = () => {
         <button
           onClick={() => setIsVisible(false)}
           className="absolute -top-2 -right-2 bg-white text-slate-900 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10 hover:scale-110"
+          aria-label="dismiss festival widget"
         >
           <X size={12} />
         </button>

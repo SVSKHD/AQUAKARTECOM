@@ -148,6 +148,31 @@ const config = {
       "Review the terms and conditions for using Aquakart, purchasing water softeners, RO purifiers, and other products online. Understand our policies before shopping.",
     follow: false,
   },
+  "softener-planner": {
+    title: "Softener Planning | Aquakart Water Softener Solutions",
+    keywords:
+      "Aquakart Softener Planning, Water Softener Calculator, RO Purifier Calculator, Best Water Filters, Hyderabad RO Offers, Water Filter Coupons Jubilee Hills",
+    keyphrases:
+      "Water Softener Discounts, RO Purifier Coupons, Aquakart Special Offers, Local Water Filter Deals Hyderabad",
+    url: "https://aquakart.co.in/softener-planning",
+    photos: "https://www.aquakart.co.in/images/softener-planning.jpg",
+    description:
+      "Explore special offers and discounts on Aquakart water softeners, RO purifiers, and filtration products. Limited-time deals available now!",
+    follow: true,
+  },
+  "softeners-hyderabad": {
+    title:
+      "Softeners Installed in Hyderabad | Aquakart Water softener Solutions",
+    keywords:
+      "Aquakart Softener Planning, Water Softener Calculator, RO Purifier Calculator, Best Water Filters, Hyderabad RO Offers, Water Filter Coupons Jubilee Hills",
+    keyphrases:
+      "Water Softener Discounts, RO Purifier Coupons, Aquakart Special Offers, Local Water Filter Deals Hyderabad",
+    url: "https://aquakart.co.in/softener-planning",
+    photos: "https://www.aquakart.co.in/images/softener-planning.jpg",
+    description:
+      "Explore special offers and discounts on Aquakart water softeners, RO purifiers, and filtration products. Limited-time deals available now!",
+    follow: true,
+  },
 };
 
 export default config;

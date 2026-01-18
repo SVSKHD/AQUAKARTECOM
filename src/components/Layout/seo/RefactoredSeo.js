@@ -115,7 +115,7 @@ const AquaSeoRevamp = ({
       url: DEFAULT_LOGO,
     },
   };
-
+  console.log("hello seo", path);
   graphNodes.push(publisherNode);
 
   const productNodeFromData = (productRecord) => {

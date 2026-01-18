@@ -1,5 +1,4 @@
 import LW from "@/assests/logo-white.png";
-import Image from "next/image";
 import Link from "next/link";
 import { isArray } from "lodash";
 import { useState, useEffect } from "react";
@@ -12,6 +11,7 @@ import {
   Mail,
   Sparkles,
 } from "lucide-react";
+import LazyImage from "../image/LazyImage";
 
 const navigation = {
   policy: [
@@ -99,12 +99,12 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
             <div>
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-inner ring-1 ring-white/20">
-                  <Image
+                  <LazyImage
                     src={LW}
                     alt="Aquakart"
                     height={48}
                     width={48}
-                    className="h-8 w-8 object-contain"
+                    imgClassName="h-8 w-8 object-contain"
                   />
                 </div>
                 <div>
@@ -145,6 +145,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
                       />
                       <button
                         type="submit"
+                        aria-label="join-newsletter"
                         className="absolute right-1.5 top-1.5 bottom-1.5 rounded-xl bg-indigo-600 px-5 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-500 hover:scale-105 active:scale-95"
                       >
                         Join
@@ -172,6 +173,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
                       <Link
                         key={item.title}
                         href={`/subcategory/${item.title}`}
+                        aria-label={item.title}
                         className="group flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:scale-[1.02]"
                       >
                         <span className="truncate">{item.title}</span>
@@ -195,6 +197,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
                       <Link
                         key={item.title}
                         href={`/category/${item.title}`}
+                        aria-label={item.title}
                         className="group flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:scale-[1.02]"
                       >
                         <span className="truncate">{item.title}</span>
@@ -220,15 +223,16 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
                       key={i}
                       href="https://www.instagram.com/aquakart.co.in/"
                       target="_blank"
+                      aria-label="aquakart instagram"
                       rel="noreferrer"
                       className="group relative aspect-square overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10 transition-all hover:ring-white/30 hover:scale-105"
                     >
-                      <Image
+                      <LazyImage
                         src={src}
                         alt="Aquakart Instagram"
                         width={150}
                         height={150}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        imgClassName="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/40 backdrop-blur-sm">
                         <Instagram className="h-5 w-5 text-white" />
@@ -239,6 +243,8 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
               <a
                 href="https://www.instagram.com/aquakart.co.in/"
                 target="_blank"
+                aria-label="aquakart instagram"
+                rel="noreferrer"
                 className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
               >
                 View Profile <ArrowRight className="w-3 h-3" />
@@ -288,6 +294,9 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
               <Link
                 key={name}
                 href={href}
+                aria-label={name}
+                target="_blank"
+                rel="noreferrer"
                 className="group relative flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-slate-400 transition-all hover:bg-white hover:text-slate-900 hover:scale-110"
               >
                 <Icon className="h-5 w-5" />

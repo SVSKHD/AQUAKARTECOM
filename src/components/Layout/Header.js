@@ -29,7 +29,7 @@ import LazyImage from "../image/LazyImage";
 const navigation = [
   { name: "Shop", href: "/shop" },
   { name: "Compare", href: "/compare" },
-  { name: "Realtime", href: "/softeners_hyderabad" },
+  { name: "Realtime", href: "/softeners-hyderabad" },
   { name: "Know More", href: "/blogs" },
 ];
 
