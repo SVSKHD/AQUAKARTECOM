@@ -115,7 +115,6 @@ const AquaSeoRevamp = ({
       url: DEFAULT_LOGO,
     },
   };
-  console.log("hello seo", path);
   graphNodes.push(publisherNode);
 
   const productNodeFromData = (productRecord) => {
@@ -413,7 +412,6 @@ const AquaSeoRevamp = ({
             {primaryImage && (
               <meta property="og:image" content={primaryImage} />
             )}
-            <meta property="og:image:type" content="image/png" />
             <meta property="og:image:width" content="1200" />
             <meta property="og:image:height" content="630" />
             <meta name="twitter:card" content="summary_large_image" />

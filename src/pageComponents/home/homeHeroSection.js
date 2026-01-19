@@ -196,12 +196,14 @@ const AquaHomeHero = ({ data }) => {
               <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center justify-center lg:justify-start">
                 <Link
                   href="/shop"
+                  aria-label="Shop solutions"
                   className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-8 py-3 text-sm font-semibold text-white shadow transition hover:bg-emerald-400"
                 >
                   Shop solutions
                 </Link>
                 <Link
                   href="/shop"
+                  aria-label="Book a free water test"
                   className="inline-flex items-center justify-center rounded-full border border-emerald-200 px-6 py-3 text-sm font-semibold text-emerald-600 transition hover:border-emerald-300 hover:bg-emerald-50"
                 >
                   Book a free water test

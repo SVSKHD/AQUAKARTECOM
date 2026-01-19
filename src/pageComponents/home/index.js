@@ -141,6 +141,7 @@ const AquaHomeComponent = ({
                   <div className="flex px-4 pb-2 pt-5">
                     <button
                       type="button"
+                      aria-label="Close menu"
                       className="-m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400"
                       onClick={() => setMobileMenuOpen(false)}
                     >

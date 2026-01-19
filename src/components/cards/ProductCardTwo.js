@@ -201,6 +201,7 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
           <button
             type="button"
             onClick={handleFavToggle}
+            aria-label={fav ? "Remove from wishlist" : "Add to wishlist"}
             className={`absolute top-2 right-2 z-10 rounded-full border p-2 shadow-lg transition-all duration-300 ${
               fav
                 ? "border-rose-500 bg-white/90 text-rose-600 hover:bg-rose-500 hover:text-white"
@@ -252,6 +253,7 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
             <button
               onClick={handleCartToggle}
               type="button"
+              aria-label={cart ? "Remove from cart" : "Add to cart"}
               className={`flex-1 rounded-full py-3 text-sm font-semibold shadow-md transition-all duration-300 ${
                 cart
                   ? "bg-emerald-500 text-white hover:bg-emerald-600"
@@ -331,6 +333,7 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
           {/* FAVORITE */}
           <button
             onClick={handleFavToggle}
+            aria-label={fav ? "Remove from wishlist" : "Add to wishlist"}
             className={`absolute right-4 top-4 z-20 rounded-full p-3 shadow ${
               fav ? "bg-rose-500 text-white" : "bg-white/90 text-slate-600"
             }`}
@@ -463,6 +466,7 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
             <button
               type="button"
               onClick={handleFavToggle}
+              aria-label={fav ? "Remove from wishlist" : "Add to wishlist"}
               className={`absolute top-4 right-4 z-10 rounded-full border p-3 transition-all duration-300 shadow-lg ${
                 fav
                   ? "border-rose-500 bg-white/90 text-rose-600 hover:bg-rose-500 hover:text-white"
