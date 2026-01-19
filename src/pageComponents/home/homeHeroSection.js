@@ -197,7 +197,7 @@ const AquaHomeHero = ({ data }) => {
                 <Link
                   href="/shop"
                   aria-label="Shop solutions"
-                  className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-emerald-700"
+                  className="inline-flex items-center justify-center rounded-full bg-emerald-800 px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-emerald-700"
                 >
                   Shop solutions
                 </Link>
