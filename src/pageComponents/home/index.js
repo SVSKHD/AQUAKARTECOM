@@ -316,7 +316,7 @@ const AquaHomeComponent = ({
                     initialCategories.slice(0, 10).map((category, idx) => {
                       // Fix: Provide valid fallback if photos array is empty or undefined
                       const imageUrl =
-                        category.photos?.[0]?.secure_url ||
+                        category.photos?.[0]?.delivery_url ||
                         "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-512x512_kfw439.png";
                       return (
                         <Link

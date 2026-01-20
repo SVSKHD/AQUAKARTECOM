@@ -5,7 +5,7 @@ import { FaHeart, FaShoppingCart, FaCheck } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
-import AquaImage from "../images/AquaImage";
+import LazyImage from "../image/LazyImage";
 import { useRouter } from "next/router";
 
 const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
@@ -187,10 +187,12 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
                   }}
                   transition={{ duration: 0.5, ease: "easeInOut" }}
                 >
-                  <AquaImage
-                    src={photo?.secure_url}
+                  <LazyImage
+                    src={photo?.delivery_url}
                     alt={title}
-                    customClass="h-full w-full object-cover object-center"
+                    width={500}
+                    height={500}
+                    imgClassName="h-full w-full object-cover object-center"
                   />
                 </motion.div>
               ))}
@@ -320,10 +322,12 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
                   animate={{ opacity: activeIndex === i ? 1 : 0.6 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <AquaImage
-                    src={p.secure_url}
+                  <LazyImage
+                    src={p.delivery_url}
                     alt={title}
-                    customClass="h-full w-full object-cover rounded-3xl p-1"
+                    width={900}
+                    height={900}
+                    imgClassName="h-full w-full object-cover rounded-3xl p-1"
                   />
                 </motion.div>
               ))}
@@ -452,10 +456,12 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
                     }}
                     transition={{ duration: 0.5, ease: "easeInOut" }}
                   >
-                    <AquaImage
-                      src={photo?.secure_url}
+                    <LazyImage
+                      src={photo?.delivery_url}
                       alt={title}
-                      customClass="h-full w-full object-cover object-center rounded-3xl p-3"
+                      width={500}
+                      height={500}
+                      imgClassName="h-full w-full object-cover object-center rounded-3xl p-3"
                     />
                   </motion.div>
                 ))}

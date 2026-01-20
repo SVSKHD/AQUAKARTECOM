@@ -93,7 +93,7 @@ const AquaHomeHero = ({ data }) => {
                   >
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 z-10 opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
                     <LazyImage
-                      src={category?.photos?.[0]?.secure_url}
+                      src={category?.photos?.[0]?.delivery_url}
                       alt={category?.title || "Aquakart Water Solutions"}
                       fill
                       sizes="(max-width: 1024px) 50vw, 25vw"
