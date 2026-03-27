@@ -10,7 +10,7 @@ export default function Document() {
         />
         <link rel="manifest" href="/manifest.json" />
       </Head>
-      <body>
+      <body className="antialiased">
         <Main />
         <NextScript />
       </body>

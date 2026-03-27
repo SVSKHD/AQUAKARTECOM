@@ -114,13 +114,7 @@ const AquaHomeComponent = ({
   return (
     <>
       <AquaLayout seo={SeoData}>
-        <div className="bg-slate-50 relative selection:bg-emerald-500 selection:text-white">
-          {/* Global Background Elements */}
-          <div className="fixed inset-0 pointer-events-none z-0">
-            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-200/20 blur-[120px]" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-100/30 blur-[120px]" />
-          </div>
-
+        <div className="relative selection:bg-emerald-500 selection:text-white">
           <div className="relative z-10">
             {/* Mobile menu */}
             <Dialog
@@ -181,8 +175,8 @@ const AquaHomeComponent = ({
             <main className="space-y-24 pb-24">
               {/* Concierge Section - Glass UI */}
               <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-12">
-                <div className="relative overflow-hidden rounded-[2rem] border border-white/60 bg-white/40 backdrop-blur-xl shadow-2xl p-8 lg:p-12">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-white/40 opacity-80" />
+                <div className="glass-card relative overflow-hidden rounded-[2rem] p-8 lg:p-12 shadow-[0_8px_60px_rgba(0,0,0,0.06)]">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-transparent to-emerald-50/30 opacity-80" />
 
                   <div className="relative flex flex-col gap-12 lg:flex-row lg:items-start lg:justify-between">
                     <div className="max-w-xl">
@@ -211,10 +205,10 @@ const AquaHomeComponent = ({
                               key={guide.id}
                               type="button"
                               onClick={() => setActiveGuideId(guide.id)}
-                              className={`group relative flex items-center gap-3 rounded-xl border p-4 text-left transition-all duration-300 ${
+                              className={`group relative flex items-center gap-3 rounded-xl p-4 text-left transition-all duration-300 ${
                                 isActive
-                                  ? "border-emerald-500/30 bg-emerald-50/80 text-emerald-900 shadow-lg shadow-emerald-500/10 scale-[1.02]"
-                                  : "border-white/50 bg-white/50 text-slate-600 hover:border-emerald-200 hover:bg-white/80 hover:shadow-md"
+                                  ? "glass-card border-emerald-500/30 bg-emerald-50/60 text-emerald-900 shadow-lg shadow-emerald-500/10 scale-[1.02]"
+                                  : "glass-subtle border border-white/50 text-slate-600 hover:border-emerald-200 hover:bg-white/60 hover:shadow-md"
                               }`}
                             >
                               <div
@@ -322,7 +316,7 @@ const AquaHomeComponent = ({
                         <Link
                           key={category.title}
                           href={`/category/${category.title}`}
-                          className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-emerald-200/50 hover:ring-2 hover:ring-emerald-500/20"
+                          className="group relative flex flex-col overflow-hidden rounded-2xl glass-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)] hover:ring-2 hover:ring-emerald-500/20"
                         >
                           <div className="aspect-[4/3] overflow-hidden bg-slate-100 relative">
                             <LazyImage

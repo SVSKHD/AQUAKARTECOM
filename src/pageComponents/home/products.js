@@ -117,7 +117,7 @@ const AquaProducts = ({ initialProducts = [] }) => {
                 className={`whitespace-nowrap px-4 py-1.5 text-xs font-bold uppercase tracking-wide rounded-full transition-all duration-300 ${
                   isActive
                     ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 scale-105"
-                    : "bg-white border border-slate-200 text-slate-500 hover:border-emerald-300 hover:text-emerald-600"
+                    : "glass-subtle border border-white/50 text-slate-500 hover:border-emerald-300 hover:text-emerald-600 hover:bg-white/50"
                 }`}
               >
                 {filter}
@@ -129,7 +129,7 @@ const AquaProducts = ({ initialProducts = [] }) => {
 
       <div className="relative min-h-[300px]">
         {loading ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-3xl z-10">
+          <div className="absolute inset-0 flex items-center justify-center glass rounded-3xl z-10">
             <AquaSpinner color="emerald" size="lg" />
           </div>
         ) : (
@@ -155,7 +155,7 @@ const AquaProducts = ({ initialProducts = [] }) => {
       <div className="mt-10 flex justify-center">
         <Link
           href="/shop"
-          className="group flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all hover:border-emerald-300 hover:text-emerald-700 hover:shadow-emerald-100"
+          className="group glass-card flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-slate-700 transition-all hover:border-emerald-300 hover:text-emerald-700 hover:shadow-emerald-100"
         >
           Browse Full Catalog{" "}
           <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />

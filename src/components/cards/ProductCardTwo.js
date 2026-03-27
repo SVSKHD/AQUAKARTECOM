@@ -167,8 +167,8 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
         tabIndex={0}
         onClick={handleNavigate}
         onKeyDown={handleKeyPress}
-        className={`group relative flex cursor-pointer gap-6 rounded-2xl border bg-white p-4 shadow-lg transition hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 ${
-          fav ? "border-rose-200" : "border-slate-100"
+        className={`group relative flex cursor-pointer gap-6 rounded-2xl glass-card p-4 transition-all duration-300 hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 ${
+          fav ? "border-rose-200" : ""
         } ${cart ? "ring-1 ring-emerald-300" : ""}`}
         aria-label={`View details for ${title}`}
       >
@@ -284,7 +284,7 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
       {padded ? (
         <div
           className={[
-            "group relative h-[420px] w-full cursor-pointer overflow-hidden rounded-3xl shadow-xl transition",
+            "group relative h-[420px] w-full cursor-pointer overflow-hidden rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/50 bg-white/20 backdrop-blur-sm transition-all duration-300 hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)]",
             fav ? "ring-2 ring-rose-500 ring-offset-2" : "",
             cart
               ? "outline outline-2 outline-emerald-500 outline-offset-[-2px]"
@@ -438,7 +438,7 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
           tabIndex={0}
           onClick={handleNavigate}
           onKeyDown={handleKeyPress}
-          className="group relative flex h-full cursor-pointer flex-col rounded-3xl border border-slate-100 bg-white shadow-lg transition hover:-translate-y-1 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
+          className="group relative flex h-full cursor-pointer flex-col rounded-3xl glass-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
           aria-label={`View details for ${title}`}
         >
           {/* Full-Width Image Carousel */}

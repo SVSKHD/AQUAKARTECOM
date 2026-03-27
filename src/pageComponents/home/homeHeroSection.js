@@ -56,7 +56,7 @@ const AquaHomeHero = ({ data }) => {
 
   return (
     <div className="px-3 py-6 sm:px-4 lg:px-6">
-      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[3rem] bg-gradient-to-br from-indigo-50 via-purple-50 to-emerald-50 shadow-2xl ring-1 ring-black/5">
+      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[3rem] bg-gradient-to-br from-indigo-50/80 via-purple-50/60 to-emerald-50/80 shadow-[0_8px_60px_rgba(0,0,0,0.08)] ring-1 ring-white/60 backdrop-blur-sm">
         {/* Dynamic Festival Background Overlay */}
         {festival && (
           <div
@@ -89,7 +89,7 @@ const AquaHomeHero = ({ data }) => {
                       delay: index * 0.1,
                       ease: "easeOut",
                     }}
-                    className="relative group overflow-hidden rounded-[2.5rem] shadow-lg border border-white/50 bg-white/30 backdrop-blur-sm"
+                    className="relative group overflow-hidden rounded-[2.5rem] shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/50 bg-white/30 backdrop-blur-sm transition-all duration-300 hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)]"
                   >
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 z-10 opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
                     <LazyImage
@@ -121,7 +121,7 @@ const AquaHomeHero = ({ data }) => {
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-              className="order-1 lg:order-2 flex flex-col justify-center rounded-[2.5rem] bg-white/40 backdrop-blur-2xl border border-white/60 p-8 lg:p-12 shadow-2xl lg:min-h-[500px]"
+              className="order-1 lg:order-2 flex flex-col justify-center rounded-[2.5rem] glass-card p-8 lg:p-12 shadow-[0_8px_40px_rgba(0,0,0,0.06)] lg:min-h-[500px]"
             >
               <LazyImage
                 src={logo}
