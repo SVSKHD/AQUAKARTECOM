@@ -153,18 +153,33 @@ const AquaLayout = (props) => {
     return (
       <>
         <AquaHeader />
-        <div className="flex min-h-screen pt-24 flex-col bg-white">
+        <div className="flex min-h-screen pt-24 flex-col">
           <main className="flex flex-1 flex-col items-center justify-center">
-            <div className="text-center p-6">
-              <h1 className="text-2xl font-bold text-gray-800 mb-4">
+            <div className="glass-card rounded-3xl text-center p-10 mx-4 max-w-md">
+              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100/80">
+                <svg
+                  className="h-8 w-8 text-rose-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+                  />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-bold text-slate-800 mb-3">
                 Network Error
               </h1>
-              <p className="text-gray-600">
+              <p className="text-slate-500 mb-6">
                 Please check your internet connection and try again.
               </p>
               <button
                 onClick={handleRetry}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white font-semibold rounded-md shadow hover:bg-blue-700 transition duration-300"
+                className="px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-full shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all duration-300 hover:scale-105 active:scale-95"
               >
                 Retry
               </button>
@@ -209,8 +224,13 @@ const AquaLayout = (props) => {
         </>
       )}
 
-      <div className="flex min-h-screen flex-col bg-white pt-24">
-        <main className="flex-1">{props.children}</main>
+      <div className="relative flex min-h-screen flex-col pt-24">
+        {/* Ambient background orbs */}
+        <div className="ambient-orb top-[10%] left-[-5%] w-[500px] h-[500px] bg-indigo-200/40" />
+        <div className="ambient-orb top-[40%] right-[-8%] w-[400px] h-[400px] bg-emerald-200/30" />
+        <div className="ambient-orb bottom-[10%] left-[20%] w-[350px] h-[350px] bg-purple-200/25" />
+
+        <main className="relative z-10 flex-1">{props.children}</main>
         <AquaFooter categories={categories} subcategories={subcategories} />
       </div>
     </>

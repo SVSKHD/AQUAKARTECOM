@@ -100,7 +100,7 @@ const AquaHeader = () => {
     >
       {({ open }) => (
         <>
-          <div className="relative rounded-full border border-white/40 bg-white/70 backdrop-blur-2xl shadow-xl shadow-indigo-500/5 transition-colors duration-500 hover:bg-white/80 hover:shadow-indigo-500/10 hover:border-white/60">
+          <div className="relative rounded-full border border-white/50 bg-white/50 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.7)] transition-all duration-500 hover:bg-white/65 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.8)] hover:border-white/70">
             <div className="relative flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
               {/* Mobile Menu Button */}
               <div className="absolute inset-y-0 left-0 flex items-center sm:hidden pl-2">
@@ -303,7 +303,7 @@ const AquaHeader = () => {
             leaveTo="transform scale-95 opacity-0 -translate-y-2"
           >
             <DisclosurePanel className="sm:hidden mt-2">
-              <div className="rounded-[2rem] border border-white/40 bg-white/80 backdrop-blur-3xl shadow-2xl p-4 space-y-2 ring-1 ring-black/5">
+              <div className="rounded-[2rem] border border-white/50 bg-white/50 backdrop-blur-3xl shadow-[0_8px_40px_rgba(0,0,0,0.08)] p-4 space-y-2 ring-1 ring-white/60">
                 {navigation.map((item) => (
                   <DisclosureButton
                     key={item.name}
