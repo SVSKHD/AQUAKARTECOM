@@ -329,298 +329,345 @@ const AquaCodOrderPageComponent = () => {
 
     try {
       setIsGeneratingInvoice(true);
-      const formatAmount = (value) =>
-        formatCurrencyINR(roundToTwo(toNumber(value, 0)));
-      const doc = new jsPDFConstructor({ unit: "pt", format: "a4" });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const marginX = 48;
-      const baseFont = "helvetica";
 
+      // ── Helpers ──────────────────────────────────────────
+      const fmt = (v) => {
+        const n = roundToTwo(toNumber(v, 0));
+        return new Intl.NumberFormat("en-IN", {
+          style: "currency",
+          currency: "INR",
+          minimumFractionDigits: 2,
+        }).format(n);
+      };
+
+      const doc = new jsPDFConstructor({ unit: "pt", format: "a4" });
+      const W = doc.internal.pageSize.getWidth(); // 595
+      const H = doc.internal.pageSize.getHeight(); // 842
+      const M = 44; // margin
+      const TW = W - M * 2; // table width
+      const F = "helvetica";
+
+      // ── Colours ──────────────────────────────────────────
+      const BRAND = [16, 185, 129]; // emerald-500
+      const BRAND_DARK = [6, 95, 70]; // emerald-900
+      const SLATE_900 = [15, 23, 42];
+      const SLATE_600 = [71, 85, 105];
+      const SLATE_400 = [148, 163, 184];
+      const STRIPE_BG = [248, 250, 252];
+      const WHITE = [255, 255, 255];
+
+      // ── Watermark ────────────────────────────────────────
       const watermark = await loadImageAsDataURL(INVOICE_WATERMARK_URL);
       if (watermark) {
         try {
           if (doc.GState) {
-            const faded = new doc.GState({ opacity: 0.06 });
-            doc.setGState(faded);
-            doc.addImage(
-              watermark,
-              "PNG",
-              pageWidth / 2 - 180,
-              pageHeight / 2 - 180,
-              360,
-              360,
-            );
+            doc.setGState(new doc.GState({ opacity: 0.04 }));
+            doc.addImage(watermark, "PNG", W / 2 - 150, H / 2 - 150, 300, 300);
             doc.setGState(new doc.GState({ opacity: 1 }));
-          } else {
-            doc.addImage(
-              watermark,
-              "PNG",
-              pageWidth / 2 - 180,
-              pageHeight / 2 - 180,
-              360,
-              360,
-            );
           }
-        } catch (error) {
-          console.error("Failed to add watermark", error);
-        }
+        } catch (_) {}
       }
 
-      doc.setFillColor(43, 108, 176);
-      doc.rect(0, 0, pageWidth, 96, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFont(baseFont, "bold");
-      doc.setFontSize(26);
-      doc.text("Aquakart", marginX, 54);
-      doc.setFont(baseFont, "normal");
-      doc.setFontSize(12);
-      doc.text("GST: 36AJOPH6387A1Z2", marginX, 72);
-      doc.text("https://aquakart.co.in", marginX, 88);
-      doc.setFont(baseFont, "bold");
-      doc.setFontSize(26);
-      doc.text("Invoice", pageWidth - marginX, 60, { align: "right" });
+      // ── Header band ──────────────────────────────────────
+      doc.setFillColor(...BRAND);
+      doc.rect(0, 0, W, 88, "F");
 
-      doc.setTextColor(30, 41, 59);
-      let cursorY = 124;
-      doc.setFontSize(13);
-      doc.setFont(baseFont, "bold");
-      doc.text("Invoice details", marginX, cursorY);
-      cursorY += 20;
-      doc.setFont(baseFont, "normal");
+      // Accent stripe
+      doc.setFillColor(...BRAND_DARK);
+      doc.rect(0, 88, W, 4, "F");
+
+      // Brand text
+      doc.setTextColor(...WHITE);
+      doc.setFont(F, "bold");
+      doc.setFontSize(28);
+      doc.text("Aquakart", M, 42);
+      doc.setFont(F, "normal");
+      doc.setFontSize(10);
+      doc.text("Premium Water Solutions", M, 58);
+      doc.setFontSize(9);
+      doc.text("GSTIN: 36AJOPH6387A1Z2  |  aquakart.co.in", M, 74);
+
+      // INVOICE badge
+      doc.setFont(F, "bold");
+      doc.setFontSize(11);
+      doc.setFillColor(...WHITE);
+      const badgeW = 80;
+      const badgeH = 28;
+      doc.roundedRect(W - M - badgeW, 30, badgeW, badgeH, 14, 14, "F");
+      doc.setTextColor(...BRAND_DARK);
+      doc.text("INVOICE", W - M - badgeW / 2, 49, { align: "center" });
+
+      // ── Invoice meta grid ────────────────────────────────
+      let Y = 112;
+      doc.setTextColor(...SLATE_900);
+      doc.setFont(F, "bold");
       doc.setFontSize(11);
 
-      const invoiceInfo = [
-        {
-          label: "Invoice #",
-          value: order?.orderId || "-",
-        },
-        {
-          label: "Invoice date",
-          value: dayjs(order?.createdAt).format("DD MMM YYYY"),
-        },
+      const metaLeft = [
+        ["Invoice #", order?.orderId || "-"],
+        ["Date", dayjs(order?.createdAt).format("DD MMM YYYY")],
+        ["Transaction", order?.transactionId || "-"],
+      ];
+      const metaRight = [
+        ["Payment", "Cash on Delivery"],
+        ["Status", order?.orderStatus || "Processing"],
+        ["Currency", "INR (₹)"],
       ];
 
-      if (order?.transactionId) {
-        invoiceInfo.push({
-          label: "Transaction ID",
-          value: order.transactionId,
+      const drawMeta = (items, startX, startY) => {
+        let y = startY;
+        items.forEach(([label, value]) => {
+          doc.setFont(F, "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(...SLATE_400);
+          doc.text(label.toUpperCase(), startX, y);
+          doc.setFont(F, "bold");
+          doc.setFontSize(10);
+          doc.setTextColor(...SLATE_900);
+          doc.text(value, startX, y + 13);
+          y += 30;
         });
-      }
+        return y;
+      };
 
-      invoiceInfo.push({
-        label: "Payment method",
-        value: "Cash on Delivery",
-      });
+      drawMeta(metaLeft, M, Y);
+      drawMeta(metaRight, W / 2 + 20, Y);
+      Y += 30 * metaLeft.length + 8;
 
-      invoiceInfo.forEach((line) => {
-        doc.text(`${line.label}: ${line.value}`, marginX, cursorY);
-        cursorY += 16;
-      });
-      cursorY += 12;
+      // ── Divider ──────────────────────────────────────────
+      doc.setDrawColor(...SLATE_400);
+      doc.setLineWidth(0.5);
+      doc.line(M, Y, W - M, Y);
+      Y += 16;
 
-      doc.setFontSize(13);
-      doc.setFont(baseFont, "bold");
-      doc.text("Billed to", marginX, cursorY);
-      doc.text("Deliver to", marginX + 220, cursorY);
-      cursorY += 16;
-      doc.setFontSize(11);
-      doc.setFont(baseFont, "bold");
-      const billingLines = [
-        order?.customerName || order?.user?.name,
-        order?.email,
-        order?.phone,
-      ].filter(Boolean);
-      const shippingLines = composeAddressLines(order?.shippingAddress);
-
-      const writeLines = (lines, x, y, lineGap = 16) => {
-        let offsetY = y;
+      // ── Billing / Shipping ───────────────────────────────
+      const drawAddressBlock = (title, lines, x, y) => {
+        doc.setFont(F, "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(...BRAND);
+        doc.text(title.toUpperCase(), x, y);
+        doc.setFont(F, "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...SLATE_900);
+        let offsetY = y + 16;
         lines.forEach((line) => {
-          doc.text(line, x, offsetY);
-          offsetY += lineGap;
+          doc.text(String(line), x, offsetY);
+          offsetY += 14;
         });
         return offsetY;
       };
 
-      const billingBottom = writeLines(billingLines, marginX, cursorY);
-      const shippingBottom = writeLines(shippingLines, marginX + 220, cursorY);
-      cursorY = Math.max(billingBottom, shippingBottom) + 24;
+      const billingLines = [
+        order?.customerName || order?.user?.name || "Customer",
+        order?.email,
+        order?.phone,
+      ].filter(Boolean);
+      const shippingLines = composeAddressLines(order?.shippingAddress);
+      if (order?.phone) shippingLines.push(`Ph: ${order.phone}`);
 
-      const tableWidth = pageWidth - marginX * 2;
-      const headerHeight = 30;
-      const rowLineHeight = 16;
-      const indexX = marginX + 16;
-      const itemX = marginX + 56;
-      const qtyX = marginX + tableWidth - 210;
-      const unitPriceX = marginX + tableWidth - 170;
-      const basePriceX = marginX + tableWidth - 120;
-      const gstPriceX = marginX + tableWidth - 70;
-      const totalX = marginX + tableWidth - 20;
-      const descriptionWidth = qtyX - itemX - 24;
+      const bY = drawAddressBlock("Bill To", billingLines, M, Y);
+      const sY = drawAddressBlock("Ship To", shippingLines, W / 2 + 20, Y);
+      Y = Math.max(bY, sY) + 16;
 
-      const drawTableHeader = (y) => {
-        doc.setFillColor(79, 70, 229);
-        doc.setTextColor(255, 255, 255);
-        doc.roundedRect(marginX, y, tableWidth, headerHeight, 8, 8, "F");
-        doc.setFontSize(11);
-        doc.text("#", indexX, y + 19);
-        doc.text("Item description", itemX, y + 19);
-        doc.text("Qty", qtyX, y + 19, { align: "right" });
+      // ── Table Header ─────────────────────────────────────
+      const colX = {
+        idx: M + 12,
+        item: M + 40,
+        qty: M + TW - 180,
+        rate: M + TW - 120,
+        gst: M + TW - 60,
+        total: M + TW - 4,
+      };
+      const itemDescW = colX.qty - colX.item - 16;
 
-        doc.text("Line total", totalX, y + 19, { align: "right" });
-        doc.setTextColor(30, 41, 59);
-        return y + headerHeight + 6;
+      const drawTableHead = (y) => {
+        doc.setFillColor(...BRAND);
+        doc.roundedRect(M, y, TW, 28, 6, 6, "F");
+        doc.setTextColor(...WHITE);
+        doc.setFont(F, "bold");
+        doc.setFontSize(9);
+        doc.text("#", colX.idx, y + 18);
+        doc.text("ITEM", colX.item, y + 18);
+        doc.text("QTY", colX.qty, y + 18, { align: "right" });
+        doc.text("RATE", colX.rate, y + 18, { align: "right" });
+        doc.text("GST", colX.gst, y + 18, { align: "right" });
+        doc.text("AMOUNT", colX.total, y + 18, { align: "right" });
+        doc.setTextColor(...SLATE_900);
+        return y + 34;
       };
 
-      cursorY = drawTableHeader(cursorY);
+      Y = drawTableHead(Y);
 
-      const ensureSpace = (requiredHeight) => {
-        if (cursorY + requiredHeight > pageHeight - 120) {
+      // ── Table Rows ───────────────────────────────────────
+      const ensurePage = (need) => {
+        if (Y + need > H - 100) {
           doc.addPage();
-          doc.setFillColor(43, 108, 176);
-          doc.rect(0, 0, pageWidth, 40, "F");
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(12);
-          doc.text("Aquakart Invoice", marginX, 26);
-          doc.setTextColor(30, 41, 59);
-          cursorY = 80;
-          cursorY = drawTableHeader(cursorY);
+          // Mini header
+          doc.setFillColor(...BRAND);
+          doc.rect(0, 0, W, 36, "F");
+          doc.setTextColor(...WHITE);
+          doc.setFont(F, "bold");
+          doc.setFontSize(10);
+          doc.text("Aquakart Invoice (continued)", M, 24);
+          doc.setTextColor(...SLATE_900);
+          Y = 56;
+          Y = drawTableHead(Y);
         }
       };
 
-      order?.items?.forEach((product, index) => {
-        const name =
-          product?.name || product?.productName || `Item ${index + 1}`;
+      order?.items?.forEach((product, i) => {
+        const name = product?.name || product?.productName || `Item ${i + 1}`;
         const qty = toNumber(product?.quantity, 1);
         const unitPrice = toNumber(product?.price, 0);
         const lineTotal = roundToTwo(qty * unitPrice);
-        const baseLine = roundToTwo(lineTotal / (1 + GST_RATE));
-        const gstLine = roundToTwo(lineTotal - baseLine);
-        const nameLines = doc.splitTextToSize(
-          name,
-          Math.max(descriptionWidth, 120),
-        );
-        const rowHeight = Math.max(nameLines.length * rowLineHeight + 16, 54);
+        const baseAmt = roundToTwo(lineTotal / (1 + GST_RATE));
+        const gstAmt = roundToTwo(lineTotal - baseAmt);
+        const nameLines = doc.splitTextToSize(name, Math.max(itemDescW, 100));
+        const rowH = Math.max(nameLines.length * 14 + 18, 40);
 
-        ensureSpace(rowHeight + 4);
+        ensurePage(rowH + 6);
 
-        doc.setDrawColor(226, 232, 240);
-        doc.roundedRect(marginX, cursorY, tableWidth, rowHeight, 6, 6, "S");
-        doc.setFontSize(11);
-        doc.setFont(baseFont, "normal");
-        const textTop = cursorY + 22;
-        doc.text(String(index + 1).padStart(2, "0"), indexX, textTop);
-        doc.text(nameLines, itemX, textTop, {
-          lineHeightFactor: rowLineHeight / 11,
-        });
-        doc.text(String(qty), qtyX, textTop, { align: "right" });
+        // Alternate row striping
+        if (i % 2 === 1) {
+          doc.setFillColor(...STRIPE_BG);
+          doc.roundedRect(M, Y, TW, rowH, 4, 4, "F");
+        }
 
-        doc.text(`INR ${formatAmount(lineTotal)}`, totalX, textTop, {
-          align: "right",
-        });
+        const textY = Y + 18;
+        doc.setFont(F, "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...SLATE_600);
+        doc.text(String(i + 1).padStart(2, "0"), colX.idx, textY);
+        doc.setTextColor(...SLATE_900);
+        doc.text(nameLines, colX.item, textY, { lineHeightFactor: 1.3 });
+        doc.text(String(qty), colX.qty, textY, { align: "right" });
+        doc.setTextColor(...SLATE_600);
+        doc.text(fmt(unitPrice), colX.rate, textY, { align: "right" });
+        doc.setFontSize(9);
+        doc.text(fmt(gstAmt), colX.gst, textY, { align: "right" });
+        doc.setFontSize(10);
+        doc.setFont(F, "bold");
+        doc.setTextColor(...SLATE_900);
+        doc.text(fmt(lineTotal), colX.total, textY, { align: "right" });
 
-        cursorY += rowHeight + 8;
+        Y += rowH + 2;
       });
 
-      ensureSpace(180);
+      // ── Summary Section ──────────────────────────────────
+      ensurePage(200);
+      Y += 12;
 
-      const summaryBoxY = cursorY + 10;
-      const summaryBoxHeight = 150;
-      doc.setFillColor(248, 250, 252);
-      doc.roundedRect(
-        marginX,
-        summaryBoxY,
-        tableWidth / 2 - 12,
-        summaryBoxHeight,
-        10,
-        10,
-        "F",
-      );
-      doc.roundedRect(
-        marginX + tableWidth / 2 + 12,
-        summaryBoxY,
-        tableWidth / 2 - 12,
-        summaryBoxHeight,
-        10,
-        10,
-        "F",
-      );
+      // Left box: Delivery details
+      const boxW = TW / 2 - 10;
+      const boxH = 140;
+      doc.setFillColor(240, 253, 244); // emerald-50
+      doc.roundedRect(M, Y, boxW, boxH, 10, 10, "F");
+      doc.setDrawColor(167, 243, 208); // emerald-300
+      doc.setLineWidth(0.8);
+      doc.roundedRect(M, Y, boxW, boxH, 10, 10, "S");
 
-      doc.setFontSize(12);
-      doc.setFont(baseFont, "bold");
-      doc.setTextColor(30, 41, 59);
-      doc.text("Delivery details", marginX + 18, summaryBoxY + 20);
-      doc.setFontSize(11);
-      doc.setFont(baseFont, "normal");
-      const shippingLinesForBox = [
+      doc.setFont(F, "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(...BRAND_DARK);
+      doc.text("DELIVERY DETAILS", M + 16, Y + 22);
+      doc.setFont(F, "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(...SLATE_600);
+      const deliveryLines = [
         ...(shippingLines.length ? shippingLines : ["N/A"]),
-        order?.phone ? `Phone: ${order.phone}` : null,
         order?.email ? `Email: ${order.email}` : null,
       ].filter(Boolean);
-      writeLines(shippingLinesForBox, marginX + 18, summaryBoxY + 40);
+      let dY = Y + 40;
+      deliveryLines.forEach((line) => {
+        doc.text(String(line), M + 16, dY);
+        dY += 14;
+      });
 
-      doc.setFontSize(12);
-      doc.setFont(baseFont, "bold");
-      doc.text(
-        "Invoice summary",
-        marginX + tableWidth / 2 + 30,
-        summaryBoxY + 20,
-      );
-      doc.setFontSize(11);
-      doc.setFont(baseFont, "normal");
-      const summaryLines = [
+      // Right box: Invoice summary
+      const rBoxX = M + boxW + 20;
+      doc.setFillColor(...STRIPE_BG);
+      doc.roundedRect(rBoxX, Y, boxW, boxH, 10, 10, "F");
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.8);
+      doc.roundedRect(rBoxX, Y, boxW, boxH, 10, 10, "S");
+
+      doc.setFont(F, "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(...SLATE_900);
+      doc.text("INVOICE SUMMARY", rBoxX + 16, Y + 22);
+
+      const summaryData = [
+        { label: "Product price", value: fmt(orderSubtotal) },
         {
-          label: "Product price",
-          value: formatAmount(orderSubtotal),
-        },
-        {
-          label: `  Incl. GST (${Math.round(GST_RATE * 100)}%)`,
-          value: formatAmount(itemsGstTotal),
+          label: `Incl. GST (${Math.round(GST_RATE * 100)}%)`,
+          value: fmt(itemsGstTotal),
+          muted: true,
         },
         {
           label: "Shipping",
-          value: formatAmount(shippingCharge),
-        },
-        {
-          label: "Total to pay on delivery",
-          value: formatAmount(payableTotal),
-          highlight: true,
+          value: shippingCharge > 0 ? fmt(shippingCharge) : "FREE",
         },
       ];
 
-      let summaryLineY = summaryBoxY + 40;
-      summaryLines.forEach((line) => {
-        if (line.highlight) {
-          doc.setFontSize(12);
-          doc.setFont(baseFont, "bold");
-        } else {
-          doc.setFontSize(11);
-          doc.setFont(baseFont, "normal");
-        }
-        doc.text(line.label, marginX + tableWidth / 2 + 30, summaryLineY);
-        doc.text(line.value, marginX + tableWidth - 30, summaryLineY, {
-          align: "right",
-        });
-        summaryLineY += line.highlight ? 20 : 16;
+      let sLineY = Y + 42;
+      summaryData.forEach((row) => {
+        doc.setFont(F, "normal");
+        doc.setFontSize(row.muted ? 8 : 9);
+        const tc = row.muted ? SLATE_400 : SLATE_600;
+        doc.setTextColor(tc[0], tc[1], tc[2]);
+        doc.text(
+          row.muted ? `    ${row.label}` : row.label,
+          rBoxX + 16,
+          sLineY,
+        );
+        doc.text(row.value, rBoxX + boxW - 16, sLineY, { align: "right" });
+        sLineY += row.muted ? 14 : 16;
       });
-      doc.setFont(baseFont, "normal");
 
+      // Divider line inside summary box
+      doc.setDrawColor(...BRAND);
+      doc.setLineWidth(1);
+      doc.line(rBoxX + 16, sLineY + 2, rBoxX + boxW - 16, sLineY + 2);
+      sLineY += 16;
+
+      // Total
+      doc.setFont(F, "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(...BRAND_DARK);
+      doc.text("TOTAL TO PAY", rBoxX + 16, sLineY);
+      doc.text(fmt(payableTotal), rBoxX + boxW - 16, sLineY, {
+        align: "right",
+      });
+
+      // ── Footer ───────────────────────────────────────────
+      // Footer divider
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.5);
+      doc.line(M, H - 68, W - M, H - 68);
+
+      doc.setFont(F, "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(...SLATE_400);
+      doc.text(
+        "This is a computer-generated invoice and does not require a signature.",
+        M,
+        H - 50,
+      );
+      doc.text(
+        "Aquakart  |  support@aquakart.co.in  |  +91 9014774667  |  aquakart.co.in",
+        M,
+        H - 36,
+      );
+
+      // "Thank you" on right
+      doc.setFont(F, "bold");
       doc.setFontSize(10);
-      doc.setFont(baseFont, "normal");
-      doc.setTextColor(100, 116, 139);
-      doc.text(
-        "This is a system-generated invoice and does not require a physical signature.",
-        marginX,
-        pageHeight - 50,
-      );
-      doc.text(
-        "For support, reach us at support@aquakart.co.in or +91 9014774667",
-        marginX,
-        pageHeight - 35,
-      );
+      doc.setTextColor(...BRAND);
+      doc.text("Thank you for your order!", W - M, H - 42, { align: "right" });
 
+      // ── Save ─────────────────────────────────────────────
       doc.save(
-        `Aquakart-invoice-${order?.orderId || order?.transactionId || "cod"}.pdf`,
+        `Aquakart-Invoice-${order?.orderId || order?.transactionId || "COD"}.pdf`,
       );
       AquaToast({
         message: "Invoice downloaded successfully.",
