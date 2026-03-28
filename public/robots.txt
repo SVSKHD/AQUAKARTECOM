@@ -16,4 +16,5 @@ Disallow: /_next/
 # Crawl-delay (optional, respected by some bots)
 Crawl-delay: 1
 
+# Dynamic sitemap (auto-generated with all products, categories, blogs)
 Sitemap: https://aquakart.co.in/sitemap.xml
