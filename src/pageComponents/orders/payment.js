@@ -218,13 +218,13 @@ const AquaPaymentOrderPageComponent = () => {
           </div>
         </div>
       ) : order ? (
-        <main className="mx-auto flex max-w-6xl flex-col gap-10 pb-24 pt-12 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4 rounded-3xl bg-white/90 p-6 shadow-lg ring-1 ring-gray-100 sm:flex-row sm:items-center sm:justify-between">
+        <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-24 pt-8 sm:gap-10 sm:px-6 sm:pt-12 lg:px-8">
+          <div className="flex flex-col gap-4 glass-card rounded-3xl p-5 sm:p-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-medium text-emerald-600">
                 Payment successful
               </p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900">
+              <h1 className="mt-2 text-xl sm:text-3xl font-semibold tracking-tight text-gray-900 break-all">
                 Order #{order?.orderId}
               </h1>
               <p className="mt-2 text-sm text-gray-500">
@@ -249,7 +249,7 @@ const AquaPaymentOrderPageComponent = () => {
           </div>
 
           <section className="grid gap-6 lg:grid-cols-7">
-            <article className="col-span-4 space-y-6 rounded-3xl bg-white p-6 shadow-lg ring-1 ring-gray-100">
+            <article className="col-span-full lg:col-span-4 space-y-6 glass-card rounded-3xl p-4 sm:p-6">
               <h2 className="text-lg font-semibold text-gray-900">
                 Items in your order
               </h2>
@@ -298,43 +298,51 @@ const AquaPaymentOrderPageComponent = () => {
               </div>
             </article>
 
-            <aside className="col-span-3 space-y-6">
-              <div className="rounded-3xl bg-white p-6 shadow-lg ring-1 ring-gray-100">
+            <aside className="col-span-full lg:col-span-3 space-y-6">
+              <div className="glass-card rounded-3xl p-5 sm:p-6">
                 <h3 className="text-lg font-semibold text-gray-900">
                   Payment details
                 </h3>
                 <dl className="mt-4 space-y-3 text-sm text-gray-600">
                   <div className="flex items-center justify-between">
-                    <dt>Subtotal</dt>
+                    <dt>Product price</dt>
                     <dd className="font-medium text-gray-900">
                       {formatCurrencyINR(subtotal)}
                     </dd>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <dt>Shipping</dt>
-                    <dd className="font-medium text-gray-900">
-                      {shippingCharge > 0
-                        ? formatCurrencyINR(shippingCharge)
-                        : "Free"}
+                  <div className="flex items-center justify-between text-xs text-slate-400">
+                    <dt className="pl-3">Incl. GST (18%)</dt>
+                    <dd>
+                      {formatCurrencyINR(
+                        Math.round((subtotal / 1.18) * 0.18 * 100) / 100,
+                      )}
                     </dd>
                   </div>
+                  {shippingCharge > 0 && (
+                    <div className="flex items-center justify-between">
+                      <dt>Shipping</dt>
+                      <dd className="font-medium text-gray-900">
+                        {formatCurrencyINR(shippingCharge)}
+                      </dd>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <dt>Payment method</dt>
-                    <dd className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-600">
-                      <IndianRupee className="h-4 w-4" aria-hidden="true" />
+                    <dd className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-600">
+                      <IndianRupee className="h-3.5 w-3.5" aria-hidden="true" />
                       {paymentMethodLabel}
                     </dd>
                   </div>
                   <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-base font-semibold text-gray-900">
                     <dt>Total paid</dt>
-                    <dd className="text-emerald-600">
+                    <dd className="text-lg text-emerald-600">
                       {formatCurrencyINR(amountPaid)}
                     </dd>
                   </div>
                 </dl>
               </div>
 
-              <div className="rounded-3xl bg-emerald-50/80 p-6 text-sm text-emerald-900 shadow-sm">
+              <div className="glass-card rounded-3xl bg-emerald-50/40 p-5 sm:p-6 text-sm text-emerald-900">
                 <h3 className="text-base font-semibold">Need help?</h3>
                 <p className="mt-2">
                   Reach our support team at
