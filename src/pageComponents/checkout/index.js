@@ -294,6 +294,9 @@ const AquaCheckoutComponent = () => {
 
     const newOrder = {
       user: userData?.user?._id,
+      customerName: userData?.user?.name || "",
+      email: userData?.user?.email || "",
+      phone: userData?.user?.phone || "",
       orderType: "Cash On Delivery",
       items: productData(cartData),
       transactionId: cashTransactionId,
@@ -363,15 +366,13 @@ const AquaCheckoutComponent = () => {
 
     const newOrder = {
       user: userData?.user?._id,
+      customerName: userData?.user?.name || "",
+      email: userData?.user?.email || "",
+      phone: userData?.user?.phone || "",
       transactionId,
       orderType: "Payment Method(Phone Pe Gateway)",
       orderId,
-      items: cartData.map((item) => ({
-        productId: item._id || item.id,
-        name: item.title,
-        price: item.price,
-        quantity: item.quantity,
-      })),
+      items: productData(cartData),
       totalAmount: payableTotal,
       discountAmount: discount,
       paymentMethod: "OTHER THAN CASH ON DELIVERY",
@@ -390,16 +391,25 @@ const AquaCheckoutComponent = () => {
     setButtonStatus((prev) => ({ ...prev, gateway: true }));
 
     orderServiceOperations
-      .createPhonePePayOrder(newOrder)
+      .createPhonePePayOrder(newOrder, userData?.token)
       .then((res) => {
         setButtonStatus((prev) => ({ ...prev, gateway: false }));
-        window.location.href = res.url;
+        const redirectUrl = res?.url || res?.data?.url || res?.redirectUrl;
+        if (redirectUrl) {
+          window.location.href = redirectUrl;
+        } else {
+          console.error("No redirect URL in response:", res);
+          AquaToast({
+            message: "Payment gateway did not return a redirect URL",
+            type: "error",
+          });
+        }
       })
       .catch((err) => {
-        console.error("order", err);
+        console.error("Payment error:", err);
         setButtonStatus((prev) => ({ ...prev, gateway: false }));
         AquaToast({
-          message: "Failed to initiate payment",
+          message: err?.message || "Failed to initiate payment",
           type: "error",
         });
       });

@@ -213,6 +213,9 @@ const AquaOrderPage = () => {
       `AQOD${dayjs().format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
     const base = {
       user: order.user || userId,
+      customerName: order.customerName || "",
+      email: order.email || "",
+      phone: order.phone || "",
       orderId: baseOrderId,
       items: (order.items || []).map((item) => ({
         productId: item.productId,
@@ -253,15 +256,31 @@ const AquaOrderPage = () => {
 
     try {
       setRetrying(true);
-      const response =
-        await orderServiceOperations.createPhonePePayOrder(payload);
-      AquaToast({ message: "Redirecting to payment gateway", type: "success" });
-      if (response?.url) {
-        window.location.href = response.url;
+      const response = await orderServiceOperations.createPhonePePayOrder(
+        payload,
+        token,
+      );
+      const redirectUrl =
+        response?.url || response?.data?.url || response?.redirectUrl;
+      if (redirectUrl) {
+        AquaToast({
+          message: "Redirecting to payment gateway",
+          type: "success",
+        });
+        window.location.href = redirectUrl;
+      } else {
+        console.error("No redirect URL in response:", response);
+        AquaToast({
+          message: "Payment gateway did not return a redirect URL",
+          type: "error",
+        });
       }
     } catch (retryError) {
       console.error("Retry payment error:", retryError);
-      AquaToast({ message: "Failed to initiate payment retry", type: "error" });
+      AquaToast({
+        message: retryError?.message || "Failed to initiate payment retry",
+        type: "error",
+      });
     } finally {
       setRetrying(false);
     }
