@@ -7,7 +7,12 @@ const createCodOrder = async (data) => {
     const response = await axios.post(`${BASE}/order/cod`, data);
     return response.data;
   } catch (error) {
-    throw new Error(`Error creating COD order: ${error.message}`);
+    const message =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.message ||
+      "Unknown error";
+    throw new Error(`Error creating COD order: ${message}`);
   }
 };
 
@@ -40,12 +45,29 @@ const getOrdersByTransactionId = async (id, token, config = {}) => {
   }
 };
 
-const createPhonePePayOrder = async (data) => {
+const createPhonePePayOrder = async (data, token) => {
   try {
-    const response = await axios.post(`${BASE}/order/pay`, data);
+    const headers = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const response = await axios.post(`${BASE}/order/pay`, data, { headers });
     return response.data;
   } catch (error) {
-    throw new Error(`Error creating PhonePe pay order: ${error}`);
+    const serverMsg =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.response?.data?.msg;
+    const status = error?.response?.status;
+    const detail = serverMsg
+      ? `${status || "Error"}: ${serverMsg}`
+      : error?.message || "Payment initiation failed";
+    console.error("PhonePe pay order error:", {
+      status,
+      data: error?.response?.data,
+      message: error?.message,
+    });
+    throw new Error(detail);
   }
 };
 
