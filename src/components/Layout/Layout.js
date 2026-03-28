@@ -36,6 +36,11 @@ const FestivalCornerWidget = dynamic(
   { ssr: false },
 );
 
+// Mobile bottom nav: client-only
+const MobileBottomNav = dynamic(() => import("./MobileBottomNav"), {
+  ssr: false,
+});
+
 const AquaLayout = (props) => {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -224,7 +229,7 @@ const AquaLayout = (props) => {
         </>
       )}
 
-      <div className="relative flex min-h-screen flex-col pt-24">
+      <div className="relative flex min-h-screen flex-col pt-24 pb-16 sm:pb-0">
         {/* Ambient background orbs */}
         <div className="ambient-orb top-[10%] left-[-5%] w-[500px] h-[500px] bg-indigo-200/40" />
         <div className="ambient-orb top-[40%] right-[-8%] w-[400px] h-[400px] bg-emerald-200/30" />
@@ -233,6 +238,9 @@ const AquaLayout = (props) => {
         <main className="relative z-10 flex-1">{props.children}</main>
         <AquaFooter categories={categories} subcategories={subcategories} />
       </div>
+
+      {/* Mobile bottom navigation */}
+      <MobileBottomNav />
     </>
   );
 };

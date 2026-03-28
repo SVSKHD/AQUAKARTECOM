@@ -1,3 +1,4 @@
+import { useMemo, useCallback } from "react";
 import { useSelector } from "react-redux";
 import AquaReuseDrawer from "../../reusables/drawer";
 import useDrawer from "@/utils/drawer";
@@ -8,40 +9,26 @@ import Link from "next/link";
 
 const AquafavDrawer = () => {
   const { closeFavDrawer } = useDrawer();
-  const { favDrawer, favData, cartData } = useSelector((state) => ({
-    favDrawer: state.favDrawer,
-    favData: state.favData,
-    cartData: state.cartData,
-  }));
+  const favDrawer = useSelector((state) => state.favDrawer);
+  const favData = useSelector((state) => state.favData);
+  const cartData = useSelector((state) => state.cartData);
   const { formatCurrencyINR } = useCurrency;
   const { AddAndRemoveCartFromFavourites, removeFavProduct } = useProduct();
 
-  const isProductInCart = (productId) =>
-    cartData.some((item) => item._id === productId || item.id === productId);
-
-  const renderEmptyState = () => (
-    <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-50 text-amber-500">
-        ⭐
-      </div>
-      <p className="text-lg font-semibold text-slate-900">Nothing saved yet</p>
-      <p className="text-sm text-slate-500">
-        Tap the heart on any Aquakart product to collect it here for quick
-        comparisons.
-      </p>
-      <Link
-        href="/shop"
-        className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-emerald-400"
-        onClick={closeFavDrawer}
-      >
-        Discover products
-      </Link>
-    </div>
+  const cartIdSet = useMemo(
+    () => new Set(cartData.map((item) => item._id || item.id)),
+    [cartData],
   );
 
-  const handleMoveToCart = (product) => {
-    AddAndRemoveCartFromFavourites(product);
-  };
+  const isProductInCart = useCallback(
+    (productId) => cartIdSet.has(productId),
+    [cartIdSet],
+  );
+
+  const handleMoveToCart = useCallback(
+    (product) => AddAndRemoveCartFromFavourites(product),
+    [AddAndRemoveCartFromFavourites],
+  );
 
   return (
     <AquaReuseDrawer
@@ -50,25 +37,32 @@ const AquafavDrawer = () => {
       title="Saved products"
     >
       <div className="flex h-full flex-col">
-        <div className="flex justify-end px-4 pt-3">
-          <button
-            type="button"
-            onClick={closeFavDrawer}
-            className="rounded-full bg-slate-100 p-3 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700 active:scale-95"
-            aria-label="Close favourites drawer"
-          >
-            <span className="text-xl leading-none">×</span>
-          </button>
-        </div>
-        <div className="border-b border-slate-100 px-4 py-4 text-sm text-slate-600">
+        <div className="border-b border-white/20 px-4 py-4 text-sm font-medium text-slate-600">
           {favData.length} item{favData.length === 1 ? "" : "s"} curated
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 py-4">
           {favData.length === 0 ? (
-            renderEmptyState()
+            <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50/60 backdrop-blur-sm">
+                <span className="text-2xl">❤️</span>
+              </div>
+              <p className="text-lg font-semibold text-slate-900">
+                Nothing saved yet
+              </p>
+              <p className="text-sm text-slate-500">
+                Tap the heart on any Aquakart product to collect it here.
+              </p>
+              <Link
+                href="/shop"
+                className="btn-glass btn-glass-primary"
+                onClick={closeFavDrawer}
+              >
+                Discover products
+              </Link>
+            </div>
           ) : (
-            <ul className="space-y-4">
+            <ul className="space-y-3">
               {favData.map((product) => {
                 const id = product?._id || product?.id;
                 const slug = product?.slug || product?.name;
@@ -80,9 +74,9 @@ const AquafavDrawer = () => {
                 return (
                   <li
                     key={id}
-                    className="group flex flex-col gap-4 rounded-3xl border border-slate-100 bg-white p-3 shadow-sm transition hover:border-emerald-200 sm:flex-row sm:p-4"
+                    className="glass-card group flex flex-col gap-3 rounded-2xl p-3 transition-all duration-200 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] sm:flex-row sm:p-4"
                   >
-                    <div className="relative h-full w-full overflow-hidden rounded-2xl bg-slate-100 sm:h-24 sm:w-24">
+                    <div className="relative h-full w-full overflow-hidden rounded-xl bg-slate-100 sm:h-24 sm:w-24">
                       <div className="aspect-square sm:aspect-auto sm:h-full sm:w-full">
                         {image ? (
                           <AquaImage
@@ -99,15 +93,16 @@ const AquafavDrawer = () => {
                     </div>
 
                     <div className="flex flex-1 flex-col gap-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="space-y-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="space-y-0.5">
                           <Link
                             href={productUrl}
-                            className="text-sm font-medium text-slate-900 hover:text-emerald-600"
+                            className="text-sm font-semibold text-slate-900 hover:text-emerald-600 transition-colors"
+                            onClick={closeFavDrawer}
                           >
                             {product?.title || "Untitled product"}
                           </Link>
-                          <p className="text-sm font-semibold text-emerald-600">
+                          <p className="text-sm font-bold text-emerald-600">
                             {formatCurrencyINR(product?.price || 0)}
                           </p>
                         </div>
@@ -115,35 +110,29 @@ const AquafavDrawer = () => {
                         <button
                           type="button"
                           onClick={() => removeFavProduct(id)}
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500 active:scale-95"
+                          className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100/60 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500 active:scale-90"
                           aria-label="Remove from favourites"
                         >
-                          <span className="text-lg leading-none">×</span>
+                          <span className="text-sm leading-none">×</span>
                         </button>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-500">
-                          Popular choice
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-3">
                         <button
                           type="button"
                           onClick={() => handleMoveToCart(product)}
                           disabled={inCart}
-                          className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold shadow transition ${
+                          className={`btn-glass rounded-full px-4 py-2 text-xs font-bold ${
                             inCart
-                              ? "cursor-not-allowed bg-slate-200 text-slate-500"
-                              : "bg-emerald-500 text-white hover:bg-emerald-400"
+                              ? "cursor-not-allowed bg-slate-100/60 text-slate-400"
+                              : "btn-glass-primary"
                           }`}
                         >
-                          {inCart ? "Already in cart" : "Move to cart"}
+                          {inCart ? "In cart" : "Move to cart"}
                         </button>
                         <Link
                           href={productUrl}
-                          className="text-sm font-medium text-emerald-600 hover:text-emerald-500"
+                          className="text-xs font-semibold text-emerald-600 hover:text-emerald-500 transition-colors"
                           onClick={closeFavDrawer}
                         >
                           View details →

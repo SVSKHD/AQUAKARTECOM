@@ -1,125 +1,90 @@
+import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-// Function to calculate the total price
 const cartTotal = (cart) => {
-  return cart?.reduce(
-    (total, item) =>
-      total +
-      item.quantity *
-        (item?.discountPriceStatus ? item.discountPrice : item.price),
-    0,
+  return (
+    cart?.reduce(
+      (total, item) =>
+        total +
+        (item.quantity || 1) *
+          (item?.discountPriceStatus ? item.discountPrice : item.price),
+      0,
+    ) || 0
   );
 };
 
-// Custom hook to manage cart state
 const useCart = () => {
   const dispatch = useDispatch();
-  const { cartData } = useSelector((state) => ({ ...state })); // Select cart state from Redux
+  const cartData = useSelector((state) => state.cartData);
 
-  // Function to add item to cart
-  const addItemToCart = (item) => {
-    const isProductInCart = cart.some((cartItem) => cartItem._id === item._id);
+  const addItemToCart = useCallback(
+    (item) => {
+      const isProductInCart = cartData.some(
+        (cartItem) => cartItem._id === item._id,
+      );
 
-    if (!isProductInCart) {
-      dispatch({
-        type: "ADD_TO_CART",
-        payload: { ...item, quantity: 1 },
-      });
-      dispatch({
-        type: "SHOW_NOTIFICATION",
-        payload: {
-          message: "Successfully Added to Cart",
-          messageType: "success",
-        },
-      });
-    } else {
-      // If the product is already in the cart, update its quantity
-      increaseItemQuantity(item);
-    }
-  };
+      if (!isProductInCart) {
+        dispatch({
+          type: "ADD_TO_CART",
+          payload: { ...item, quantity: 1 },
+        });
+      } else {
+        const productInCart = cartData.find((ci) => ci._id === item._id);
+        if (productInCart) {
+          const newQuantity = Math.min((productInCart.quantity || 1) + 1, 5);
+          dispatch({
+            type: "UPDATE_QUANTITY",
+            payload: { productId: item._id, quantity: newQuantity },
+          });
+        }
+      }
+    },
+    [cartData, dispatch],
+  );
 
-  // Function to remove item from cart
-  const removeItemFromCart = (itemId) => {
-    dispatch({
-      type: "REMOVE_FROM_CART",
-      payload: itemId,
-    });
-    dispatch({
-      type: "SHOW_NOTIFICATION",
-      payload: {
-        message: "Successfully removed from cart",
-        messageType: "info",
-      },
-    });
-  };
+  const removeItemFromCart = useCallback(
+    (itemId) => {
+      dispatch({ type: "REMOVE_FROM_CART", payload: itemId });
+    },
+    [dispatch],
+  );
 
-  // Function to change item quantity in cart
-  const changeItemQuantity = (itemId, quantity) => {
-    if (quantity > 5) {
-      dispatch({
-        type: "SHOW_NOTIFICATION",
-        payload: {
-          message: "You can only add up to 5",
-          messageType: "info",
-        },
-      });
-    } else {
+  const changeItemQuantity = useCallback(
+    (itemId, quantity) => {
+      const clamped = Math.min(Math.max(quantity, 1), 5);
       dispatch({
         type: "UPDATE_QUANTITY",
-        payload: { productId: itemId, quantity },
+        payload: { productId: itemId, quantity: clamped },
       });
-    }
-  };
-  // Function to increase item quantity
-  const increaseItemQuantity = (product) => {
-    const productInCart = cart.find((item) => item._id === product._id);
-    if (productInCart) {
-      const newQuantity = Math.min(productInCart.quantity + 1, 5);
-      if (newQuantity === 5) {
-        dispatch({
-          type: "SHOW_NOTIFICATION",
-          payload: {
-            message: "You can only add up to 5",
-            messageType: "info",
-          },
-        });
-      }
-      changeItemQuantity(product._id, newQuantity);
-    } else {
-      addItemToCart(product);
-    }
-  };
+    },
+    [dispatch],
+  );
 
-  // Function to decrease item quantity
-  const decreaseItemQuantity = (product) => {
-    const productInCart = cart.find((item) => item._id === product._id);
-    if (productInCart) {
-      const newQuantity = Math.max(productInCart.quantity - 1, 1);
-      if (newQuantity === 1) {
-        dispatch({
-          type: "SHOW_NOTIFICATION",
-          payload: {
-            message: "Cannot reduce quantity below 1",
-            messageType: "info",
-          },
-        });
+  const increaseItemQuantity = useCallback(
+    (product) => {
+      const productInCart = cartData.find((item) => item._id === product._id);
+      if (productInCart) {
+        const newQuantity = Math.min((productInCart.quantity || 1) + 1, 5);
+        changeItemQuantity(product._id, newQuantity);
+      } else {
+        addItemToCart(product);
       }
-      changeItemQuantity(product._id, newQuantity);
-    } else {
-      dispatch({
-        type: "SHOW_NOTIFICATION",
-        payload: {
-          message: "Product is not in the cart",
-          messageType: "info",
-        },
-      });
-    }
-  };
+    },
+    [cartData, changeItemQuantity, addItemToCart],
+  );
 
-  // Function to get the total price of items in the cart
-  const getTotalPrice = () => {
-    return cartTotal(cartData);
-  };
+  const decreaseItemQuantity = useCallback(
+    (product) => {
+      const productInCart = cartData.find((item) => item._id === product._id);
+      if (productInCart) {
+        const newQuantity = Math.max((productInCart.quantity || 1) - 1, 1);
+        changeItemQuantity(product._id, newQuantity);
+      }
+    },
+    [cartData, changeItemQuantity],
+  );
+
+  const getTotalPrice = useCallback(() => cartTotal(cartData), [cartData]);
 
   return {
     addItemToCart,

@@ -1,3 +1,4 @@
+import { useMemo, useCallback } from "react";
 import { useSelector } from "react-redux";
 import AquaReuseDrawer from "../../reusables/drawer";
 import useDrawer from "@/utils/drawer";
@@ -10,42 +11,26 @@ import Link from "next/link";
 const MAX_QTY = 5;
 
 const AquaCartDrawer = () => {
-  const { cartDrawer, cartData } = useSelector((state) => ({ ...state }));
+  const cartDrawer = useSelector((state) => state.cartDrawer);
+  const cartData = useSelector((state) => state.cartData);
   const { closeCartDrawer } = useDrawer();
   const { formatCurrencyINR } = useCurrency;
   const { getTotalPrice, changeItemQuantity } = useCart();
   const { EmptyCart, removeFromCart } = useProduct();
 
-  const subtotal = getTotalPrice(cartData);
-  const totalItems = cartData.reduce(
-    (acc, item) => acc + (item.quantity || 0),
-    0,
+  const subtotal = useMemo(() => getTotalPrice(), [getTotalPrice]);
+  const totalItems = useMemo(
+    () => cartData.reduce((acc, item) => acc + (item.quantity || 1), 0),
+    [cartData],
   );
   const qualifiesForFreeShipping = subtotal >= 10000;
 
-  const handleQuantityChange = (id, quantity) => {
-    if (!id) return;
-    const clamped = Math.min(Math.max(quantity, 1), MAX_QTY);
-    changeItemQuantity(id, clamped);
-  };
-
-  const renderEmptyState = () => (
-    <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-emerald-500">
-        🛒
-      </div>
-      <p className="text-lg font-semibold text-slate-900">Your cart is empty</p>
-      <p className="text-sm text-slate-500">
-        Add products to compare specs or book an installation slot.
-      </p>
-      <Link
-        href="/shop"
-        className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-emerald-400"
-        onClick={closeCartDrawer}
-      >
-        Browse catalog
-      </Link>
-    </div>
+  const handleQuantityChange = useCallback(
+    (id, quantity) => {
+      if (!id) return;
+      changeItemQuantity(id, quantity);
+    },
+    [changeItemQuantity],
   );
 
   return (
@@ -55,25 +40,16 @@ const AquaCartDrawer = () => {
       title="Your cart"
     >
       <div className="flex h-full flex-col">
-        <div className="flex justify-end px-4 pt-3">
-          <button
-            type="button"
-            onClick={closeCartDrawer}
-            className="rounded-full bg-slate-100 p-3 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700 active:scale-95"
-            aria-label="Close cart drawer"
-          >
-            <span className="text-xl leading-none">×</span>
-          </button>
-        </div>
-        <div className="space-y-2 border-b border-slate-100 px-4 py-4 text-sm text-slate-600">
+        {/* Header info */}
+        <div className="space-y-2 border-b border-white/20 px-4 py-4 text-sm text-slate-600">
           <div className="flex items-center justify-between">
-            <span>
+            <span className="font-medium">
               {totalItems} item{totalItems === 1 ? "" : "s"}
             </span>
             <button
               type="button"
               onClick={EmptyCart}
-              className="rounded-full bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-100 active:scale-95"
+              className="btn-glass rounded-full bg-rose-50/80 px-3 py-1.5 text-xs font-medium text-rose-600 backdrop-blur-sm hover:bg-rose-100 active:scale-95"
               disabled={!cartData.length}
             >
               Clear cart
@@ -81,10 +57,10 @@ const AquaCartDrawer = () => {
           </div>
           {cartData.length > 0 && (
             <div
-              className={`rounded-2xl border px-3 py-2 text-xs ${
+              className={`rounded-2xl border px-3 py-2.5 text-xs font-medium backdrop-blur-sm ${
                 qualifiesForFreeShipping
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-600"
-                  : "border-slate-200 bg-slate-50 text-slate-500"
+                  ? "border-emerald-200/50 bg-emerald-50/60 text-emerald-700"
+                  : "border-slate-200/50 bg-slate-50/60 text-slate-500"
               }`}
             >
               {qualifiesForFreeShipping
@@ -94,11 +70,29 @@ const AquaCartDrawer = () => {
           )}
         </div>
 
+        {/* Items */}
         <div className="flex-1 overflow-y-auto px-4 py-4">
           {cartData.length === 0 ? (
-            renderEmptyState()
+            <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100/60 backdrop-blur-sm">
+                <span className="text-2xl">🛒</span>
+              </div>
+              <p className="text-lg font-semibold text-slate-900">
+                Your cart is empty
+              </p>
+              <p className="text-sm text-slate-500">
+                Add products to compare specs or book an installation slot.
+              </p>
+              <Link
+                href="/shop"
+                className="btn-glass btn-glass-primary"
+                onClick={closeCartDrawer}
+              >
+                Browse catalog
+              </Link>
+            </div>
           ) : (
-            <ul className="space-y-4 pr-1">
+            <ul className="space-y-3 pr-1">
               {cartData.map((product) => {
                 const slug = product.slug || product.id;
                 const image = product?.photos?.[0]?.secure_url;
@@ -106,30 +100,21 @@ const AquaCartDrawer = () => {
                 const quantity = product.quantity || 1;
                 const listPrice = Number(product?.price) || 0;
                 const discountedPrice = Number(product?.discountPrice) || 0;
-                const hasDiscount = Boolean(
+                const hasDiscount =
                   product?.discountPriceStatus &&
                   discountedPrice > 0 &&
-                  listPrice > 0 &&
-                  discountedPrice < listPrice,
-                );
-                const effectiveUnitPrice =
-                  hasDiscount && discountedPrice > 0
-                    ? discountedPrice
-                    : listPrice || discountedPrice;
-                const strikeUnitPrice =
-                  hasDiscount && listPrice ? listPrice : null;
+                  discountedPrice < listPrice;
+                const effectiveUnitPrice = hasDiscount
+                  ? discountedPrice
+                  : listPrice || discountedPrice;
                 const lineTotal = effectiveUnitPrice * quantity;
-                const strikeLineTotal =
-                  strikeUnitPrice && quantity
-                    ? strikeUnitPrice * quantity
-                    : null;
 
                 return (
                   <li
                     key={slug}
-                    className="group flex flex-col gap-4 rounded-3xl border border-slate-100 bg-white p-3 shadow-sm transition hover:border-emerald-200 sm:flex-row sm:p-4"
+                    className="glass-card group flex flex-col gap-3 rounded-2xl p-3 transition-all duration-200 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] sm:flex-row sm:p-4"
                   >
-                    <div className="relative h-full w-full overflow-hidden rounded-2xl bg-slate-100 sm:h-24 sm:w-24">
+                    <div className="relative h-full w-full overflow-hidden rounded-xl bg-slate-100 sm:h-24 sm:w-24">
                       <div className="aspect-square sm:aspect-auto sm:h-full sm:w-full">
                         <Link href={productUrl} onClick={closeCartDrawer}>
                           {image ? (
@@ -147,56 +132,52 @@ const AquaCartDrawer = () => {
                       </div>
                     </div>
 
-                    <div className="flex flex-1 flex-col justify-between gap-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="space-y-1">
+                    <div className="flex flex-1 flex-col justify-between gap-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="space-y-0.5">
                           <Link
                             href={productUrl}
                             onClick={closeCartDrawer}
-                            className="text-sm font-medium text-slate-900 hover:text-emerald-600"
+                            className="text-sm font-semibold text-slate-900 hover:text-emerald-600 transition-colors"
                           >
                             {product?.title || "Unnamed product"}
                           </Link>
-                          {product?.sub_title && (
-                            <p className="text-xs text-slate-500">
-                              {product.sub_title}
-                            </p>
-                          )}
-                          <div className="flex flex-col text-emerald-600">
-                            {strikeUnitPrice ? (
-                              <span className="text-xs text-slate-400 line-through">
-                                {formatCurrencyINR(strikeUnitPrice)}
-                              </span>
-                            ) : null}
-                            <p className="text-sm font-semibold">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-bold text-emerald-600">
                               {formatCurrencyINR(effectiveUnitPrice || 0)}
                             </p>
+                            {hasDiscount && (
+                              <span className="text-xs text-slate-400 line-through">
+                                {formatCurrencyINR(listPrice)}
+                              </span>
+                            )}
                           </div>
                         </div>
 
                         <button
                           type="button"
                           onClick={() => removeFromCart(product._id)}
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500 active:scale-95"
+                          className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100/60 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500 active:scale-90"
                           aria-label="Remove item"
                         >
-                          <span className="text-lg leading-none">×</span>
+                          <span className="text-sm leading-none">×</span>
                         </button>
                       </div>
 
                       <div className="flex items-center justify-between gap-3">
-                        <div className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 text-xs">
+                        <div className="inline-flex items-center rounded-full border border-white/50 bg-white/40 backdrop-blur-sm text-xs shadow-sm">
                           <button
                             type="button"
                             onClick={() =>
                               handleQuantityChange(product._id, quantity - 1)
                             }
-                            className="h-8 w-8 rounded-l-full text-slate-500 transition hover:bg-slate-100"
+                            className="h-8 w-8 rounded-l-full text-slate-500 transition hover:bg-white/80 active:scale-90"
                             aria-label="Decrease quantity"
+                            disabled={quantity <= 1}
                           >
                             −
                           </button>
-                          <span className="w-10 text-center text-sm font-semibold text-slate-700">
+                          <span className="w-8 text-center text-sm font-bold text-slate-800">
                             {quantity}
                           </span>
                           <button
@@ -204,7 +185,7 @@ const AquaCartDrawer = () => {
                             onClick={() =>
                               handleQuantityChange(product._id, quantity + 1)
                             }
-                            className="h-8 w-8 rounded-r-full text-slate-500 transition hover:bg-slate-100"
+                            className="h-8 w-8 rounded-r-full text-slate-500 transition hover:bg-white/80 active:scale-90"
                             aria-label="Increase quantity"
                             disabled={quantity >= MAX_QTY}
                           >
@@ -212,16 +193,9 @@ const AquaCartDrawer = () => {
                           </button>
                         </div>
 
-                        <div className="flex flex-col text-right text-slate-600">
-                          {strikeLineTotal ? (
-                            <span className="text-xs text-slate-400 line-through">
-                              Total {formatCurrencyINR(strikeLineTotal)}
-                            </span>
-                          ) : null}
-                          <span className="text-sm font-medium">
-                            Total {formatCurrencyINR(lineTotal || 0)}
-                          </span>
-                        </div>
+                        <span className="text-sm font-semibold text-slate-700">
+                          {formatCurrencyINR(lineTotal || 0)}
+                        </span>
                       </div>
                     </div>
                   </li>
@@ -231,20 +205,21 @@ const AquaCartDrawer = () => {
           )}
         </div>
 
+        {/* Footer */}
         {cartData.length > 0 && (
-          <div className="space-y-4 border-t border-slate-100 px-4 py-5">
-            <div className="flex items-center justify-between text-sm text-slate-600">
-              <span>Subtotal</span>
-              <span className="text-base font-semibold text-slate-900">
+          <div className="space-y-4 border-t border-white/20 px-4 py-5">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-500">Subtotal</span>
+              <span className="text-lg font-bold text-slate-900">
                 {formatCurrencyINR(subtotal)}
               </span>
             </div>
-            <p className="text-xs text-slate-500">
-              Taxes and installation will be calculated at checkout.
+            <p className="text-xs text-slate-400">
+              Taxes and installation calculated at checkout.
             </p>
             <Link
               href="/checkout"
-              className="flex w-full items-center justify-center rounded-full bg-emerald-500 px-4 py-3 text-sm font-semibold text-white shadow transition hover:bg-emerald-400"
+              className="btn-glass btn-glass-primary flex w-full items-center justify-center py-3.5"
               onClick={closeCartDrawer}
             >
               Proceed to checkout
