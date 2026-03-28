@@ -11,9 +11,9 @@ const AquaSeo = ({ seo, blogs = [], products = [] }) => {
     noindex,
     organization = {
       "@type": "Organization",
-      "@id": "https://www.aquakart.co.in#organization",
+      "@id": "https://aquakart.co.in#organization",
       name: "Aquakart",
-      url: "https://www.aquakart.co.in",
+      url: "https://aquakart.co.in",
       logo: {
         "@type": "ImageObject",
         url: "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
@@ -25,11 +25,11 @@ const AquaSeo = ({ seo, blogs = [], products = [] }) => {
     organization,
     {
       "@type": "WebSite",
-      "@id": "https://www.aquakart.co.in#website",
-      url: "https://www.aquakart.co.in",
+      "@id": "https://aquakart.co.in#website",
+      url: "https://aquakart.co.in",
       name: "Aquakart",
       publisher: {
-        "@id": "https://www.aquakart.co.in#organization",
+        "@id": "https://aquakart.co.in#organization",
       },
     },
     {
@@ -38,7 +38,7 @@ const AquaSeo = ({ seo, blogs = [], products = [] }) => {
       url: canonical,
       name: title,
       isPartOf: {
-        "@id": "https://www.aquakart.co.in#website",
+        "@id": "https://aquakart.co.in#website",
       },
       description: description,
     },
@@ -53,7 +53,7 @@ const AquaSeo = ({ seo, blogs = [], products = [] }) => {
         "@type": "ListItem",
         position: 1,
         item: {
-          "@id": "https://www.aquakart.co.in",
+          "@id": "https://aquakart.co.in",
           name: "Home",
         },
       },
@@ -91,7 +91,7 @@ const AquaSeo = ({ seo, blogs = [], products = [] }) => {
         name: "Aquakart",
       },
       publisher: {
-        "@id": "https://www.aquakart.co.in#organization",
+        "@id": "https://aquakart.co.in#organization",
       },
       datePublished: new Date(blog.createdAt).toISOString(),
       dateModified: new Date(blog.createdAt).toISOString(),
@@ -102,7 +102,7 @@ const AquaSeo = ({ seo, blogs = [], products = [] }) => {
   products.forEach((product) => {
     graphData.push({
       "@type": "Product",
-      "@id": `https://www.aquakart.co.in/product/${product._id}#product`,
+      "@id": `https://aquakart.co.in/product/${product._id}#product`,
       name: product.title,
       image: product.photos.map((photo) => photo.secure_url),
       description: product.description.replace(/<[^>]+>/g, ""),
@@ -113,7 +113,7 @@ const AquaSeo = ({ seo, blogs = [], products = [] }) => {
       },
       offers: {
         "@type": "Offer",
-        url: `https://www.aquakart.co.in/product/${product.slug}`,
+        url: `https://aquakart.co.in/product/${product.slug}`,
         priceCurrency: "INR",
         price: product.price,
         availability:

@@ -21,7 +21,7 @@ const config = {
     keyphrases:
       "Aquakart Water Softeners, Buy RO Purifiers Online, Hard Water Treatment, Best Water Filters, Shop Water Purification Systems, RO Purifiers in Hyderabad, Water Softener Dealers Jubilee Hills, Online Water Filters Gachibowli",
     url: "https://aquakart.co.in/shop",
-    photos: "https://www.aquakart.co.in/images/shop.jpg",
+    photos: "https://aquakart.co.in/images/shop.jpg",
     description:
       "Shop high-quality water softeners, RO purifiers, and filtration systems at Aquakart. Find the best solutions for hard water treatment and pure drinking water for your home and office.",
     follow: true,
@@ -47,7 +47,7 @@ const config = {
     keyphrases:
       "Water Softener Comparison, RO Purifier Reviews, Best Water Filters, Compare Filters in Hyderabad, RO Price Comparison Gachibowli",
     url: "https://aquakart.co.in/compare",
-    photos: "https://www.aquakart.co.in/images/compare.jpg",
+    photos: "https://aquakart.co.in/images/compare.jpg",
     description:
       "Compare top water softeners, RO purifiers, and filtration systems. Get the best deals and choose the right water solution for your needs.",
     follow: true,
@@ -72,7 +72,7 @@ const config = {
     keyphrases:
       "Aquakart Customer Support, Water Softener Help, Contact Us Hyderabad",
     url: "https://aquakart.co.in/contact",
-    photos: "https://www.aquakart.co.in/images/contact.jpg",
+    photos: "https://aquakart.co.in/images/contact.jpg",
     description:
       "Need assistance? Contact Aquakart for customer support, product inquiries, and expert advice on water purification solutions.",
     follow: true,
@@ -84,7 +84,7 @@ const config = {
     keyphrases:
       "Aquakart Mission, Best Water Softener Company, Water Solutions, Hyderabad Water Technology Brand",
     url: "https://aquakart.co.in/about",
-    photos: "https://www.aquakart.co.in/images/about.jpg",
+    photos: "https://aquakart.co.in/images/about.jpg",
     description:
       "Learn more about Aquakart, a leading provider of water softeners, RO purifiers, and filtration systems. Trusted solutions for clean and healthy water.",
     follow: true,
@@ -96,7 +96,7 @@ const config = {
     keyphrases:
       "Common Water Softener Questions, RO Purifier FAQs, Water Filtration Help, Hyderabad Water Troubleshooting",
     url: "https://aquakart.co.in/faq",
-    photos: "https://www.aquakart.co.in/images/faq.jpg",
+    photos: "https://aquakart.co.in/images/faq.jpg",
     description:
       "Find answers to frequently asked questions about Aquakart water softeners, RO purifiers, and home water filtration systems.",
     follow: true,
@@ -108,7 +108,7 @@ const config = {
     keyphrases:
       "Water Softener Installation, RO Purifier Setup, Home Water Filtration Install, Hyderabad RO Services, Aquakart Installation Support",
     url: "https://aquakart.co.in/installation",
-    photos: "https://www.aquakart.co.in/images/installation.jpg",
+    photos: "https://aquakart.co.in/images/installation.jpg",
     description:
       "Get professional installation services for Aquakart water softeners and RO purifiers. Ensure proper setup for clean and safe water at home.",
     follow: true,
@@ -120,7 +120,7 @@ const config = {
     keyphrases:
       "Water Softener Discounts, RO Purifier Coupons, Aquakart Special Offers, Local Water Filter Deals Hyderabad",
     url: "https://aquakart.co.in/offers",
-    photos: "https://www.aquakart.co.in/images/offers.jpg",
+    photos: "https://aquakart.co.in/images/offers.jpg",
     description:
       "Explore special offers and discounts on Aquakart water softeners, RO purifiers, and filtration products. Limited-time deals available now!",
     follow: true,
@@ -131,7 +131,7 @@ const config = {
       "Aquakart Privacy Policy, Data Security, Customer Information Protection, Water Solutions Privacy",
     keyphrases: "Privacy Policy, Customer Data Protection, Aquakart Privacy",
     url: "https://aquakart.co.in/privacy-policy",
-    photos: "https://www.aquakart.co.in/images/privacy-policy.jpg",
+    photos: "https://aquakart.co.in/images/privacy-policy.jpg",
     description:
       "Read Aquakart's privacy policy to learn how we protect your data, ensure security, and maintain confidentiality for a safe online shopping experience.",
     follow: false,

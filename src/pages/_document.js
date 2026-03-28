@@ -17,6 +17,11 @@ export default function Document() {
           crossOrigin="anonymous"
         />
         <link rel="preconnect" href="https://api.aquakart.co.in" />
+        <link
+          rel="preconnect"
+          href="https://api.aquakart.co.in"
+          crossOrigin="anonymous"
+        />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
 

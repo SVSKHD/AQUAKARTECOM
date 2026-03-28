@@ -127,6 +127,7 @@ const AquaHomeHero = ({ data }) => {
                 src={logo}
                 alt="Aquakart"
                 imgClassName="mx-auto lg:mx-0 max-w-[160px] drop-shadow-md mb-6"
+                priority
               />
 
               {/* Festival Banner */}

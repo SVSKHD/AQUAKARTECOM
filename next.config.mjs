@@ -104,7 +104,7 @@ const nextConfig = {
   reactStrictMode: true,
 
   env: {
-    NEXT_PUBLIC_URL: "https://aquakart.co.in/",
+    NEXT_PUBLIC_URL: "https://aquakart.co.in",
     NEXT_PUBLIC_API_URL: "https://api.aquakart.co.in/v1",
   },
 
