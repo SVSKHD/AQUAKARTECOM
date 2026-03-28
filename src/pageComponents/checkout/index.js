@@ -10,7 +10,7 @@ import {
 import { FaSignInAlt } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { nanoid } from "nanoid";
-import moment from "moment";
+import dayjs from "dayjs";
 import { useState, useEffect, useMemo } from "react";
 import orderServiceOperations from "@/services/order";
 import { useRouter } from "next/router";
@@ -289,8 +289,8 @@ const AquaCheckoutComponent = () => {
 
     setButtonStatus((prev) => ({ ...prev, cod: true }));
 
-    const cashTransactionId = `AQTR-COD-${nanoid(5).toUpperCase()}D${moment(new Date()).format("DDMMYYYY")}`;
-    const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
+    const cashTransactionId = `AQTR-COD-${nanoid(5).toUpperCase()}D${dayjs(new Date()).format("DDMMYYYY")}`;
+    const orderId = `AQOD${dayjs(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
 
     const newOrder = {
       user: userData?.user?._id,
@@ -358,8 +358,8 @@ const AquaCheckoutComponent = () => {
       return;
     }
 
-    const transactionId = `AQTR-PGPP${nanoid(5).toUpperCase()}D${moment(new Date()).format("DDMMYYYY")}`;
-    const orderId = `AQOD${moment(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
+    const transactionId = `AQTR-PGPP${nanoid(5).toUpperCase()}D${dayjs(new Date()).format("DDMMYYYY")}`;
+    const orderId = `AQOD${dayjs(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
 
     const newOrder = {
       user: userData?.user?._id,
@@ -839,7 +839,7 @@ const AquaCheckoutComponent = () => {
                         </dt>
                         <dd className="mt-1 text-sm text-gray-900">
                           {userData?.user?.dob
-                            ? moment(userData.user.dob).format("DD MMM YYYY")
+                            ? dayjs(userData.user.dob).format("DD MMM YYYY")
                             : "Add DOB for personalised offers"}
                         </dd>
                       </div>

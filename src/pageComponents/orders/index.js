@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { useSelector } from "react-redux";
-import moment from "moment";
+import dayjs from "dayjs";
 import { nanoid } from "nanoid";
 import {
   ArrowLeft,
@@ -210,7 +210,7 @@ const AquaOrderPage = () => {
 
     const baseOrderId =
       order.orderId ||
-      `AQOD${moment().format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
+      `AQOD${dayjs().format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
     const base = {
       user: order.user || userId,
       orderId: baseOrderId,
@@ -240,7 +240,7 @@ const AquaOrderPage = () => {
   const handleRetryPayment = async () => {
     if (!order) return;
     const payload = buildOrderPayload({
-      transactionId: `AQTR-PGPP${nanoid(5).toUpperCase()}R${moment().format("DDMMYYYY")}`,
+      transactionId: `AQTR-PGPP${nanoid(5).toUpperCase()}R${dayjs().format("DDMMYYYY")}`,
       orderType: "Payment Method(Phone Pe Gateway)",
       paymentMethod: "OTHER THAN CASH ON DELIVERY",
       paymentStatus: "Pending",
@@ -270,7 +270,7 @@ const AquaOrderPage = () => {
   const handleSwitchToCod = async () => {
     if (!order) return;
     const payload = buildOrderPayload({
-      transactionId: `AQTR-COD-${nanoid(5).toUpperCase()}${moment().format("DDMMYYYY")}`,
+      transactionId: `AQTR-COD-${nanoid(5).toUpperCase()}${dayjs().format("DDMMYYYY")}`,
       orderType: "Cash On Delivery",
       paymentMethod: "Cash On Delivery",
       paymentStatus: "Pending",

@@ -197,14 +197,14 @@ const AquaHomeHero = ({ data }) => {
                 <Link
                   href="/shop"
                   aria-label="Shop solutions"
-                  className="inline-flex items-center justify-center rounded-full bg-emerald-800 px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-emerald-700"
+                  className="btn-glass btn-glass-primary"
                 >
                   Shop solutions
                 </Link>
                 <Link
                   href="/shop"
                   aria-label="Book a free water test"
-                  className="inline-flex items-center justify-center rounded-full border border-emerald-200 px-6 py-3 text-sm font-semibold text-emerald-600 transition hover:border-emerald-300 hover:bg-emerald-50"
+                  className="btn-glass btn-glass-secondary text-emerald-700"
                 >
                   Book a free water test
                 </Link>
