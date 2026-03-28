@@ -23,11 +23,13 @@ const CategoriesSkeleton = () => (
 const AquaAllCategoriesComponent = () => {
   const router = useRouter();
   const seo = {
-    title: "Aquakart | shop by categories",
-    desscription:
+    title: "Aquakart | Shop by Categories - Water Softeners, Purifiers & More",
+    description:
       "Aquakart offers a wide range of water solutions including purifiers, dispensers, softeners, storage tanks, pumps, and plumbing accessories. Ensure safe, efficient, and stylish water management for your home or business with our high-quality products. Shop now!",
     keywords:
-      "Aquakart,Water Purifiers,Water Dispensers,Water Softeners ,Water Storage Tanks,Water Pumps,Plumbing Accessories,Bath Fittings,Irrigation Solutions,Home Appliances,Water Filtration,Clean Drinking Water,Water Management, Water Treatment,Water Solutions, Safe Drinking Water",
+      "Aquakart, Water Purifiers, Water Dispensers, Water Softeners, Water Storage Tanks, Water Pumps, Plumbing Accessories, Bath Fittings, Irrigation Solutions, Home Appliances, Water Filtration, Clean Drinking Water, Water Management, Water Treatment, Water Solutions, Safe Drinking Water",
+    keyphrases:
+      "Water purifier categories, Aquakart product collections, water solutions India, home water management",
     canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
   };
   const [categories, setCategories] = useState([]);

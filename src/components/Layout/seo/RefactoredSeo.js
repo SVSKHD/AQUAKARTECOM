@@ -103,8 +103,12 @@ const AquaSeoRevamp = ({
   const photoCandidates = collectImages(photos);
   const primaryImage = photoCandidates[0] || DEFAULT_LOGO;
 
+  // Determine og:type based on page context
+  const ogType = blogPage ? "article" : product ? "product" : "website";
+
   const graphNodes = [];
 
+  // Organization (every page)
   const publisherNode = {
     "@type": "Organization",
     "@id": `${baseUrl}#organization`,
@@ -113,9 +117,95 @@ const AquaSeoRevamp = ({
     logo: {
       "@type": "ImageObject",
       url: DEFAULT_LOGO,
+      width: 384,
+      height: 384,
+    },
+    sameAs: [
+      "https://www.facebook.com/AquaKart.co.in/",
+      "https://www.instagram.com/aquakart.co.in/",
+      "https://x.com/aquakart.co.in",
+    ],
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "customer service",
+      areaServed: "IN",
+      availableLanguage: ["English", "Hindi", "Telugu"],
     },
   };
   graphNodes.push(publisherNode);
+
+  // WebSite (every page — enables sitelinks search box in Google)
+  graphNodes.push({
+    "@type": "WebSite",
+    "@id": `${baseUrl}#website`,
+    url: baseUrl,
+    name: "Aquakart",
+    publisher: { "@id": `${baseUrl}#organization` },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${baseUrl}/shop?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  });
+
+  // BreadcrumbList (every page)
+  const breadcrumbItems = [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: baseUrl,
+    },
+  ];
+
+  if (path && path !== "home") {
+    breadcrumbItems.push({
+      "@type": "ListItem",
+      position: 2,
+      name: title,
+      item: canonicalUrl,
+    });
+  } else if (product && productData) {
+    breadcrumbItems.push(
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Shop",
+        item: `${baseUrl}/shop`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: productData?.title || "Product",
+        item: canonicalUrl,
+      },
+    );
+  } else if (category) {
+    breadcrumbItems.push({
+      "@type": "ListItem",
+      position: 2,
+      name: categoryData?.title || "Category",
+      item: canonicalUrl,
+    });
+  } else if (subcategory) {
+    breadcrumbItems.push({
+      "@type": "ListItem",
+      position: 2,
+      name: subcategoryData?.title || "Subcategory",
+      item: canonicalUrl,
+    });
+  }
+
+  if (breadcrumbItems.length > 1) {
+    graphNodes.push({
+      "@type": "BreadcrumbList",
+      "@id": `${canonicalUrl}#breadcrumb`,
+      itemListElement: breadcrumbItems,
+    });
+  }
 
   const productNodeFromData = (productRecord) => {
     if (!productRecord) return null;
@@ -402,10 +492,11 @@ const AquaSeoRevamp = ({
             <meta name="keyphrases" content={keyphrases} />
             <meta
               name="robots"
-              content={`index, ${follow ? "follow" : "nofollow"}, max-image-preview:large`}
+              content={`index, ${follow ? "follow" : "nofollow"}, max-image-preview:large, max-snippet:-1, max-video-preview:-1`}
             />
-            <meta property="og:type" content="website" />
+            <meta property="og:type" content={ogType} />
             <meta property="og:site_name" content="Aquakart" />
+            <meta property="og:locale" content="en_IN" />
             <meta property="og:url" content={canonicalUrl} />
             <meta property="og:title" content={title} />
             <meta property="og:description" content={description} />
@@ -414,6 +505,7 @@ const AquaSeoRevamp = ({
             )}
             <meta property="og:image:width" content="1200" />
             <meta property="og:image:height" content="630" />
+            {primaryImage && <meta property="og:image:alt" content={title} />}
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:site" content="@aquakart8" />
             <meta name="twitter:creator" content="@aquakart8" />
@@ -424,10 +516,6 @@ const AquaSeoRevamp = ({
               <meta name="twitter:image" content={primaryImage} />
             )}
             <meta name="author" content="Aquakart" />
-            <meta
-              name="viewport"
-              content="width=device-width, initial-scale=1.0"
-            />
             <meta httpEquiv="content-language" content="en" />
             <link rel="canonical" href={canonicalUrl} />
           </>

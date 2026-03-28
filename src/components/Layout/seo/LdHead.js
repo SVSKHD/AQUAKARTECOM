@@ -7,7 +7,7 @@ export const generateStructuredData = (pageType, data) => {
         "@context": "https://schema.org",
         "@type": "WebPage",
         name: "Aquakart - Home",
-        url: "https://www.aquakart.co.in",
+        url: "https://aquakart.co.in",
         description: "Explore Aquakart for all your aquatic needs.",
         publisher: {
           "@type": "Organization",
@@ -33,10 +33,10 @@ export const generateStructuredData = (pageType, data) => {
         },
         offers: {
           "@type": "Offer",
-          priceCurrency: "USD",
+          priceCurrency: "INR",
           price: data.productPrice,
           availability: "https://schema.org/InStock",
-          url: "https://www.aquakart.co.in/product/" + data.productId,
+          url: "https://aquakart.co.in/product/" + data.productId,
         },
       };
 
@@ -61,7 +61,7 @@ export const generateStructuredData = (pageType, data) => {
         datePublished: blog.datePublished,
         mainEntityOfPage: {
           "@type": "WebPage",
-          "@id": "https://www.aquakart.co.in/blog/" + blog.slug,
+          "@id": "https://aquakart.co.in/blog/" + blog.slug,
         },
       }));
 

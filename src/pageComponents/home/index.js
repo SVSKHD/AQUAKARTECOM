@@ -382,7 +382,7 @@ const AquaHomeComponent = ({
                       </h2>
                       <p className="mt-6 text-lg leading-relaxed text-indigo-100">
                         Hard water minerals like calcium and magnesium can
-                        damage appliances (`efficiency loss`) and irritate skin.
+                        damage appliances (efficiency loss) and irritate skin.
                         Discover how ion-exchange technology transforms your
                         daily water quality.
                       </p>

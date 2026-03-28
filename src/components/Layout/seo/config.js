@@ -21,7 +21,7 @@ const config = {
     keyphrases:
       "Aquakart Water Softeners, Buy RO Purifiers Online, Hard Water Treatment, Best Water Filters, Shop Water Purification Systems, RO Purifiers in Hyderabad, Water Softener Dealers Jubilee Hills, Online Water Filters Gachibowli",
     url: "https://aquakart.co.in/shop",
-    photos: "https://www.aquakart.co.in/images/shop.jpg",
+    photos: "https://aquakart.co.in/images/shop.jpg",
     description:
       "Shop high-quality water softeners, RO purifiers, and filtration systems at Aquakart. Find the best solutions for hard water treatment and pure drinking water for your home and office.",
     follow: true,
@@ -47,7 +47,7 @@ const config = {
     keyphrases:
       "Water Softener Comparison, RO Purifier Reviews, Best Water Filters, Compare Filters in Hyderabad, RO Price Comparison Gachibowli",
     url: "https://aquakart.co.in/compare",
-    photos: "https://www.aquakart.co.in/images/compare.jpg",
+    photos: "https://aquakart.co.in/images/compare.jpg",
     description:
       "Compare top water softeners, RO purifiers, and filtration systems. Get the best deals and choose the right water solution for your needs.",
     follow: true,
@@ -72,7 +72,7 @@ const config = {
     keyphrases:
       "Aquakart Customer Support, Water Softener Help, Contact Us Hyderabad",
     url: "https://aquakart.co.in/contact",
-    photos: "https://www.aquakart.co.in/images/contact.jpg",
+    photos: "https://aquakart.co.in/images/contact.jpg",
     description:
       "Need assistance? Contact Aquakart for customer support, product inquiries, and expert advice on water purification solutions.",
     follow: true,
@@ -84,7 +84,7 @@ const config = {
     keyphrases:
       "Aquakart Mission, Best Water Softener Company, Water Solutions, Hyderabad Water Technology Brand",
     url: "https://aquakart.co.in/about",
-    photos: "https://www.aquakart.co.in/images/about.jpg",
+    photos: "https://aquakart.co.in/images/about.jpg",
     description:
       "Learn more about Aquakart, a leading provider of water softeners, RO purifiers, and filtration systems. Trusted solutions for clean and healthy water.",
     follow: true,
@@ -96,7 +96,7 @@ const config = {
     keyphrases:
       "Common Water Softener Questions, RO Purifier FAQs, Water Filtration Help, Hyderabad Water Troubleshooting",
     url: "https://aquakart.co.in/faq",
-    photos: "https://www.aquakart.co.in/images/faq.jpg",
+    photos: "https://aquakart.co.in/images/faq.jpg",
     description:
       "Find answers to frequently asked questions about Aquakart water softeners, RO purifiers, and home water filtration systems.",
     follow: true,
@@ -108,7 +108,7 @@ const config = {
     keyphrases:
       "Water Softener Installation, RO Purifier Setup, Home Water Filtration Install, Hyderabad RO Services, Aquakart Installation Support",
     url: "https://aquakart.co.in/installation",
-    photos: "https://www.aquakart.co.in/images/installation.jpg",
+    photos: "https://aquakart.co.in/images/installation.jpg",
     description:
       "Get professional installation services for Aquakart water softeners and RO purifiers. Ensure proper setup for clean and safe water at home.",
     follow: true,
@@ -120,7 +120,7 @@ const config = {
     keyphrases:
       "Water Softener Discounts, RO Purifier Coupons, Aquakart Special Offers, Local Water Filter Deals Hyderabad",
     url: "https://aquakart.co.in/offers",
-    photos: "https://www.aquakart.co.in/images/offers.jpg",
+    photos: "https://aquakart.co.in/images/offers.jpg",
     description:
       "Explore special offers and discounts on Aquakart water softeners, RO purifiers, and filtration products. Limited-time deals available now!",
     follow: true,
@@ -131,7 +131,7 @@ const config = {
       "Aquakart Privacy Policy, Data Security, Customer Information Protection, Water Solutions Privacy",
     keyphrases: "Privacy Policy, Customer Data Protection, Aquakart Privacy",
     url: "https://aquakart.co.in/privacy-policy",
-    photos: "https://www.aquakart.co.in/images/privacy-policy.jpg",
+    photos: "https://aquakart.co.in/images/privacy-policy.jpg",
     description:
       "Read Aquakart's privacy policy to learn how we protect your data, ensure security, and maintain confidentiality for a safe online shopping experience.",
     follow: false,
@@ -174,6 +174,70 @@ const config = {
     description:
       "Unlike typical installers, Aquakart is a leading water softener company in Hyderabad that combines expert installation with complete technical knowledge and long-term system support.",
     follow: true,
+  },
+  // Path-matched keys (router pathname splits produce these)
+  categories: {
+    title: "Shop by Categories | Water Softeners, Purifiers & More | Aquakart",
+    keywords:
+      "Aquakart categories, water purifiers, water softeners, water dispensers, storage tanks, plumbing accessories, water filtration systems, Hyderabad water solutions",
+    keyphrases:
+      "Water purifier categories, Aquakart product collections, water solutions India, home water management",
+    url: "https://aquakart.co.in/categories",
+    photos:
+      "https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg",
+    description:
+      "Browse all Aquakart product categories. Find water softeners, RO purifiers, dispensers, storage tanks, and plumbing accessories for your home or business.",
+    follow: true,
+  },
+  "contact-us": {
+    title: "Contact Aquakart | Customer Support & Inquiries",
+    keywords:
+      "Contact Aquakart, Customer Support, Water Softener Queries, RO Purifier Assistance, Hyderabad Water Filter Help",
+    keyphrases:
+      "Aquakart Customer Support, Water Softener Help, Contact Us Hyderabad",
+    url: "https://aquakart.co.in/contact-us",
+    photos:
+      "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
+    description:
+      "Need assistance? Contact Aquakart for customer support, product inquiries, and expert advice on water purification solutions.",
+    follow: true,
+  },
+  "privacy-policy": {
+    title: "Privacy Policy | Aquakart Water Solutions",
+    keywords:
+      "Aquakart Privacy Policy, Data Security, Customer Information Protection",
+    keyphrases: "Privacy Policy, Customer Data Protection, Aquakart Privacy",
+    url: "https://aquakart.co.in/privacy-policy",
+    photos:
+      "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
+    description:
+      "Read Aquakart's privacy policy to learn how we protect your data and ensure security for a safe online shopping experience.",
+    follow: false,
+  },
+  "terms-and-conditions": {
+    title: "Terms & Conditions | Aquakart Water Solutions",
+    keywords:
+      "Aquakart Terms & Conditions, Online Purchase Terms, Customer Agreement",
+    keyphrases: "Terms of Service, Customer Agreement, Aquakart Policies",
+    url: "https://aquakart.co.in/terms-and-conditions",
+    photos:
+      "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
+    description:
+      "Review the terms and conditions for using Aquakart and purchasing water softeners, RO purifiers, and other products online.",
+    follow: false,
+  },
+  "shipping-policy": {
+    title: "Shipping Policy | Aquakart Water Solutions",
+    keywords:
+      "Aquakart Shipping, Delivery Policy, Water Softener Delivery, Free Shipping India",
+    keyphrases:
+      "Aquakart delivery times, shipping charges, free delivery water softeners",
+    url: "https://aquakart.co.in/shipping-policy",
+    photos:
+      "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
+    description:
+      "Learn about Aquakart's shipping policy, delivery timelines, and shipping charges for water softeners, purifiers, and accessories across India.",
+    follow: false,
   },
 };
 
