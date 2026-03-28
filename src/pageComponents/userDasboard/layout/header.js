@@ -62,7 +62,7 @@ const AquaUserDashboardHeader = () => {
   return (
     <div className="mx-auto mt-6 w-full">
       <div className="hidden justify-center px-4 sm:flex">
-        <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3 shadow-lg">
+        <div className="flex items-center gap-1.5 rounded-full border border-white/50 bg-white/50 backdrop-blur-2xl px-3 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
           {navItems.map((item) => {
             const isActive = router.pathname === item.href;
             const Icon = item.icon;
@@ -72,16 +72,16 @@ const AquaUserDashboardHeader = () => {
                 <motion.span
                   whileTap={{ scale: 0.95 }}
                   whileHover={{ scale: 1.05 }}
-                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
                     isActive
-                      ? "bg-slate-900 text-white shadow"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/25"
+                      : "text-slate-500 hover:bg-white/60 hover:text-slate-800"
                   }`}
                 >
                   <Icon
                     size={18}
                     strokeWidth={isActive ? 2.4 : 1.6}
-                    className={isActive ? "text-white" : "text-slate-500"}
+                    className={isActive ? "text-white" : "text-slate-400"}
                   />
                   {item.label}
                 </motion.span>
@@ -92,7 +92,7 @@ const AquaUserDashboardHeader = () => {
       </div>
 
       <div className="px-4 sm:hidden">
-        <div className="no-scrollbar flex items-center gap-2 overflow-x-auto rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow">
+        <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto rounded-2xl border border-white/50 bg-white/50 backdrop-blur-xl px-3 py-2 shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
           {navItems.map((item) => {
             const isActive = router.pathname === item.href;
             const Icon = item.icon;
@@ -100,10 +100,10 @@ const AquaUserDashboardHeader = () => {
               <Link
                 key={item.id}
                 href={item.href}
-                className={`inline-flex flex-shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition ${
+                className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition ${
                   isActive
-                    ? "bg-slate-900 text-white"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/20"
+                    : "text-slate-500 hover:bg-white/60 hover:text-slate-800"
                 }`}
               >
                 <Icon size={16} strokeWidth={isActive ? 2.4 : 1.6} />

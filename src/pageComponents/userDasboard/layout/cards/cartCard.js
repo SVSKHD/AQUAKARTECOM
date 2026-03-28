@@ -219,7 +219,7 @@ const DashboardProductCard = ({ product = {}, variant = "default" }) => {
   };
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+    <div className="flex h-full flex-col overflow-hidden rounded-3xl glass-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)]">
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
         <Image
           src={normalized.photos[photoIndex]?.url || FALLBACK_IMAGE}

@@ -324,20 +324,23 @@ const AquaUserProfilePageComponent = () => {
 
   return (
     <AquaUserDashbordLayout>
-      <div className="grid gap-6 px-2 sm:grid-cols-2 sm:px-0">
+      <div className="grid gap-5 px-2 sm:grid-cols-2 sm:px-0">
         {profileHighlights.map((item) => {
           const isComplete = Boolean(item.isComplete);
           const StatusIcon = isComplete
             ? CheckCircleIcon
             : ExclamationTriangleIcon;
           const statusClasses = isComplete
-            ? "bg-emerald-50 text-emerald-700"
-            : "bg-amber-50 text-amber-700";
+            ? "bg-emerald-50/80 text-emerald-700"
+            : "bg-amber-50/80 text-amber-700";
+          const cardTint = isComplete
+            ? "glass-tint-emerald"
+            : "glass-tint-amber";
 
           return (
             <div
               key={item.key}
-              className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white/90 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              className={`group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${cardTint}`}
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                 <div>
@@ -362,7 +365,7 @@ const AquaUserProfilePageComponent = () => {
                 <button
                   type="button"
                   onClick={() => handleOpenDialog(item.focusField)}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 font-medium text-indigo-600 transition hover:bg-indigo-100 sm:w-auto"
+                  className="btn-glass inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/50 px-3 py-1.5 font-medium text-indigo-600 backdrop-blur-sm hover:bg-white/80 sm:w-auto"
                 >
                   <PencilSquareIcon className="h-4 w-4" aria-hidden="true" />
                   {item.actionLabel}
@@ -372,7 +375,7 @@ const AquaUserProfilePageComponent = () => {
           );
         })}
       </div>
-      <section className="mt-10 rounded-2xl border border-gray-100 bg-white/90 p-5 shadow-sm sm:p-6">
+      <section className="mt-10 glass-tint-indigo rounded-2xl p-5 sm:p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
@@ -398,10 +401,10 @@ const AquaUserProfilePageComponent = () => {
               return (
                 <div
                   key={address._id || address.street}
-                  className={`relative flex flex-col gap-3 rounded-2xl border p-4 transition ${
+                  className={`relative flex flex-col gap-3 rounded-2xl p-4 transition-all duration-300 ${
                     isDefault
-                      ? "border-indigo-500 bg-indigo-50 shadow-sm"
-                      : "border-gray-200 bg-white hover:border-indigo-200"
+                      ? "glass-tint-emerald shadow-md"
+                      : "glass-card hover:-translate-y-0.5 hover:shadow-lg"
                   }`}
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:gap-3">
