@@ -52,22 +52,22 @@ const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
     return username;
   };
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start bg-gray-50">
+    <div className="min-h-screen flex flex-col items-center justify-start">
       <AquaUserDashboardHeader />
       <AquaCartAddressDialog />
-      <div className="w-full max-w-4xl px-4">
+      <div className="w-full max-w-5xl px-4">
         <AquaUserGreet
           userName={getFirstLettersFromEmail(userData?.user?.email)}
         />
       </div>
-      <div className="w-full max-w-4xl px-4 py-6 sm:py-8">
-        <div className="w-full rounded-2xl bg-white p-4 shadow-lg sm:p-6">
-          <div className="mb-6 border-b border-gray-100 pb-4">
-            <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">
+      <div className="w-full max-w-5xl px-4 py-6 sm:py-8">
+        <div className="w-full glass-card rounded-3xl p-5 sm:p-8">
+          <div className="mb-6 border-b border-white/30 pb-4">
+            <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">
               {resolvedTitle}
             </h1>
             {resolvedSubtitle && (
-              <p className="mt-1 text-sm text-gray-500">{resolvedSubtitle}</p>
+              <p className="mt-1 text-sm text-slate-500">{resolvedSubtitle}</p>
             )}
           </div>
           <div className="min-h-[60vh]">{children}</div>

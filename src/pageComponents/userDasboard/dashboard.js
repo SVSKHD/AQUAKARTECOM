@@ -50,25 +50,29 @@ const AquaUserDashbordPageComponent = () => {
         title: "Items in cart",
         value: safeCart.length,
         icon: ShoppingCart,
-        tone: "bg-indigo-100 text-indigo-700",
+        iconTone: "bg-indigo-100 text-indigo-700",
+        cardClass: "glass-tint-indigo",
       },
       {
         title: "Saved favourites",
         value: safeFav.length,
         icon: Heart,
-        tone: "bg-rose-100 text-rose-700",
+        iconTone: "bg-rose-100 text-rose-700",
+        cardClass: "glass-tint-rose",
       },
       {
         title: "Delivered orders",
         value: delivered,
         icon: PackageCheck,
-        tone: "bg-emerald-100 text-emerald-700",
+        iconTone: "bg-emerald-100 text-emerald-700",
+        cardClass: "glass-tint-emerald",
       },
       {
         title: "Active orders",
         value: pending,
         icon: Clock3,
-        tone: "bg-amber-100 text-amber-700",
+        iconTone: "bg-amber-100 text-amber-700",
+        cardClass: "glass-tint-amber",
       },
     ];
   }, [safeCart.length, safeFav.length, recentOrders]);
@@ -85,13 +89,13 @@ const AquaUserDashbordPageComponent = () => {
   return (
     <AquaUserDashbordLayout>
       <div className="space-y-10">
-        <section className="rounded-3xl border border-emerald-100 bg-emerald-50/60 p-6 sm:p-8">
+        <section className="glass-tint-emerald rounded-3xl p-6 sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-wide text-emerald-600">
+              <p className="text-sm font-bold uppercase tracking-wide text-emerald-600">
                 Welcome back
               </p>
-              <h1 className="mt-1 text-2xl font-semibold text-slate-900 sm:text-3xl">
+              <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">
                 Hi {firstName}, your water essentials are ready.
               </h1>
               <p className="mt-2 max-w-xl text-sm text-slate-600">
@@ -101,7 +105,7 @@ const AquaUserDashbordPageComponent = () => {
             </div>
             <Link
               href="/dashboard/profile"
-              className="inline-flex items-center gap-2 self-start rounded-full bg-white px-4 py-2 text-sm font-semibold text-emerald-600 shadow-sm transition hover:text-emerald-500"
+              className="btn-glass btn-glass-primary self-start"
             >
               <CalendarCheck className="h-4 w-4" />
               Update profile
@@ -110,22 +114,24 @@ const AquaUserDashbordPageComponent = () => {
         </section>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {highlightCards.map(({ title, value, icon: Icon, tone }) => (
-            <div
-              key={title}
-              className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
-            >
-              <span
-                className={`flex h-12 w-12 items-center justify-center rounded-full ${tone}`}
+          {highlightCards.map(
+            ({ title, value, icon: Icon, iconTone, cardClass }) => (
+              <div
+                key={title}
+                className={`flex items-center gap-3 rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${cardClass}`}
               >
-                <Icon className="h-6 w-6" aria-hidden="true" />
-              </span>
-              <div>
-                <p className="text-sm text-slate-500">{title}</p>
-                <p className="text-lg font-semibold text-slate-900">{value}</p>
+                <span
+                  className={`flex h-12 w-12 items-center justify-center rounded-2xl ${iconTone}`}
+                >
+                  <Icon className="h-6 w-6" aria-hidden="true" />
+                </span>
+                <div>
+                  <p className="text-sm text-slate-500">{title}</p>
+                  <p className="text-2xl font-bold text-slate-900">{value}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ),
+          )}
         </section>
 
         <section className="space-y-4">
@@ -157,7 +163,7 @@ const AquaUserDashbordPageComponent = () => {
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center text-sm text-slate-500">
+            <div className="glass-subtle rounded-2xl border border-dashed border-white/40 p-10 text-center text-sm text-slate-500">
               Your cart is currently empty. Browse products to add them here.
             </div>
           )}
@@ -192,7 +198,7 @@ const AquaUserDashbordPageComponent = () => {
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center text-sm text-slate-500">
+            <div className="glass-subtle rounded-2xl border border-dashed border-white/40 p-10 text-center text-sm text-slate-500">
               You have no saved favourites yet. Tap the heart icon on a product
               to keep it here.
             </div>

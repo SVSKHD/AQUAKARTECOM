@@ -19,7 +19,7 @@ const AquaCategoryCard = ({ category }) => {
   return (
     <Link
       href={href}
-      className="group relative block overflow-hidden rounded-3xl bg-white/80 shadow-sm ring-1 ring-indigo-100 transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+      className="group relative block overflow-hidden rounded-3xl glass-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)]"
     >
       <div className="relative h-60 overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-100 via-white to-indigo-50">
         {imageUrl ? (

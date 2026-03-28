@@ -56,6 +56,63 @@ body {
   -webkit-backdrop-filter: blur(12px);
 }
 
+/* ── Tinted Glass Cards ────────────────────────────────── */
+.glass-tint-emerald {
+  background: linear-gradient(
+    135deg,
+    rgba(236, 253, 245, 0.6),
+    rgba(255, 255, 255, 0.45)
+  );
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid rgba(167, 243, 208, 0.4);
+  box-shadow:
+    0 4px 24px rgba(16, 185, 129, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.glass-tint-indigo {
+  background: linear-gradient(
+    135deg,
+    rgba(238, 242, 255, 0.6),
+    rgba(255, 255, 255, 0.45)
+  );
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid rgba(199, 210, 254, 0.4);
+  box-shadow:
+    0 4px 24px rgba(99, 102, 241, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.glass-tint-rose {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 241, 242, 0.6),
+    rgba(255, 255, 255, 0.45)
+  );
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid rgba(253, 164, 175, 0.3);
+  box-shadow:
+    0 4px 24px rgba(244, 63, 94, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.glass-tint-amber {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 251, 235, 0.6),
+    rgba(255, 255, 255, 0.45)
+  );
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid rgba(253, 230, 138, 0.4);
+  box-shadow:
+    0 4px 24px rgba(245, 158, 11, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
 /* ── Ambient Glow Orbs ─────────────────────────────────── */
 .ambient-orb {
   position: fixed;
