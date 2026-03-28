@@ -260,7 +260,7 @@ const AquaHomeComponent = ({
                           {activeGuide.cta && (
                             <Link
                               href={activeGuide.cta.href}
-                              className="group mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-white text-slate-900 px-6 py-3 text-sm font-bold shadow-lg transition-all hover:bg-emerald-50 hover:shadow-emerald-500/20 active:scale-95"
+                              className="btn-glass group mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-white text-slate-900 px-6 py-3 font-bold shadow-lg hover:bg-emerald-50 hover:shadow-emerald-500/20"
                             >
                               {activeGuide.cta.label}
                               <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -389,13 +389,13 @@ const AquaHomeComponent = ({
                       <div className="mt-8 flex flex-wrap gap-4">
                         <Link
                           href="/blogs"
-                          className="rounded-xl bg-white px-6 py-3 text-sm font-bold text-indigo-900 shadow-lg shadow-indigo-900/20 transition-all hover:bg-indigo-50 hover:scale-105 active:scale-95"
+                          className="btn-glass rounded-xl bg-white px-6 py-3 font-bold text-indigo-900 shadow-lg shadow-indigo-900/20 hover:bg-indigo-50 hover:shadow-indigo-900/30"
                         >
                           Read Full Article
                         </Link>
                         <Link
                           href="/water-report"
-                          className="rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-bold text-white backdrop-blur-md transition-all hover:bg-white/20"
+                          className="btn-glass rounded-xl border border-white/30 bg-white/10 px-6 py-3 font-bold text-white backdrop-blur-md hover:bg-white/20"
                         >
                           Upload Water Report
                         </Link>

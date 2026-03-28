@@ -1,6 +1,5 @@
 import LW from "@/assests/logo-white.png";
 import Link from "next/link";
-import { isArray } from "lodash";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import {
@@ -54,8 +53,10 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
     setFestival(getFestivalWish());
   }, []);
 
-  const formattedCategories = isArray(categories) ? categories : [];
-  const formattedSubCategories = isArray(subcategories) ? subcategories : [];
+  const formattedCategories = Array.isArray(categories) ? categories : [];
+  const formattedSubCategories = Array.isArray(subcategories)
+    ? subcategories
+    : [];
 
   // Determine if we should show skeletons (loading state or just empty initially)
   const isLoading =

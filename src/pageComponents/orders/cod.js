@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import AquaToast from "@/components/reusables/react-toastify";
 import useCurrency from "@/utils/currency";
 import Link from "next/link";
-import moment from "moment";
+import dayjs from "dayjs";
 import {
   CheckCircle,
   Clock,
@@ -175,7 +175,7 @@ const AquaCodOrderPageComponent = () => {
               </p>
               <p className="text-xs text-indigo-700">
                 Last updated{" "}
-                {moment(order.updatedAt).format("DD MMM YYYY, hh:mm A")}
+                {dayjs(order.updatedAt).format("DD MMM YYYY, hh:mm A")}
               </p>
             </div>
           </div>
@@ -216,7 +216,7 @@ const AquaCodOrderPageComponent = () => {
                     {isCurrent && order.estimatedDelivery && (
                       <p className="text-xs font-medium text-indigo-600">
                         Estimated delivery{" "}
-                        {moment(order.estimatedDelivery).format("DD MMM YYYY")}
+                        {dayjs(order.estimatedDelivery).format("DD MMM YYYY")}
                       </p>
                     )}
                   </div>
@@ -397,7 +397,7 @@ const AquaCodOrderPageComponent = () => {
         },
         {
           label: "Invoice date",
-          value: moment(order?.createdAt).format("DD MMM YYYY"),
+          value: dayjs(order?.createdAt).format("DD MMM YYYY"),
         },
       ];
 
@@ -673,7 +673,7 @@ const AquaCodOrderPageComponent = () => {
               </h1>
               <p className="mt-2 text-sm text-gray-500">
                 Placed on{" "}
-                {moment(order?.createdAt).format("DD MMM YYYY, hh:mm A")}
+                {dayjs(order?.createdAt).format("DD MMM YYYY, hh:mm A")}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">

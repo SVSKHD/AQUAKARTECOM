@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import AquaToast from "@/components/reusables/react-toastify";
 import useCurrency from "@/utils/currency";
 import Link from "next/link";
-import moment from "moment";
+import dayjs from "dayjs";
 import {
   CheckCircle,
   Clock,
@@ -91,7 +91,7 @@ const AquaPaymentOrderPageComponent = () => {
               </p>
               <p className="text-xs text-emerald-700">
                 Last updated{" "}
-                {moment(currentOrder.updatedAt).format("DD MMM YYYY, hh:mm A")}
+                {dayjs(currentOrder.updatedAt).format("DD MMM YYYY, hh:mm A")}
               </p>
             </div>
           </div>
@@ -132,7 +132,7 @@ const AquaPaymentOrderPageComponent = () => {
                     {isCurrent && currentOrder.estimatedDelivery && (
                       <p className="text-xs font-medium text-emerald-600">
                         Estimated delivery{" "}
-                        {moment(currentOrder.estimatedDelivery).format(
+                        {dayjs(currentOrder.estimatedDelivery).format(
                           "DD MMM YYYY",
                         )}
                       </p>
@@ -230,7 +230,7 @@ const AquaPaymentOrderPageComponent = () => {
               <p className="mt-2 text-sm text-gray-500">
                 Placed on{" "}
                 {order?.createdAt
-                  ? moment(order.createdAt).format("DD MMM YYYY, hh:mm A")
+                  ? dayjs(order.createdAt).format("DD MMM YYYY, hh:mm A")
                   : "-"}
               </p>
             </div>
