@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/router";
 import AquaUserDashbordLayout from "./layout/layout";
 import orderServiceOperations from "@/services/order";
+import { generateInvoicePDF, loadJsPDF } from "@/utils/invoice";
 import {
   ClipboardList,
   Wallet,
@@ -13,6 +14,8 @@ import {
   CheckCircle2,
   Circle,
   X,
+  Download,
+  Loader2,
 } from "lucide-react";
 
 const STATUS_TONES = {
@@ -81,6 +84,39 @@ const AquaOrdersPageComponent = () => {
 
   const userId = userData?.user?._id;
   const token = userData?.token;
+
+  const [pdfReady, setPdfReady] = useState(false);
+  const [generatingFor, setGeneratingFor] = useState(null);
+
+  // Load jsPDF once on mount
+  useEffect(() => {
+    loadJsPDF().then(setPdfReady);
+  }, []);
+
+  const handleDownloadInvoice = useCallback(
+    async (order) => {
+      if (!order) return;
+      const orderId = order?._id || order?.orderId;
+      setGeneratingFor(orderId);
+      try {
+        if (!pdfReady) {
+          const loaded = await loadJsPDF();
+          if (!loaded) {
+            alert("Invoice generator failed to load. Please refresh.");
+            return;
+          }
+          setPdfReady(true);
+        }
+        await generateInvoicePDF(order);
+      } catch (err) {
+        console.error("Invoice generation failed:", err);
+        alert(err?.message || "Unable to generate invoice. Please retry.");
+      } finally {
+        setGeneratingFor(null);
+      }
+    },
+    [pdfReady],
+  );
 
   const handleReLogin = () => {
     dispatch({ type: "LOGOUT", payload: null });
@@ -506,9 +542,27 @@ const AquaOrdersPageComponent = () => {
                         </button>
                         <button
                           type="button"
-                          className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
+                          onClick={() => handleDownloadInvoice(order)}
+                          disabled={
+                            generatingFor === (order?._id || order?.orderId)
+                          }
+                          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                            generatingFor === (order?._id || order?.orderId)
+                              ? "cursor-wait border-slate-100 bg-slate-50 text-slate-400"
+                              : "border-slate-200 text-slate-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600"
+                          }`}
                         >
-                          Download invoice
+                          {generatingFor === (order?._id || order?.orderId) ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Preparing...
+                            </>
+                          ) : (
+                            <>
+                              <Download className="h-4 w-4" />
+                              Download invoice
+                            </>
+                          )}
                         </button>
                       </div>
                     </footer>
