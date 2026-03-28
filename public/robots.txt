@@ -1,11 +1,19 @@
 User-agent: *
 Allow: /
 
-# Private pages
+# Private / authenticated pages
 Disallow: /dashboard/
-Disallow: /cart
 Disallow: /checkout
-Disallow: /api/
 Disallow: /order/
+Disallow: /admin/
+
+# API routes
+Disallow: /api/
+
+# Next.js internals
+Disallow: /_next/
+
+# Crawl-delay (optional, respected by some bots)
+Crawl-delay: 1
 
 Sitemap: https://aquakart.co.in/sitemap.xml

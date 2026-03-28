@@ -8,11 +8,24 @@ const withBundleAnalyzer = bundleAnalyzer({
 const nextConfig = {
   async headers() {
     return [
-      // 1) Your existing robots header
+      // 1) Security + robots headers for all pages
       {
         source: "/:path*",
         headers: [
           { key: "X-Robots-Tag", value: "index, follow, noai, noimageai" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-XSS-Protection", value: "1; mode=block" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value:
+              "camera=(), microphone=(), geolocation=(self), interest-cohort=()",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
         ],
       },
 

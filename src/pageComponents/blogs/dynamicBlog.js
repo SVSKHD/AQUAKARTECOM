@@ -19,7 +19,6 @@ import {
   GlobeAltIcon,
   HashtagIcon,
 } from "@heroicons/react/24/outline";
-import Head from "next/head";
 import AquaProductCard from "@/components/cards/productCard";
 import Link from "next/link";
 import Image from "next/image";
@@ -230,13 +229,6 @@ const AquaDynamicBlogComponent = ({
 
   return (
     <AquaLayout seo={seoData} blogPageData={schemaBlog}>
-      <Head>
-        <title>{seoData.title}</title>
-        <link rel="canonical" href={seoData.canonical} />
-        {seoData.image && <meta property="og:image" content={seoData.image} />}
-        <meta name="keywords" content={seoData.keywords} />
-      </Head>
-
       {/* Global Background */}
       <div className="fixed inset-0 bg-slate-50 z-[-1]">
         <div className="absolute top-[0%] left-[0%] w-[50%] h-[50%] rounded-full bg-emerald-100/40 blur-[120px]" />
