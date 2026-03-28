@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { useRouter } from "next/router";
 import AquaUserDashbordLayout from "./layout/layout";
 import orderServiceOperations from "@/services/order";
 import {
@@ -69,14 +70,22 @@ const toLowerSafe = (value) => `${value || ""}`.toLowerCase();
 
 const AquaOrdersPageComponent = () => {
   const { userData } = useSelector((state) => ({ ...state }));
+  const dispatch = useDispatch();
+  const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [authError, setAuthError] = useState(false);
   const [activeTab, setActiveTab] = useState("cod");
   const [trackingOrder, setTrackingOrder] = useState(null);
 
   const userId = userData?.user?._id;
   const token = userData?.token;
+
+  const handleReLogin = () => {
+    dispatch({ type: "LOGOUT", payload: null });
+    router.push("/");
+  };
 
   useEffect(() => {
     if (!userId || !token) return;
@@ -85,6 +94,7 @@ const AquaOrdersPageComponent = () => {
     const fetchOrders = async () => {
       setLoading(true);
       setError("");
+      setAuthError(false);
       try {
         const response = await orderServiceOperations.getOrdersByUserId(
           userId,
@@ -98,9 +108,18 @@ const AquaOrdersPageComponent = () => {
         setOrders(fetchedOrders);
       } catch (fetchError) {
         if (!isMounted) return;
-        setError(
-          "Unable to load your orders right now. Please try again later.",
-        );
+        if (fetchError?.authError) {
+          setAuthError(true);
+          setError(
+            fetchError.message ||
+              "Your session has expired. Please sign in again.",
+          );
+        } else {
+          setError(
+            fetchError?.message ||
+              "Unable to load your orders right now. Please try again later.",
+          );
+        }
         console.error("Error fetching orders:", fetchError);
       } finally {
         if (isMounted) setLoading(false);
@@ -322,8 +341,25 @@ const AquaOrdersPageComponent = () => {
             ))}
           </div>
         ) : error ? (
-          <div className="rounded-3xl border border-rose-100 bg-rose-50 p-8 text-center text-rose-600">
-            {error}
+          <div className="glass-tint-rose rounded-3xl p-8 text-center">
+            <p className="font-medium text-rose-700">{error}</p>
+            {authError ? (
+              <button
+                type="button"
+                onClick={handleReLogin}
+                className="btn-glass btn-glass-primary mt-4"
+              >
+                Sign in again
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="btn-glass btn-glass-secondary mt-4"
+              >
+                Retry
+              </button>
+            )}
           </div>
         ) : resolvedOrders.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center text-sm text-slate-500">

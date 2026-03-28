@@ -25,7 +25,21 @@ const getOrdersByUserId = async (id, token) => {
     });
     return response.data;
   } catch (error) {
-    throw new Error(`Error fetching orders by user ID: ${error.message}`);
+    const status = error?.response?.status;
+    const serverMsg =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.message;
+    if (status === 401 || status === 403) {
+      throw {
+        message: serverMsg || "Session expired. Please sign in again.",
+        authError: true,
+        status,
+      };
+    }
+    throw new Error(
+      serverMsg || `Error fetching orders (${status || "unknown"})`,
+    );
   }
 };
 
