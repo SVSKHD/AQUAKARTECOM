@@ -53,8 +53,21 @@ const getOrdersByTransactionId = async (id, token, config = {}) => {
     });
     return response.data;
   } catch (error) {
+    if (config?.signal?.aborted) throw error;
+    const status = error?.response?.status;
+    const serverMsg =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.message;
+    if (status === 401 || status === 403) {
+      throw {
+        message: serverMsg || "Session expired. Please sign in again.",
+        authError: true,
+        status,
+      };
+    }
     throw new Error(
-      `Error fetching orders by transaction ID: ${error.message}`,
+      serverMsg || `Error fetching order (${status || "unknown"})`,
     );
   }
 };

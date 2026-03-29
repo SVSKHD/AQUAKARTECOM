@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import dayjs from "dayjs";
 import { nanoid } from "nanoid";
 import {
@@ -104,49 +104,100 @@ const deriveTimeline = (orderStatus = "") => {
 
 const AquaOrderPage = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
   const { id } = router.query;
-  const { userData } = useSelector((state) => ({ ...state }));
+  const userData = useSelector((state) => state.userData);
 
   const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start true to avoid flash
   const [error, setError] = useState("");
+  const [authError, setAuthError] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [switchingToCod, setSwitchingToCod] = useState(false);
+  const pollCountRef = useRef(0);
 
   const token = userData?.token;
   const userId = userData?.user?._id;
 
-  const fetchOrder = async (signal) => {
-    if (!id || !token) return;
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await orderServiceOperations.getOrdersByTransactionId(
-        id,
-        token,
-        { signal },
-      );
-      const orderData = response?.data;
-      setOrder(orderData || null);
-    } catch (fetchError) {
-      if (signal?.aborted) return;
-      console.error("Order fetch error:", fetchError);
-      setError("We couldn’t load this order. Please try again later.");
-      AquaToast({ message: "Unable to load order details", type: "error" });
-      setOrder(null);
-    } finally {
-      if (!signal?.aborted) setLoading(false);
-    }
+  const handleReLogin = () => {
+    dispatch({ type: "LOGOUT", payload: null });
+    router.push("/");
   };
 
+  const fetchOrder = useCallback(
+    async (signal) => {
+      if (!id || !token) {
+        setLoading(false);
+        return;
+      }
+      setError("");
+      setAuthError(false);
+
+      try {
+        const response = await orderServiceOperations.getOrdersByTransactionId(
+          id,
+          token,
+          { signal },
+        );
+        // API may return { data: order } or order directly
+        const orderData = response?.data || response;
+        setOrder(orderData || null);
+        return orderData;
+      } catch (fetchError) {
+        if (signal?.aborted) return null;
+        console.error("Order fetch error:", fetchError);
+        if (fetchError?.authError) {
+          setAuthError(true);
+          setError(
+            fetchError.message || "Session expired. Please sign in again.",
+          );
+        } else {
+          setError(
+            fetchError?.message ||
+              "We couldn’t load this order. Please try again.",
+          );
+        }
+        setOrder(null);
+        return null;
+      } finally {
+        if (!signal?.aborted) setLoading(false);
+      }
+    },
+    [id, token],
+  );
+
+  // Initial fetch + polling for payment verification (max 3 retries over 15s)
   useEffect(() => {
-    if (!router.isReady || !token) return;
+    if (!router.isReady || !token || !id) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    pollCountRef.current = 0;
     const controller = new AbortController();
-    fetchOrder(controller.signal);
+
+    const poll = async () => {
+      const result = await fetchOrder(controller.signal);
+      if (controller.signal.aborted) return;
+
+      // If order not found yet (payment gateway may not have notified backend),
+      // retry a few times with delay
+      if (!result && pollCountRef.current < 3) {
+        pollCountRef.current += 1;
+        setTimeout(() => {
+          if (!controller.signal.aborted) {
+            setLoading(true);
+            setError("");
+            poll();
+          }
+        }, pollCountRef.current * 3000); // 3s, 6s, 9s
+      }
+    };
+
+    poll();
     return () => controller.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.isReady, id, token]);
+  }, [router.isReady, id, token, fetchOrder]);
 
   const summary = useMemo(() => {
     if (!order) return null;
@@ -335,22 +386,44 @@ const AquaOrderPage = () => {
           </div>
 
           {loading ? (
-            <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 rounded-3xl border border-slate-100 bg-white p-10">
-              <AquaSpinner color="blue" size="lg" />
-              <p className="text-sm text-slate-500">
-                Loading your order details…
-              </p>
+            <div className="flex min-h-[50vh] flex-col items-center justify-center gap-5 glass-card rounded-3xl p-10">
+              <AquaSpinner color="emerald" size="lg" />
+              <div className="text-center">
+                <p className="text-sm font-semibold text-slate-700">
+                  {pollCountRef.current > 0
+                    ? "Confirming your payment..."
+                    : "Loading your order details..."}
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  {pollCountRef.current > 0
+                    ? "This may take a few seconds while we verify with the payment gateway."
+                    : "Please wait while we fetch your order."}
+                </p>
+              </div>
             </div>
           ) : error ? (
-            <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 rounded-3xl border border-rose-100 bg-rose-50 p-10 text-center">
+            <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 glass-tint-rose rounded-3xl p-10 text-center">
               <p className="text-lg font-semibold text-rose-700">{error}</p>
-              <button
-                type="button"
-                onClick={() => fetchOrder()}
-                className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
-              >
-                Try again
-              </button>
+              {authError ? (
+                <button
+                  type="button"
+                  onClick={handleReLogin}
+                  className="btn-glass btn-glass-primary"
+                >
+                  Sign in again
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoading(true);
+                    fetchOrder();
+                  }}
+                  className="btn-glass btn-glass-secondary"
+                >
+                  Try again
+                </button>
+              )}
             </div>
           ) : !order ? (
             <div className="rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center text-sm text-slate-500">
