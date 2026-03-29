@@ -1,10 +1,6 @@
 import Head from "next/head";
-import Link from "next/link";
-import {
-  ShoppingCartIcon,
-  HeartIcon,
-  ArrowRightIcon,
-} from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { ShoppingCartIcon, HeartIcon } from "@heroicons/react/24/outline";
 
 const Section = ({ title, children }) => (
   <section className="space-y-4">
@@ -40,7 +36,79 @@ const PropTable = ({ rows }) => (
   </div>
 );
 
+const ACCESS_CODE = "2607";
+
 const UIShowcasePage = () => {
+  const [code, setCode] = useState("");
+  const [unlocked, setUnlocked] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (code === ACCESS_CODE) {
+      setUnlocked(true);
+    } else {
+      setCode("");
+    }
+  };
+
+  if (!unlocked) {
+    return (
+      <>
+        <Head>
+          <title>Access Required | Aquakart</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Head>
+        <div className="flex min-h-screen items-center justify-center px-4">
+          <form
+            onSubmit={handleSubmit}
+            className="glass-card w-full max-w-sm rounded-3xl p-8 text-center space-y-6"
+          >
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100/80">
+              <svg
+                className="h-8 w-8 text-emerald-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-slate-900">
+                Design System
+              </h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Enter the access code to continue
+              </p>
+            </div>
+            <input
+              type="password"
+              inputMode="numeric"
+              maxLength={4}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+              placeholder="Enter code"
+              className="w-full rounded-xl border border-white/50 bg-white/40 px-4 py-3 text-center text-2xl font-bold tracking-[0.5em] text-slate-900 placeholder:text-slate-300 placeholder:tracking-normal placeholder:text-base backdrop-blur-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/30"
+              autoFocus
+            />
+            <button
+              type="submit"
+              disabled={code.length < 4}
+              className="btn-glass btn-glass-primary w-full disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Unlock
+            </button>
+          </form>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <Head>
