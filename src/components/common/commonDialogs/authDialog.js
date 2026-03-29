@@ -11,22 +11,20 @@ const AquaUserAuthDialog = () => {
   const [authMethod, setAuthMethod] = useState("email");
   const dispatch = useDispatch();
   const { authDialog, userSignupStatus } = useSelector((state) => ({
-    ...state,
+    authDialog: state.authDialog,
+    userSignupStatus: state.userSignupStatus,
   }));
 
   const closeDialog = () => {
-    dispatch({
-      type: "SET_AUTH_DIALOG_VISIBLE",
-      payload: false,
-    });
+    dispatch({ type: "SET_AUTH_DIALOG_VISIBLE", payload: false });
   };
 
   return (
     <AquaResponsiveDialog open={authDialog} close={closeDialog}>
-      <div className="w-full max-w-sm mx-auto">
-        {/* Minimal Header */}
-        <div className="flex flex-col items-center mb-6">
-          <div className="relative h-10 w-10 mb-2">
+      <div className="w-full">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="relative h-9 w-9 flex-shrink-0 rounded-xl bg-white/60 p-1.5 shadow-sm">
             <Image
               src={AquaLogo}
               alt="Logo"
@@ -35,75 +33,78 @@ const AquaUserAuthDialog = () => {
               priority
             />
           </div>
-          <h2 className="text-lg font-bold text-slate-900">
-            {userSignupStatus ? "Welcome Back" : "Join Aquakart"}
-          </h2>
-          <p className="text-xs text-slate-500">
-            Secure access to your water solutions
-          </p>
+          <div>
+            <h2 className="text-base font-bold text-slate-900 leading-tight">
+              {userSignupStatus ? "Welcome back" : "Join Aquakart"}
+            </h2>
+            <p className="text-[11px] text-slate-400">
+              Secure access to your water solutions
+            </p>
+          </div>
         </div>
 
-        {/* Sleek Toggle Switch */}
-        <div className="mb-6 rounded-lg bg-slate-100 p-1 flex relative">
+        {/* Toggle */}
+        <div className="mb-4 rounded-xl glass-subtle p-1 flex relative">
           <div
-            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-md shadow-sm transition-all duration-300 ease-out left-1 ${authMethod === "phone" ? "translate-x-full" : ""}`}
+            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-lg shadow-sm transition-all duration-300 ease-out left-1 ${
+              authMethod === "phone" ? "translate-x-full" : ""
+            } bg-gradient-to-r from-emerald-500 to-teal-500`}
           />
           <button
+            type="button"
             onClick={() => setAuthMethod("email")}
-            className={`relative z-10 flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-              authMethod === "email"
-                ? "text-slate-900"
-                : "text-slate-500 hover:text-slate-700"
+            className={`relative z-10 flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-lg transition-colors ${
+              authMethod === "email" ? "text-white" : "text-slate-500"
             }`}
           >
             <Mail size={14} /> Email
           </button>
           <button
+            type="button"
             onClick={() => setAuthMethod("phone")}
-            className={`relative z-10 flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-              authMethod === "phone"
-                ? "text-slate-900"
-                : "text-slate-500 hover:text-slate-700"
+            className={`relative z-10 flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-lg transition-colors ${
+              authMethod === "phone" ? "text-white" : "text-slate-500"
             }`}
           >
             <Smartphone size={14} /> Phone
           </button>
         </div>
 
-        {/* Content Area */}
-        <div className="grid min-h-[280px] relative">
+        {/* Forms */}
+        <div className="relative min-h-[220px]">
           <div
-            className={`row-start-1 col-start-1 transition-all duration-300 ${
+            className={`transition-all duration-300 ${
               authMethod === "email"
-                ? "opacity-100 scale-100 relative z-10"
-                : "opacity-0 scale-95 pointer-events-none absolute inset-0 z-0 invisible"
+                ? "opacity-100 relative z-10"
+                : "opacity-0 pointer-events-none absolute inset-0 z-0 invisible"
             }`}
           >
             <AquaAuthEmailForm signup={userSignupStatus} />
           </div>
           <div
-            className={`row-start-1 col-start-1 transition-all duration-300 ${
+            className={`transition-all duration-300 ${
               authMethod === "phone"
-                ? "opacity-100 scale-100 relative z-10"
-                : "opacity-0 scale-95 pointer-events-none absolute inset-0 z-0 invisible"
+                ? "opacity-100 relative z-10"
+                : "opacity-0 pointer-events-none absolute inset-0 z-0 invisible"
             }`}
           >
             <AquaAuthPhoneForm signup={userSignupStatus} />
           </div>
         </div>
 
-        {/* Footer Toggle */}
-        <div className="mt-6 pt-4 border-t border-slate-100 text-center">
-          <p className="text-xs text-slate-500">
-            {userSignupStatus ? "No account yet?" : "Already have an account?"}{" "}
+        {/* Footer */}
+        <div className="mt-4 pt-3 border-t border-slate-100/60 text-center">
+          <p className="text-xs text-slate-400">
+            {userSignupStatus ? "No account yet?" : "Already have an account?"}
             <button
+              type="button"
               onClick={() =>
                 dispatch({
                   type: "SET_AUTH_STATUS_VISIBLE",
                   payload: !userSignupStatus,
                 })
               }
-              className="font-bold text-indigo-600 hover:text-indigo-700 transition-colors ml-1"
+              className="font-bold text-emerald-600 hover:text-emerald-700 transition-colors ml-1"
             >
               {userSignupStatus ? "Sign up" : "Sign in"}
             </button>
