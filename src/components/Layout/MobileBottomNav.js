@@ -86,54 +86,75 @@ const MobileBottomNav = () => {
       className="fixed bottom-0 inset-x-0 z-40 sm:hidden"
       aria-label="Mobile navigation"
     >
-      {/* Glass bar */}
-      <div className="mx-2 mb-2 flex items-center justify-around rounded-2xl border border-white/50 bg-white/60 backdrop-blur-2xl shadow-[0_-4px_30px_rgba(0,0,0,0.06)] px-1 py-1">
-        {navItems.map((item) => {
-          const active = item.isLink && isActive(item.href);
-          const Icon = active ? item.activeIcon : item.icon;
+      {/* iOS-style frosted glass bar */}
+      <div
+        className="border-t border-white/40"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.72) 0%, rgba(245,247,250,0.85) 100%)",
+          backdropFilter: "blur(40px) saturate(200%)",
+          WebkitBackdropFilter: "blur(40px) saturate(200%)",
+          boxShadow:
+            "0 -1px 0 rgba(255,255,255,0.5), 0 -8px 32px rgba(0,0,0,0.08)",
+        }}
+      >
+        {/* Safe area padding for notch devices */}
+        <div className="flex items-center justify-around px-2 pt-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))]">
+          {navItems.map((item) => {
+            const active = item.isLink && isActive(item.href);
+            const Icon = active ? item.activeIcon : item.icon;
 
-          const content = (
-            <div
-              className={`relative flex flex-col items-center gap-0.5 rounded-xl px-3 py-2 transition-all duration-200 ${
-                active
-                  ? "bg-emerald-50/80 text-emerald-600"
-                  : "text-slate-400 hover:text-slate-600 active:scale-90"
-              }`}
-            >
-              <div className="relative">
-                <Icon className="h-5 w-5" />
-                {item.badge > 0 && (
-                  <span className="absolute -top-1.5 -right-2.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold text-white shadow-sm">
-                    {item.badge > 9 ? "9+" : item.badge}
-                  </span>
-                )}
+            const content = (
+              <div className="relative flex flex-col items-center gap-0.5 py-1">
+                <div
+                  className={`relative flex h-8 w-8 items-center justify-center rounded-2xl transition-all duration-200 ${
+                    active
+                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 scale-105"
+                      : "text-slate-500"
+                  }`}
+                >
+                  <Icon className="h-[18px] w-[18px]" />
+                  {item.badge > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-0.5 text-[9px] font-bold text-white ring-2 ring-white shadow-sm">
+                      {item.badge > 9 ? "9+" : item.badge}
+                    </span>
+                  )}
+                </div>
+                <span
+                  className={`text-[10px] font-semibold leading-none transition-colors ${
+                    active ? "text-emerald-600" : "text-slate-400"
+                  }`}
+                >
+                  {item.label}
+                </span>
               </div>
-              <span className="text-[10px] font-semibold leading-none">
-                {item.label}
-              </span>
-            </div>
-          );
-
-          if (item.isLink) {
-            return (
-              <Link key={item.label} href={item.href} className="flex-1">
-                {content}
-              </Link>
             );
-          }
 
-          return (
-            <button
-              key={item.label}
-              type="button"
-              onClick={item.onClick}
-              className="flex-1"
-              aria-label={item.label}
-            >
-              {content}
-            </button>
-          );
-        })}
+            if (item.isLink) {
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="flex-1 flex justify-center active:scale-90 transition-transform"
+                >
+                  {content}
+                </Link>
+              );
+            }
+
+            return (
+              <button
+                key={item.label}
+                type="button"
+                onClick={item.onClick}
+                className="flex-1 flex justify-center active:scale-90 transition-transform"
+                aria-label={item.label}
+              >
+                {content}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );
