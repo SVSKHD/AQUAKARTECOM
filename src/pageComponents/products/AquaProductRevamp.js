@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 import AquaLayout from "@/components/Layout/Layout";
 import AquaPreloader from "@/components/reusables/preloader";
 import LazyImage from "@/components/image/LazyImage";
+import ProductReviews from "@/components/reviews/ProductReviews";
 
 // Lazy load related products to improve initial load
 const AquaRelatedProductCard = React.lazy(
@@ -571,6 +572,9 @@ function AquaProductRevamp({
                 </div>
               </div>
             </div>
+
+            {/* Reviews Section */}
+            <ProductReviews productId={product?._id} />
 
             {/* Related Products Section */}
             {relatedProducts.length > 0 && (
