@@ -9,11 +9,29 @@ const ProductByTitle = (title) => axios.get(`${BASE}/product-title/${title}`);
 const ProductbyNumber = (count) => axios.get(`${BASE}/products/${count}`);
 const ProductsByQuery = (slug) =>
   axios.get(`${BASE}/product?searchField=slug&value=${slug}`);
+
+// ── Review Endpoints ───────────────────────────────────
+const GetProductReviews = (productId) =>
+  axios.get(`${BASE}/product/reviews/${productId}`);
+
+const AddProductReview = (productId, data, token) =>
+  axios.post(`${BASE}/product/review/${productId}`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+const DeleteProductReview = (productId, reviewId, token) =>
+  axios.delete(`${BASE}/product/review/${productId}?reviewId=${reviewId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 const ProductServiceOperations = {
   AllProducts,
   ProductById,
   ProductByTitle,
   ProductbyNumber,
   ProductsByQuery,
+  GetProductReviews,
+  AddProductReview,
+  DeleteProductReview,
 };
 export default ProductServiceOperations;
