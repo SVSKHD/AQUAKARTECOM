@@ -9,11 +9,17 @@ export default function Document() {
         <meta name="theme-color" content="#059669" />
         <meta name="color-scheme" content="light" />
 
-        {/* Preconnect to critical origins */}
+        {/* Preconnect to critical origins — order matters, most critical first */}
         <link rel="preconnect" href="https://res.cloudinary.com" />
         <link
           rel="preconnect"
           href="https://res.cloudinary.com"
+          crossOrigin="anonymous"
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
         <link rel="preconnect" href="https://api.aquakart.co.in" />
@@ -24,6 +30,12 @@ export default function Document() {
         />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+
+        {/* Inter font — display=swap ensures text is visible during font load (no FOIT) */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        />
 
         {/* Favicon & PWA */}
         <link

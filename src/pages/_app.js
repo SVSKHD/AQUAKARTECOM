@@ -15,12 +15,6 @@ const Toaster = dynamic(() => import("sonner").then((mod) => mod.Toaster), {
   ssr: false,
 });
 
-// Lightweight CSS-only preloader (no framer-motion on critical path)
-const AquaPreloader = dynamic(
-  () => import("@/components/reusables/preloader"),
-  { ssr: false },
-);
-
 const GA_ID = "G-FS41RRVRD4";
 
 const persistConfig = {
@@ -69,7 +63,10 @@ export default function App({ Component, pageProps }) {
         `}
       </Script>
 
-      <PersistGate persistor={persistor} loading={<AquaPreloader />}>
+      {/* Render page content immediately — don't block LCP with PersistGate loading screen.
+          PersistGate with loading={null} still hydrates Redux from localStorage,
+          but renders children right away instead of showing a preloader. */}
+      <PersistGate persistor={persistor} loading={null}>
         <Component {...pageProps} />
         <Toaster position="top-right" richColors closeButton />
       </PersistGate>
