@@ -117,10 +117,20 @@ body {
 .ambient-orb {
   position: fixed;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.35;
+  filter: blur(40px);
+  opacity: 0.25;
   pointer-events: none;
   z-index: 0;
+  will-change: transform;
+  contain: strict;
+}
+
+/* Full blur only on desktop where GPU can handle it */
+@media (min-width: 1024px) {
+  .ambient-orb {
+    filter: blur(80px);
+    opacity: 0.35;
+  }
 }
 
 /* ── Scrollbar Hiding ──────────────────────────────────── */
@@ -222,4 +232,99 @@ body {
 .animate-shimmer {
   background-size: 200% auto;
   animation: shimmer 3s linear infinite;
+}
+
+/* ── Hero Section LCP-safe CSS Animations ─────────────── */
+/* Replaces Framer Motion on the critical path */
+
+.hero-card-enter {
+  animation: heroCardIn 0.5s ease-out both;
+}
+
+@keyframes heroCardIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.hero-content-enter {
+  animation: heroContentIn 0.5s ease-out 0.15s both;
+}
+
+@keyframes heroContentIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.hero-fade-in {
+  animation: heroFadeIn 0.4s ease-out 0.3s both;
+}
+
+@keyframes heroFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.hero-heading-rotate {
+  animation: heroHeadingIn 0.4s ease-out both;
+}
+
+@keyframes heroHeadingIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-highlight-rotate {
+  animation: heroHighlightIn 0.3s ease-out both;
+}
+
+@keyframes heroHighlightIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero glass card — lighter than .glass-card for mobile LCP */
+.hero-glass-card {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* Only apply backdrop-blur on devices that can handle it (desktop) */
+@media (min-width: 1024px) {
+  .hero-glass-card {
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+  }
 }

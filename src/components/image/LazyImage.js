@@ -75,6 +75,32 @@ export default function LazyImage({
       shimmer(width || 700, height || 475),
     )}`;
 
+  // Priority images: skip IntersectionObserver overhead, render immediately with fetchPriority
+  if (priority) {
+    return (
+      <div className={className}>
+        <Image
+          src={safeSrc}
+          alt={`Aquakart-${alt}` || "Aquakart products"}
+          fill={fill}
+          width={!fill ? width : undefined}
+          height={!fill ? height : undefined}
+          sizes={sizes}
+          priority
+          fetchPriority="high"
+          quality={quality}
+          placeholder={placeholder}
+          blurDataURL={placeholder === "blur" ? defaultBlur : undefined}
+          className={imgClassName}
+          onError={(e) => {
+            setFailed(true);
+            onError?.(e);
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div ref={wrapperRef} className={className}>
       {visible ? (
@@ -85,7 +111,6 @@ export default function LazyImage({
           width={!fill ? width : undefined}
           height={!fill ? height : undefined}
           sizes={sizes}
-          priority={priority}
           quality={quality}
           placeholder={placeholder}
           blurDataURL={placeholder === "blur" ? defaultBlur : undefined}
