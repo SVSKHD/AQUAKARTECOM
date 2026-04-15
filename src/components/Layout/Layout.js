@@ -216,6 +216,7 @@ const AquaLayout = (props) => {
   return (
     <>
       <AquaSeoRevamp
+        data={props.seo}
         path={seo.path}
         category={seo.category}
         categoryData={props?.categoryData}

@@ -50,8 +50,9 @@ const AquaSeoRevamp = ({
 }) => {
   const baseUrl = process.env.NEXT_PUBLIC_URL || "https://aquakart.co.in";
 
+  // Priority: page-provided SEO (data) > config lookup > entity-specific data
   let metaData = data;
-  if (path && config[path]) {
+  if (!metaData && path && config[path]) {
     metaData = config[path];
   }
   if (product) {
@@ -93,14 +94,20 @@ const AquaSeoRevamp = ({
     title = "Aquakart",
     keywords = "",
     keyphrases = "",
-    url: rawUrl = baseUrl,
+    url: rawUrl,
+    canonical: rawCanonical,
     description = "",
     follow = true,
     photos,
+    image,
   } = metaData || {};
 
-  const canonicalUrl = toAbsoluteUrl(baseUrl, rawUrl || baseUrl);
-  const photoCandidates = collectImages(photos);
+  // Normalize: pages may pass 'canonical' or 'url', and 'image' or 'photos'
+  const canonicalUrl = toAbsoluteUrl(
+    baseUrl,
+    rawCanonical || rawUrl || baseUrl,
+  );
+  const photoCandidates = collectImages(photos || image);
   const primaryImage = photoCandidates[0] || DEFAULT_LOGO;
 
   // Determine og:type based on page context
