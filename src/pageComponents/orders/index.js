@@ -637,13 +637,11 @@ const AquaOrderPage = () => {
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-bold text-slate-900">
-                            {formatCurrencyINR(
-                              (item?.price || 0) * (item?.quantity || 1),
-                            )}
+                            {formatCurrencyINR(order?.totalAmount)}
                           </p>
                           {item?.quantity > 1 && (
                             <p className="text-xs text-slate-500">
-                              {formatCurrencyINR(item?.price || 0)} each
+                              {formatCurrencyINR(order?.totalAmount)} each
                             </p>
                           )}
                         </div>
