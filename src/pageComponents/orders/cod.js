@@ -8,6 +8,7 @@ import useCurrency from "@/utils/currency";
 import Link from "next/link";
 import dayjs from "dayjs";
 import { generateInvoicePDF, loadJsPDF } from "@/utils/invoice";
+import priceUtils from "@/utils/price";
 import {
   CheckCircle,
   Clock,
@@ -42,7 +43,6 @@ const AquaCodOrderPageComponent = () => {
   const fetchCodOrder = async (id) => {
     setLoading(true);
     try {
-      console.log("Fetching order with ID:", id);
       const response = await orderServiceOperations.getOrdersByTransactionId(
         id,
         userData.token,
@@ -235,8 +235,8 @@ const AquaCodOrderPageComponent = () => {
   }, [order]);
 
   const payableTotal = useMemo(
-    () => roundToTwo(orderSubtotal + shippingCharge),
-    [orderSubtotal, shippingCharge],
+    () => roundToTwo(toNumber(order?.totalAmount, 0)),
+    [order?.totalAmount],
   );
 
   const handleDownloadInvoice = useCallback(async () => {
@@ -339,7 +339,7 @@ const AquaCodOrderPageComponent = () => {
                         Qty: {product.quantity}
                       </p>
                       <p className="text-medium font-semibold text-gray-800">
-                        {formatCurrencyINR(product.price * product.quantity)}
+                        {formatCurrencyINR(payableTotal)}
                       </p>
                     </div>
                     <div className="w-full rounded-2xl bg-gray-50 p-4 text-sm text-gray-600 sm:w-64">
@@ -378,23 +378,19 @@ const AquaCodOrderPageComponent = () => {
                   <div className="flex items-center justify-between">
                     <dt>Product price</dt>
                     <dd className="font-medium text-gray-900">
-                      {formatCurrencyINR(orderSubtotal)}
+                      {formatCurrencyINR(
+                        priceUtils?.getBasePrice(payableTotal),
+                      )}
                     </dd>
                   </div>
                   <div className="flex items-center justify-between text-xs text-slate-400">
                     <dt className="pl-3">
                       Incl. GST ({Math.round(GST_RATE * 100)}%)
                     </dt>
-                    <dd>{formatCurrencyINR(itemsGstTotal)}</dd>
+                    <dd>
+                      {formatCurrencyINR(priceUtils?.getGSTValue(payableTotal))}
+                    </dd>
                   </div>
-                  {shippingCharge > 0 && (
-                    <div className="flex items-center justify-between">
-                      <dt>Shipping</dt>
-                      <dd className="font-medium text-gray-900">
-                        {formatCurrencyINR(shippingCharge)}
-                      </dd>
-                    </div>
-                  )}
                   <div className="flex items-center justify-between">
                     <dt>Payment method</dt>
                     <dd className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600">
