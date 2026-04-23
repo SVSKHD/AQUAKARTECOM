@@ -12,10 +12,15 @@ const ProductsByQuery = (slug) =>
 
 // ── Review Endpoints ───────────────────────────────────
 const GetProductReviews = (productId) =>
-  axios.get(`${BASE}/product/reviews/${productId}`);
+  axios.get(`${BASE}/product/review/${productId}`);
 
 const AddProductReview = (productId, data, token) =>
   axios.post(`${BASE}/product/review/${productId}`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+const UpdateProductReview = (productId, data, token) =>
+  axios.put(`${BASE}/product/review/${productId}`, data, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -32,6 +37,7 @@ const ProductServiceOperations = {
   ProductsByQuery,
   GetProductReviews,
   AddProductReview,
+  UpdateProductReview,
   DeleteProductReview,
 };
 export default ProductServiceOperations;

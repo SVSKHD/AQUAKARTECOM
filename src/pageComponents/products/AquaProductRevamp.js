@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useMemo, Suspense } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  Suspense,
+} from "react";
 import {
   ShoppingCart,
   Heart,
@@ -22,6 +28,7 @@ import {
 import useEmblaCarousel from "embla-carousel-react";
 import { useSelector } from "react-redux";
 import useProduct from "@/utils/product";
+import ProductServiceOperations from "@/services/products";
 import { useRouter } from "next/navigation";
 import AquaLayout from "@/components/Layout/Layout";
 import AquaPreloader from "@/components/reusables/preloader";
@@ -306,11 +313,43 @@ function AquaProductRevamp({
   const [isFavorite, setIsFavorite] = useState(false);
   const [isInCart, setIsInCart] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
+
+  const fetchReviews = useCallback(async () => {
+    if (!product?._id) return;
+    setReviewsLoading(true);
+    try {
+      const res = await ProductServiceOperations.GetProductReviews(product._id);
+      const payload = res?.data?.data || res?.data || {};
+      const list = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.reviews)
+          ? payload.reviews
+          : [];
+      setReviews(list);
+    } catch (err) {
+      console.error("Failed to fetch reviews:", err);
+    } finally {
+      setReviewsLoading(false);
+    }
+  }, [product?._id]);
+
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews]);
+
+  const reviewStats = useMemo(() => {
+    const total = reviews.length;
+    if (!total) return { avg: 0, total: 0 };
+    const sum = reviews.reduce((acc, r) => acc + (r?.rating || 0), 0);
+    return { avg: Math.round((sum / total) * 10) / 10, total };
+  }, [reviews]);
 
   const router = useRouter();
 
@@ -380,9 +419,6 @@ function AquaProductRevamp({
     ? Math.round(((originalPrice - price) / originalPrice) * 100)
     : 0;
 
-  const ratingValue = Number(product?.rating?.value) || 0;
-  const ratingCount = Number(product?.rating?.count) || 0;
-
   const specs = useMemo(
     () =>
       [
@@ -444,13 +480,24 @@ function AquaProductRevamp({
                   </h1>
 
                   <div className="mt-4 flex items-center gap-4">
-                    <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
-                      <span>{ratingValue.toFixed(1)}</span>
-                      <Star size={14} fill="currentColor" />
-                      <span className="text-emerald-700/60">
-                        | {ratingCount} Ratings
+                    {reviewStats.total > 0 ? (
+                      <a
+                        href="#reviews"
+                        className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700 hover:bg-emerald-100 transition-colors"
+                      >
+                        <span>{reviewStats.avg.toFixed(1)}</span>
+                        <Star size={14} fill="currentColor" />
+                        <span className="text-emerald-700/60">
+                          | {reviewStats.total}{" "}
+                          {reviewStats.total === 1 ? "Review" : "Reviews"}
+                        </span>
+                      </a>
+                    ) : (
+                      <span className="flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 text-sm font-medium text-slate-500">
+                        <Star size={14} />
+                        No reviews yet
                       </span>
-                    </div>
+                    )}
                     {stockCount > 0 ? (
                       <span className="text-sm font-medium text-emerald-600">
                         In Stock
@@ -574,7 +621,14 @@ function AquaProductRevamp({
             </div>
 
             {/* Reviews Section */}
-            <ProductReviews productId={product?._id} />
+            <div id="reviews">
+              <ProductReviews
+                productId={product?._id}
+                reviews={reviews}
+                loading={reviewsLoading}
+                onReviewsChange={fetchReviews}
+              />
+            </div>
 
             {/* Related Products Section */}
             {relatedProducts.length > 0 && (

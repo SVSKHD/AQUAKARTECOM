@@ -1,6 +1,19 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSelector } from "react-redux";
-import { Star, Loader2, Trash2, MessageSquare, User } from "lucide-react";
+import {
+  Star,
+  Loader2,
+  Trash2,
+  Pencil,
+  MessageSquare,
+  User,
+  ChevronDown,
+} from "lucide-react";
+import {
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+} from "@headlessui/react";
 import ProductServiceOperations from "@/services/products";
 import AquaToast from "@/components/reusables/react-toastify";
 
@@ -64,7 +77,20 @@ const RatingBar = ({ stars, count, total }) => {
   );
 };
 
-const ReviewCard = ({ review, currentUserId, onDelete, deleting }) => {
+const resolveReviewerName = (review) => {
+  const raw = review?.userName || review?.name || review?.email || "";
+  if (!raw) return "Anonymous";
+  return raw.includes("@") ? raw.split("@")[0] : raw;
+};
+
+const ReviewCard = ({
+  review,
+  currentUserId,
+  onDelete,
+  deleting,
+  onUpdate,
+  updating,
+}) => {
   const isOwner = currentUserId && review?.user === currentUserId;
   const date = review?.createdAt
     ? new Date(review.createdAt).toLocaleDateString("en-IN", {
@@ -73,92 +99,252 @@ const ReviewCard = ({ review, currentUserId, onDelete, deleting }) => {
         year: "numeric",
       })
     : "";
+  const displayName = resolveReviewerName(review);
+  const buttonRef = useRef(null);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editRating, setEditRating] = useState(review?.rating || 0);
+  const [editComment, setEditComment] = useState(review?.comment || "");
+
+  const startEdit = (isOpen) => {
+    setEditRating(review?.rating || 0);
+    setEditComment(review?.comment || "");
+    setIsEditing(true);
+    if (!isOpen) buttonRef.current?.click();
+  };
+
+  const cancelEdit = () => {
+    setIsEditing(false);
+    setEditRating(review?.rating || 0);
+    setEditComment(review?.comment || "");
+  };
+
+  const submitEdit = async (e) => {
+    e.preventDefault();
+    const success = await onUpdate?.(review?._id, {
+      rating: editRating,
+      comment: editComment,
+    });
+    if (success) setIsEditing(false);
+  };
 
   return (
-    <div className="glass-card rounded-2xl p-4 sm:p-5 transition-all duration-200 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-white text-sm font-bold flex-shrink-0">
-            {review?.userName?.[0]?.toUpperCase() || (
-              <User className="h-4 w-4" />
-            )}
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-slate-900">
-              {review?.userName || "Anonymous"}
-            </p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <StarRating value={review?.rating || 0} size="sm" />
-              {date && (
-                <span className="text-[11px] text-slate-400">{date}</span>
+    <Disclosure
+      as="div"
+      className="glass-card rounded-2xl transition-all duration-200 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]"
+    >
+      {({ open }) => (
+        <>
+          <DisclosureButton
+            ref={buttonRef}
+            className="flex w-full items-center justify-between gap-3 p-4 sm:p-5 text-left focus:outline-none"
+          >
+            <div className="flex items-start gap-3 min-w-0 flex-1">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-white text-sm font-bold flex-shrink-0">
+                {displayName?.[0]?.toUpperCase() || (
+                  <User className="h-4 w-4" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-900 truncate">
+                  {displayName}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <StarRating value={review?.rating || 0} size="sm" />
+                  {date && (
+                    <span className="text-[11px] text-slate-400">{date}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {isOwner && (
+                <>
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!updating && !deleting) startEdit(open);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!updating && !deleting) startEdit(open);
+                      }
+                    }}
+                    className={`flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition active:scale-90 ${
+                      updating || deleting
+                        ? "pointer-events-none opacity-60"
+                        : ""
+                    }`}
+                    aria-label="Edit review"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </span>
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!deleting && !updating) onDelete(review?._id);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!deleting && !updating) onDelete(review?._id);
+                      }
+                    }}
+                    className={`flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition active:scale-90 ${
+                      deleting || updating
+                        ? "pointer-events-none opacity-60"
+                        : ""
+                    }`}
+                    aria-label="Delete review"
+                  >
+                    {deleting ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-3.5 w-3.5" />
+                    )}
+                  </span>
+                </>
+              )}
+              <ChevronDown
+                className={`h-5 w-5 text-slate-400 transition-transform duration-200 ${
+                  open ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+          </DisclosureButton>
+          <DisclosurePanel className="px-4 sm:px-5 pb-4 sm:pb-5">
+            <div className="border-t border-white/40 pt-3">
+              {isEditing && isOwner ? (
+                <form onSubmit={submitEdit} className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                      Rating
+                    </label>
+                    <StarRating
+                      value={editRating}
+                      onChange={setEditRating}
+                      size="md"
+                      interactive
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor={`edit-comment-${review?._id}`}
+                      className="block text-xs font-semibold text-slate-600 mb-1.5"
+                    >
+                      Your review
+                    </label>
+                    <textarea
+                      id={`edit-comment-${review?._id}`}
+                      value={editComment}
+                      onChange={(e) => setEditComment(e.target.value)}
+                      placeholder="Share the details of your experience..."
+                      rows={4}
+                      maxLength={1000}
+                      className="w-full rounded-xl border border-white/50 bg-white/40 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 backdrop-blur-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 transition-all resize-none"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="submit"
+                      disabled={updating || editRating === 0}
+                      className={`btn-glass flex items-center gap-2 ${
+                        updating || editRating === 0
+                          ? "bg-slate-100/60 text-slate-400 cursor-not-allowed"
+                          : "btn-glass-primary"
+                      }`}
+                    >
+                      {updating && <Loader2 className="h-4 w-4 animate-spin" />}
+                      {updating ? "Saving..." : "Save changes"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelEdit}
+                      disabled={updating}
+                      className="btn-glass btn-glass-secondary"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : review?.comment ? (
+                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+                  {review.comment}
+                </p>
+              ) : (
+                <p className="text-sm italic text-slate-400">
+                  No comment provided.
+                </p>
               )}
             </div>
-          </div>
-        </div>
-        {isOwner && (
-          <button
-            type="button"
-            onClick={() => onDelete(review?._id)}
-            disabled={deleting}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition active:scale-90"
-            aria-label="Delete review"
-          >
-            {deleting ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Trash2 className="h-3.5 w-3.5" />
-            )}
-          </button>
-        )}
-      </div>
-      {review?.title && (
-        <p className="mt-2 text-sm font-semibold text-slate-800">
-          {review.title}
-        </p>
+          </DisclosurePanel>
+        </>
       )}
-      {review?.comment && (
-        <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">
-          {review.comment}
-        </p>
-      )}
-    </div>
+    </Disclosure>
   );
 };
 
-const ProductReviews = ({ productId }) => {
+const ProductReviews = ({
+  productId,
+  reviews: externalReviews,
+  loading: externalLoading,
+  onReviewsChange,
+}) => {
   const userData = useSelector((state) => state.userData);
   const token = userData?.token;
   const userId = userData?.user?._id;
   const userName =
     userData?.user?.name || userData?.user?.email?.split("@")[0] || "";
 
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const isControlled = Array.isArray(externalReviews);
+
+  const [internalReviews, setInternalReviews] = useState([]);
+  const [internalLoading, setInternalLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [updatingId, setUpdatingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
   // Form state
   const [rating, setRating] = useState(0);
-  const [title, setTitle] = useState("");
   const [comment, setComment] = useState("");
 
+  const reviews = isControlled ? externalReviews : internalReviews;
+  const loading = isControlled ? !!externalLoading : internalLoading;
+
   const fetchReviews = useCallback(async () => {
+    if (isControlled) {
+      await onReviewsChange?.();
+      return;
+    }
     if (!productId) return;
     try {
       const res = await ProductServiceOperations.GetProductReviews(productId);
-      const data = res?.data?.data || res?.data || [];
-      setReviews(Array.isArray(data) ? data : []);
+      const payload = res?.data?.data || res?.data || {};
+      const list = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.reviews)
+          ? payload.reviews
+          : [];
+      setInternalReviews(list);
     } catch (err) {
       console.error("Failed to fetch reviews:", err);
     } finally {
-      setLoading(false);
+      setInternalLoading(false);
     }
-  }, [productId]);
+  }, [productId, isControlled, onReviewsChange]);
 
   useEffect(() => {
+    if (isControlled) return;
     fetchReviews();
-  }, [fetchReviews]);
+  }, [fetchReviews, isControlled]);
 
   const stats = useMemo(() => {
     if (!reviews.length) return { avg: 0, total: 0, dist: {} };
@@ -178,7 +364,6 @@ const ProductReviews = ({ productId }) => {
 
   const resetForm = () => {
     setRating(0);
-    setTitle("");
     setComment("");
     setShowForm(false);
   };
@@ -198,7 +383,7 @@ const ProductReviews = ({ productId }) => {
     try {
       await ProductServiceOperations.AddProductReview(
         productId,
-        { rating, title: title.trim(), comment: comment.trim(), userName },
+        { rating, comment: comment.trim(), userName },
         token,
       );
       AquaToast({
@@ -233,6 +418,46 @@ const ProductReviews = ({ productId }) => {
       AquaToast({ message: "Failed to delete review", type: "error" });
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleUpdate = async (reviewId, data) => {
+    if (!token) {
+      AquaToast({
+        message: "Please sign in to edit your review",
+        type: "error",
+      });
+      return false;
+    }
+    if (!reviewId) return false;
+    if (!data?.rating) {
+      AquaToast({ message: "Please select a rating", type: "error" });
+      return false;
+    }
+    setUpdatingId(reviewId);
+    try {
+      await ProductServiceOperations.UpdateProductReview(
+        productId,
+        {
+          reviewId,
+          rating: data.rating,
+          comment: (data.comment || "").trim(),
+          userName,
+        },
+        token,
+      );
+      AquaToast({ message: "Review updated", type: "success" });
+      await fetchReviews();
+      return true;
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to update review";
+      AquaToast({ message: msg, type: "error" });
+      return false;
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -309,24 +534,6 @@ const ProductReviews = ({ productId }) => {
 
               <div>
                 <label
-                  htmlFor="review-title"
-                  className="block text-xs font-semibold text-slate-600 mb-1.5"
-                >
-                  Title (optional)
-                </label>
-                <input
-                  id="review-title"
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Sum it up in a few words"
-                  maxLength={100}
-                  className="w-full rounded-xl border border-white/50 bg-white/40 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 backdrop-blur-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 transition-all"
-                />
-              </div>
-
-              <div>
-                <label
                   htmlFor="review-comment"
                   className="block text-xs font-semibold text-slate-600 mb-1.5"
                 >
@@ -336,8 +543,8 @@ const ProductReviews = ({ productId }) => {
                   id="review-comment"
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  placeholder="Share your experience with this product..."
-                  rows={3}
+                  placeholder="Share the details of your experience — what you liked, what stood out, anything others should know..."
+                  rows={5}
                   maxLength={1000}
                   className="w-full rounded-xl border border-white/50 bg-white/40 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 backdrop-blur-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 transition-all resize-none"
                 />
@@ -396,6 +603,8 @@ const ProductReviews = ({ productId }) => {
                   currentUserId={userId}
                   onDelete={handleDelete}
                   deleting={deletingId === review?._id}
+                  onUpdate={handleUpdate}
+                  updating={updatingId === review?._id}
                 />
               ))}
             </div>
