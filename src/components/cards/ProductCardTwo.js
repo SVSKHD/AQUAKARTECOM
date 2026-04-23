@@ -1,7 +1,7 @@
 import useCurrency from "@/utils/currency";
 import useProduct from "@/utils/product";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { FaHeart, FaShoppingCart, FaCheck } from "react-icons/fa";
+import { FaHeart, FaShoppingCart, FaCheck, FaStar } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
@@ -136,6 +136,53 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
     return "/product";
   }, [slug, product?._id]);
 
+  const ratingValue = useMemo(() => {
+    const raw =
+      typeof product?.ratings === "object"
+        ? product?.ratings?.value
+        : product?.ratings;
+    const fallback =
+      typeof product?.rating === "object"
+        ? product?.rating?.value
+        : product?.rating;
+    const n = Number(raw ?? fallback);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }, [product?.ratings, product?.rating]);
+
+  const ratingCount = useMemo(() => {
+    const raw =
+      product?.numberOfReviews ??
+      (typeof product?.ratings === "object" ? product?.ratings?.count : null) ??
+      (typeof product?.rating === "object" ? product?.rating?.count : null) ??
+      (Array.isArray(product?.reviews) ? product?.reviews?.length : null);
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }, [
+    product?.numberOfReviews,
+    product?.ratings,
+    product?.rating,
+    product?.reviews,
+  ]);
+
+  const renderRatingBadge = (variant = "overlay") => {
+    if (!ratingValue) return null;
+    const base =
+      "absolute z-20 inline-flex items-center gap-1 rounded-full font-semibold shadow";
+    const styles =
+      variant === "light"
+        ? "left-2 top-2 bg-white/95 px-2 py-1 text-[11px] text-slate-800"
+        : "left-4 top-4 bg-white/90 px-2.5 py-1.5 text-xs text-slate-900 backdrop-blur";
+    return (
+      <div className={`${base} ${styles}`}>
+        <FaStar className="text-amber-400" size={12} />
+        <span>{ratingValue.toFixed(1)}</span>
+        {ratingCount ? (
+          <span className="text-slate-400">({ratingCount})</span>
+        ) : null}
+      </div>
+    );
+  };
+
   const handleNavigate = () => router.push(productHref);
 
   const handleKeyPress = (event) => {
@@ -198,6 +245,9 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
               ))}
             </div>
           </div>
+
+          {/* Rating */}
+          {renderRatingBadge("light")}
 
           {/* Fav */}
           <button
@@ -334,6 +384,9 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
             </div>
           </div>
 
+          {/* RATING */}
+          {renderRatingBadge("overlay")}
+
           {/* FAVORITE */}
           <button
             onClick={handleFavToggle}
@@ -467,6 +520,9 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
                 ))}
               </div>
             </div>
+
+            {/* Rating Badge */}
+            {renderRatingBadge("overlay")}
 
             {/* Favorite Button */}
             <button
