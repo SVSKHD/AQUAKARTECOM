@@ -12,7 +12,7 @@ const AquaProducts = ({ initialProducts = [] }) => {
 
   // Always refresh product data once on mount so prices stay in sync with shop.
   useEffect(() => {
-    let isMounted = true;
+    const controller = new AbortController();
     const shouldShowLoader = initialProducts.length === 0;
 
     const fetchProducts = async () => {
@@ -21,20 +21,23 @@ const AquaProducts = ({ initialProducts = [] }) => {
       }
 
       try {
-        const response = await ProductServiceOperations.AllProducts();
-        if (isMounted) {
-          const latestProducts = Array.isArray(response?.data?.data)
-            ? response.data.data
-            : [];
-          setProducts(latestProducts);
-        }
+        const response = await ProductServiceOperations.AllProducts({
+          signal: controller.signal,
+        });
+        const latestProducts = Array.isArray(response?.data?.data)
+          ? response.data.data
+          : [];
+        setProducts(latestProducts);
       } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
         console.error("Failed to load products", error);
-        if (isMounted && initialProducts.length === 0) {
+        if (initialProducts.length === 0) {
           setProducts([]);
         }
       } finally {
-        if (isMounted && shouldShowLoader) {
+        if (!controller.signal.aborted && shouldShowLoader) {
           setLoading(false);
         }
       }
@@ -47,7 +50,7 @@ const AquaProducts = ({ initialProducts = [] }) => {
     fetchProducts();
 
     return () => {
-      isMounted = false;
+      controller.abort();
     };
   }, [initialProducts]);
 

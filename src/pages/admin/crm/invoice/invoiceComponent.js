@@ -16,8 +16,6 @@ const AquaInvoiceClient = ({ data }) => {
   //    onAfterPrint: () => console.log("Print complete!"),
   //  },[invoiceRef]);
 
-  console.log("data:", invoiceRef);
-
   const IndianCurrencySumbol = (number) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
