@@ -16,8 +16,6 @@ const AquaInvoiceClient = ({ data }) => {
   //    onAfterPrint: () => console.log("Print complete!"),
   //  },[invoiceRef]);
 
-  console.log("data:", invoiceRef);
-
   const IndianCurrencySumbol = (number) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -69,10 +67,17 @@ const AquaInvoiceClient = ({ data }) => {
     },
   ];
 
-  const total = data?.products.reduce(
+  const totalProductPrice = data?.products.reduce(
     (acc, product) => acc + product?.productPrice,
     0,
   );
+  const amountPaid =
+    data?.amountPaid ??
+    data?.paidAmount ??
+    data?.totalPaid ??
+    data?.finalAmount ??
+    data?.totalAmount ??
+    totalProductPrice;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-700">
@@ -210,7 +215,7 @@ const AquaInvoiceClient = ({ data }) => {
 
               <div className="flex justify-end mt-4">
                 <h4 className="text-xl font-bold text-green-600">
-                  Grand Total: {IndianCurrencySumbol(total)}
+                  Amount Paid: {IndianCurrencySumbol(amountPaid)}
                 </h4>
               </div>
             </div>
