@@ -10,6 +10,7 @@ import {
 import { createPortal } from "react-dom";
 import {
   CalendarDaysIcon,
+  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   XMarkIcon,
@@ -86,6 +87,7 @@ const AquaDatePicker = forwardRef(function AquaDatePicker(
   const selected = useMemo(() => parseValue(value), [value]);
   const today = dayjs();
   const [viewDate, setViewDate] = useState(selected || today);
+  const [focusDate, setFocusDate] = useState(selected || today);
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState(null);
   const [mounted, setMounted] = useState(false);
@@ -105,8 +107,16 @@ const AquaDatePicker = forwardRef(function AquaDatePicker(
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    if (selected) setViewDate(selected);
+    if (selected) {
+      setViewDate(selected);
+      setFocusDate(selected);
+    }
   }, [selected]);
+
+  useEffect(() => {
+    if (!open) return;
+    setFocusDate(selected || viewDate);
+  }, [open, selected, viewDate]);
 
   const updatePosition = useCallback(() => {
     if (!buttonRef.current) return;
@@ -179,6 +189,42 @@ const AquaDatePicker = forwardRef(function AquaDatePicker(
     setOpen(false);
   };
 
+  const moveFocusByDays = (daysToMove) => {
+    const nextDay = focusDate.add(daysToMove, "day");
+    if (minDate && nextDay.isBefore(minDate, "day")) return;
+    if (maxDate && nextDay.isAfter(maxDate, "day")) return;
+    setFocusDate(nextDay);
+    setViewDate(nextDay);
+  };
+
+  const handleGridKeyDown = (event) => {
+    switch (event.key) {
+      case "ArrowLeft":
+        event.preventDefault();
+        moveFocusByDays(-1);
+        break;
+      case "ArrowRight":
+        event.preventDefault();
+        moveFocusByDays(1);
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        moveFocusByDays(-7);
+        break;
+      case "ArrowDown":
+        event.preventDefault();
+        moveFocusByDays(7);
+        break;
+      case "Enter":
+      case " ":
+        event.preventDefault();
+        handleSelect(focusDate);
+        break;
+      default:
+        break;
+    }
+  };
+
   const handleClear = (event) => {
     event?.stopPropagation();
     emitChange("");
@@ -202,6 +248,8 @@ const AquaDatePicker = forwardRef(function AquaDatePicker(
         type="button"
         disabled={disabled}
         onClick={() => setOpen((prev) => !prev)}
+        aria-haspopup="dialog"
+        aria-expanded={open}
         className={`mt-1 flex w-full items-center justify-between rounded-lg border bg-white p-3 text-left text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-50 ${
           open ? "border-indigo-500 ring-2 ring-indigo-500" : "border-gray-300"
         } ${selected ? "text-gray-900" : "text-gray-400"}`}
@@ -229,6 +277,10 @@ const AquaDatePicker = forwardRef(function AquaDatePicker(
             className="h-5 w-5 text-indigo-500"
             aria-hidden="true"
           />
+          <ChevronDownIcon
+            className={`h-4 w-4 text-gray-400 transition ${open ? "rotate-180" : ""}`}
+            aria-hidden="true"
+          />
         </span>
       </button>
 
@@ -243,7 +295,7 @@ const AquaDatePicker = forwardRef(function AquaDatePicker(
                 width: coords.width,
                 zIndex: 9999,
               }}
-              className="rounded-2xl border border-white/60 bg-white/95 p-4 shadow-[0_12px_40px_rgba(0,0,0,0.18)] backdrop-blur-xl animate-in fade-in"
+              className="rounded-2xl border border-gray-200 bg-white p-4 shadow-xl animate-in fade-in"
             >
               <div className="flex items-center justify-between gap-2">
                 <button
@@ -302,12 +354,19 @@ const AquaDatePicker = forwardRef(function AquaDatePicker(
                 ))}
               </div>
 
-              <div className="mt-1 grid grid-cols-7 gap-1">
+              <div
+                className="mt-1 grid grid-cols-7 gap-1"
+                role="grid"
+                tabIndex={0}
+                onKeyDown={handleGridKeyDown}
+                aria-label="Calendar dates"
+              >
                 {days.map((day) => {
                   const inMonth = day.month() === viewDate.month();
                   const isSelected = selected && day.isSame(selected, "day");
                   const isTodayCell = day.isSame(today, "day");
                   const disabledDay = isDisabled(day);
+                  const isFocused = day.isSame(focusDate, "day");
 
                   let classes =
                     "h-9 w-full rounded-full text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-indigo-400";
@@ -325,13 +384,19 @@ const AquaDatePicker = forwardRef(function AquaDatePicker(
                     classes += " text-gray-300 hover:bg-gray-50";
                   }
 
+                  if (isFocused && !disabledDay && !isSelected) {
+                    classes += " ring-2 ring-indigo-200";
+                  }
+
                   return (
                     <button
                       key={day.format("YYYY-MM-DD")}
                       type="button"
                       disabled={disabledDay}
                       onClick={() => handleSelect(day)}
+                      onFocus={() => setFocusDate(day)}
                       className={classes}
+                      aria-pressed={Boolean(isSelected)}
                     >
                       {day.date()}
                     </button>
