@@ -10,35 +10,54 @@ const AquaProducts = ({ initialProducts = [] }) => {
   const [loading, setLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("All");
 
-  // Fallback fetch if no initial products (e.g., client navigation fallback)
+  // Always refresh product data once on mount so prices stay in sync with shop.
   useEffect(() => {
-    if (initialProducts.length === 0) {
-      let isMounted = true;
-      const fetchProducts = async () => {
+    let isMounted = true;
+    const shouldShowLoader = initialProducts.length === 0;
+
+    const fetchProducts = async () => {
+      if (shouldShowLoader) {
         setLoading(true);
-        try {
-          const response = await ProductServiceOperations.AllProducts();
-          if (isMounted) {
-            setProducts(response.data?.data || []);
-          }
-        } catch (error) {
-          console.error("Failed to load products", error);
-        } finally {
-          if (isMounted) {
-            setLoading(false);
-          }
+      }
+
+      try {
+        const response = await ProductServiceOperations.AllProducts();
+        if (isMounted) {
+          const latestProducts = Array.isArray(response?.data?.data)
+            ? response.data.data
+            : [];
+          setProducts(latestProducts);
         }
-      };
+      } catch (error) {
+        console.error("Failed to load products", error);
+        if (isMounted && initialProducts.length === 0) {
+          setProducts([]);
+        }
+      } finally {
+        if (isMounted && shouldShowLoader) {
+          setLoading(false);
+        }
+      }
+    };
 
-      fetchProducts();
-
-      return () => {
-        isMounted = false;
-      };
-    } else {
+    if (initialProducts.length > 0) {
       setProducts(initialProducts);
     }
+
+    fetchProducts();
+
+    return () => {
+      isMounted = false;
+    };
   }, [initialProducts]);
+
+  useEffect(() => {
+    if (products.length > 0 || initialProducts.length === 0) {
+      return;
+    }
+
+    setProducts(initialProducts);
+  }, [initialProducts, products.length]);
 
   useEffect(() => {
     setSelectedFilter("All");

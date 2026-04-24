@@ -11,7 +11,12 @@ const AquaHomePage = (props) => {
   );
 };
 
-export async function getStaticProps() {
+export async function getServerSideProps({ res }) {
+  res.setHeader(
+    "Cache-Control",
+    "private, no-cache, no-store, must-revalidate, max-age=0",
+  );
+
   try {
     const [categoriesRes, subCategoriesRes, productsRes] = await Promise.all([
       CategoryServiceOperations.Allcategories(),
@@ -25,8 +30,6 @@ export async function getStaticProps() {
         initialSubCategories: subCategoriesRes.data?.data || [],
         initialProducts: productsRes.data?.data || [],
       },
-      // Revalidate every hour
-      revalidate: 3600,
     };
   } catch (error) {
     console.error("Failed to fetch home page data:", error);
@@ -36,7 +39,6 @@ export async function getStaticProps() {
         initialSubCategories: [],
         initialProducts: [],
       },
-      revalidate: 60,
     };
   }
 }
