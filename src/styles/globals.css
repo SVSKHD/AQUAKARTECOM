@@ -1,12 +1,35 @@
 @import "tailwindcss";
 
+/* ╔═══════════════════════════════════════════════════════════╗
+   ║  FONT CONTROL — single source of truth for app fonts.      ║
+   ║  --font-roboto-mono / --font-montserrat are injected by    ║
+   ║  next/font/google from src/pages/_app.js.                  ║
+   ║  Reorder the stack below to change priority for the app.   ║
+   ╚═══════════════════════════════════════════════════════════╝ */
+:root {
+  --app-font:
+    var(--font-roboto-mono), var(--font-montserrat), ui-monospace,
+    SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+}
+
+/* Tailwind v4 theme tokens — so `font-sans` / `font-mono` utilities resolve to --app-font */
+@theme inline {
+  --font-sans: var(--app-font);
+  --font-mono: var(--app-font);
+  --default-font-family: var(--app-font);
+  --default-mono-font-family: var(--app-font);
+}
+
 /* ── Glass UI Base ─────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
+  font-family: var(--app-font);
 }
 
 body {
   min-height: 100vh;
+  font-family: var(--app-font);
   background: linear-gradient(
     135deg,
     #f0f4ff 0%,

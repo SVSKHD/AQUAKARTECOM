@@ -16,12 +16,6 @@ export default function Document() {
           href="https://res.cloudinary.com"
           crossOrigin="anonymous"
         />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
         <link rel="preconnect" href="https://api.aquakart.co.in" />
         <link
           rel="preconnect"
@@ -31,11 +25,7 @@ export default function Document() {
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
 
-        {/* Inter font — display=swap ensures text is visible during font load (no FOIT) */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-        />
+        {/* Fonts are loaded via next/font/google in _app.js — self-hosted, zero FOIT */}
 
         {/* Favicon & PWA */}
         <link
