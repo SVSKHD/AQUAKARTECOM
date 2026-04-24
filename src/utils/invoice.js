@@ -10,6 +10,25 @@ const toNumber = (value, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const resolveAmountPaid = (order, fallbackAmount) => {
+  const directCandidates = [
+    order?.amountPaid,
+    order?.paidAmount,
+    order?.totalPaid,
+    order?.finalAmount,
+    order?.totalAmount,
+  ];
+
+  for (const candidate of directCandidates) {
+    const parsed = Number(candidate);
+    if (Number.isFinite(parsed) && parsed >= 0) {
+      return roundToTwo(parsed);
+    }
+  }
+
+  return roundToTwo(toNumber(fallbackAmount, 0));
+};
+
 const fmt = (v) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -106,7 +125,8 @@ export const generateInvoicePDF = async (order) => {
     ),
   );
 
-  const payableTotal = roundToTwo(orderSubtotal + shippingCharge);
+  const amountPaid = resolveAmountPaid(order, orderSubtotal + shippingCharge);
+  const payableTotal = amountPaid;
   const isCOD = `${order.orderType || order.paymentMethod || ""}`
     .toLowerCase()
     .includes("cash");
@@ -351,8 +371,20 @@ export const generateInvoicePDF = async (order) => {
   doc.setTextColor(...SLATE_900);
   doc.text("INVOICE SUMMARY", rBoxX + 16, Y + 22);
 
+  const payableBeforeShipping = Math.max(
+    roundToTwo(toNumber(order?.totalAmount, orderSubtotal)),
+    0,
+  );
+  const discountAmount = Math.max(
+    roundToTwo(orderSubtotal - payableBeforeShipping),
+    0,
+  );
+
   const summaryData = [
-    { label: "Product price", value: fmt(orderSubtotal) },
+    {
+      label: "Product price",
+      value: fmt(payableBeforeShipping || orderSubtotal),
+    },
     {
       label: `Incl. GST (${Math.round(GST_RATE * 100)}%)`,
       value: fmt(itemsGstTotal),
@@ -363,6 +395,13 @@ export const generateInvoicePDF = async (order) => {
       value: shippingCharge > 0 ? fmt(shippingCharge) : "FREE",
     },
   ];
+
+  if (discountAmount > 0) {
+    summaryData.splice(1, 0, {
+      label: "Discount applied",
+      value: `- ${fmt(discountAmount)}`,
+    });
+  }
 
   let sLineY = Y + 42;
   summaryData.forEach((row) => {
@@ -384,7 +423,7 @@ export const generateInvoicePDF = async (order) => {
   doc.setFont(F, "bold");
   doc.setFontSize(12);
   doc.setTextColor(...BRAND_DARK);
-  doc.text("TOTAL TO PAY", rBoxX + 16, sLineY);
+  doc.text("AMOUNT PAID", rBoxX + 16, sLineY);
   doc.text(fmt(payableTotal), rBoxX + boxW - 16, sLineY, { align: "right" });
 
   // Footer
