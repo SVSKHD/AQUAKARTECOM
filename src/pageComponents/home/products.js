@@ -55,6 +55,14 @@ const AquaProducts = ({ initialProducts = [] }) => {
   }, [initialProducts]);
 
   useEffect(() => {
+    if (products.length > 0 || initialProducts.length === 0) {
+      return;
+    }
+
+    setProducts(initialProducts);
+  }, [initialProducts, products.length]);
+
+  useEffect(() => {
     setSelectedFilter("All");
   }, [products.length]);
 
