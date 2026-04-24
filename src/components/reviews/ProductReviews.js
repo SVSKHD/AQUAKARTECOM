@@ -58,25 +58,6 @@ const StarRating = ({
   );
 };
 
-const RatingBar = ({ stars, count, total }) => {
-  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-  return (
-    <div className="flex items-center gap-2 text-xs">
-      <span className="w-3 text-right font-semibold text-slate-600">
-        {stars}
-      </span>
-      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-      <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-500"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <span className="w-6 text-right text-slate-400">{count}</span>
-    </div>
-  );
-};
-
 const resolveReviewerName = (review) => {
   const raw = review?.userName || review?.name || review?.email || "";
   if (!raw) return "Anonymous";
@@ -346,17 +327,6 @@ const ProductReviews = ({
     fetchReviews();
   }, [fetchReviews, isControlled]);
 
-  const stats = useMemo(() => {
-    if (!reviews.length) return { avg: 0, total: 0, dist: {} };
-    const total = reviews.length;
-    const sum = reviews.reduce((acc, r) => acc + (r?.rating || 0), 0);
-    const dist = {};
-    STARS.forEach((s) => {
-      dist[s] = reviews.filter((r) => r?.rating === s).length;
-    });
-    return { avg: Math.round((sum / total) * 10) / 10, total, dist };
-  }, [reviews]);
-
   const existingReview = useMemo(
     () => (userId ? reviews.find((r) => r?.user === userId) : null),
     [reviews, userId],
@@ -468,45 +438,19 @@ const ProductReviews = ({
         <h2 className="text-2xl font-bold text-slate-900">Customer Reviews</h2>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
-        {/* Summary panel */}
-        <div className="glass-tint-amber rounded-2xl p-5 sm:p-6 h-fit lg:sticky lg:top-28">
-          <div className="text-center mb-4">
-            <p className="text-5xl font-black text-slate-900">
-              {stats.avg || "—"}
-            </p>
-            <StarRating value={Math.round(stats.avg)} size="md" />
-            <p className="text-xs text-slate-500 mt-1">
-              {stats.total} {stats.total === 1 ? "review" : "reviews"}
-            </p>
-          </div>
-
-          <div className="space-y-1.5">
-            {[...STARS].reverse().map((s) => (
-              <RatingBar
-                key={s}
-                stars={s}
-                count={stats.dist[s] || 0}
-                total={stats.total}
-              />
-            ))}
-          </div>
-
-          {/* Write review button */}
-          {token ? (
-            <button
-              type="button"
-              onClick={() => setShowForm((p) => !p)}
-              className="btn-glass btn-glass-primary w-full mt-5"
-            >
-              {existingReview ? "Update your review" : "Write a review"}
-            </button>
-          ) : (
-            <p className="mt-5 text-center text-xs text-slate-400">
-              Sign in to leave a review
-            </p>
-          )}
-        </div>
+      <div className="space-y-4">
+        {/* Write review button */}
+        {token ? (
+          <button
+            type="button"
+            onClick={() => setShowForm((p) => !p)}
+            className="btn-glass btn-glass-primary"
+          >
+            {existingReview ? "Update your review" : "Write a review"}
+          </button>
+        ) : (
+          <p className="text-xs text-slate-400">Sign in to leave a review</p>
+        )}
 
         {/* Reviews list + form */}
         <div className="space-y-4">

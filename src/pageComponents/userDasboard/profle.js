@@ -84,17 +84,45 @@ const AquaUserProfilePageComponent = () => {
 
   const dialogInitialValues = useMemo(
     () => ({
+      firstName: `${user?.firstName ?? ""}`,
+      lastName: `${user?.lastName ?? ""}`,
       email: `${user?.email ?? ""}`,
       phone: `${user?.phone ?? ""}`,
       alternatePhone: `${alternatePhone ?? ""}`,
       dob: toDateInputValue(user?.dob),
       address: formatAddress(primaryAddress),
     }),
-    [alternatePhone, primaryAddress, user?.dob, user?.email, user?.phone],
+    [
+      alternatePhone,
+      primaryAddress,
+      user?.dob,
+      user?.email,
+      user?.firstName,
+      user?.lastName,
+      user?.phone,
+    ],
   );
 
   const profileHighlights = useMemo(
     () => [
+      {
+        key: "firstName",
+        title: "First Name",
+        value: user?.firstName || "",
+        helper: "Helps us personalise your experience.",
+        actionLabel: user?.firstName ? "Update first name" : "Add first name",
+        focusField: "firstName",
+        isComplete: Boolean(user?.firstName),
+      },
+      {
+        key: "lastName",
+        title: "Last Name",
+        value: user?.lastName || "",
+        helper: "We'll use this on invoices and delivery labels.",
+        actionLabel: user?.lastName ? "Update last name" : "Add last name",
+        focusField: "lastName",
+        isComplete: Boolean(user?.lastName),
+      },
       {
         key: "address",
         title: "Saved Address",
@@ -154,6 +182,8 @@ const AquaUserProfilePageComponent = () => {
       primaryAddress,
       user?.dob,
       user?.email,
+      user?.firstName,
+      user?.lastName,
       user?.phone,
     ],
   );
@@ -224,6 +254,8 @@ const AquaUserProfilePageComponent = () => {
       }
 
       const newDetails = {
+        firstName: sanitize(values.firstName),
+        lastName: sanitize(values.lastName),
         email: sanitize(values.email),
         phone: sanitize(values.phone),
         alternatePhone: sanitize(values.alternatePhone),

@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import AquaResponsiveDialog from "@/components/reusables/dialog";
+import AquaDatePicker from "@/components/reusables/datePicker";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
 dayjs.extend(relativeTime);
 
 const defaultValues = {
+  firstName: "",
+  lastName: "",
   email: "",
   phone: "",
   alternatePhone: "",
@@ -23,6 +26,8 @@ const ProfileDetailsDialog = ({
 }) => {
   const [formValues, setFormValues] = useState(defaultValues);
 
+  const firstNameRef = useRef(null);
+  const lastNameRef = useRef(null);
   const emailRef = useRef(null);
   const phoneRef = useRef(null);
   const alternateRef = useRef(null);
@@ -37,6 +42,10 @@ const ProfileDetailsDialog = ({
 
   const focusTarget = useMemo(() => {
     switch (focusField) {
+      case "firstName":
+        return firstNameRef;
+      case "lastName":
+        return lastNameRef;
       case "email":
         return emailRef;
       case "phone":
@@ -108,7 +117,43 @@ const ProfileDetailsDialog = ({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2"></div>
+          <div>
+            <label
+              htmlFor="firstName"
+              className="block text-sm font-medium text-gray-700"
+            >
+              First Name
+            </label>
+            <input
+              id="firstName"
+              name="firstName"
+              type="text"
+              ref={firstNameRef}
+              value={formValues.firstName}
+              onChange={handleChange}
+              placeholder="First name"
+              className="mt-1 block w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="lastName"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Last Name
+            </label>
+            <input
+              id="lastName"
+              name="lastName"
+              type="text"
+              ref={lastNameRef}
+              value={formValues.lastName}
+              onChange={handleChange}
+              placeholder="Last name"
+              className="mt-1 block w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
 
           <div>
             <label
@@ -176,14 +221,15 @@ const ProfileDetailsDialog = ({
             >
               Date of Birth
             </label>
-            <input
+            <AquaDatePicker
+              ref={dobRef}
               id="dob"
               name="dob"
-              type="date"
-              ref={dobRef}
               value={formValues.dob}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Select your date of birth"
+              max={dayjs().format("YYYY-MM-DD")}
+              yearRange={100}
             />
             {dobSummary && (
               <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-indigo-50/80 px-3 py-2 text-xs text-indigo-700">
