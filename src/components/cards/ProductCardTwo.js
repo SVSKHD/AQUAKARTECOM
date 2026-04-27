@@ -7,6 +7,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import LazyImage from "../image/LazyImage";
 import { useRouter } from "next/router";
+import { getProductReviewStats } from "@/utils/reviewStats";
 
 const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
   const [fav, setAddFav] = useState(false);
@@ -136,36 +137,10 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
     return "/product";
   }, [slug, product?._id]);
 
-  const ratingValue = useMemo(() => {
-    const raw =
-      typeof product?.ratings === "object"
-        ? product?.ratings?.value
-        : product?.ratings;
-    const fallback =
-      typeof product?.rating === "object"
-        ? product?.rating?.value
-        : product?.rating;
-    const n = Number(raw ?? fallback);
-    return Number.isFinite(n) && n > 0 ? n : null;
-  }, [product?.ratings, product?.rating]);
-
-  const ratingCount = useMemo(() => {
-    const raw =
-      product?.numberOfReviews ??
-      (typeof product?.ratings === "object" ? product?.ratings?.count : null) ??
-      (typeof product?.rating === "object" ? product?.rating?.count : null) ??
-      (Array.isArray(product?.reviews) ? product?.reviews?.length : null);
-    const n = Number(raw);
-    return Number.isFinite(n) && n > 0 ? n : null;
-  }, [
-    product?.numberOfReviews,
-    product?.ratings,
-    product?.rating,
-    product?.reviews,
-  ]);
+  const reviewStats = useMemo(() => getProductReviewStats(product), [product]);
 
   const renderRatingBadge = (variant = "overlay") => {
-    if (!ratingValue) return null;
+    if (!reviewStats.ratingValue && !reviewStats.ratingCount) return null;
     const base =
       "absolute z-20 inline-flex items-center gap-1 rounded-full font-semibold shadow";
     const styles =
@@ -175,9 +150,13 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
     return (
       <div className={`${base} ${styles}`}>
         <FaStar className="text-amber-400" size={12} />
-        <span>{ratingValue.toFixed(1)}</span>
-        {ratingCount ? (
-          <span className="text-slate-400">({ratingCount})</span>
+        {reviewStats.ratingValue ? (
+          <span>{reviewStats.ratingValue.toFixed(1)}</span>
+        ) : (
+          <span>Reviews</span>
+        )}
+        {reviewStats.ratingCount ? (
+          <span className="text-slate-400">({reviewStats.ratingCount})</span>
         ) : null}
       </div>
     );
