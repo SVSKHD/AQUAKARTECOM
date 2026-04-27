@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
-import { Heart, ShoppingCart, Check } from "lucide-react";
+import { Heart, ShoppingCart, Check, Star } from "lucide-react";
 import Link from "next/link";
 import { useSelector } from "react-redux";
 import useProduct from "@/utils/product";
+import { getProductReviewStats } from "@/utils/reviewStats";
 
 const AquaRelatedProductCard = ({ product }) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
@@ -59,6 +60,7 @@ const AquaRelatedProductCard = ({ product }) => {
     };
   }, [product?.price, product?.discountPrice, product?.discountPriceStatus]);
 
+  const reviewStats = useMemo(() => getProductReviewStats(product), [product]);
   const descriptionText = useMemo(() => {
     const raw =
       typeof product?.shortDescription === "string"
@@ -179,6 +181,16 @@ const AquaRelatedProductCard = ({ product }) => {
             <Link href={productHref}>{product?.title}</Link>
           </h2>
         </div>
+
+        {reviewStats.ratingValue || reviewStats.ratingCount ? (
+          <div className="inline-flex w-fit items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+            {reviewStats.ratingValue
+              ? reviewStats.ratingValue.toFixed(1)
+              : "Reviews"}
+            {reviewStats.ratingCount ? ` (${reviewStats.ratingCount})` : ""}
+          </div>
+        ) : null}
 
         <p className="line-clamp-2 text-xs text-slate-500">{descriptionText}</p>
 

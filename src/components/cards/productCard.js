@@ -3,8 +3,9 @@ import useCurrency from "@/utils/currency";
 import useProduct from "@/utils/product";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
-import { FaHeart, FaShoppingCart } from "react-icons/fa";
+import { FaHeart, FaShoppingCart, FaStar } from "react-icons/fa";
 import AquaImage from "../images/AquaImage";
+import { getProductReviewStats } from "@/utils/reviewStats";
 
 const AquaProductCard = ({ product }) => {
   const {
@@ -37,6 +38,7 @@ const AquaProductCard = ({ product }) => {
     return "/product";
   }, [product]);
 
+  const reviewStats = useMemo(() => getProductReviewStats(product), [product]);
   const displayPhotos = useMemo(() => {
     if (Array.isArray(photos) && photos.length > 0) return photos;
     return [
@@ -87,6 +89,16 @@ const AquaProductCard = ({ product }) => {
             {coverage || capacity || "All sources"}
           </span>
         </div>
+
+        {reviewStats.ratingValue || reviewStats.ratingCount ? (
+          <div className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-[11px] font-semibold text-slate-800 shadow">
+            <FaStar className="text-amber-400" size={11} />
+            {reviewStats.ratingValue
+              ? reviewStats.ratingValue.toFixed(1)
+              : "Reviews"}
+            {reviewStats.ratingCount ? ` (${reviewStats.ratingCount})` : ""}
+          </div>
+        ) : null}
 
         <button
           type="button"
