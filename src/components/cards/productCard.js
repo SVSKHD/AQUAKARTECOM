@@ -3,8 +3,9 @@ import useCurrency from "@/utils/currency";
 import useProduct from "@/utils/product";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
-import { FaHeart, FaShoppingCart } from "react-icons/fa";
+import { FaHeart, FaShoppingCart, FaStar } from "react-icons/fa";
 import AquaImage from "../images/AquaImage";
+import { getProductReviewStats } from "@/utils/reviewStats";
 
 const AquaProductCard = ({ product }) => {
   const {
@@ -36,6 +37,25 @@ const AquaProductCard = ({ product }) => {
     if (product?._id) return `/product/${product._id}`;
     return "/product";
   }, [product]);
+
+  const reviewStats = useMemo(() => getProductReviewStats(product), [product]);
+
+  const pricing = useMemo(() => {
+    const mrp = Number(price);
+    const discounted = Number(product?.discountPrice);
+    const hasDiscount =
+      Boolean(product?.discountPriceStatus) &&
+      Number.isFinite(discounted) &&
+      discounted > 0 &&
+      Number.isFinite(mrp) &&
+      mrp > discounted;
+
+    return {
+      finalPrice: hasDiscount ? discounted : mrp,
+      mrp: Number.isFinite(mrp) && mrp > 0 ? mrp : null,
+      hasDiscount,
+    };
+  }, [price, product?.discountPrice, product?.discountPriceStatus]);
 
   const displayPhotos = useMemo(() => {
     if (Array.isArray(photos) && photos.length > 0) return photos;
@@ -88,6 +108,16 @@ const AquaProductCard = ({ product }) => {
           </span>
         </div>
 
+        {reviewStats.ratingValue || reviewStats.ratingCount ? (
+          <div className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-[11px] font-semibold text-slate-800 shadow">
+            <FaStar className="text-amber-400" size={11} />
+            {reviewStats.ratingValue
+              ? reviewStats.ratingValue.toFixed(1)
+              : "Reviews"}
+            {reviewStats.ratingCount ? ` (${reviewStats.ratingCount})` : ""}
+          </div>
+        ) : null}
+
         <button
           type="button"
           onClick={handleFavToggle}
@@ -116,9 +146,16 @@ const AquaProductCard = ({ product }) => {
         <h3 className="text-base font-semibold text-slate-900 transition group-hover:text-emerald-600">
           {title?.length > 100 ? `${title.slice(0, 97)}…` : title}
         </h3>
-        <p className="text-lg font-bold text-slate-900">
-          {formatCurrencyINRWithK(price)}
-        </p>
+        <div className="flex items-end gap-2">
+          <p className="text-xl font-extrabold text-emerald-600">
+            {formatCurrencyINRWithK(pricing.finalPrice)}
+          </p>
+          {pricing.hasDiscount && pricing.mrp ? (
+            <p className="text-sm font-medium text-slate-400 line-through">
+              {formatCurrencyINRWithK(pricing.mrp)}
+            </p>
+          ) : null}
+        </div>
         <div className="flex items-center justify-between text-xs text-slate-500">
           <span>
             {product?.color || product?.application || "Fits kitchens & baths"}
