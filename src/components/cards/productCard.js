@@ -128,9 +128,16 @@ const AquaProductCard = ({ product }) => {
         <h3 className="text-base font-semibold text-slate-900 transition group-hover:text-emerald-600">
           {title?.length > 100 ? `${title.slice(0, 97)}…` : title}
         </h3>
-        <p className="text-lg font-bold text-slate-900">
-          {formatCurrencyINRWithK(price)}
-        </p>
+        <div className="flex items-end gap-2">
+          <p className="text-xl font-extrabold text-emerald-600">
+            {formatCurrencyINRWithK(pricing.finalPrice)}
+          </p>
+          {pricing.hasDiscount && pricing.mrp ? (
+            <p className="text-sm font-medium text-slate-400 line-through">
+              {formatCurrencyINRWithK(pricing.mrp)}
+            </p>
+          ) : null}
+        </div>
         <div className="flex items-center justify-between text-xs text-slate-500">
           <span>
             {product?.color || product?.application || "Fits kitchens & baths"}
