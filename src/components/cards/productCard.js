@@ -39,24 +39,6 @@ const AquaProductCard = ({ product }) => {
   }, [product]);
 
   const reviewStats = useMemo(() => getProductReviewStats(product), [product]);
-
-  const pricing = useMemo(() => {
-    const mrp = Number(price);
-    const discounted = Number(product?.discountPrice);
-    const hasDiscount =
-      Boolean(product?.discountPriceStatus) &&
-      Number.isFinite(discounted) &&
-      discounted > 0 &&
-      Number.isFinite(mrp) &&
-      mrp > discounted;
-
-    return {
-      finalPrice: hasDiscount ? discounted : mrp,
-      mrp: Number.isFinite(mrp) && mrp > 0 ? mrp : null,
-      hasDiscount,
-    };
-  }, [price, product?.discountPrice, product?.discountPriceStatus]);
-
   const displayPhotos = useMemo(() => {
     if (Array.isArray(photos) && photos.length > 0) return photos;
     return [
