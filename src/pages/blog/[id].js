@@ -17,7 +17,7 @@ export const getServerSideProps = async ({ params }) => {
   }
 
   try {
-    const response = await BlogServiceOperations.blogById(id);
+    const response = await BlogServiceOperations.blogBySlug(id);
     const blog = response?.data?.data;
 
     if (!blog) {

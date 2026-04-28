@@ -145,7 +145,7 @@ const AquaBlogComponnet = ({ initialBlogs = [], initialError = "" }) => {
 
   const buildBlogCard = (post, variant = "featured") => {
     const id = post?._id ?? post?.id;
-    const href = id ? `/blog/${id}` : "/blogs";
+    const href = id ? `/blog/${post?.slug}` : "/blogs";
     const image =
       post?.photos?.[0]?.secure_url ||
       post?.titleImages?.[0]?.secure_url ||
@@ -277,6 +277,7 @@ const AquaBlogComponnet = ({ initialBlogs = [], initialError = "" }) => {
             Expert guides, technical deep-dives, and success stories to help you
             master your home's water quality.
           </p>
+          {/* {JSON.stringify(blogs)} */}
         </header>
 
         {/* Search & Filter Glass Bar */}
