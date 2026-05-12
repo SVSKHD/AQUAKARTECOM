@@ -1,16 +1,17 @@
 // priceUtils.ts
 
 const GST_RATE = 0.18;
-const BASE_MULTIPLIER = 0.8474594;
+const roundToTwo = (value) =>
+  Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 
 const priceUtils = {
   getBasePrice(price) {
-    return Math.floor(price * BASE_MULTIPLIER);
+    return roundToTwo((Number(price) || 0) / (1 + GST_RATE));
   },
 
   getGSTValue(price) {
     const basePrice = this.getBasePrice(price);
-    return Math.floor(basePrice * GST_RATE);
+    return roundToTwo((Number(price) || 0) - basePrice);
   },
 };
 export default priceUtils;

@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 // import {useReactToPrint} from "react-to-print";
 import Image from "next/image";
 import { Download } from "lucide-react";
@@ -7,11 +7,9 @@ import AQ from "../../../../assests/logo-white.png";
 
 const AquaInvoiceClient = ({ data }) => {
   const invoiceRef = useRef(null);
+  const isLoading = typeof data === "undefined";
 
-  const products = useMemo(
-    () => (Array.isArray(data?.products) ? data.products : []),
-    [data?.products],
-  );
+  const products = Array.isArray(data?.products) ? data.products : [];
 
   // This hook will print the content referred to by invoiceRef
   //  const handleDownloadPDF = useReactToPrint({
@@ -27,28 +25,41 @@ const AquaInvoiceClient = ({ data }) => {
       currency: "INR",
     }).format(number);
 
+  const roundToTwo = (value) =>
+    Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+
   const BasePrice = (grossPrice) => {
     const gross = Number(grossPrice) || 0;
-    return Math.round((gross / 1.18) * 100) / 100;
+    return roundToTwo(gross / 1.18);
   };
 
   const gstValueGenerate = (grossPrice) => {
     const gross = Number(grossPrice) || 0;
     const basePrice = BasePrice(gross);
-    return Math.round((gross - basePrice) * 100) / 100;
+    return roundToTwo(gross - basePrice);
   };
 
   const handleDownloadInvoice = () => {
     if (!invoiceRef.current || typeof window === "undefined") return;
 
-    const printWindow = window.open("", "_blank", "width=1024,height=768");
-    if (!printWindow) return;
+    const invoiceNumber = (data?.invoiceNo || data?.orderId || "AQUAKART")
+      .toString()
+      .replace(/[^a-z0-9_-]/gi, "_");
+    const frame = document.createElement("iframe");
+    frame.style.position = "fixed";
+    frame.style.right = "-10000px";
+    frame.style.bottom = "-10000px";
+    document.body.appendChild(frame);
+
+    const printDocument = frame.contentWindow?.document;
+    if (!printDocument) return;
 
     const content = invoiceRef.current.innerHTML;
-    printWindow.document.write(`
+    printDocument.open();
+    printDocument.write(`
       <html>
         <head>
-          <title>Invoice_${data?.invoiceNo || "AQUAKART"}</title>
+          <title>Invoice_${invoiceNumber}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 0; padding: 16px; background: #374151; }
             table { width: 100%; border-collapse: collapse; }
@@ -59,42 +70,36 @@ const AquaInvoiceClient = ({ data }) => {
         <body>${content}</body>
       </html>
     `);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+    printDocument.close();
+
+    setTimeout(() => {
+      frame.contentWindow?.focus();
+      frame.contentWindow?.print();
+      setTimeout(() => frame.remove(), 500);
+    }, 250);
   };
 
   const termsAndConditions = [
     {
-      title: "Transport",
-      description: "TRANSPORT / LIFTING CHARGES WILL BE BORNE BY THE CUSTOMER.",
+      title: "Product Sale",
+      description: "This invoice is for product sale only.",
     },
     {
-      title: "Plumber",
+      title: "Installation & Support",
       description:
-        "PLUMBER SHOULD BE PROVIDED AT THE TIME OF PLUMBING (OR) OUR PLUMBING CONTRACTORS WILL ATTRACT PLUMBING CHARGES.",
+        "Installation/support is arranged by the brand, customer, or third party unless separately agreed in writing.",
     },
     {
-      title: "Plumbing Material",
-      description:
-        "PLUMBING MATERIALS / ELECTRICAL CONNECTION BY CUSTOMER , IF THE PRESSURE BOOSTER PUMP PLUMBING WILL ATTRACT EXTRA CHARGES ",
+      title: "Transport & Lifting",
+      description: "Transport and lifting charges are borne by the customer.",
     },
     {
-      title: "SALES RETURN",
-      description: "IF THE UNIT IS UNBOXED MACHINE WILL NOT BE TAKEN BACK",
+      title: "Returns",
+      description: "Unboxed or used products are not returnable.",
     },
     {
-      title: "Delivery and Installation policy",
-      description: "DELIVERY / INSTALLATION COMPLETED WITHIN 7 WORKING DAYS. ",
-    },
-    {
-      title: "Advance policy",
-      description: "100% ADVANCE ALONG WITH PO.",
-    },
-    {
-      title: "Work Monitoring",
-      description:
-        "PLUMBING WORK VERIFICATION , PROGRAMMING AND TRAINING AND WARRANTY UPLOAD WILL BE DONE BY OUR SERVICE ENGINEERS",
+      title: "Warranty",
+      description: "Warranty is provided as per the manufacturer/brand policy.",
     },
   ];
 
@@ -109,6 +114,22 @@ const AquaInvoiceClient = ({ data }) => {
     data?.finalAmount ??
     data?.totalAmount ??
     totalProductPrice;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-700 text-white text-xl">
+        Loading invoice...
+      </div>
+    );
+  }
+
+  if (!data || typeof data !== "object") {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-700 text-red-200 text-xl">
+        Unable to load invoice details.
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-700">
@@ -228,10 +249,10 @@ const AquaInvoiceClient = ({ data }) => {
                     products.map((product, index) => (
                       <tr key={index} className="border border-gray-300">
                         <td className="border border-gray-300 px-4 py-2 text-left">
-                          {product.productName}
+                          {product?.productName || "Unnamed product"}
                         </td>
                         <td className="border border-gray-300 px-4 py-2 text-center">
-                          {product.productQuantity}
+                          {product?.productQuantity || 1}
                         </td>
                         <td className="border border-gray-300 px-4 py-2 text-center">
                           {IndianCurrencySumbol(
@@ -244,7 +265,9 @@ const AquaInvoiceClient = ({ data }) => {
                           )}
                         </td>
                         <td className="border border-gray-300 px-4 py-2 text-center font-semibold">
-                          {IndianCurrencySumbol(product.productPrice)}
+                          {IndianCurrencySumbol(
+                            Number(product?.productPrice) || 0,
+                          )}
                         </td>
                       </tr>
                     ))
