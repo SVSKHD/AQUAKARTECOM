@@ -1,12 +1,17 @@
 "use client";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 // import {useReactToPrint} from "react-to-print";
 import Image from "next/image";
 import { Download } from "lucide-react";
 import AQ from "../../../../assests/logo-white.png";
 
 const AquaInvoiceClient = ({ data }) => {
-  const invoiceRef = useRef();
+  const invoiceRef = useRef(null);
+
+  const products = useMemo(
+    () => (Array.isArray(data?.products) ? data.products : []),
+    [data?.products],
+  );
 
   // This hook will print the content referred to by invoiceRef
   //  const handleDownloadPDF = useReactToPrint({
@@ -22,15 +27,41 @@ const AquaInvoiceClient = ({ data }) => {
       currency: "INR",
     }).format(number);
 
-  const gstValueGenerate = (price) => {
-    let basePrice = Math.floor(price * 0.8474594);
-    let gst = Math.floor(basePrice * 0.18);
-    return gst;
+  const BasePrice = (grossPrice) => {
+    const gross = Number(grossPrice) || 0;
+    return Math.round((gross / 1.18) * 100) / 100;
   };
 
-  const BasePrice = (price) => {
-    let basePrice = Math.floor(price * 0.8474594);
-    return basePrice;
+  const gstValueGenerate = (grossPrice) => {
+    const gross = Number(grossPrice) || 0;
+    const basePrice = BasePrice(gross);
+    return Math.round((gross - basePrice) * 100) / 100;
+  };
+
+  const handleDownloadInvoice = () => {
+    if (!invoiceRef.current || typeof window === "undefined") return;
+
+    const printWindow = window.open("", "_blank", "width=1024,height=768");
+    if (!printWindow) return;
+
+    const content = invoiceRef.current.innerHTML;
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Invoice_${data?.invoiceNo || "AQUAKART"}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 16px; background: #374151; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #d1d5db; padding: 8px; }
+            .no-print { display: none !important; }
+          </style>
+        </head>
+        <body>${content}</body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
   };
 
   const termsAndConditions = [
@@ -67,8 +98,8 @@ const AquaInvoiceClient = ({ data }) => {
     },
   ];
 
-  const totalProductPrice = data?.products.reduce(
-    (acc, product) => acc + product?.productPrice,
+  const totalProductPrice = products.reduce(
+    (acc, product) => acc + (Number(product?.productPrice) || 0),
     0,
   );
   const amountPaid =
@@ -88,7 +119,11 @@ const AquaInvoiceClient = ({ data }) => {
           className="w-24 h-24 object-cover rounded-xl shadow-lg m-5"
         />
 
-        <button className="bg-white pt-5 pb-5 hover:bg-blue-900 hover:text-white text-gray-900 px-6 py-2 rounded-lg shadow-md mb-4 transition flex items-center">
+        <button
+          type="button"
+          onClick={handleDownloadInvoice}
+          className="bg-white pt-5 pb-5 hover:bg-blue-900 hover:text-white text-gray-900 px-6 py-2 rounded-lg shadow-md mb-4 transition flex items-center"
+        >
           <Download size={30} className="mr-2" />
           Download Invoice
         </button>
@@ -122,15 +157,15 @@ const AquaInvoiceClient = ({ data }) => {
               <hr className="my-3 border-gray-300" />
               <p className="mt-2 text-gray-600 text-center">
                 <span className="font-semibold">Name:</span>{" "}
-                {data?.customerDetails?.name}
+                {data?.customerDetails?.name || "N/A"}
               </p>
               <p className="mt-2 text-gray-600 text-center">
                 <span className="font-semibold">Phone:</span>{" "}
-                {data?.customerDetails?.phone}
+                {data?.customerDetails?.phone || "N/A"}
               </p>
               <p className="mt-2 text-gray-600 text-center">
                 <span className="font-semibold">Address:</span>{" "}
-                {data?.customerDetails?.address}
+                {data?.customerDetails?.address || "N/A"}
               </p>
             </div>
 
@@ -189,27 +224,40 @@ const AquaInvoiceClient = ({ data }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {data?.products.map((product, index) => (
-                    <tr key={index} className="border border-gray-300">
-                      <td className="border border-gray-300 px-4 py-2 text-left">
-                        {product.productName}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">
-                        {product.productQuantity}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">
-                        {IndianCurrencySumbol(BasePrice(product.productPrice))}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">
-                        {IndianCurrencySumbol(
-                          gstValueGenerate(product.productPrice),
-                        )}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2 text-center font-semibold">
-                        {IndianCurrencySumbol(product.productPrice)}
+                  {products.length ? (
+                    products.map((product, index) => (
+                      <tr key={index} className="border border-gray-300">
+                        <td className="border border-gray-300 px-4 py-2 text-left">
+                          {product.productName}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2 text-center">
+                          {product.productQuantity}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2 text-center">
+                          {IndianCurrencySumbol(
+                            BasePrice(product.productPrice),
+                          )}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2 text-center">
+                          {IndianCurrencySumbol(
+                            gstValueGenerate(product.productPrice),
+                          )}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2 text-center font-semibold">
+                          {IndianCurrencySumbol(product.productPrice)}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="border border-gray-300 px-4 py-8 text-center text-gray-500"
+                      >
+                        No products available
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
 
