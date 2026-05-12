@@ -89,17 +89,44 @@ const AquaSeoRevamp = ({
     };
   }
 
+  const inferredPath = (() => {
+    if (blogPage) {
+      const slug = blogPage?.slug || blogPage?._id;
+      return slug ? `/blog/${slug}` : "/blogs";
+    }
+    if (product) {
+      const slug =
+        productData?.slug || productData?._id || product?._id || product;
+      return slug ? `/product/${slug}` : "/shop";
+    }
+    if (subcategory) {
+      const slug = subcategoryData?.slug || subcategoryData?._id || subcategory;
+      return slug ? `/subcategory/${slug}` : "/shop";
+    }
+    if (category) {
+      const slug = categoryData?.slug || categoryData?._id || category;
+      return slug ? `/category/${slug}` : "/shop";
+    }
+    if (path && path !== "home") {
+      return `/${String(path).replace(/^\/+/, "")}`;
+    }
+    return "/";
+  })();
+
   const {
     title = "Aquakart",
     keywords = "",
     keyphrases = "",
-    url: rawUrl = baseUrl,
+    url: rawUrl,
     description = "",
     follow = true,
     photos,
   } = metaData || {};
 
-  const canonicalUrl = toAbsoluteUrl(baseUrl, rawUrl || baseUrl);
+  const canonicalUrl = toAbsoluteUrl(
+    baseUrl,
+    rawUrl || inferredPath || baseUrl,
+  );
   const photoCandidates = collectImages(photos);
   const primaryImage = photoCandidates[0] || DEFAULT_LOGO;
 

@@ -16,6 +16,7 @@ import {
 } from "@headlessui/react";
 import ProductServiceOperations from "@/services/products";
 import AquaToast from "@/components/reusables/react-toastify";
+import useDialog from "@/utils/dialog";
 
 const STARS = [1, 2, 3, 4, 5];
 
@@ -284,6 +285,8 @@ const ProductReviews = ({
   const userName =
     userData?.user?.name || userData?.user?.email?.split("@")[0] || "";
 
+  const { openAuthDialog } = useDialog();
+
   const isControlled = Array.isArray(externalReviews);
 
   const [internalReviews, setInternalReviews] = useState([]);
@@ -449,7 +452,16 @@ const ProductReviews = ({
             {existingReview ? "Update your review" : "Write a review"}
           </button>
         ) : (
-          <p className="text-xs text-slate-400">Sign in to leave a review</p>
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-slate-400">Sign in to leave a review</p>
+            <button
+              type="button"
+              onClick={openAuthDialog}
+              className="btn-glass btn-glass-primary !px-4 !py-2 text-xs"
+            >
+              Sign in
+            </button>
+          </div>
         )}
 
         {/* Reviews list + form */}
