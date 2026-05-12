@@ -3,20 +3,35 @@ import { useRouter } from "next/router";
 
 const AquaInvoice = () => {
   const router = useRouter();
-  const { id } = router.query; // Correct way to get `id` from router
+  const { id } = router.query;
+
+  const adminBaseUrl =
+    process.env.NEXT_PUBLIC_ADMIN_URL || process.env.NEXT_PUBLIC_API_URL || "";
+  const normalizedAdminBaseUrl = adminBaseUrl.replace(/\/$/, "");
+  const hasInvoiceId = typeof id === "string" && id.trim().length > 0;
+  const canRedirect = normalizedAdminBaseUrl && hasInvoiceId;
 
   useEffect(() => {
-    if (!id) return;
+    if (!canRedirect) return;
 
-    const adminBaseUrl =
-      process.env.NEXT_PUBLIC_ADMIN_BASE_URL || "https://admin.aquakart.co.in";
-    const target = `${adminBaseUrl.replace(/\/$/, "")}/invoice/${id}`;
+    const target = `${normalizedAdminBaseUrl}/invoice/${id}`;
     router.replace(target);
-  }, [id, router]);
+  }, [canRedirect, id, normalizedAdminBaseUrl, router]);
+
+  const statusMessage = !hasInvoiceId
+    ? "Waiting for invoice id..."
+    : !normalizedAdminBaseUrl
+      ? "Invoice configuration missing. Set NEXT_PUBLIC_ADMIN_URL (or NEXT_PUBLIC_API_URL)."
+      : `Redirecting to invoice... ${id}`;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-700">
-      <p className="text-white text-xl">Redirecting to invoice... {id}</p>
+      <p className="text-white text-xl">{statusMessage}</p>
+      {!canRedirect && hasInvoiceId ? (
+        <p className="text-red-300 text-sm mt-2">
+          Unable to continue without a valid admin base URL.
+        </p>
+      ) : null}
     </div>
   );
 };
