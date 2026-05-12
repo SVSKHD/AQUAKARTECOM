@@ -6,9 +6,12 @@ const AquaInvoice = () => {
   const { id } = router.query; // Correct way to get `id` from router
 
   useEffect(() => {
-    if (id) {
-      router.replace(`https://admin.aquakart.co.in/invoice/${id}`);
-    }
+    if (!id) return;
+
+    const adminBaseUrl =
+      process.env.NEXT_PUBLIC_ADMIN_BASE_URL || "https://admin.aquakart.co.in";
+    const target = `${adminBaseUrl.replace(/\/$/, "")}/invoice/${id}`;
+    router.replace(target);
   }, [id, router]);
 
   return (
