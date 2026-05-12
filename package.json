@@ -6,7 +6,7 @@
     "dev": "next dev --webpack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "pretty": "npx prettier . --write",
     "update:packages": "npx npm-check-updates -u && npm install",
     "prepare": "husky"
