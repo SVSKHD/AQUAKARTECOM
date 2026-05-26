@@ -51,8 +51,6 @@ const AquaLayout = (props) => {
 
   // Mount heavy overlays only after user interaction (reduces LCP + main-thread work)
   const [mountOverlays, setMountOverlays] = useState(false);
-  // Defer ambient orbs until after LCP to avoid expensive blur(80px) paint during critical render
-  const [showOrbs, setShowOrbs] = useState(false);
 
   // Build SEO info from route without extra setState rerenders
   const seo = useMemo(() => {
@@ -90,20 +88,6 @@ const AquaLayout = (props) => {
     return () => {
       window.removeEventListener("pointerdown", enable);
       window.removeEventListener("keydown", enable);
-      window.clearTimeout(t);
-    };
-  }, []);
-
-  // Show ambient orbs after LCP window (defers expensive blur(80px) paint)
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const id =
-      typeof window.requestIdleCallback === "function"
-        ? window.requestIdleCallback(() => setShowOrbs(true), { timeout: 4000 })
-        : null;
-    const t = window.setTimeout(() => setShowOrbs(true), 3000);
-    return () => {
-      if (id) window.cancelIdleCallback(id);
       window.clearTimeout(t);
     };
   }, []);
@@ -175,7 +159,7 @@ const AquaLayout = (props) => {
       <>
         <AquaHeader />
         <div className="flex min-h-screen bg-white pt-24 flex-col">
-          <main className="flex flex-1 flex-col items-center justify-center">
+          <main className="flex flex-1 flex-col items-center justify-center bg-white">
             <div className="glass-card rounded-3xl text-center p-10 mx-4 max-w-md">
               <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100/80">
                 <svg
@@ -246,15 +230,6 @@ const AquaLayout = (props) => {
       )}
 
       <div className="relative flex min-h-screen flex-col bg-white pt-24 pb-16 sm:pb-0">
-        {/* Ambient background orbs — deferred to avoid expensive blur(80px) during LCP */}
-        {showOrbs && (
-          <>
-            <div className="ambient-orb top-[10%] left-[-5%] w-[500px] h-[500px] bg-indigo-200/40" />
-            <div className="ambient-orb top-[40%] right-[-8%] w-[400px] h-[400px] bg-emerald-200/30" />
-            <div className="ambient-orb bottom-[10%] left-[20%] w-[350px] h-[350px] bg-purple-200/25" />
-          </>
-        )}
-
         <main className="relative z-10 flex-1 bg-white">{props.children}</main>
         <AquaFooter categories={categories} subcategories={subcategories} />
       </div>
