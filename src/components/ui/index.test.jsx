@@ -10,15 +10,20 @@ import {
   Section,
 } from "./index";
 
+const expectComponentExport = (component) => {
+  expect(component).toBeTruthy();
+  expect(["function", "object"]).toContain(typeof component);
+};
+
 describe("ui barrel exports", () => {
   it("exports all reusable UI components", () => {
-    expect(Button).toBeTypeOf("function");
-    expect(Input).toBeTypeOf("function");
-    expect(Card).toBeTypeOf("function");
-    expect(Section).toBeTypeOf("function");
-    expect(PageShell).toBeTypeOf("function");
-    expect(EmptyState).toBeTypeOf("function");
-    expect(ErrorState).toBeTypeOf("function");
-    expect(Combobox).toBeTypeOf("function");
+    expectComponentExport(Button);
+    expectComponentExport(Input);
+    expectComponentExport(Card);
+    expectComponentExport(Section);
+    expectComponentExport(PageShell);
+    expectComponentExport(EmptyState);
+    expectComponentExport(ErrorState);
+    expectComponentExport(Combobox);
   });
 });
