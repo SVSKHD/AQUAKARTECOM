@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import Combobox from "./Combobox";
@@ -22,7 +22,7 @@ describe("Combobox", () => {
 
     await user.type(screen.getByRole("combobox"), "sand");
 
-    expect(screen.getByText(/sand filter/i)).toBeInTheDocument();
+    expect(await screen.findByText(/sand filter/i)).toBeInTheDocument();
     expect(screen.queryByText(/water softener/i)).not.toBeInTheDocument();
   });
 
@@ -32,10 +32,12 @@ describe("Combobox", () => {
 
     render(<Combobox label="Product type" data={options} onSelect={onSelect} />);
 
-    await user.click(screen.getByRole("combobox"));
-    await user.click(screen.getByText(/water softener/i));
+    await user.type(screen.getByRole("combobox"), "water");
+    await user.click(await screen.findByText(/water softener/i));
 
-    expect(onSelect).toHaveBeenCalledWith(options[0]);
+    await waitFor(() => {
+      expect(onSelect).toHaveBeenCalledWith(options[0]);
+    });
   });
 
   it("supports string options", async () => {
@@ -44,9 +46,11 @@ describe("Combobox", () => {
 
     render(<Combobox label="Brand" data={["Kent", "Racold"]} onSelect={onSelect} />);
 
-    await user.click(screen.getByRole("combobox"));
-    await user.click(screen.getByText("Kent"));
+    await user.type(screen.getByRole("combobox"), "Kent");
+    await user.click(await screen.findByText("Kent"));
 
-    expect(onSelect).toHaveBeenCalledWith("Kent");
+    await waitFor(() => {
+      expect(onSelect).toHaveBeenCalledWith("Kent");
+    });
   });
 });
