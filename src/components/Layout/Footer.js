@@ -66,9 +66,9 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
   return (
     <footer
       aria-labelledby="footer-heading"
-      className="relative z-10 bg-slate-950 text-slate-300"
+      className="relative z-10 bg-white px-2 pb-2 pt-10 text-slate-300"
     >
-      <div className="relative overflow-hidden bg-slate-950 px-6 pb-8 pt-16 sm:px-12 lg:px-16">
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 px-6 pb-8 pt-16 sm:px-12 lg:px-16">
         {/* Ambient Background Effects */}
         <div className="absolute top-0 left-1/2 -ml-[40rem] h-[30rem] w-[50rem] rounded-full bg-indigo-900/20 blur-[100px]" />
         <div className="absolute bottom-0 right-0 -mr-20 h-[30rem] w-[40rem] rounded-full bg-blue-900/10 blur-[80px]" />
@@ -99,7 +99,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
           <div className="flex flex-col justify-between gap-10">
             <div>
               <div className="flex items-center gap-4 mb-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-inner ring-1 ring-white/20">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md ring-1 ring-white/20">
                   <LazyImage
                     src={LW}
                     alt="Aquakart"
@@ -147,7 +147,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
                       <button
                         type="submit"
                         aria-label="join-newsletter"
-                        className="absolute right-1.5 top-1.5 bottom-1.5 rounded-xl bg-indigo-600 px-5 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-500 hover:scale-105 active:scale-95"
+                        className="absolute right-1.5 top-1.5 bottom-1.5 rounded-xl bg-indigo-600 px-5 text-sm font-bold text-white transition-all hover:bg-indigo-500 hover:scale-105 active:scale-95"
                       >
                         Join
                       </button>
