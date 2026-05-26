@@ -174,7 +174,7 @@ const AquaLayout = (props) => {
     return (
       <>
         <AquaHeader />
-        <div className="flex min-h-screen pt-24 flex-col">
+        <div className="flex min-h-screen bg-white pt-24 flex-col">
           <main className="flex flex-1 flex-col items-center justify-center">
             <div className="glass-card rounded-3xl text-center p-10 mx-4 max-w-md">
               <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100/80">
@@ -245,7 +245,7 @@ const AquaLayout = (props) => {
         </>
       )}
 
-      <div className="relative flex min-h-screen flex-col pt-24 pb-16 sm:pb-0">
+      <div className="relative flex min-h-screen flex-col bg-white pt-24 pb-16 sm:pb-0">
         {/* Ambient background orbs — deferred to avoid expensive blur(80px) during LCP */}
         {showOrbs && (
           <>
@@ -255,7 +255,7 @@ const AquaLayout = (props) => {
           </>
         )}
 
-        <main className="relative z-10 flex-1">{props.children}</main>
+        <main className="relative z-10 flex-1 bg-white">{props.children}</main>
         <AquaFooter categories={categories} subcategories={subcategories} />
       </div>
 
