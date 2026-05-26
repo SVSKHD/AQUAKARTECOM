@@ -4,10 +4,10 @@ import PageShell from "./PageShell";
 
 describe("PageShell", () => {
   it("renders children inside a white page shell", () => {
-    render(<PageShell>Page content</PageShell>);
+    render(<PageShell data-testid="page-shell">Page content</PageShell>);
 
     expect(screen.getByText(/page content/i)).toBeInTheDocument();
-    expect(screen.getByText(/page content/i).parentElement).toHaveClass("bg-white");
+    expect(screen.getByTestId("page-shell")).toHaveClass("bg-white");
   });
 
   it("supports custom element", () => {
@@ -21,8 +21,12 @@ describe("PageShell", () => {
   });
 
   it("applies optional top padding", () => {
-    render(<PageShell withTopPadding>Content</PageShell>);
+    render(
+      <PageShell data-testid="page-shell" withTopPadding>
+        Content
+      </PageShell>,
+    );
 
-    expect(screen.getByText(/content/i).parentElement).toHaveClass("pt-8");
+    expect(screen.getByTestId("page-shell")).toHaveClass("pt-8");
   });
 });
