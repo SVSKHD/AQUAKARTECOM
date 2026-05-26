@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   Button,
   Card,
+  Combobox,
   EmptyState,
   ErrorState,
   Input,
@@ -18,5 +19,6 @@ describe("ui barrel exports", () => {
     expect(PageShell).toBeTypeOf("function");
     expect(EmptyState).toBeTypeOf("function");
     expect(ErrorState).toBeTypeOf("function");
+    expect(Combobox).toBeTypeOf("function");
   });
 });
