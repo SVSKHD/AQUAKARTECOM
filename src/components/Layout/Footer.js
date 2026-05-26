@@ -66,9 +66,9 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
   return (
     <footer
       aria-labelledby="footer-heading"
-      className="bg-white px-2 pb-2 pt-10"
+      className="relative z-10 bg-slate-950 text-slate-300"
     >
-      <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 px-6 pb-8 pt-16 shadow-2xl sm:px-12 lg:px-16">
+      <div className="relative overflow-hidden bg-slate-950 px-6 pb-8 pt-16 sm:px-12 lg:px-16">
         {/* Ambient Background Effects */}
         <div className="absolute top-0 left-1/2 -ml-[40rem] h-[30rem] w-[50rem] rounded-full bg-indigo-900/20 blur-[100px]" />
         <div className="absolute bottom-0 right-0 -mr-20 h-[30rem] w-[40rem] rounded-full bg-blue-900/10 blur-[80px]" />
