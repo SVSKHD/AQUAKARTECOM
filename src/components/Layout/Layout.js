@@ -25,10 +25,6 @@ const AquafavDrawer = dynamic(
     ssr: false,
   },
 );
-const AquaToast = dynamic(() => import("../reusables/toast"), { ssr: false });
-const AquaTailwindToast = dynamic(() => import("../toast/TailwindToast"), {
-  ssr: false,
-});
 
 // Festival widget: also lazy-load (often non-critical for LCP)
 const FestivalCornerWidget = dynamic(
@@ -223,8 +219,6 @@ const AquaLayout = (props) => {
         <>
           <AquaCartDrawer />
           <AquafavDrawer />
-          <AquaTailwindToast />
-          <AquaToast />
           <FestivalCornerWidget />
         </>
       )}
