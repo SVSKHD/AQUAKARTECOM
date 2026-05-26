@@ -5,3 +5,4 @@ export { default as Section } from "./Section";
 export { default as PageShell } from "./PageShell";
 export { default as EmptyState } from "./EmptyState";
 export { default as ErrorState } from "./ErrorState";
+export { default as Combobox } from "./Combobox";
