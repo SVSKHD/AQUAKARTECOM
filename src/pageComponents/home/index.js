@@ -111,6 +111,20 @@ const AquaHomeComponent = ({
       "Affordable water softeners for bathrooms, automatic water softener systems, salt-free water softener prices, RO water purifier solutions",
   };
 
+  const clampTwoLines = {
+    display: "-webkit-box",
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
+  };
+
+  const clampThreeLines = {
+    display: "-webkit-box",
+    WebkitLineClamp: 3,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
+  };
+
   return (
     <>
       <AquaLayout seo={SeoData}>
@@ -205,20 +219,23 @@ const AquaHomeComponent = ({
                               key={guide.id}
                               type="button"
                               onClick={() => setActiveGuideId(guide.id)}
-                              className={`group relative flex items-center gap-3 rounded-xl p-4 text-left transition-all duration-300 ${
+                              className={`group relative flex min-h-[76px] items-center gap-3 rounded-xl p-4 text-left transition-all duration-300 ${
                                 isActive
                                   ? "glass-card border-emerald-500/30 bg-emerald-50/60 text-emerald-900 shadow-lg shadow-emerald-500/10 scale-[1.02]"
                                   : "glass-subtle border border-white/50 text-slate-600 hover:border-emerald-200 hover:bg-white/60 hover:shadow-md"
                               }`}
                             >
                               <div
-                                className={`rounded-lg p-2 transition-colors ${isActive ? "bg-emerald-200" : "bg-slate-100 group-hover:bg-emerald-100"}`}
+                                className={`shrink-0 rounded-lg p-2 transition-colors ${isActive ? "bg-emerald-200" : "bg-slate-100 group-hover:bg-emerald-100"}`}
                               >
                                 <Icon
                                   className={`h-5 w-5 ${isActive ? "text-emerald-700" : "text-slate-500 group-hover:text-emerald-600"}`}
                                 />
                               </div>
-                              <span className="font-semibold text-sm">
+                              <span
+                                className="min-h-[40px] text-sm font-semibold leading-5"
+                                style={clampTwoLines}
+                              >
                                 {guide.title}
                               </span>
                             </button>
@@ -228,39 +245,45 @@ const AquaHomeComponent = ({
                     </div>
 
                     <div className="w-full max-w-lg lg:w-[450px]">
-                      <div className="relative overflow-hidden rounded-[1.5rem] bg-slate-900 p-8 text-white shadow-2xl ring-1 ring-white/10 transition-all duration-500">
+                      <div className="relative flex min-h-[520px] flex-col overflow-hidden rounded-[1.5rem] bg-slate-900 p-8 text-white shadow-2xl ring-1 ring-white/10 transition-all duration-500 sm:min-h-[500px] lg:min-h-[540px]">
                         {/* Decorative blobs inside card */}
                         <div className="absolute top-0 right-0 -mt-10 -mr-10 h-32 w-32 rounded-full bg-emerald-500/30 blur-2xl" />
                         <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-32 w-32 rounded-full bg-indigo-500/30 blur-2xl" />
 
-                        <div className="relative">
-                          <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-6">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 backdrop-blur-md ring-1 ring-white/20">
+                        <div className="relative flex h-full flex-1 flex-col">
+                          <div className="mb-6 flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-emerald-400">
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 backdrop-blur-md ring-1 ring-white/20">
                               <ActiveGuideIcon className="h-4 w-4" />
                             </span>
                             Guided Experience
                           </div>
-                          <h3 className="text-2xl font-bold">
+                          <h3
+                            className="min-h-[64px] text-2xl font-bold leading-8"
+                            style={clampTwoLines}
+                          >
                             {activeGuide.title}
                           </h3>
-                          <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                          <p
+                            className="mt-3 min-h-[84px] text-sm leading-7 text-slate-300"
+                            style={clampThreeLines}
+                          >
                             {activeGuide.description}
                           </p>
-                          <ul className="mt-6 space-y-3">
+                          <ul className="mt-6 min-h-[132px] space-y-3">
                             {activeGuide.bullets.map((item) => (
                               <li
                                 key={item}
-                                className="flex items-start gap-3 text-sm text-slate-200"
+                                className="flex min-h-[36px] items-start gap-3 text-sm leading-6 text-slate-200"
                               >
-                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
-                                {item}
+                                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+                                <span style={clampTwoLines}>{item}</span>
                               </li>
                             ))}
                           </ul>
                           {activeGuide.cta && (
                             <Link
                               href={activeGuide.cta.href}
-                              className="btn-glass group mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-white text-slate-900 px-6 py-3 font-bold shadow-lg hover:bg-emerald-50 hover:shadow-emerald-500/20"
+                              className="btn-glass group mt-auto flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 font-bold text-slate-900 shadow-lg hover:bg-emerald-50 hover:shadow-emerald-500/20"
                             >
                               {activeGuide.cta.label}
                               <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -316,7 +339,7 @@ const AquaHomeComponent = ({
                         <Link
                           key={category.title}
                           href={`/category/${category.title}`}
-                          className="group relative flex flex-col overflow-hidden rounded-2xl glass-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)] hover:ring-2 hover:ring-emerald-500/20"
+                          className="group relative flex min-h-[190px] flex-col overflow-hidden rounded-2xl glass-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)] hover:ring-2 hover:ring-emerald-500/20"
                         >
                           <div className="aspect-[4/3] overflow-hidden bg-slate-100 relative">
                             <LazyImage
@@ -333,7 +356,10 @@ const AquaHomeComponent = ({
                           </div>
 
                           <div className="absolute bottom-0 inset-x-0 p-4">
-                            <p className="text-sm font-bold text-white drop-shadow-md">
+                            <p
+                              className="min-h-[40px] text-sm font-bold leading-5 text-white drop-shadow-md"
+                              style={clampTwoLines}
+                            >
                               {category.title}
                             </p>
                             <span className="mt-1 inline-flex items-center gap-1 text-[10px] uppercase font-bold text-emerald-300 opacity-0 transform translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
