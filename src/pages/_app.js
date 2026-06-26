@@ -13,10 +13,6 @@ import Script from "next/script";
 import { Roboto_Mono, Montserrat } from "next/font/google";
 import AquaAppLoader from "@/components/common/AquaAppLoader";
 
-// ╔═══════════════════════════════════════════════════════╗
-// ║  FONT CONTROL — primary = Roboto Mono, fallback = Montserrat
-// ║  Tweak weights/subsets here, or adjust the stack in globals.css
-// ╚═══════════════════════════════════════════════════════╝
 const robotoMono = Roboto_Mono({
   subsets: ["latin"],
   display: "swap",
@@ -29,12 +25,15 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
 });
 
-// Lazy-load Toaster — it's never needed for FCP/LCP
 const Toaster = dynamic(() => import("sonner").then((mod) => mod.Toaster), {
   ssr: false,
 });
 
 const GA_ID = "G-FS41RRVRD4";
+const APP_BOOT_MIN_MS = 1300;
+const APP_BOOT_MAX_MS = 2600;
+const ROUTE_LOADER_DELAY_MS = 70;
+const ROUTE_LOADER_MIN_MS = 520;
 
 const persistConfig = {
   key: "root",
@@ -42,9 +41,28 @@ const persistConfig = {
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
-
 const store = createStore(persistedReducer);
 const persistor = persistStore(store);
+
+const wait = (duration) =>
+  new Promise((resolve) => {
+    window.setTimeout(resolve, duration);
+  });
+
+const waitForWindowLoad = () =>
+  new Promise((resolve) => {
+    if (typeof window === "undefined") {
+      resolve();
+      return;
+    }
+
+    if (document.readyState === "complete") {
+      resolve();
+      return;
+    }
+
+    window.addEventListener("load", resolve, { once: true });
+  });
 
 const PersistLoader = () => (
   <AquaAppLoader
@@ -57,9 +75,11 @@ const PersistLoader = () => (
 export default function App({ Component, pageProps }) {
   const router = useRouter();
   const [routeLoading, setRouteLoading] = useState(false);
+  const [appReady, setAppReady] = useState(false);
   const loaderTimerRef = useRef(null);
+  const loaderStartedAtRef = useRef(0);
+  const routeHideTimerRef = useRef(null);
 
-  // Track route changes in GA
   useEffect(() => {
     const handleRouteChange = (url) => {
       window.gtag?.("config", GA_ID, { page_path: url });
@@ -70,16 +90,44 @@ export default function App({ Component, pageProps }) {
   }, [router.events]);
 
   useEffect(() => {
+    let isMounted = true;
+
+    const prepareFirstPaint = async () => {
+      await Promise.race([
+        Promise.all([wait(APP_BOOT_MIN_MS), waitForWindowLoad()]),
+        wait(APP_BOOT_MAX_MS),
+      ]);
+
+      if (isMounted) {
+        setAppReady(true);
+      }
+    };
+
+    prepareFirstPaint();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
     const showRouteLoader = () => {
       window.clearTimeout(loaderTimerRef.current);
+      window.clearTimeout(routeHideTimerRef.current);
       loaderTimerRef.current = window.setTimeout(() => {
+        loaderStartedAtRef.current = Date.now();
         setRouteLoading(true);
-      }, 120);
+      }, ROUTE_LOADER_DELAY_MS);
     };
 
     const hideRouteLoader = () => {
       window.clearTimeout(loaderTimerRef.current);
-      setRouteLoading(false);
+      const elapsed = Date.now() - loaderStartedAtRef.current;
+      const remaining = Math.max(ROUTE_LOADER_MIN_MS - elapsed, 0);
+
+      routeHideTimerRef.current = window.setTimeout(() => {
+        setRouteLoading(false);
+      }, remaining);
     };
 
     router.events.on("routeChangeStart", showRouteLoader);
@@ -88,6 +136,7 @@ export default function App({ Component, pageProps }) {
 
     return () => {
       window.clearTimeout(loaderTimerRef.current);
+      window.clearTimeout(routeHideTimerRef.current);
       router.events.off("routeChangeStart", showRouteLoader);
       router.events.off("routeChangeComplete", hideRouteLoader);
       router.events.off("routeChangeError", hideRouteLoader);
@@ -100,9 +149,10 @@ export default function App({ Component, pageProps }) {
     }
   }, []);
 
+  const shouldShowLoader = !appReady || routeLoading;
+
   return (
     <Provider store={store}>
-      {/* Expose next/font family strings as CSS vars on :root so globals.css can consume them */}
       <style jsx global>{`
         :root {
           --font-roboto-mono: ${robotoMono.style.fontFamily};
@@ -110,7 +160,6 @@ export default function App({ Component, pageProps }) {
         }
       `}</style>
 
-      {/* Google Analytics — loaded after page is interactive, not blocking */}
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
         strategy="afterInteractive"
@@ -127,14 +176,32 @@ export default function App({ Component, pageProps }) {
 
       <PersistGate persistor={persistor} loading={<PersistLoader />}>
         <div className={`${robotoMono.variable} ${montserrat.variable}`}>
+          {!appReady ? (
+            <AquaAppLoader
+              variant="screen"
+              message="Welcome to Aquakart"
+              subtext="Getting the page ready for you."
+            />
+          ) : null}
           {routeLoading ? (
             <AquaAppLoader
               variant="route"
               message="Opening Aquakart"
-              subtext="Loading the next page with fresh details."
+              subtext="Preparing the next page smoothly."
             />
           ) : null}
-          <main className="aqua-page-shell">
+          <main
+            key={router.asPath}
+            className="aqua-page-shell aqua-page-enter"
+            aria-hidden={shouldShowLoader}
+            style={{
+              opacity: shouldShowLoader ? 0 : 1,
+              pointerEvents: shouldShowLoader ? "none" : "auto",
+              transform: shouldShowLoader ? "translateY(10px) scale(0.995)" : "none",
+              transition:
+                "opacity 420ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1)",
+            }}
+          >
             <Component {...pageProps} />
           </main>
           <Toaster position="top-right" richColors closeButton />
