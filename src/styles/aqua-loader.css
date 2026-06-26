@@ -2,3 +2,350 @@
 .aqua-loader-card {
   animation: aquaLoaderCardIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+.aqua-loader-ring {
+  animation: aquaLoaderRing 1.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  box-shadow: 0 0 24px rgba(16, 185, 129, 0.18);
+}
+
+.aqua-loader-ring-delay {
+  animation-delay: 0.32s;
+}
+
+.aqua-loader-logo {
+  animation: aquaLoaderLogo 1.8s ease-in-out infinite;
+}
+
+.aqua-loader-progress {
+  width: 42%;
+  animation: aquaLoaderProgress 1.35s ease-in-out infinite;
+}
+
+.aqua-page-shell {
+  min-height: 100vh;
+  animation: aquaPageIn 0.32s ease-out both;
+}
+
+.aqua-page-enter {
+  animation: aquaPageIn 0.38s ease-out both;
+}
+
+.aqua-card-enter {
+  animation: aquaCardIn 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.aqua-card-enter:nth-child(1) {
+  animation-delay: 0.03s;
+}
+
+.aqua-card-enter:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.aqua-card-enter:nth-child(3) {
+  animation-delay: 0.13s;
+}
+
+.aqua-card-enter:nth-child(4) {
+  animation-delay: 0.18s;
+}
+
+.aqua-card-enter:nth-child(n + 5) {
+  animation-delay: 0.22s;
+}
+
+.aqua-interactive-lift {
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms ease,
+    background 220ms ease;
+}
+
+.aqua-interactive-lift:hover {
+  transform: translateY(-3px);
+}
+
+.aqua-interactive-lift:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+/* Global rich motion system applied to every page through _app.js. */
+.aqua-page-shell :where(section, article, .glass-card, .glass, .hero-glass-card) {
+  animation: aquaSurfaceIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: center top;
+}
+
+.aqua-page-shell > :where(div, section, main) {
+  animation: aquaSoftReveal 0.45s ease-out both;
+}
+
+.aqua-page-shell :where(section, article, .glass-card, .glass, .hero-glass-card):nth-of-type(2) {
+  animation-delay: 0.05s;
+}
+
+.aqua-page-shell :where(section, article, .glass-card, .glass, .hero-glass-card):nth-of-type(3) {
+  animation-delay: 0.1s;
+}
+
+.aqua-page-shell :where(section, article, .glass-card, .glass, .hero-glass-card):nth-of-type(n + 4) {
+  animation-delay: 0.14s;
+}
+
+.aqua-page-shell :where(button, a, [role="button"]) {
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.aqua-page-shell :where(button, a, [role="button"]):active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.aqua-page-shell :where(img, video) {
+  animation: aquaMediaIn 0.52s ease-out both;
+}
+
+@media (hover: hover) {
+  .aqua-page-shell :where(article, .glass-card, .hero-glass-card):hover {
+    transform: translateY(-3px);
+  }
+
+  .aqua-page-shell :where(button, a, [role="button"]):hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* Upgrade old order skeleton blocks into a branded loader until the page data arrives. */
+.grid.gap-4.lg\:grid-cols-2:has(> .h-72.animate-pulse.rounded-\[1\.75rem\]) {
+  position: relative;
+  display: flex;
+  min-height: 280px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 18px 54px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+
+.grid.gap-4.lg\:grid-cols-2:has(> .h-72.animate-pulse.rounded-\[1\.75rem\])
+  > .h-72.animate-pulse.rounded-\[1\.75rem\] {
+  display: none;
+}
+
+.grid.gap-4.lg\:grid-cols-2:has(> .h-72.animate-pulse.rounded-\[1\.75rem\])::before {
+  content: "";
+  width: 88px;
+  height: 88px;
+  border-radius: 28px;
+  background:
+    url("https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png")
+      center / 54px 54px no-repeat,
+    linear-gradient(135deg, #ecfdf5, #ffffff 55%, #ccfbf1);
+  box-shadow:
+    0 18px 40px rgba(16, 185, 129, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  animation: aquaLoaderLogo 1.8s ease-in-out infinite;
+}
+
+.grid.gap-4.lg\:grid-cols-2:has(> .h-72.animate-pulse.rounded-\[1\.75rem\])::after {
+  content: "Refreshing your Aquakart orders...";
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 72px);
+  width: min(280px, calc(100% - 48px));
+  transform: translateX(-50%);
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-align: center;
+}
+
+/* Keep the orders area fixed-height and scroll inside instead of expanding the page/card. */
+.grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\]) {
+  max-height: clamp(520px, 68vh, 780px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.25rem 0.35rem 0.25rem 0;
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
+
+.grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\])::-webkit-scrollbar {
+  width: 8px;
+}
+
+.grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\])::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.55);
+  border-radius: 999px;
+}
+
+.grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\])::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #34d399, #0f766e);
+  border-radius: 999px;
+}
+
+.grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\])
+  > article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\] {
+  min-height: 560px;
+  height: 560px;
+}
+
+.grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\])
+  > article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\]
+  > .flex.flex-1.flex-col.gap-4.p-5 {
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\]) {
+    max-height: 70vh;
+    padding-right: 0.15rem;
+  }
+
+  .grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\])
+    > article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\] {
+    min-height: 580px;
+    height: 580px;
+  }
+}
+
+@keyframes aquaLoaderCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes aquaLoaderRing {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.76) rotate(0deg);
+  }
+  70% {
+    opacity: 0.08;
+    transform: scale(1.2) rotate(220deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.32) rotate(360deg);
+  }
+}
+
+@keyframes aquaLoaderLogo {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 8px 18px rgba(16, 185, 129, 0.18));
+  }
+  50% {
+    transform: scale(1.07);
+    filter: drop-shadow(0 12px 24px rgba(13, 148, 136, 0.28));
+  }
+}
+
+@keyframes aquaLoaderProgress {
+  0% {
+    transform: translateX(-115%);
+  }
+  52% {
+    transform: translateX(70%);
+  }
+  100% {
+    transform: translateX(245%);
+  }
+}
+
+@keyframes aquaPageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes aquaCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes aquaSurfaceIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes aquaSoftReveal {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes aquaMediaIn {
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aqua-loader-card,
+  .aqua-loader-ring,
+  .aqua-loader-logo,
+  .aqua-loader-progress,
+  .aqua-page-shell,
+  .aqua-page-enter,
+  .aqua-card-enter,
+  .aqua-page-shell :where(section, article, .glass-card, .glass, .hero-glass-card),
+  .aqua-page-shell > :where(div, section, main),
+  .aqua-page-shell :where(img, video) {
+    animation: none !important;
+  }
+
+  .aqua-interactive-lift,
+  .aqua-interactive-lift:hover,
+  .aqua-interactive-lift:active,
+  .aqua-page-shell :where(article, .glass-card, .hero-glass-card):hover,
+  .aqua-page-shell :where(button, a, [role="button"]):hover,
+  .aqua-page-shell :where(button, a, [role="button"]):active {
+    transform: none !important;
+  }
+}
