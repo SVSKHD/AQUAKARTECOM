@@ -11,6 +11,7 @@ import {
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import AquaLayout from "@/components/Layout/Layout";
 import AquaSpinner from "@/components/common/spinner";
+import AquaCategoryCard from "@/components/cards/categoryCard";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import LazyImage from "@/components/image/LazyImage";
@@ -24,6 +25,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 const AquaProducts = dynamic(() => import("./products"));
+
 const AquaHomeComponent = ({
   initialCategories = [],
   initialSubCategories = [],
@@ -130,7 +132,6 @@ const AquaHomeComponent = ({
       <AquaLayout seo={SeoData}>
         <div className="relative selection:bg-emerald-500 selection:text-white">
           <div className="relative z-10">
-            {/* Mobile menu */}
             <Dialog
               className="relative z-50 lg:hidden"
               open={mobileMenuOpen}
@@ -164,7 +165,7 @@ const AquaHomeComponent = ({
                         <TabPanel
                           key={category.name}
                           className="space-y-12 px-4 py-6"
-                        ></TabPanel>
+                        />
                       ))}
                     </TabPanels>
                   </TabGroup>
@@ -183,26 +184,21 @@ const AquaHomeComponent = ({
               </div>
             </Dialog>
 
-            {/* Hero section */}
             <AquaHomeHero data={initialCategories} />
 
             <main className="space-y-24 pb-24">
-              {/* Concierge Section - Glass UI */}
-              <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-12">
-                <div className="glass-card relative overflow-hidden rounded-[2rem] p-8 lg:p-12 shadow-[0_8px_60px_rgba(0,0,0,0.06)]">
+              <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="glass-card relative overflow-hidden rounded-[2rem] p-8 shadow-[0_8px_60px_rgba(0,0,0,0.06)] lg:p-12">
                   <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-transparent to-emerald-50/30 opacity-80" />
 
                   <div className="relative flex flex-col gap-12 lg:flex-row lg:items-start lg:justify-between">
                     <div className="max-w-xl">
                       <p className="inline-flex items-center gap-2 rounded-full bg-emerald-100/50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-emerald-700 backdrop-blur-sm">
-                        <SparklesIcon className="w-3 h-3" /> Aquakart Concierge
+                        <SparklesIcon className="h-3 w-3" /> Aquakart Concierge
                       </p>
 
                       <h2 className="mt-6 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-                        Your water journey,{" "}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">
-                          simplified.
-                        </span>
+                        Your water journey, <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">simplified.</span>
                       </h2>
                       <p className="mt-4 text-base leading-relaxed text-slate-600">
                         Choose a path below to get instant recommendations,
@@ -210,7 +206,7 @@ const AquaHomeComponent = ({
                         specifically for Indian water conditions.
                       </p>
 
-                      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {waterGuides.map((guide) => {
                           const Icon = guide.icon;
                           const isActive = guide.id === activeGuideId;
@@ -221,7 +217,7 @@ const AquaHomeComponent = ({
                               onClick={() => setActiveGuideId(guide.id)}
                               className={`group relative flex min-h-[76px] items-center gap-3 rounded-xl p-4 text-left transition-all duration-300 ${
                                 isActive
-                                  ? "glass-card border-emerald-500/30 bg-emerald-50/60 text-emerald-900 shadow-lg shadow-emerald-500/10 scale-[1.02]"
+                                  ? "glass-card scale-[1.02] border-emerald-500/30 bg-emerald-50/60 text-emerald-900 shadow-lg shadow-emerald-500/10"
                                   : "glass-subtle border border-white/50 text-slate-600 hover:border-emerald-200 hover:bg-white/60 hover:shadow-md"
                               }`}
                             >
@@ -246,13 +242,12 @@ const AquaHomeComponent = ({
 
                     <div className="w-full max-w-lg lg:w-[450px]">
                       <div className="relative flex min-h-[520px] flex-col overflow-hidden rounded-[1.5rem] bg-slate-900 p-8 text-white shadow-2xl ring-1 ring-white/10 transition-all duration-500 sm:min-h-[500px] lg:min-h-[540px]">
-                        {/* Decorative blobs inside card */}
-                        <div className="absolute top-0 right-0 -mt-10 -mr-10 h-32 w-32 rounded-full bg-emerald-500/30 blur-2xl" />
+                        <div className="absolute right-0 top-0 -mr-10 -mt-10 h-32 w-32 rounded-full bg-emerald-500/30 blur-2xl" />
                         <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-32 w-32 rounded-full bg-indigo-500/30 blur-2xl" />
 
                         <div className="relative flex h-full flex-1 flex-col">
                           <div className="mb-6 flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-emerald-400">
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 backdrop-blur-md ring-1 ring-white/20">
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20 backdrop-blur-md">
                               <ActiveGuideIcon className="h-4 w-4" />
                             </span>
                             Guided Experience
@@ -286,7 +281,7 @@ const AquaHomeComponent = ({
                               className="btn-glass group mt-auto flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 font-bold text-slate-900 shadow-lg hover:bg-emerald-50 hover:shadow-emerald-500/20"
                             >
                               {activeGuide.cta.label}
-                              <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                              <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                             </Link>
                           )}
                         </div>
@@ -296,19 +291,16 @@ const AquaHomeComponent = ({
                 </div>
               </section>
 
-              {/* Products Section */}
               <div className="relative">
-                {/* Section Background Decoration */}
-                <div className="absolute top-1/2 left-0 w-full h-[500px] bg-gradient-to-b from-transparent via-emerald-50/50 to-transparent -z-10 blur-3xl" />
+                <div className="absolute left-0 top-1/2 -z-10 h-[500px] w-full bg-gradient-to-b from-transparent via-emerald-50/50 to-transparent blur-3xl" />
                 <AquaProducts initialProducts={initialProducts} />
               </div>
 
-              {/* Categories Section - Glass Grid */}
               <section
                 aria-labelledby="category-heading"
                 className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+                <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <h2
                     id="category-heading"
                     className="text-2xl font-bold tracking-tight text-slate-900"
@@ -317,59 +309,26 @@ const AquaHomeComponent = ({
                   </h2>
                   <Link
                     href="/categories"
-                    className="hidden text-sm font-semibold text-slate-600 hover:text-emerald-600 sm:flex items-center gap-1 transition-colors"
+                    className="hidden items-center gap-1 text-sm font-semibold text-slate-600 transition-colors hover:text-emerald-600 sm:flex"
                   >
                     Browse all collections
-                    <ArrowRightIcon className="w-4 h-4" />
+                    <ArrowRightIcon className="h-4 w-4" />
                   </Link>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                   {initialCategories.length === 0 ? (
-                    <div className="col-span-full h-40 flex items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/50">
+                    <div className="col-span-full flex h-40 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/50">
                       <AquaSpinner color="emerald" size="lg" />
                     </div>
                   ) : (
-                    initialCategories.slice(0, 10).map((category, idx) => {
-                      // Fix: Provide valid fallback if photos array is empty or undefined
-                      const imageUrl =
-                        category.photos?.[0]?.delivery_url ||
-                        "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-512x512_kfw439.png";
-                      return (
-                        <Link
-                          key={category.title}
-                          href={`/category/${category.title}`}
-                          className="group relative flex min-h-[190px] flex-col overflow-hidden rounded-2xl glass-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)] hover:ring-2 hover:ring-emerald-500/20"
-                        >
-                          <div className="aspect-[4/3] overflow-hidden bg-slate-100 relative">
-                            <LazyImage
-                              src={imageUrl}
-                              alt={category.title}
-                              fill
-                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                              className="absolute inset-0"
-                              imgClassName="object-cover object-center transition duration-500 group-hover:scale-110"
-                              priority={false}
-                            />
-                            {/* Gradient Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-40" />
-                          </div>
-
-                          <div className="absolute bottom-0 inset-x-0 p-4">
-                            <p
-                              className="min-h-[40px] text-sm font-bold leading-5 text-white drop-shadow-md"
-                              style={clampTwoLines}
-                            >
-                              {category.title}
-                            </p>
-                            <span className="mt-1 inline-flex items-center gap-1 text-[10px] uppercase font-bold text-emerald-300 opacity-0 transform translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
-                              View Collection{" "}
-                              <ArrowRightIcon className="w-3 h-3" />
-                            </span>
-                          </div>
-                        </Link>
-                      );
-                    })
+                    initialCategories.slice(0, 10).map((category) => (
+                      <AquaCategoryCard
+                        key={category?._id || category?.slug || category?.title}
+                        category={category}
+                        variant="collection"
+                      />
+                    ))
                   )}
                 </div>
 
@@ -383,10 +342,8 @@ const AquaHomeComponent = ({
                 </div>
               </section>
 
-              {/* Social Impact / Blog Banner - Glass & Gradient */}
               <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="relative overflow-hidden rounded-[2.5rem] bg-indigo-900 shadow-2xl">
-                  {/* Background Image with heavy blur and overlay */}
                   <div className="absolute inset-0">
                     <LazyImage
                       src="https://res.cloudinary.com/aquakartproducts/image/upload/v1741968501/Blogs/jhkfgdhd9yatyml1bz4j.jpg"
@@ -399,8 +356,8 @@ const AquaHomeComponent = ({
 
                   <div className="relative px-6 py-16 sm:px-12 sm:py-24 lg:flex lg:items-center lg:px-16">
                     <div className="max-w-2xl">
-                      <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/30 border border-indigo-400/30 px-3 py-1 text-xs font-bold text-indigo-200 backdrop-blur-md mb-6">
-                        <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />{" "}
+                      <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/30 px-3 py-1 text-xs font-bold text-indigo-200 backdrop-blur-md">
+                        <span className="h-2 w-2 animate-pulse rounded-full bg-indigo-400" />
                         Knowledge Hub
                       </div>
                       <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
