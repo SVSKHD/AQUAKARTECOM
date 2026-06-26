@@ -1,6 +1,7 @@
 import "@/styles/globals.css";
+import "@/styles/aqua-loader.css";
 import dynamic from "next/dynamic";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Provider } from "react-redux";
 import { createStore } from "redux";
 import rootReducer from "@/store";
@@ -10,6 +11,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import { useRouter } from "next/router";
 import Script from "next/script";
 import { Roboto_Mono, Montserrat } from "next/font/google";
+import AquaAppLoader from "@/components/common/AquaAppLoader";
 
 // ╔═══════════════════════════════════════════════════════╗
 // ║  FONT CONTROL — primary = Roboto Mono, fallback = Montserrat
@@ -44,8 +46,18 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 const store = createStore(persistedReducer);
 const persistor = persistStore(store);
 
+const PersistLoader = () => (
+  <AquaAppLoader
+    variant="screen"
+    message="Preparing Aquakart"
+    subtext="Syncing your cart, profile and order experience."
+  />
+);
+
 export default function App({ Component, pageProps }) {
   const router = useRouter();
+  const [routeLoading, setRouteLoading] = useState(false);
+  const loaderTimerRef = useRef(null);
 
   // Track route changes in GA
   useEffect(() => {
@@ -55,6 +67,31 @@ export default function App({ Component, pageProps }) {
 
     router.events.on("routeChangeComplete", handleRouteChange);
     return () => router.events.off("routeChangeComplete", handleRouteChange);
+  }, [router.events]);
+
+  useEffect(() => {
+    const showRouteLoader = () => {
+      window.clearTimeout(loaderTimerRef.current);
+      loaderTimerRef.current = window.setTimeout(() => {
+        setRouteLoading(true);
+      }, 120);
+    };
+
+    const hideRouteLoader = () => {
+      window.clearTimeout(loaderTimerRef.current);
+      setRouteLoading(false);
+    };
+
+    router.events.on("routeChangeStart", showRouteLoader);
+    router.events.on("routeChangeComplete", hideRouteLoader);
+    router.events.on("routeChangeError", hideRouteLoader);
+
+    return () => {
+      window.clearTimeout(loaderTimerRef.current);
+      router.events.off("routeChangeStart", showRouteLoader);
+      router.events.off("routeChangeComplete", hideRouteLoader);
+      router.events.off("routeChangeError", hideRouteLoader);
+    };
   }, [router.events]);
 
   useEffect(() => {
@@ -88,12 +125,18 @@ export default function App({ Component, pageProps }) {
         `}
       </Script>
 
-      {/* Render page content immediately — don't block LCP with PersistGate loading screen.
-          PersistGate with loading={null} still hydrates Redux from localStorage,
-          but renders children right away instead of showing a preloader. */}
-      <PersistGate persistor={persistor} loading={null}>
+      <PersistGate persistor={persistor} loading={<PersistLoader />}>
         <div className={`${robotoMono.variable} ${montserrat.variable}`}>
-          <Component {...pageProps} />
+          {routeLoading ? (
+            <AquaAppLoader
+              variant="route"
+              message="Opening Aquakart"
+              subtext="Loading the next page with fresh details."
+            />
+          ) : null}
+          <main className="aqua-page-shell">
+            <Component {...pageProps} />
+          </main>
           <Toaster position="top-right" richColors closeButton />
         </div>
       </PersistGate>
