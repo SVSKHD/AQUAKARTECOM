@@ -35,7 +35,6 @@ import AquaPreloader from "@/components/reusables/preloader";
 import LazyImage from "@/components/image/LazyImage";
 import ProductReviews from "@/components/reviews/ProductReviews";
 
-// Lazy load related products to improve initial load
 const AquaRelatedProductCard = React.lazy(
   () => import("@/components/cards/RelatedProductCard"),
 );
@@ -43,12 +42,10 @@ const AquaRelatedProductCard = React.lazy(
 const DEFAULT_FALLBACK_IMAGE =
   "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png";
 
-// --- Utility Functions ---
 const resolveDisplayText = (input) => {
   if (input === null || input === undefined) return "";
   if (typeof input === "string") return input.trim();
-  if (typeof input === "number" || typeof input === "boolean")
-    return String(input);
+  if (typeof input === "number" || typeof input === "boolean") return String(input);
   if (Array.isArray(input)) {
     return input
       .map((item) => resolveDisplayText(item))
@@ -56,15 +53,7 @@ const resolveDisplayText = (input) => {
       .join(", ");
   }
   if (typeof input === "object") {
-    const candidateKeys = [
-      "title",
-      "name",
-      "label",
-      "value",
-      "displayName",
-      "slug",
-      "text",
-    ];
+    const candidateKeys = ["title", "name", "label", "value", "displayName", "slug", "text"];
     for (const key of candidateKeys) {
       if (input[key]) return resolveDisplayText(input[key]);
     }
@@ -76,10 +65,8 @@ const normalizeImages = (photos, fallbackImage) => {
   if (Array.isArray(photos) && photos.length > 0) {
     return photos
       .map((photo, index) => {
-        if (photo?.secure_url)
-          return { id: photo._id || `photo-${index}`, url: photo.secure_url };
-        if (typeof photo === "string")
-          return { id: `photo-${index}`, url: photo };
+        if (photo?.secure_url) return { id: photo._id || `photo-${index}`, url: photo.secure_url };
+        if (typeof photo === "string") return { id: `photo-${index}`, url: photo };
         return null;
       })
       .filter(Boolean);
@@ -94,8 +81,6 @@ const formatIndianCurrency = (value) => {
   return amount.toLocaleString("en-IN");
 };
 
-// --- Sub-components ---
-
 const AccordionItem = ({ title, children, defaultOpen = false }) => (
   <Disclosure
     as="div"
@@ -104,13 +89,13 @@ const AccordionItem = ({ title, children, defaultOpen = false }) => (
   >
     {({ open }) => (
       <>
-        <DisclosureButton className="flex w-full items-center justify-between py-4 text-left text-sm font-medium text-slate-900 hover:text-emerald-600 focus:outline-none">
+        <DisclosureButton className="flex w-full items-center justify-between py-4 text-left text-sm font-semibold text-slate-900 transition hover:text-emerald-600 focus:outline-none">
           <span>{title}</span>
           <ChevronDown
             className={`h-5 w-5 text-slate-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           />
         </DisclosureButton>
-        <DisclosurePanel className="pb-4 text-sm text-slate-600 leading-relaxed">
+        <DisclosurePanel className="pb-4 text-sm leading-relaxed text-slate-600">
           <AnimatePresence>
             <motion.div
               initial={{ opacity: 0, height: 0 }}
@@ -129,109 +114,40 @@ const AccordionItem = ({ title, children, defaultOpen = false }) => (
 const ImageGallery = ({ images, title }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start" });
-  const [progress, setProgress] = useState(0);
-  const AUTOPLAY_DURATION = 5000; // 5 seconds per slide
-  const progressBarRef = React.useRef(null);
-  const startTimeRef = React.useRef(null);
-  const animationFrameRef = React.useRef(null);
-  const isPausedRef = React.useRef(true); // Default to PAUSED
 
-  // Store progress in ref for logic, in state for UI
-  const progressRef = React.useRef(0);
-
-  const onSelect = React.useCallback(() => {
+  const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setSelectedIndex(emblaApi.selectedScrollSnap());
-    setProgress(0);
-    progressRef.current = 0;
-    startTimeRef.current = null;
   }, [emblaApi]);
-
-  const scrollTo = React.useCallback(
-    (index) => emblaApi && emblaApi.scrollTo(index),
-    [emblaApi],
-  );
-
-  const startAutoplay = React.useCallback(() => {
-    const animate = (timestamp) => {
-      if (isPausedRef.current) {
-        // Just update startTime so we pick up where we left off when unpaused
-        // current_time - (elapsed_time_we_want_to_preserve)
-        const elapsedSoFar = (progressRef.current / 100) * AUTOPLAY_DURATION;
-        startTimeRef.current = timestamp - elapsedSoFar;
-        animationFrameRef.current = requestAnimationFrame(animate);
-        return;
-      }
-
-      if (!startTimeRef.current) startTimeRef.current = timestamp;
-      const elapsed = timestamp - startTimeRef.current;
-      const newProgress = Math.min((elapsed / AUTOPLAY_DURATION) * 100, 100);
-
-      // Only update state if value changed significantly to avoid over-rendering if strictly same
-      if (Math.abs(newProgress - progressRef.current) > 0.1) {
-        setProgress(newProgress);
-        progressRef.current = newProgress;
-      }
-
-      if (elapsed >= AUTOPLAY_DURATION) {
-        emblaApi?.scrollNext();
-        startTimeRef.current = null;
-        progressRef.current = 0;
-        setProgress(0);
-      }
-
-      animationFrameRef.current = requestAnimationFrame(animate);
-    };
-    // Cancel any existing loop before ensuring a new one
-    if (animationFrameRef.current)
-      cancelAnimationFrame(animationFrameRef.current);
-    animationFrameRef.current = requestAnimationFrame(animate);
-  }, [emblaApi, AUTOPLAY_DURATION]);
 
   useEffect(() => {
     if (!emblaApi) return;
     emblaApi.on("select", onSelect);
-    // Play on interaction (Hover/Touch)
-    emblaApi.on("pointerDown", () => (isPausedRef.current = false));
-    emblaApi.on("pointerUp", () => (isPausedRef.current = true));
+    return () => emblaApi.off("select", onSelect);
+  }, [emblaApi, onSelect]);
 
-    startAutoplay();
-
-    return () => {
-      if (animationFrameRef.current)
-        cancelAnimationFrame(animationFrameRef.current);
-      emblaApi.off("select", onSelect);
-    };
-  }, [emblaApi, onSelect, startAutoplay]);
+  const scrollTo = useCallback(
+    (index) => {
+      emblaApi?.scrollTo(index);
+      setSelectedIndex(index);
+    },
+    [emblaApi],
+  );
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Mobile/Main Carousel */}
       <div
-        className="relative overflow-hidden bg-white rounded-2xl lg:border lg:border-white/50 lg:bg-white/40 lg:shadow-glass lg:backdrop-blur-xl"
+        className="relative overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.08)] ring-1 ring-white/70"
         ref={emblaRef}
-        onMouseEnter={() => (isPausedRef.current = false)} // Play
-        onMouseLeave={() => (isPausedRef.current = true)} // Pause
-        onTouchStart={() => (isPausedRef.current = false)} // Play
-        onTouchEnd={() => (isPausedRef.current = true)} // Pause
       >
-        {/* Story Timer Bars */}
-        <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-2">
+        <div className="absolute left-0 right-0 top-0 z-20 flex gap-1 p-2">
           {images.map((_, idx) => (
             <div
               key={idx}
-              className="h-1 flex-1 overflow-hidden rounded-full bg-black/20 backdrop-blur-sm"
+              className="h-1 flex-1 overflow-hidden rounded-full bg-slate-900/15 backdrop-blur-sm"
             >
               <div
-                className="h-full bg-white transition-all duration-100 ease-linear shadow-sm"
-                style={{
-                  width:
-                    idx < selectedIndex
-                      ? "100%"
-                      : idx === selectedIndex
-                        ? `${progress}%`
-                        : "0%",
-                }}
+                className={`h-full rounded-full bg-emerald-500 transition-all duration-300 ${idx <= selectedIndex ? "w-full" : "w-0"}`}
               />
             </div>
           ))}
@@ -239,8 +155,8 @@ const ImageGallery = ({ images, title }) => {
 
         <div className="flex touch-pan-y">
           {images.map((img, idx) => (
-            <div className="relative flex-[0_0_100%] min-w-0" key={img.id}>
-              <div className="relative flex aspect-square w-full items-center justify-center bg-white">
+            <div className="relative min-w-0 flex-[0_0_100%]" key={img.id}>
+              <div className="relative flex aspect-square w-full items-center justify-center bg-white p-4 sm:p-6">
                 <LazyImage
                   src={img.url}
                   alt={title}
@@ -253,35 +169,20 @@ const ImageGallery = ({ images, title }) => {
             </div>
           ))}
         </div>
-
-        {/* Mobile Dots (Optional backup if needed, but bars usually suffice) */}
-        {/* <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 lg:hidden">
-          {images.map((_, idx) => (
-            <button
-              key={idx}
-              className={`h-2 w-2 rounded-full transition-all ${idx === selectedIndex ? "w-4 bg-emerald-600" : "bg-slate-300"}`}
-              onClick={() => scrollTo(idx)}
-            />
-          ))}
-        </div> */}
       </div>
 
-      {/* Desktop Thumbnails */}
       <div className="hidden grid-cols-5 gap-3 lg:grid">
         {images.map((img, idx) => (
           <button
             key={img.id}
-            onClick={() => {
-              scrollTo(idx);
-              setProgress(0);
-              startTimeRef.current = null;
-            }}
-            className={`relative aspect-square overflow-hidden rounded-xl border-2 transition-all ${idx === selectedIndex ? "border-emerald-500 bg-white/80 ring-4 ring-emerald-500/20" : "border-transparent bg-white/30 hover:bg-white/50"}`}
+            onClick={() => scrollTo(idx)}
+            className={`relative aspect-square overflow-hidden rounded-2xl border-2 bg-white/70 transition-all ${idx === selectedIndex ? "border-emerald-500 ring-4 ring-emerald-500/15" : "border-transparent hover:border-emerald-200"}`}
           >
             <img
               src={img.url}
               alt=""
-              className="h-full w-full object-contain p-1"
+              className="h-full w-full object-contain p-1.5"
+              loading="lazy"
             />
           </button>
         ))}
@@ -291,7 +192,7 @@ const ImageGallery = ({ images, title }) => {
 };
 
 const ProductInfo = ({ icon: Icon, title, desc }) => (
-  <div className="flex items-start gap-3 rounded-2xl border border-white/60 bg-white/40 p-4 shadow-sm backdrop-blur-md transition-shadow hover:shadow-md">
+  <div className="flex items-start gap-3 rounded-2xl border border-slate-200/70 bg-white/80 p-4 shadow-sm backdrop-blur-md transition hover:-translate-y-0.5 hover:shadow-md">
     <div className="rounded-xl bg-gradient-to-br from-white to-emerald-50 p-2.5 text-emerald-600 shadow-inner">
       <Icon size={18} />
     </div>
@@ -301,8 +202,6 @@ const ProductInfo = ({ icon: Icon, title, desc }) => (
     </div>
   </div>
 );
-
-// --- Main Component ---
 
 function AquaProductRevamp({
   product,
@@ -317,7 +216,7 @@ function AquaProductRevamp({
   const [reviewsLoading, setReviewsLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
+    const timer = setTimeout(() => setIsLoading(false), 650);
     return () => clearTimeout(timer);
   }, []);
 
@@ -347,25 +246,21 @@ function AquaProductRevamp({
   const reviewStats = useMemo(() => {
     const total = reviews.length;
     if (!total) return { avg: 0, total: 0 };
-    const sum = reviews.reduce((acc, r) => acc + (r?.rating || 0), 0);
+    const sum = reviews.reduce((acc, review) => acc + (review?.rating || 0), 0);
     return { avg: Math.round((sum / total) * 10) / 10, total };
   }, [reviews]);
 
   const router = useRouter();
-
-  // Data Preparation
   const images = useMemo(
     () => normalizeImages(product?.photos, fallbackImage),
     [product, fallbackImage],
   );
   const relatedProducts = useMemo(
-    () =>
-      Array.isArray(related) ? related.filter((i) => i.slug || i._id) : [],
+    () => (Array.isArray(related) ? related.filter((item) => item.slug || item._id) : []),
     [related],
   );
 
-  // Redux & Hooks
-  const { cartData = [], favData = [] } = useSelector((state) => ({
+  const { cartData, favData } = useSelector((state) => ({
     cartData: state.cartData,
     favData: state.favData,
   }));
@@ -377,7 +272,6 @@ function AquaProductRevamp({
     setIsFavorite(favData.some((item) => item?._id === product?._id));
   }, [cartData, favData, product]);
 
-  // Carousel Logic for Related Products
   const [relatedProductRef, relatedProductApi] = useEmblaCarousel({
     align: "center",
     loop: true,
@@ -386,7 +280,6 @@ function AquaProductRevamp({
 
   const scrollPrev = () => relatedProductApi && relatedProductApi.scrollPrev();
   const scrollNext = () => relatedProductApi && relatedProductApi.scrollNext();
-
   const handleCart = () => AddAndRemoveCart(product, setIsInCart);
   const handleFav = () => AddAndRemoveFav(product, setIsFavorite);
   const handleShare = async () => {
@@ -398,8 +291,8 @@ function AquaProductRevamp({
           url: window.location.href,
         });
       }
-    } catch (e) {
-      console.log("Share failed", e);
+    } catch (error) {
+      console.log("Share failed", error);
     }
   };
 
@@ -410,14 +303,10 @@ function AquaProductRevamp({
     router.push("/checkout");
   };
 
-  // Derived Values
-  const price = product?.discountPriceStatus
-    ? product?.discountPrice
-    : product?.price;
+  const price = product?.discountPriceStatus ? product?.discountPrice : product?.price;
   const originalPrice = product?.discountPriceStatus ? product?.price : null;
-  const discount = originalPrice
-    ? Math.round(((originalPrice - price) / originalPrice) * 100)
-    : 0;
+  const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+  const categoryLabel = resolveDisplayText(product?.category) || "Product";
 
   const specs = useMemo(
     () =>
@@ -426,118 +315,113 @@ function AquaProductRevamp({
         { label: "Model", value: product?.model },
         { label: "Warranty", value: product?.warranty },
         { label: "Capacity", value: product?.capacity },
-      ].filter((i) => i.value),
+      ].filter((item) => item.value),
     [product],
   );
 
   return (
     <>
-      {isLoading && <AquaPreloader />}
+      {isLoading && (
+        <AquaPreloader
+          message="Preparing product"
+          subtext="Loading price, delivery and gallery details."
+        />
+      )}
       <AquaLayout>
-        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 font-sans text-slate-900 selection:bg-emerald-100 rounded-2xl m-3">
-          <div className="container mx-auto px-4 py-8 lg:py-12">
-            <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
-              {/* Left Column: Images (Sticky on Desktop) */}
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 font-sans text-slate-900 selection:bg-emerald-100">
+          <div className="mx-auto max-w-7xl px-4 pb-14 pt-6 sm:px-6 lg:px-8 lg:pb-16 lg:pt-8">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
               <div className="lg:col-span-7">
-                <div className="lg:sticky lg:top-24">
+                <div className="lg:sticky lg:top-28">
                   <ImageGallery images={images} title={product?.title} />
                 </div>
               </div>
 
-              {/* Right Column: Product Details (Scrollable) */}
-              <div className="flex flex-col gap-8 lg:col-span-5">
-                {/* Header Section */}
-                <div>
-                  <div className="flex items-center justify-between">
-                    <nav className="flex items-center gap-2 text-sm text-slate-500">
+              <div className="flex flex-col gap-6 lg:col-span-5 lg:pt-1">
+                <div className="rounded-[2rem] border border-white/70 bg-white/72 p-5 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <nav className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-500">
                       <span>Home</span>
                       <span>/</span>
-                      <span className="font-medium text-slate-900 truncate max-w-[200px]">
-                        {resolveDisplayText(product?.category) || "Product"}
+                      <span className="max-w-[220px] truncate text-slate-900">
+                        {categoryLabel}
                       </span>
                     </nav>
                     <div className="flex gap-2">
                       <button
                         onClick={handleShare}
-                        className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                        aria-label="Share product"
+                        className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
                       >
                         <Share2 size={20} />
                       </button>
                       <button
                         onClick={handleFav}
-                        className={`rounded-full p-2 transition-colors ${isFavorite ? "text-red-500 bg-red-50" : "text-slate-400 hover:bg-slate-100 hover:text-slate-600"}`}
+                        aria-label="Add product to favourites"
+                        className={`rounded-full p-2 transition ${isFavorite ? "bg-red-50 text-red-500" : "text-slate-400 hover:bg-slate-100 hover:text-slate-700"}`}
                       >
-                        <Heart
-                          size={20}
-                          fill={isFavorite ? "currentColor" : "none"}
-                        />
+                        <Heart size={20} fill={isFavorite ? "currentColor" : "none"} />
                       </button>
                     </div>
                   </div>
 
-                  <h1 className="mt-4 text-3xl font-bold text-slate-900 leading-tight lg:text-4xl">
+                  <h1 className="mt-4 text-2xl font-extrabold leading-tight tracking-tight text-slate-950 sm:text-3xl lg:text-[2.35rem]">
                     {product?.title}
                   </h1>
 
-                  <div className="mt-4 flex items-center gap-4">
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
                     {reviewStats.total > 0 ? (
                       <a
                         href="#reviews"
-                        className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700 hover:bg-emerald-100 transition-colors"
+                        className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
                       >
                         <span>{reviewStats.avg.toFixed(1)}</span>
                         <Star size={14} fill="currentColor" />
                         <span className="text-emerald-700/60">
-                          | {reviewStats.total}{" "}
-                          {reviewStats.total === 1 ? "Review" : "Reviews"}
+                          | {reviewStats.total} {reviewStats.total === 1 ? "Review" : "Reviews"}
                         </span>
                       </a>
                     ) : (
-                      <span className="flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 text-sm font-medium text-slate-500">
+                      <span className="flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 text-sm font-semibold text-slate-500">
                         <Star size={14} />
                         No reviews yet
                       </span>
                     )}
                     {stockCount > 0 ? (
-                      <span className="text-sm font-medium text-emerald-600">
-                        In Stock
-                      </span>
+                      <span className="text-sm font-semibold text-emerald-600">In Stock</span>
                     ) : (
-                      <span className="text-sm font-medium text-red-600">
-                        Out of Stock
-                      </span>
+                      <span className="text-sm font-semibold text-red-600">Out of Stock</span>
                     )}
                   </div>
                 </div>
 
-                {/* Price Section */}
-                <div className="rounded-2xl border border-white/60 bg-white/40 p-6 shadow-sm backdrop-blur-md">
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-4xl font-bold text-slate-900">
+                <div className="rounded-[1.75rem] border border-white/70 bg-white/80 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.07)] backdrop-blur-xl sm:p-6">
+                  <div className="flex flex-wrap items-baseline gap-3">
+                    <span className="text-3xl font-extrabold text-slate-950 sm:text-4xl">
                       ₹{formatIndianCurrency(price)}
                     </span>
                     {originalPrice && (
                       <>
-                        <span className="text-lg text-slate-500 line-through">
+                        <span className="text-base text-slate-500 line-through sm:text-lg">
                           ₹{formatIndianCurrency(originalPrice)}
                         </span>
-                        <span className="text-lg font-bold text-emerald-600">
+                        <span className="text-base font-extrabold text-emerald-600 sm:text-lg">
                           {discount}% OFF
                         </span>
                       </>
                     )}
                   </div>
-                  <p className="mt-2 text-sm text-slate-500">
+                  <p className="mt-2 text-sm font-medium text-slate-500">
                     Inclusive of all taxes
                   </p>
 
-                  <div className="mt-6 flex gap-3">
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                     <button
                       onClick={handleCart}
-                      className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-3.5 font-bold text-white shadow-lg shadow-emerald-200 transition-all active:scale-95 ${
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3.5 font-bold text-white shadow-lg shadow-emerald-200 transition-all active:scale-95 ${
                         isInCart
                           ? "bg-emerald-700 hover:bg-emerald-800"
-                          : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border border-transparent"
+                          : "border border-transparent bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
                       }`}
                     >
                       <ShoppingCart size={20} />
@@ -545,69 +429,42 @@ function AquaProductRevamp({
                     </button>
                     <Button
                       onClick={handleRedirectToCheckout}
-                      className="flex-1 flex items-center justify-center gap-2 rounded-xl border-2 border-slate-900 bg-transparent py-3.5 font-bold text-slate-900 transition-all hover:bg-slate-50 active:scale-95"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-slate-900 bg-transparent py-3.5 font-bold text-slate-900 transition-all hover:bg-slate-50 active:scale-95"
                     >
                       Buy Now
                     </Button>
                   </div>
                 </div>
 
-                {/* Info Tiles */}
-                <div className="grid grid-cols-2 gap-3">
-                  <ProductInfo
-                    icon={Truck}
-                    title="Free Delivery"
-                    desc="Across India"
-                  />
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <ProductInfo icon={Truck} title="Free Delivery" desc="Across India" />
                   <ProductInfo
                     icon={ShieldCheck}
                     title="Warranty"
-                    desc={
-                      specs.find((s) => s.label === "Warranty")?.value ||
-                      "1 Year Standard"
-                    }
+                    desc={specs.find((item) => item.label === "Warranty")?.value || "1 Year Standard"}
                   />
-                  <ProductInfo
-                    icon={RefreshCcw}
-                    title="Easy Return"
-                    desc="7 Days Policy"
-                  />
-                  <ProductInfo
-                    icon={PhoneCall}
-                    title="Support"
-                    desc="24/7 Assistance"
-                  />
+                  <ProductInfo icon={RefreshCcw} title="Easy Return" desc="7 Days Policy" />
+                  <ProductInfo icon={PhoneCall} title="Support" desc="24/7 Assistance" />
                 </div>
 
-                {/* Product Highlights/Description */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-bold text-slate-900">
-                    Highlights
-                  </h3>
-                  <div className="prose prose-sm prose-slate max-w-none text-slate-600">
-                    <div
-                      dangerouslySetInnerHTML={{ __html: product?.description }}
-                    />
+                <div className="rounded-[1.75rem] border border-white/70 bg-white/72 p-5 shadow-sm backdrop-blur-xl sm:p-6">
+                  <h3 className="text-lg font-extrabold text-slate-950">Highlights</h3>
+                  <div className="prose prose-sm prose-slate mt-4 max-w-none text-slate-600">
+                    <div dangerouslySetInnerHTML={{ __html: product?.description }} />
                   </div>
                 </div>
 
-                {/* Specifications Accordion */}
-                <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/40 shadow-sm backdrop-blur-md">
+                <div className="overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/72 shadow-sm backdrop-blur-xl">
                   <div className="px-6 py-2">
-                    <AccordionItem
-                      title="Product Specifications"
-                      defaultOpen={true}
-                    >
+                    <AccordionItem title="Product Specifications" defaultOpen>
                       <div className="grid grid-cols-1 gap-y-3 pt-2">
-                        {specs.map((spec, idx) => (
+                        {specs.map((spec) => (
                           <div
-                            key={idx}
+                            key={spec.label}
                             className="grid grid-cols-2 gap-4 border-b border-dashed border-slate-200 pb-3 last:border-0 last:pb-0"
                           >
                             <span className="text-slate-500">{spec.label}</span>
-                            <span className="font-medium text-slate-900">
-                              {spec.value}
-                            </span>
+                            <span className="font-semibold text-slate-900">{spec.value}</span>
                           </div>
                         ))}
                       </div>
@@ -620,8 +477,7 @@ function AquaProductRevamp({
               </div>
             </div>
 
-            {/* Reviews Section */}
-            <div id="reviews">
+            <div id="reviews" className="mt-14">
               <ProductReviews
                 productId={product?._id}
                 reviews={reviews}
@@ -630,15 +486,13 @@ function AquaProductRevamp({
               />
             </div>
 
-            {/* Related Products Section */}
             {relatedProducts.length > 0 && (
               <div className="mt-20">
-                <h2 className="mb-8 text-2xl font-bold text-slate-900 text-center lg:text-left">
+                <h2 className="mb-8 text-center text-2xl font-bold text-slate-900 lg:text-left">
                   Similar Products
                 </h2>
 
-                {/* Similar Products Carousel */}
-                <div className="relative group">
+                <div className="group relative">
                   <div className="overflow-hidden p-2" ref={relatedProductRef}>
                     <div className="flex gap-6">
                       <Suspense
@@ -649,7 +503,7 @@ function AquaProductRevamp({
                         {relatedProducts.map((item) => (
                           <div
                             key={item._id}
-                            className="min-w-[280px] sm:min-w-[320px] flex-shrink-0"
+                            className="min-w-[280px] flex-shrink-0 sm:min-w-[320px]"
                           >
                             <AquaRelatedProductCard product={item} />
                           </div>
@@ -658,17 +512,16 @@ function AquaProductRevamp({
                     </div>
                   </div>
 
-                  {/* Navigation Buttons */}
                   <button
                     onClick={scrollPrev}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full border border-slate-200 bg-white p-3 text-slate-600 shadow-lg transition-all hover:bg-emerald-50 hover:text-emerald-600 hover:scale-110 opacity-0 group-hover:opacity-100 disabled:opacity-0 disabled:cursor-not-allowed"
+                    className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-slate-200 bg-white p-3 text-slate-600 opacity-0 shadow-lg transition-all hover:scale-110 hover:bg-emerald-50 hover:text-emerald-600 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-0"
                     aria-label="Previous slide"
                   >
                     <ChevronLeft size={24} />
                   </button>
                   <button
                     onClick={scrollNext}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full border border-slate-200 bg-white p-3 text-slate-600 shadow-lg transition-all hover:bg-emerald-50 hover:text-emerald-600 hover:scale-110 opacity-0 group-hover:opacity-100 disabled:opacity-0 disabled:cursor-not-allowed"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full border border-slate-200 bg-white p-3 text-slate-600 opacity-0 shadow-lg transition-all hover:scale-110 hover:bg-emerald-50 hover:text-emerald-600 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-0"
                     aria-label="Next slide"
                   >
                     <ChevronRight size={24} />
