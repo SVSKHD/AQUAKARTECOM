@@ -70,6 +70,55 @@
   transform: translateY(-1px) scale(0.99);
 }
 
+/* Global rich motion system applied to every page through _app.js. */
+.aqua-page-shell :where(section, article, .glass-card, .glass, .hero-glass-card) {
+  animation: aquaSurfaceIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: center top;
+}
+
+.aqua-page-shell > :where(div, section, main) {
+  animation: aquaSoftReveal 0.45s ease-out both;
+}
+
+.aqua-page-shell :where(section, article, .glass-card, .glass, .hero-glass-card):nth-of-type(2) {
+  animation-delay: 0.05s;
+}
+
+.aqua-page-shell :where(section, article, .glass-card, .glass, .hero-glass-card):nth-of-type(3) {
+  animation-delay: 0.1s;
+}
+
+.aqua-page-shell :where(section, article, .glass-card, .glass, .hero-glass-card):nth-of-type(n + 4) {
+  animation-delay: 0.14s;
+}
+
+.aqua-page-shell :where(button, a, [role="button"]) {
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.aqua-page-shell :where(button, a, [role="button"]):active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.aqua-page-shell :where(img, video) {
+  animation: aquaMediaIn 0.52s ease-out both;
+}
+
+@media (hover: hover) {
+  .aqua-page-shell :where(article, .glass-card, .hero-glass-card):hover {
+    transform: translateY(-3px);
+  }
+
+  .aqua-page-shell :where(button, a, [role="button"]):hover {
+    transform: translateY(-1px);
+  }
+}
+
 /* Upgrade old order skeleton blocks into a branded loader until the page data arrives. */
 .grid.gap-4.lg\:grid-cols-2:has(> .h-72.animate-pulse.rounded-\[1\.75rem\]) {
   position: relative;
@@ -242,6 +291,41 @@
   }
 }
 
+@keyframes aquaSurfaceIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes aquaSoftReveal {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes aquaMediaIn {
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .aqua-loader-card,
   .aqua-loader-ring,
@@ -249,13 +333,19 @@
   .aqua-loader-progress,
   .aqua-page-shell,
   .aqua-page-enter,
-  .aqua-card-enter {
+  .aqua-card-enter,
+  .aqua-page-shell :where(section, article, .glass-card, .glass, .hero-glass-card),
+  .aqua-page-shell > :where(div, section, main),
+  .aqua-page-shell :where(img, video) {
     animation: none !important;
   }
 
   .aqua-interactive-lift,
   .aqua-interactive-lift:hover,
-  .aqua-interactive-lift:active {
+  .aqua-interactive-lift:active,
+  .aqua-page-shell :where(article, .glass-card, .hero-glass-card):hover,
+  .aqua-page-shell :where(button, a, [role="button"]):hover,
+  .aqua-page-shell :where(button, a, [role="button"]):active {
     transform: none !important;
   }
 }
