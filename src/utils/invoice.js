@@ -1,4 +1,4 @@
-const INVOICE_WATERMARK_URL =
+const AQUAKART_LOGO_URL =
   "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png";
 const GST_RATE = 0.18;
 
@@ -8,6 +8,14 @@ const roundToTwo = (value) =>
 const toNumber = (value, fallback = 0) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const firstFiniteNumber = (values) => {
+  for (const value of values) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
 };
 
 const resolveAmountPaid = (order, fallbackAmount) => {
@@ -29,12 +37,13 @@ const resolveAmountPaid = (order, fallbackAmount) => {
   return roundToTwo(toNumber(fallbackAmount, 0));
 };
 
-const fmt = (v) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
+const fmt = (value) => {
+  const amount = roundToTwo(toNumber(value, 0)).toLocaleString("en-IN", {
     minimumFractionDigits: 2,
-  }).format(roundToTwo(toNumber(v, 0)));
+    maximumFractionDigits: 2,
+  });
+  return `INR ${amount}`;
+};
 
 const loadImageAsDataURL = (url) =>
   new Promise((resolve) => {
@@ -67,7 +76,29 @@ const composeAddressLines = (address) => {
     [city, state].filter(Boolean).join(", "),
     postalCode,
     country,
-  ].filter(Boolean);
+  ]
+    .map((line) => (line ? `${line}`.trim() : ""))
+    .filter(Boolean);
+};
+
+const writeWrappedLines = (doc, lines, x, y, width, lineGap = 12) => {
+  let cursorY = y;
+  lines.forEach((line) => {
+    const wrapped = doc.splitTextToSize(String(line), width);
+    doc.text(wrapped, x, cursorY, { lineHeightFactor: 1.25 });
+    cursorY += wrapped.length * lineGap;
+  });
+  return cursorY;
+};
+
+const drawRoundedCard = (doc, x, y, w, h, fill, stroke) => {
+  doc.setFillColor(...fill);
+  doc.roundedRect(x, y, w, h, 10, 10, "F");
+  if (stroke) {
+    doc.setDrawColor(...stroke);
+    doc.setLineWidth(0.8);
+    doc.roundedRect(x, y, w, h, 10, 10, "S");
+  }
 };
 
 /**
@@ -86,28 +117,34 @@ export const generateInvoicePDF = async (order) => {
   const doc = new jsPDFConstructor({ unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
-  const M = 44;
+  const M = 42;
   const TW = W - M * 2;
   const F = "helvetica";
 
-  // Colours
   const BRAND = [16, 185, 129];
   const BRAND_DARK = [6, 95, 70];
+  const BRAND_DEEP = [4, 120, 87];
+  const SLATE_950 = [2, 6, 23];
   const SLATE_900 = [15, 23, 42];
+  const SLATE_700 = [51, 65, 85];
   const SLATE_600 = [71, 85, 105];
+  const SLATE_500 = [100, 116, 139];
   const SLATE_400 = [148, 163, 184];
+  const SLATE_200 = [226, 232, 240];
+  const SLATE_100 = [241, 245, 249];
   const STRIPE_BG = [248, 250, 252];
   const WHITE = [255, 255, 255];
 
-  // Compute totals
+  const items = Array.isArray(order?.items) ? order.items : [];
+
   const orderSubtotal = roundToTwo(
-    (order.items || []).reduce((sum, item) => {
+    items.reduce((sum, item) => {
       return sum + toNumber(item?.price) * toNumber(item?.quantity, 1);
     }, 0),
   );
 
   const itemsGstTotal = roundToTwo(
-    (order.items || []).reduce((sum, item) => {
+    items.reduce((sum, item) => {
       const gross = roundToTwo(
         toNumber(item?.price) * toNumber(item?.quantity, 1),
       );
@@ -126,150 +163,167 @@ export const generateInvoicePDF = async (order) => {
   );
 
   const amountPaid = resolveAmountPaid(order, orderSubtotal + shippingCharge);
-  const payableTotal = amountPaid;
+  const orderTotal = toNumber(order?.totalAmount, amountPaid);
+  const explicitDiscount = firstFiniteNumber([
+    order?.discountAmount,
+    order?.discount,
+    order?.couponDiscount,
+    order?.offerDiscount,
+  ]);
+  const discountAmount =
+    explicitDiscount !== null && explicitDiscount >= 0
+      ? roundToTwo(explicitDiscount)
+      : Math.max(roundToTwo(orderSubtotal - orderTotal), 0);
+
   const isCOD = `${order.orderType || order.paymentMethod || ""}`
     .toLowerCase()
     .includes("cash");
 
-  // Watermark
-  const watermark = await loadImageAsDataURL(INVOICE_WATERMARK_URL);
-  if (watermark) {
+  const logo = await loadImageAsDataURL(AQUAKART_LOGO_URL);
+
+  if (logo) {
     try {
       if (doc.GState) {
-        doc.setGState(new doc.GState({ opacity: 0.04 }));
-        doc.addImage(watermark, "PNG", W / 2 - 150, H / 2 - 150, 300, 300);
+        doc.setGState(new doc.GState({ opacity: 0.035 }));
+        doc.addImage(logo, "PNG", W / 2 - 145, H / 2 - 145, 290, 290);
         doc.setGState(new doc.GState({ opacity: 1 }));
       }
     } catch (_) {}
   }
 
-  // Header band
   doc.setFillColor(...BRAND);
-  doc.rect(0, 0, W, 88, "F");
+  doc.rect(0, 0, W, 96, "F");
   doc.setFillColor(...BRAND_DARK);
-  doc.rect(0, 88, W, 4, "F");
+  doc.rect(0, 96, W, 5, "F");
+
+  let brandTextX = M;
+  if (logo) {
+    try {
+      doc.setFillColor(...WHITE);
+      doc.roundedRect(M, 22, 50, 50, 14, 14, "F");
+      doc.addImage(logo, "PNG", M + 8, 30, 34, 34);
+      brandTextX = M + 64;
+    } catch (_) {
+      brandTextX = M;
+    }
+  }
 
   doc.setTextColor(...WHITE);
   doc.setFont(F, "bold");
-  doc.setFontSize(28);
-  doc.text("Aquakart", M, 42);
+  doc.setFontSize(27);
+  doc.text("Aquakart", brandTextX, 43);
   doc.setFont(F, "normal");
   doc.setFontSize(10);
-  doc.text("Premium Water Solutions", M, 58);
+  doc.text("Premium Water Solutions", brandTextX, 60);
   doc.setFontSize(9);
-  doc.text("GSTIN: 36AJOPH6387A1Z2  |  aquakart.co.in", M, 74);
+  doc.text("GSTIN: 36AJOPH6387A1Z2  |  aquakart.co.in", brandTextX, 76);
 
-  // INVOICE badge
   doc.setFont(F, "bold");
   doc.setFontSize(11);
   doc.setFillColor(...WHITE);
-  const badgeW = 80;
-  doc.roundedRect(W - M - badgeW, 30, badgeW, 28, 14, 14, "F");
+  const badgeW = 86;
+  doc.roundedRect(W - M - badgeW, 32, badgeW, 30, 15, 15, "F");
   doc.setTextColor(...BRAND_DARK);
-  doc.text("INVOICE", W - M - badgeW / 2, 49, { align: "center" });
+  doc.text("INVOICE", W - M - badgeW / 2, 51, { align: "center" });
 
-  // Invoice meta grid
-  let Y = 112;
-  const metaLeft = [
-    ["Invoice #", order?.orderId || "-"],
-    [
-      "Date",
-      order?.createdAt
-        ? new Date(order.createdAt).toLocaleDateString("en-IN", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })
-        : "-",
-    ],
+  let Y = 122;
+  const invoiceNumber = order?.invoiceId || order?.orderId || "-";
+  const createdDate = order?.createdAt
+    ? new Date(order.createdAt).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "-";
+
+  const metaData = [
+    ["Invoice #", invoiceNumber],
+    ["Date", createdDate],
     ["Transaction", order?.transactionId || "-"],
-  ];
-  const metaRight = [
     ["Payment", isCOD ? "Cash on Delivery" : "Online / Gateway"],
     ["Status", order?.orderStatus || "Processing"],
-    ["Currency", "INR (₹)"],
+    ["Currency", "INR"],
   ];
 
-  const drawMeta = (items, startX, startY) => {
-    let y = startY;
-    items.forEach(([label, value]) => {
-      doc.setFont(F, "normal");
-      doc.setFontSize(8);
-      doc.setTextColor(...SLATE_400);
-      doc.text(label.toUpperCase(), startX, y);
-      doc.setFont(F, "bold");
-      doc.setFontSize(10);
-      doc.setTextColor(...SLATE_900);
-      doc.text(String(value), startX, y + 13);
-      y += 30;
-    });
-    return y;
-  };
+  const metaCardW = (TW - 14) / 2;
+  const metaCardH = 36;
+  metaData.forEach(([label, value], index) => {
+    const col = index % 2;
+    const row = Math.floor(index / 2);
+    const x = M + col * (metaCardW + 14);
+    const y = Y + row * (metaCardH + 10);
 
-  drawMeta(metaLeft, M, Y);
-  drawMeta(metaRight, W / 2 + 20, Y);
-  Y += 30 * metaLeft.length + 8;
-
-  // Divider
-  doc.setDrawColor(...SLATE_400);
-  doc.setLineWidth(0.5);
-  doc.line(M, Y, W - M, Y);
-  Y += 16;
-
-  // Billing / Shipping
-  const drawAddressBlock = (title, lines, x, y) => {
+    drawRoundedCard(doc, x, y, metaCardW, metaCardH, STRIPE_BG, SLATE_200);
+    doc.setFont(F, "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...SLATE_400);
+    doc.text(label.toUpperCase(), x + 12, y + 13);
     doc.setFont(F, "bold");
     doc.setFontSize(9);
-    doc.setTextColor(...BRAND);
-    doc.text(title.toUpperCase(), x, y);
-    doc.setFont(F, "normal");
-    doc.setFontSize(10);
     doc.setTextColor(...SLATE_900);
-    let offsetY = y + 16;
-    lines.forEach((line) => {
-      doc.text(String(line), x, offsetY);
-      offsetY += 14;
-    });
-    return offsetY;
-  };
+    const valueLines = doc.splitTextToSize(String(value), metaCardW - 24);
+    doc.text(valueLines.slice(0, 1), x + 12, y + 27);
+  });
+
+  Y += 3 * (metaCardH + 10) + 12;
 
   const billingLines = [
     order?.customerName || order?.user?.name || "Customer",
     order?.email,
     order?.phone,
   ].filter(Boolean);
+
   const shippingLines = composeAddressLines(order?.shippingAddress);
-  if (order?.phone) shippingLines.push(`Ph: ${order.phone}`);
+  if (order?.phone) shippingLines.push(`Phone: ${order.phone}`);
 
-  const bY = drawAddressBlock("Bill To", billingLines, M, Y);
-  const sY = drawAddressBlock("Ship To", shippingLines, W / 2 + 20, Y);
-  Y = Math.max(bY, sY) + 16;
+  const addressBoxW = (TW - 16) / 2;
+  const addressBoxH = 94;
 
-  // Table
-  const colX = {
-    idx: M + 12,
-    item: M + 40,
-    qty: M + TW - 180,
-    rate: M + TW - 120,
-    gst: M + TW - 60,
-    total: M + TW - 4,
+  const drawAddressBlock = (title, lines, x, y) => {
+    drawRoundedCard(doc, x, y, addressBoxW, addressBoxH, WHITE, SLATE_200);
+    doc.setFont(F, "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(...BRAND_DEEP);
+    doc.text(title.toUpperCase(), x + 14, y + 20);
+    doc.setFont(F, "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(...SLATE_700);
+    writeWrappedLines(
+      doc,
+      lines.length ? lines : ["N/A"],
+      x + 14,
+      y + 38,
+      addressBoxW - 28,
+      12,
+    );
   };
-  const itemDescW = colX.qty - colX.item - 16;
+
+  drawAddressBlock("Bill To", billingLines, M, Y);
+  drawAddressBlock("Ship To", shippingLines, M + addressBoxW + 16, Y);
+  Y += addressBoxH + 22;
+
+  const colX = {
+    idx: M + 14,
+    item: M + 42,
+    qty: M + TW - 206,
+    rate: M + TW - 128,
+    total: M + TW - 14,
+  };
+  const itemDescW = colX.qty - colX.item - 18;
 
   const drawTableHead = (y) => {
     doc.setFillColor(...BRAND);
-    doc.roundedRect(M, y, TW, 28, 6, 6, "F");
+    doc.roundedRect(M, y, TW, 30, 8, 8, "F");
     doc.setTextColor(...WHITE);
     doc.setFont(F, "bold");
-    doc.setFontSize(9);
-    doc.text("#", colX.idx, y + 18);
-    doc.text("ITEM", colX.item, y + 18);
-    doc.text("QTY", colX.qty, y + 18, { align: "right" });
-    doc.text("RATE", colX.rate, y + 18, { align: "right" });
-    doc.text("GST", colX.gst, y + 18, { align: "right" });
-    doc.text("AMOUNT", colX.total, y + 18, { align: "right" });
+    doc.setFontSize(8.5);
+    doc.text("#", colX.idx, y + 19);
+    doc.text("ITEM", colX.item, y + 19);
+    doc.text("QTY", colX.qty, y + 19, { align: "right" });
+    doc.text("RATE", colX.rate, y + 19, { align: "right" });
+    doc.text("AMOUNT", colX.total, y + 19, { align: "right" });
     doc.setTextColor(...SLATE_900);
-    return y + 34;
+    return y + 38;
   };
 
   Y = drawTableHead(Y);
@@ -278,115 +332,111 @@ export const generateInvoicePDF = async (order) => {
     if (Y + need > H - 100) {
       doc.addPage();
       doc.setFillColor(...BRAND);
-      doc.rect(0, 0, W, 36, "F");
+      doc.rect(0, 0, W, 38, "F");
       doc.setTextColor(...WHITE);
       doc.setFont(F, "bold");
       doc.setFontSize(10);
-      doc.text("Aquakart Invoice (continued)", M, 24);
+      doc.text("Aquakart Invoice - continued", M, 24);
       doc.setTextColor(...SLATE_900);
-      Y = 56;
+      Y = 58;
       Y = drawTableHead(Y);
     }
   };
 
-  (order?.items || []).forEach((product, i) => {
+  items.forEach((product, i) => {
     const name = product?.name || product?.productName || `Item ${i + 1}`;
     const qty = toNumber(product?.quantity, 1);
     const unitPrice = toNumber(product?.price, 0);
     const lineTotal = roundToTwo(qty * unitPrice);
-    const gstAmt = roundToTwo(
-      lineTotal - roundToTwo(lineTotal / (1 + GST_RATE)),
-    );
-    const nameLines = doc.splitTextToSize(name, Math.max(itemDescW, 100));
-    const rowH = Math.max(nameLines.length * 14 + 18, 40);
+    const nameLines = doc.splitTextToSize(name, Math.max(itemDescW, 110));
+    const rowH = Math.max(nameLines.length * 13 + 18, 42);
 
-    ensurePage(rowH + 6);
+    ensurePage(rowH + 8);
 
     if (i % 2 === 1) {
       doc.setFillColor(...STRIPE_BG);
-      doc.roundedRect(M, Y, TW, rowH, 4, 4, "F");
+      doc.roundedRect(M, Y, TW, rowH, 6, 6, "F");
     }
 
     const textY = Y + 18;
     doc.setFont(F, "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(...SLATE_600);
+    doc.setFontSize(9.5);
+    doc.setTextColor(...SLATE_500);
     doc.text(String(i + 1).padStart(2, "0"), colX.idx, textY);
     doc.setTextColor(...SLATE_900);
-    doc.text(nameLines, colX.item, textY, { lineHeightFactor: 1.3 });
+    doc.text(nameLines, colX.item, textY, { lineHeightFactor: 1.25 });
+    doc.setFont(F, "bold");
     doc.text(String(qty), colX.qty, textY, { align: "right" });
+    doc.setFont(F, "normal");
     doc.setTextColor(...SLATE_600);
     doc.text(fmt(unitPrice), colX.rate, textY, { align: "right" });
-    doc.setFontSize(9);
-    doc.text(fmt(gstAmt), colX.gst, textY, { align: "right" });
-    doc.setFontSize(10);
     doc.setFont(F, "bold");
-    doc.setTextColor(...SLATE_900);
+    doc.setTextColor(...SLATE_950);
     doc.text(fmt(lineTotal), colX.total, textY, { align: "right" });
 
-    Y += rowH + 2;
+    Y += rowH + 4;
   });
 
-  // Summary section
-  ensurePage(200);
-  Y += 12;
+  if (!items.length) {
+    ensurePage(48);
+    doc.setFont(F, "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(...SLATE_500);
+    doc.text("No line items available for this invoice.", M + 14, Y + 20);
+    Y += 48;
+  }
+
+  ensurePage(210);
+  Y += 14;
 
   const boxW = TW / 2 - 10;
-  const boxH = 140;
+  const boxH = 154;
 
-  // Delivery details box
-  doc.setFillColor(240, 253, 244);
-  doc.roundedRect(M, Y, boxW, boxH, 10, 10, "F");
-  doc.setDrawColor(167, 243, 208);
-  doc.setLineWidth(0.8);
-  doc.roundedRect(M, Y, boxW, boxH, 10, 10, "S");
-
+  drawRoundedCard(doc, M, Y, boxW, boxH, [240, 253, 244], [167, 243, 208]);
   doc.setFont(F, "bold");
   doc.setFontSize(10);
   doc.setTextColor(...BRAND_DARK);
-  doc.text("DELIVERY DETAILS", M + 16, Y + 22);
+  doc.text("DELIVERY DETAILS", M + 16, Y + 23);
   doc.setFont(F, "normal");
-  doc.setFontSize(9);
+  doc.setFontSize(8.6);
   doc.setTextColor(...SLATE_600);
-  const deliveryLines = [
-    ...(shippingLines.length ? shippingLines : ["N/A"]),
-    order?.email ? `Email: ${order.email}` : null,
-  ].filter(Boolean);
-  let dY = Y + 40;
-  deliveryLines.forEach((line) => {
-    doc.text(String(line), M + 16, dY);
-    dY += 14;
-  });
+  writeWrappedLines(
+    doc,
+    [
+      ...(shippingLines.length ? shippingLines : ["N/A"]),
+      order?.email ? `Email: ${order.email}` : null,
+    ].filter(Boolean),
+    M + 16,
+    Y + 42,
+    boxW - 32,
+    12,
+  );
 
-  // Invoice summary box
   const rBoxX = M + boxW + 20;
-  doc.setFillColor(...STRIPE_BG);
-  doc.roundedRect(rBoxX, Y, boxW, boxH, 10, 10, "F");
-  doc.setDrawColor(226, 232, 240);
-  doc.setLineWidth(0.8);
-  doc.roundedRect(rBoxX, Y, boxW, boxH, 10, 10, "S");
+  drawRoundedCard(doc, rBoxX, Y, boxW, boxH, STRIPE_BG, SLATE_200);
 
   doc.setFont(F, "bold");
   doc.setFontSize(10);
   doc.setTextColor(...SLATE_900);
-  doc.text("INVOICE SUMMARY", rBoxX + 16, Y + 22);
-
-  const payableBeforeShipping = Math.max(
-    roundToTwo(toNumber(order?.totalAmount, orderSubtotal)),
-    0,
-  );
-  const discountAmount = Math.max(
-    roundToTwo(orderSubtotal - payableBeforeShipping),
-    0,
-  );
+  doc.text("INVOICE SUMMARY", rBoxX + 16, Y + 23);
 
   const summaryData = [
     {
-      label: "Product price",
-      value: fmt(payableBeforeShipping || orderSubtotal),
+      label: "Items subtotal",
+      value: fmt(orderSubtotal),
     },
+  ];
+
+  if (discountAmount > 0) {
+    summaryData.push({
+      label: "Discount applied",
+      value: `- ${fmt(discountAmount)}`,
+    });
+  }
+
+  summaryData.push(
     {
-      label: `Incl. GST (${Math.round(GST_RATE * 100)}%)`,
+      label: `GST included (${Math.round(GST_RATE * 100)}%)`,
       value: fmt(itemsGstTotal),
       muted: true,
     },
@@ -394,40 +444,31 @@ export const generateInvoicePDF = async (order) => {
       label: "Shipping",
       value: shippingCharge > 0 ? fmt(shippingCharge) : "FREE",
     },
-  ];
+  );
 
-  if (discountAmount > 0) {
-    summaryData.splice(1, 0, {
-      label: "Discount applied",
-      value: `- ${fmt(discountAmount)}`,
-    });
-  }
-
-  let sLineY = Y + 42;
+  let sLineY = Y + 44;
   summaryData.forEach((row) => {
     doc.setFont(F, "normal");
-    doc.setFontSize(row.muted ? 8 : 9);
-    const tc = row.muted ? SLATE_400 : SLATE_600;
-    doc.setTextColor(tc[0], tc[1], tc[2]);
-    doc.text(row.muted ? `    ${row.label}` : row.label, rBoxX + 16, sLineY);
+    doc.setFontSize(row.muted ? 8 : 8.8);
+    const textColor = row.muted ? SLATE_400 : SLATE_600;
+    doc.setTextColor(...textColor);
+    doc.text(row.label, rBoxX + 16, sLineY);
     doc.text(row.value, rBoxX + boxW - 16, sLineY, { align: "right" });
-    sLineY += row.muted ? 14 : 16;
+    sLineY += row.muted ? 13 : 16;
   });
 
-  // Divider + total
   doc.setDrawColor(...BRAND);
   doc.setLineWidth(1);
   doc.line(rBoxX + 16, sLineY + 2, rBoxX + boxW - 16, sLineY + 2);
-  sLineY += 16;
+  sLineY += 18;
 
   doc.setFont(F, "bold");
-  doc.setFontSize(12);
+  doc.setFontSize(11.5);
   doc.setTextColor(...BRAND_DARK);
   doc.text("AMOUNT PAID", rBoxX + 16, sLineY);
-  doc.text(fmt(payableTotal), rBoxX + boxW - 16, sLineY, { align: "right" });
+  doc.text(fmt(amountPaid), rBoxX + boxW - 16, sLineY, { align: "right" });
 
-  // Footer
-  doc.setDrawColor(226, 232, 240);
+  doc.setDrawColor(...SLATE_200);
   doc.setLineWidth(0.5);
   doc.line(M, H - 68, W - M, H - 68);
 
@@ -450,7 +491,6 @@ export const generateInvoicePDF = async (order) => {
   doc.setTextColor(...BRAND);
   doc.text("Thank you for your order!", W - M, H - 42, { align: "right" });
 
-  // Save
   doc.save(
     `Aquakart-Invoice-${order?.orderId || order?.transactionId || "order"}.pdf`,
   );
