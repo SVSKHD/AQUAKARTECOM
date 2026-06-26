@@ -35,6 +35,9 @@ const Toaster = dynamic(() => import("sonner").then((mod) => mod.Toaster), {
 });
 
 const GA_ID = "G-FS41RRVRD4";
+const BOOT_LOADER_MS = 650;
+const ROUTE_LOADER_DELAY_MS = 90;
+const ROUTE_LOADER_MIN_MS = 420;
 
 const persistConfig = {
   key: "root",
@@ -57,7 +60,9 @@ const PersistLoader = () => (
 export default function App({ Component, pageProps }) {
   const router = useRouter();
   const [routeLoading, setRouteLoading] = useState(false);
+  const [bootLoading, setBootLoading] = useState(true);
   const loaderTimerRef = useRef(null);
+  const loaderStartedAtRef = useRef(0);
 
   // Track route changes in GA
   useEffect(() => {
@@ -70,16 +75,30 @@ export default function App({ Component, pageProps }) {
   }, [router.events]);
 
   useEffect(() => {
+    const bootTimer = window.setTimeout(() => {
+      setBootLoading(false);
+    }, BOOT_LOADER_MS);
+
+    return () => window.clearTimeout(bootTimer);
+  }, []);
+
+  useEffect(() => {
     const showRouteLoader = () => {
       window.clearTimeout(loaderTimerRef.current);
       loaderTimerRef.current = window.setTimeout(() => {
+        loaderStartedAtRef.current = Date.now();
         setRouteLoading(true);
-      }, 120);
+      }, ROUTE_LOADER_DELAY_MS);
     };
 
     const hideRouteLoader = () => {
       window.clearTimeout(loaderTimerRef.current);
-      setRouteLoading(false);
+      const elapsed = Date.now() - loaderStartedAtRef.current;
+      const remaining = Math.max(ROUTE_LOADER_MIN_MS - elapsed, 0);
+
+      window.setTimeout(() => {
+        setRouteLoading(false);
+      }, remaining);
     };
 
     router.events.on("routeChangeStart", showRouteLoader);
@@ -127,6 +146,13 @@ export default function App({ Component, pageProps }) {
 
       <PersistGate persistor={persistor} loading={<PersistLoader />}>
         <div className={`${robotoMono.variable} ${montserrat.variable}`}>
+          {bootLoading ? (
+            <AquaAppLoader
+              variant="screen"
+              message="Welcome to Aquakart"
+              subtext="Setting up a clean, smooth shopping experience."
+            />
+          ) : null}
           {routeLoading ? (
             <AquaAppLoader
               variant="route"
@@ -134,7 +160,7 @@ export default function App({ Component, pageProps }) {
               subtext="Loading the next page with fresh details."
             />
           ) : null}
-          <main className="aqua-page-shell">
+          <main key={router.asPath} className="aqua-page-shell aqua-page-enter">
             <Component {...pageProps} />
           </main>
           <Toaster position="top-right" richColors closeButton />
