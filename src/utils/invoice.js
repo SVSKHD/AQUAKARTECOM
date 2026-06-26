@@ -131,7 +131,6 @@ export const generateInvoicePDF = async (order) => {
   const SLATE_500 = [100, 116, 139];
   const SLATE_400 = [148, 163, 184];
   const SLATE_200 = [226, 232, 240];
-  const SLATE_100 = [241, 245, 249];
   const STRIPE_BG = [248, 250, 252];
   const WHITE = [255, 255, 255];
 
