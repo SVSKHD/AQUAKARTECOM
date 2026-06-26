@@ -120,6 +120,56 @@
   text-align: center;
 }
 
+/* Keep the orders area fixed-height and scroll inside instead of expanding the page/card. */
+.grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\]) {
+  max-height: clamp(520px, 68vh, 780px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.25rem 0.35rem 0.25rem 0;
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
+
+.grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\])::-webkit-scrollbar {
+  width: 8px;
+}
+
+.grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\])::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.55);
+  border-radius: 999px;
+}
+
+.grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\])::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #34d399, #0f766e);
+  border-radius: 999px;
+}
+
+.grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\])
+  > article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\] {
+  min-height: 560px;
+  height: 560px;
+}
+
+.grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\])
+  > article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\]
+  > .flex.flex-1.flex-col.gap-4.p-5 {
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\]) {
+    max-height: 70vh;
+    padding-right: 0.15rem;
+  }
+
+  .grid.gap-5.lg\:grid-cols-2:has(> article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\])
+    > article.group.flex.h-full.flex-col.overflow-hidden.rounded-\[1\.75rem\] {
+    min-height: 580px;
+    height: 580px;
+  }
+}
+
 @keyframes aquaLoaderCardIn {
   from {
     opacity: 0;
