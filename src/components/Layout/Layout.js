@@ -154,9 +154,9 @@ const AquaLayout = (props) => {
     return (
       <>
         <AquaHeader />
-        <div className="flex min-h-screen bg-white pt-24 flex-col">
-          <main className="flex flex-1 flex-col items-center justify-center bg-white">
-            <div className="glass-card rounded-3xl text-center p-10 mx-4 max-w-md">
+        <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-white pt-24 flex-col">
+          <main className="flex min-w-0 flex-1 flex-col items-center justify-center overflow-x-hidden bg-white">
+            <div className="glass-card mx-4 max-w-md rounded-3xl p-10 text-center">
               <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100/80">
                 <svg
                   className="h-8 w-8 text-rose-500"
@@ -223,8 +223,10 @@ const AquaLayout = (props) => {
         </>
       )}
 
-      <div className="relative flex min-h-screen flex-col bg-white pt-24 pb-16 sm:pb-0">
-        <main className="relative z-10 flex-1 bg-white">{props.children}</main>
+      <div className="relative flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-white pt-24 pb-16 sm:pb-0">
+        <main className="relative z-10 min-w-0 flex-1 overflow-x-hidden bg-white">
+          {props.children}
+        </main>
         <AquaFooter categories={categories} subcategories={subcategories} />
       </div>
 
