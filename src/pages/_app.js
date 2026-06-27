@@ -1,5 +1,6 @@
 import "@/styles/globals.css";
 import "@/styles/aqua-loader.css";
+import "@/styles/mobile-viewport.css";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { Provider } from "react-redux";
