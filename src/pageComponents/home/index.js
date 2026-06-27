@@ -10,6 +10,7 @@ import {
 } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import AquaLayout from "@/components/Layout/Layout";
+import ResponsiveGrid from "@/components/Layout/ResponsiveGrid";
 import AquaSpinner from "@/components/common/spinner";
 import AquaCategoryCard from "@/components/cards/categoryCard";
 import { useRouter } from "next/router";
@@ -316,7 +317,7 @@ const AquaHomeComponent = ({
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                <ResponsiveGrid minItemWidth="280px" gapClassName="gap-4 sm:gap-5 lg:gap-6">
                   {initialCategories.length === 0 ? (
                     <div className="col-span-full flex h-40 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/50">
                       <AquaSpinner color="emerald" size="lg" />
@@ -330,7 +331,7 @@ const AquaHomeComponent = ({
                       />
                     ))
                   )}
-                </div>
+                </ResponsiveGrid>
 
                 <div className="mt-6 sm:hidden">
                   <Link
