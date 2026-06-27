@@ -38,7 +38,7 @@ main[data-route="/product/[id]"] .touch-pan-y img {
   object-position: center !important;
 }
 
-main[data-route="/product/[id]"] .touch-pan-y + .hidden img {
+main[data-route="/product/[id]"] .hidden.grid-cols-5 img {
   object-fit: cover !important;
   padding: 0 !important;
 }
