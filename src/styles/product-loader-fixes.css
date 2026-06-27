@@ -1,6 +1,7 @@
-/* Product detail + loader polish
+/* Product detail + responsive layout polish
    - Product gallery images fill their card without empty padding gaps.
    - Route/page loaders fully cover the UI so blurred product images never bleed through.
+   - Collection cards use auto-fit sizing instead of fixed mobile columns.
 */
 
 .aqua-page-shell[aria-hidden="true"] {
@@ -41,6 +42,22 @@ main[data-route="/product/[id]"] .touch-pan-y img {
 main[data-route="/product/[id]"] .hidden.grid-cols-5 img {
   object-fit: cover !important;
   padding: 0 !important;
+}
+
+section[aria-labelledby="category-heading"] > div.grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)) !important;
+  align-items: stretch;
+}
+
+section[aria-labelledby="category-heading"] > div.grid > a {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 639px) {
+  section[aria-labelledby="category-heading"] > div.grid {
+    gap: 1rem !important;
+  }
 }
 
 @media (min-width: 1024px) {
