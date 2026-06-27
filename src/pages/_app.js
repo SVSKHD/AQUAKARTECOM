@@ -1,6 +1,7 @@
 import "@/styles/globals.css";
 import "@/styles/aqua-loader.css";
 import "@/styles/mobile-viewport.css";
+import "@/styles/product-loader-fixes.css";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { Provider } from "react-redux";
@@ -33,7 +34,7 @@ const Toaster = dynamic(() => import("sonner").then((mod) => mod.Toaster), {
 const GA_ID = "G-FS41RRVRD4";
 const APP_BOOT_MIN_MS = 1300;
 const APP_BOOT_MAX_MS = 2600;
-const ROUTE_LOADER_DELAY_MS = 70;
+const ROUTE_LOADER_DELAY_MS = 0;
 const ROUTE_LOADER_MIN_MS = 520;
 
 const persistConfig = {
@@ -194,13 +195,16 @@ export default function App({ Component, pageProps }) {
           <main
             key={router.asPath}
             className="aqua-page-shell aqua-page-enter"
+            data-route={router.pathname}
             aria-hidden={shouldShowLoader}
             style={{
               opacity: shouldShowLoader ? 0 : 1,
+              visibility: shouldShowLoader ? "hidden" : "visible",
               pointerEvents: shouldShowLoader ? "none" : "auto",
-              transform: shouldShowLoader ? "translateY(10px) scale(0.995)" : "none",
-              transition:
-                "opacity 420ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1)",
+              transform: shouldShowLoader ? "none" : "none",
+              transition: shouldShowLoader
+                ? "none"
+                : "opacity 420ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           >
             <Component {...pageProps} />
