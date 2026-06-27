@@ -1,0 +1,29 @@
+/* Mobile viewport guard
+   Keeps the app pinned to the device width so fixed headers,
+   animated hero cards, shadows and horizontal carousels cannot create
+   the iOS Safari right-side blank gap. */
+html,
+body,
+#__next {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+@supports not (overflow: clip) {
+  html,
+  body,
+  #__next {
+    overflow-x: hidden;
+  }
+}
+
+body {
+  overscroll-behavior-x: none;
+}
+
+.aqua-page-shell {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
