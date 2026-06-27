@@ -55,8 +55,8 @@ const AquaHomeHero = ({ data }) => {
   );
 
   return (
-    <div className="px-3 py-6 sm:px-4 lg:px-6">
-      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[3rem] bg-gradient-to-br from-indigo-50/80 via-purple-50/60 to-emerald-50/80 shadow-[0_8px_60px_rgba(0,0,0,0.08)] ring-1 ring-white/60">
+    <div className="w-full max-w-full overflow-x-hidden px-2 py-4 sm:px-4 sm:py-6 lg:px-6">
+      <div className="relative mx-auto w-full max-w-7xl overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-50/80 via-purple-50/60 to-emerald-50/80 shadow-[0_8px_60px_rgba(0,0,0,0.08)] ring-1 ring-white/60 sm:rounded-[3rem]">
         {/* Dynamic Festival Background Overlay */}
         {festival && (
           <div
@@ -64,21 +64,21 @@ const AquaHomeHero = ({ data }) => {
           />
         )}
 
-        <div className="pointer-events-none absolute inset-0">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute -top-24 -right-24 h-60 w-60 rounded-full bg-emerald-100 opacity-50" />
           <div className="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-100 opacity-50" />
         </div>
 
-        <div className="relative px-4 pb-12 pt-10 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2">
-            <div className="relative order-2 lg:order-1 h-full">
-              <div className="grid grid-cols-2 grid-rows-2 gap-6 h-full">
+        <div className="relative px-3 pb-8 pt-8 sm:px-6 sm:pb-12 sm:pt-10 lg:px-8">
+          <div className="grid grid-cols-1 items-center gap-6 sm:gap-8 lg:grid-cols-2">
+            <div className="relative order-2 h-full lg:order-1">
+              <div className="grid h-full grid-cols-2 grid-rows-2 gap-3 sm:gap-6">
                 {(data || []).slice(0, 4).map((category, index) => (
                   <div
                     key={
                       category?.id || category?._id || category?.title || index
                     }
-                    className="hero-card-enter relative group overflow-hidden rounded-[2.5rem] shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/50 bg-white/30 transition-all duration-300 hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)]"
+                    className="hero-card-enter relative group overflow-hidden rounded-[1.5rem] border border-white/50 bg-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-all duration-300 hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)] sm:rounded-[2.5rem]"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 z-10 opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
@@ -94,10 +94,10 @@ const AquaHomeHero = ({ data }) => {
 
                     <Link
                       href={`/category/${category?.title || ""}`}
-                      className="absolute inset-0 z-20 flex items-end justify-center pb-6"
+                      className="absolute inset-0 z-20 flex items-end justify-center pb-4 sm:pb-6"
                     >
-                      <div className="px-4 text-center">
-                        <span className="inline-block rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-4 py-1.5 text-sm font-bold text-white shadow-lg">
+                      <div className="max-w-full px-3 text-center sm:px-4">
+                        <span className="inline-block max-w-full truncate rounded-full border border-white/30 bg-white/20 px-3 py-1.5 text-xs font-bold text-white shadow-lg backdrop-blur-md sm:px-4 sm:text-sm">
                           {category?.title || "Explore"}
                         </span>
                       </div>
@@ -107,11 +107,11 @@ const AquaHomeHero = ({ data }) => {
               </div>
             </div>
 
-            <div className="hero-content-enter order-1 lg:order-2 flex flex-col justify-center rounded-[2.5rem] hero-glass-card p-8 lg:p-12 shadow-[0_8px_40px_rgba(0,0,0,0.06)] lg:min-h-[500px]">
+            <div className="hero-content-enter order-1 flex max-w-full flex-col justify-center overflow-hidden rounded-[1.75rem] hero-glass-card p-5 shadow-[0_8px_40px_rgba(0,0,0,0.06)] sm:rounded-[2.5rem] sm:p-8 lg:order-2 lg:min-h-[500px] lg:p-12">
               <Image
                 src={logo}
                 alt="Aquakart"
-                className="mx-auto lg:mx-0 max-w-[160px] drop-shadow-md mb-6"
+                className="mx-auto mb-5 max-w-[112px] drop-shadow-md sm:mb-6 sm:max-w-[160px] lg:mx-0"
                 priority
                 width={160}
                 height={160}
@@ -120,19 +120,19 @@ const AquaHomeHero = ({ data }) => {
               {/* Festival Banner */}
               {festival && (
                 <div
-                  className={`hero-fade-in mx-auto lg:mx-0 mt-4 max-w-sm rounded-2xl border border-white/40 bg-white/60 p-1 shadow-lg ring-1 ring-black/5 ${festival.animation}`}
+                  className={`hero-fade-in mx-auto lg:mx-0 mt-4 max-w-full rounded-2xl border border-white/40 bg-white/60 p-1 shadow-lg ring-1 ring-black/5 sm:max-w-sm ${festival.animation}`}
                 >
                   <div
                     className={`rounded-xl bg-gradient-to-r ${festival.gradient} p-0.5`}
                   >
                     <div className="flex items-center gap-3 rounded-[0.7rem] bg-white px-4 py-2">
                       <span className="text-2xl">{festival.icon}</span>
-                      <div className="text-left">
+                      <div className="min-w-0 text-left">
                         <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
                           {festival.subText}
                         </p>
                         <p
-                          className={`text-base font-black bg-gradient-to-r ${festival.gradient} bg-clip-text text-transparent leading-tight`}
+                          className={`break-words text-base font-black bg-gradient-to-r ${festival.gradient} bg-clip-text text-transparent leading-tight`}
                         >
                           {festival.text}
                         </p>
@@ -142,55 +142,57 @@ const AquaHomeHero = ({ data }) => {
                 </div>
               )}
 
-              <div className="min-h-[120px]">
+              <div className="min-h-[104px] sm:min-h-[120px]">
                 <h1
                   key={activeHeading}
-                  className="hero-heading-rotate mt-4 text-4xl font-black tracking-tight text-slate-900 sm:text-5xl lg:text-6xl drop-shadow-sm"
+                  className="hero-heading-rotate mt-4 max-w-full break-words text-[2rem] font-black leading-[1.12] tracking-tight text-slate-900 drop-shadow-sm sm:text-5xl lg:text-6xl"
                 >
                   {headings[activeHeading]}
                 </h1>
               </div>
 
-              <div className="mt-5 min-h-[40px]">
+              <div className="mt-5 min-h-[48px] sm:min-h-[40px]">
                 <div
                   key={activeHighlight}
-                  className="hero-highlight-rotate inline-flex items-center gap-3 rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-emerald-600 shadow"
+                  className="hero-highlight-rotate flex w-full max-w-full items-start gap-2 rounded-2xl bg-white/90 px-3 py-2 text-xs font-medium leading-relaxed text-emerald-600 shadow sm:inline-flex sm:w-auto sm:items-center sm:gap-3 sm:rounded-full sm:px-4 sm:text-sm"
                 >
-                  <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
-                  {rotatingHighlights[activeHighlight]}
+                  <span className="mt-1 flex h-2 w-2 shrink-0 rounded-full bg-emerald-500 sm:mt-0" />
+                  <span className="min-w-0 break-words">
+                    {rotatingHighlights[activeHighlight]}
+                  </span>
                 </div>
               </div>
 
-              <p className="mt-4 max-w-xl text-base text-slate-600 lg:max-w-md">
+              <p className="mt-4 max-w-full break-words text-sm leading-7 text-slate-600 sm:text-base lg:max-w-md">
                 Discover tailored softeners, filtration, and RO systems
                 engineered for Indian water. From borewell to municipal supply,
                 we keep every tap pristine and hassle-free.
               </p>
 
-              <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center justify-center lg:justify-start">
+              <div className="mt-8 flex flex-col justify-center gap-4 sm:mt-10 sm:flex-row sm:items-center lg:justify-start">
                 <Link
                   href="/shop"
                   aria-label="Shop solutions"
-                  className="btn-glass btn-glass-primary"
+                  className="btn-glass btn-glass-primary w-full sm:w-auto"
                 >
                   Shop solutions
                 </Link>
                 <Link
                   href="/shop"
                   aria-label="Book a free water test"
-                  className="btn-glass btn-glass-secondary text-emerald-700"
+                  className="btn-glass btn-glass-secondary w-full text-emerald-700 sm:w-auto"
                 >
                   Book a free water test
                 </Link>
               </div>
 
               {quickLinks.length > 0 && (
-                <div className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">
+                <div className="mt-6 flex max-w-full flex-wrap justify-center gap-3 overflow-hidden lg:justify-start">
                   {quickLinks.map((item) => (
                     <Link
                       key={item.title}
                       href={item.href}
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-emerald-200 hover:text-emerald-600"
+                      className="max-w-full truncate rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-emerald-200 hover:text-emerald-600"
                     >
                       {item.title}
                     </Link>
