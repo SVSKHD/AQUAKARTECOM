@@ -24,13 +24,14 @@ const sizeMap = {
   },
 };
 
+const fullScreenShell =
+  "fixed inset-0 z-[9999] flex h-[100dvh] min-h-[100svh] w-screen items-center justify-center overflow-hidden bg-gradient-to-br from-white via-slate-50 to-emerald-50 px-4";
+
 const variantShell = {
-  screen:
-    "fixed inset-0 z-[9999] flex min-h-screen items-center justify-center bg-slate-950/45 px-4 backdrop-blur-md",
-  route:
-    "fixed inset-0 z-[9998] flex min-h-screen items-center justify-center bg-white/70 px-4 backdrop-blur-md",
+  screen: fullScreenShell,
+  route: fullScreenShell,
   section:
-    "flex min-h-[260px] w-full items-center justify-center rounded-[2rem] border border-white/70 bg-white/70 px-4 py-10 shadow-sm backdrop-blur-md",
+    "flex min-h-[260px] w-full items-center justify-center rounded-[2rem] border border-white/70 bg-white px-4 py-10 shadow-sm",
   inline: "inline-flex items-center justify-center",
 };
 
@@ -56,7 +57,7 @@ const AquaAppLoader = ({
         className={`aqua-loader-card relative flex flex-col items-center justify-center ${
           isInline
             ? "gap-0 bg-transparent p-0 shadow-none"
-            : "gap-4 rounded-[2rem] border border-white/80 bg-white/85 px-8 py-7 text-center shadow-2xl shadow-emerald-900/10 backdrop-blur-xl"
+            : "gap-4 rounded-[2rem] border border-white bg-white px-8 py-7 text-center shadow-2xl shadow-emerald-900/10"
         }`}
       >
         <div className={`relative ${sizeClasses.wrap}`}>
