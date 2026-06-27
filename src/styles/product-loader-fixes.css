@@ -1,0 +1,50 @@
+/* Product detail + loader polish
+   - Product gallery images fill their card without empty padding gaps.
+   - Route/page loaders fully cover the UI so blurred product images never bleed through.
+*/
+
+.aqua-page-shell[aria-hidden="true"] {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: none !important;
+  transition: none !important;
+  pointer-events: none !important;
+}
+
+main[data-route="/product/[id]"] {
+  overflow-x: hidden;
+}
+
+main[data-route="/product/[id]"] .touch-pan-y > div > .relative.flex.aspect-square {
+  aspect-ratio: 4 / 3 !important;
+  min-height: clamp(320px, 72vw, 520px);
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+main[data-route="/product/[id]"] .touch-pan-y > div > .relative.flex.aspect-square > div {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+}
+
+main[data-route="/product/[id]"] .touch-pan-y img {
+  height: 100% !important;
+  width: 100% !important;
+  max-height: none !important;
+  max-width: none !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+main[data-route="/product/[id]"] .hidden.grid-cols-5 img {
+  object-fit: cover !important;
+  padding: 0 !important;
+}
+
+@media (min-width: 1024px) {
+  main[data-route="/product/[id]"] .touch-pan-y > div > .relative.flex.aspect-square {
+    min-height: 560px;
+  }
+}
