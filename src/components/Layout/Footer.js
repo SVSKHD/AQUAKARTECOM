@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import LazyImage from "../image/LazyImage";
+import { getFestivalWish } from "@/utils/festival";
 
 const navigation = {
   policy: [
@@ -34,13 +35,17 @@ const navigation = {
   ],
 };
 
+const instagramPosts = [
+  "https://res.cloudinary.com/aquakartproducts/image/upload/v1741968501/Blogs/jhkfgdhd9yatyml1bz4j.jpg",
+  "https://res.cloudinary.com/aquakartproducts/image/upload/v1741968501/Blogs/jhkfgdhd9yatyml1bz4j.jpg",
+  "https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg",
+];
+
 const year = new Date().getFullYear();
 
 const SkeletonPill = () => (
   <div className="h-8 w-24 animate-pulse rounded-full bg-white/5" />
 );
-
-import { getFestivalWish } from "@/utils/festival";
 
 const AquaFooter = ({ categories = [], subcategories = [] }) => {
   const { userData } = useSelector((state) => ({ ...state }));
@@ -212,34 +217,29 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
               <h4 className="text-sm font-bold uppercase tracking-widest text-white/40">
                 On Instagram
               </h4>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  "https://res.cloudinary.com/aquakartproducts/image/upload/v1741968501/Blogs/jhkfgdhd9yatyml1bz4j.jpg",
-                  "https://res.cloudinary.com/aquakartproducts/image/upload/v1741968501/Blogs/jhkfgdhd9yatyml1bz4j.jpg",
-                  "https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg",
-                ]
-                  .filter(Boolean)
-                  .map((src, i) => (
-                    <a
-                      key={i}
-                      href="https://www.instagram.com/aquakart.co.in/"
-                      target="_blank"
-                      aria-label="aquakart instagram"
-                      rel="noreferrer"
-                      className="group relative aspect-square overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10 transition-all hover:ring-white/30 hover:scale-105"
-                    >
-                      <LazyImage
-                        src={src}
-                        alt="Aquakart Instagram"
-                        width={150}
-                        height={150}
-                        imgClassName="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/40 backdrop-blur-sm">
-                        <Instagram className="h-5 w-5 text-white" />
-                      </div>
-                    </a>
-                  ))}
+              <div className="grid grid-cols-2 gap-3">
+                {instagramPosts.filter(Boolean).map((src, i) => (
+                  <a
+                    key={i}
+                    href="https://www.instagram.com/aquakart.co.in/"
+                    target="_blank"
+                    aria-label="aquakart instagram"
+                    rel="noreferrer"
+                    className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10 transition-all hover:ring-white/30 hover:scale-105"
+                  >
+                    <LazyImage
+                      src={src}
+                      alt="Aquakart Instagram"
+                      fill
+                      sizes="(max-width: 640px) 45vw, (max-width: 1024px) 160px, 150px"
+                      className="absolute inset-0 h-full w-full"
+                      imgClassName="object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/40 backdrop-blur-sm">
+                      <Instagram className="h-5 w-5 text-white" />
+                    </div>
+                  </a>
+                ))}
               </div>
               <a
                 href="https://www.instagram.com/aquakart.co.in/"
