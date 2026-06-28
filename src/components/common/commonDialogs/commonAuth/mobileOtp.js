@@ -175,7 +175,7 @@ const AquaAuthMobileForm = ({ signup }) => {
             value={phone}
             onChange={handlePhoneChange}
             placeholder="9876543210"
-            className="block w-full rounded-xl border border-white/50 bg-white/40 pl-11 pr-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-400 backdrop-blur-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 transition-all"
+            className="block w-full rounded-xl border border-white/50 bg-white/40 pl-11 pr-3.5 py-3 text-base text-slate-900 placeholder:text-slate-400 backdrop-blur-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 transition-all"
             autoComplete="tel"
           />
         </div>
