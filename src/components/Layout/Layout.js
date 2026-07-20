@@ -40,6 +40,7 @@ const MobileBottomNav = dynamic(() => import("./MobileBottomNav"), {
 const AquaLayout = (props) => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const allowPageSticky = Boolean(props.allowPageSticky);
 
   const { categories, subcategories } = useSelector(
     (state) => state.dynamicData,
@@ -223,8 +224,16 @@ const AquaLayout = (props) => {
         </>
       )}
 
-      <div className="relative flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-white pt-24 pb-16 sm:pb-0">
-        <main className="relative z-10 min-w-0 flex-1 overflow-x-hidden bg-white">
+      <div
+        className={`relative flex min-h-screen w-full max-w-full flex-col bg-white pt-24 pb-16 sm:pb-0 ${
+          allowPageSticky ? "overflow-x-clip" : "overflow-x-hidden"
+        }`}
+      >
+        <main
+          className={`relative z-10 min-w-0 flex-1 bg-white ${
+            allowPageSticky ? "overflow-x-clip" : "overflow-x-hidden"
+          }`}
+        >
           {props.children}
         </main>
         <AquaFooter categories={categories} subcategories={subcategories} />
