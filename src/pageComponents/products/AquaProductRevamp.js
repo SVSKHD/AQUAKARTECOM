@@ -350,8 +350,10 @@ const buildProcessStory = (product) => {
   };
 };
 
-const ProductInfo = ({ icon: Icon, title, description }) => (
-  <div className="group rounded-[1.5rem] border border-white/70 bg-white/72 p-5 shadow-[0_18px_55px_rgba(15,23,42,0.06)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_24px_70px_rgba(15,23,42,0.1)]">
+const ProductInfo = ({ icon: Icon, title, description, className = "" }) => (
+  <div
+    className={`group rounded-[1.5rem] border border-white/70 bg-white/72 p-4 shadow-[0_18px_55px_rgba(15,23,42,0.06)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_24px_70px_rgba(15,23,42,0.1)] sm:p-5 ${className}`}
+  >
     <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 transition group-hover:rotate-6 group-hover:scale-105">
       <Icon size={21} />
     </div>
@@ -360,30 +362,99 @@ const ProductInfo = ({ icon: Icon, title, description }) => (
   </div>
 );
 
-const StoryPanel = ({ number, eyebrow, title, children }) => (
+const StoryPanel = ({ id, number, eyebrow, title, children }) => (
   <motion.section
+    id={id}
     initial={{ opacity: 0, y: 42 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: false, amount: 0.25 }}
     transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-    className="flex items-center py-2 sm:py-4 lg:min-h-[78svh] lg:py-10"
+    className="scroll-mt-36 py-2 sm:py-4 lg:flex lg:min-h-[78svh] lg:items-center lg:py-10"
   >
-    <div className="w-full rounded-[2rem] border border-white/75 bg-white/78 p-5 shadow-[0_28px_90px_rgba(15,23,42,0.08)] backdrop-blur-2xl sm:p-7 lg:rounded-[2.5rem] lg:p-9">
-      <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-950 text-xs font-black text-white">
+    <div className="relative w-full overflow-hidden rounded-[1.75rem] border border-white/75 bg-white/82 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-2xl sm:rounded-[2rem] sm:p-7 lg:rounded-[2.5rem] lg:p-9">
+      <div className="absolute -right-16 -top-20 h-44 w-44 rounded-full bg-gradient-to-br from-cyan-200/35 to-emerald-200/25 blur-3xl" />
+      <div className="relative flex items-center gap-3">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-[10px] font-black text-white sm:h-9 sm:w-9 sm:text-xs">
           {number}
         </span>
         <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">
           {eyebrow}
         </p>
       </div>
-      <h2 className="mt-6 text-3xl font-black leading-[1.05] tracking-[-0.035em] text-slate-950 sm:text-4xl lg:text-5xl">
+      <h2 className="relative mt-4 text-[1.75rem] font-black leading-[1.05] tracking-[-0.035em] text-slate-950 sm:mt-6 sm:text-4xl lg:text-5xl">
         {title}
       </h2>
-      <div className="mt-7">{children}</div>
+      <div className="relative mt-5 sm:mt-7">{children}</div>
     </div>
   </motion.section>
 );
+
+const MOBILE_CHAPTERS = [
+  { id: "product-overview", number: "01", label: "Overview" },
+  { id: "product-specifications", number: "02", label: "Specs" },
+  { id: "product-process", number: "03", label: "Process" },
+  { id: "product-ownership", number: "04", label: "Support" },
+];
+
+const MobileStoryNav = () => {
+  const [activeChapter, setActiveChapter] = useState(MOBILE_CHAPTERS[0].id);
+
+  useEffect(() => {
+    const sections = MOBILE_CHAPTERS.map(({ id }) =>
+      document.getElementById(id),
+    ).filter(Boolean);
+
+    if (!sections.length || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort(
+            (first, second) =>
+              second.intersectionRatio - first.intersectionRatio,
+          )[0];
+        if (visible?.target?.id) setActiveChapter(visible.target.id);
+      },
+      { rootMargin: "-28% 0px -56%", threshold: [0.05, 0.25, 0.5] },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <nav
+      aria-label="Product story chapters"
+      className="sticky top-[5.35rem] z-50 -mx-1 mb-2 lg:hidden"
+    >
+      <div className="no-scrollbar flex snap-x gap-1.5 overflow-x-auto rounded-2xl border border-white/80 bg-white/88 p-1.5 shadow-[0_14px_45px_rgba(15,23,42,0.12)] backdrop-blur-2xl">
+        {MOBILE_CHAPTERS.map((chapter) => {
+          const isActive = activeChapter === chapter.id;
+          return (
+            <a
+              key={chapter.id}
+              href={`#${chapter.id}`}
+              aria-current={isActive ? "location" : undefined}
+              className={`flex min-w-max snap-start items-center gap-1.5 rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-[0.1em] transition ${
+                isActive
+                  ? "bg-slate-950 text-white shadow-lg shadow-slate-950/15"
+                  : "text-slate-500"
+              }`}
+            >
+              <span
+                className={isActive ? "text-emerald-300" : "text-slate-300"}
+              >
+                {chapter.number}
+              </span>
+              {chapter.label}
+            </a>
+          );
+        })}
+      </div>
+    </nav>
+  );
+};
 
 const ScrollProductStage = ({
   images,
@@ -395,6 +466,7 @@ const ScrollProductStage = ({
   storyRef,
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const touchStartXRef = useRef(null);
   const shouldReduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: storyRef,
@@ -438,9 +510,33 @@ const ScrollProductStage = ({
   });
 
   const activeImage = images[activeImageIndex] || images[0];
+  const showPreviousImage = () =>
+    setActiveImageIndex((current) =>
+      current === 0 ? images.length - 1 : current - 1,
+    );
+  const showNextImage = () =>
+    setActiveImageIndex((current) => (current + 1) % images.length);
+
+  const handleTouchStart = (event) => {
+    touchStartXRef.current = event.touches[0]?.clientX ?? null;
+  };
+
+  const handleTouchEnd = (event) => {
+    if (touchStartXRef.current === null || images.length <= 1) return;
+    const distance =
+      (event.changedTouches[0]?.clientX ?? 0) - touchStartXRef.current;
+    touchStartXRef.current = null;
+    if (Math.abs(distance) < 44) return;
+    if (distance > 0) showPreviousImage();
+    else showNextImage();
+  };
 
   return (
-    <div className="relative isolate h-[56svh] min-h-[430px] max-h-[560px] overflow-hidden rounded-[2.25rem] border border-white/70 bg-[radial-gradient(circle_at_50%_25%,rgba(255,255,255,1),rgba(224,242,254,0.78)_44%,rgba(209,250,229,0.72)_100%)] shadow-[0_28px_80px_rgba(15,23,42,0.14)] lg:h-[calc(100svh-7.5rem)] lg:max-h-none lg:min-h-[650px] lg:rounded-[3rem] lg:shadow-[0_36px_120px_rgba(15,23,42,0.15)]">
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="relative isolate h-[66svh] min-h-[500px] max-h-[620px] touch-pan-y overflow-hidden rounded-[1.75rem] border border-white/70 bg-[radial-gradient(circle_at_50%_25%,rgba(255,255,255,1),rgba(224,242,254,0.78)_44%,rgba(209,250,229,0.72)_100%)] shadow-[0_28px_80px_rgba(15,23,42,0.14)] sm:rounded-[2.25rem] lg:h-[calc(100svh-7.5rem)] lg:max-h-none lg:min-h-[650px] lg:rounded-[3rem] lg:shadow-[0_36px_120px_rgba(15,23,42,0.15)]"
+    >
       <div className="absolute inset-0 opacity-50 [background-image:linear-gradient(rgba(15,23,42,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.035)_1px,transparent_1px)] [background-size:36px_36px]" />
       <div className="absolute -left-24 top-1/3 h-64 w-64 rounded-full bg-cyan-300/25 blur-3xl" />
       <div className="absolute -right-20 bottom-10 h-72 w-72 rounded-full bg-emerald-300/25 blur-3xl" />
@@ -455,7 +551,8 @@ const ScrollProductStage = ({
       <div className="absolute left-5 right-5 top-5 z-30 flex items-center justify-between lg:left-8 lg:right-8 lg:top-8">
         <div className="flex items-center gap-2 rounded-full border border-white/70 bg-white/65 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-700 shadow-sm backdrop-blur-xl sm:text-xs">
           <Rotate3d size={15} className="text-emerald-600" />
-          Scroll view
+          <span className="lg:hidden">Swipe gallery</span>
+          <span className="hidden lg:inline">Scroll view</span>
         </div>
         <p className="max-w-[45%] truncate text-right text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500 sm:text-xs">
           {title}
@@ -543,6 +640,27 @@ const ScrollProductStage = ({
         </motion.div>
       </div>
 
+      {images.length > 1 && (
+        <div className="pointer-events-none absolute inset-x-3 top-1/2 z-30 flex -translate-y-1/2 justify-between lg:hidden">
+          <button
+            type="button"
+            aria-label="Previous product image"
+            onClick={showPreviousImage}
+            className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-white/75 text-slate-800 shadow-lg backdrop-blur-xl active:scale-95"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            type="button"
+            aria-label="Next product image"
+            onClick={showNextImage}
+            className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-white/75 text-slate-800 shadow-lg backdrop-blur-xl active:scale-95"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      )}
+
       <div className="absolute bottom-5 left-5 right-5 z-30 flex items-end justify-between lg:bottom-8 lg:left-8 lg:right-8">
         <div className="flex gap-1.5">
           {images.slice(0, 5).map((image, index) => (
@@ -559,9 +677,15 @@ const ScrollProductStage = ({
             />
           ))}
         </div>
-        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
-          <ArrowDown size={14} className="animate-bounce" />
-          Explore
+        <div className="rounded-full border border-white/70 bg-white/55 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 backdrop-blur-lg lg:border-0 lg:bg-transparent lg:p-0">
+          <span className="lg:hidden">
+            {String(activeImageIndex + 1).padStart(2, "0")} /{" "}
+            {String(images.length).padStart(2, "0")}
+          </span>
+          <span className="hidden items-center gap-2 lg:flex">
+            <ArrowDown size={14} className="animate-bounce" />
+            Explore
+          </span>
         </div>
       </div>
 
@@ -600,7 +724,7 @@ const StickyPurchaseBar = ({
       transition={{ delay: 0.2, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
       className="pointer-events-none fixed inset-x-0 bottom-[calc(4.8rem+env(safe-area-inset-bottom))] z-[90] px-3 sm:bottom-5 sm:px-5"
     >
-      <div className="pointer-events-auto mx-auto grid max-w-5xl grid-cols-[auto_1fr_1fr] items-center gap-2 overflow-hidden rounded-[1.35rem] border border-white/80 bg-white/92 p-2 shadow-[0_24px_90px_rgba(15,23,42,0.28)] ring-1 ring-slate-900/5 backdrop-blur-2xl sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:gap-3 sm:rounded-[1.8rem] sm:p-3">
+      <div className="pointer-events-auto mx-auto grid max-w-5xl grid-cols-[minmax(62px,auto)_1fr_1fr] items-center gap-2 overflow-hidden rounded-[1.35rem] border border-white/15 bg-slate-950/95 p-2 shadow-[0_24px_90px_rgba(15,23,42,0.4)] ring-1 ring-slate-950/20 backdrop-blur-2xl sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:gap-3 sm:rounded-[1.8rem] sm:border-white/80 sm:bg-white/92 sm:p-3 sm:shadow-[0_24px_90px_rgba(15,23,42,0.28)] sm:ring-slate-900/5">
         <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
         <div className="flex min-w-0 items-center gap-3 px-1 sm:px-2">
           <div className="relative hidden h-14 w-14 flex-none overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-50 to-emerald-50 ring-1 ring-slate-200 sm:block">
@@ -613,11 +737,14 @@ const StickyPurchaseBar = ({
             />
           </div>
           <div className="min-w-0">
+            <p className="text-[8px] font-black uppercase tracking-[0.14em] text-white/45 sm:hidden">
+              Your price
+            </p>
             <p className="hidden max-w-sm truncate text-xs font-bold text-slate-500 sm:block">
               {title}
             </p>
             <div className="flex items-baseline gap-2">
-              <p className="text-sm font-black tracking-tight text-slate-950 sm:mt-0.5 sm:text-xl">
+              <p className="text-sm font-black tracking-tight text-white sm:mt-0.5 sm:text-xl sm:text-slate-950">
                 ₹{formatIndianCurrency(price) || "—"}
               </p>
               {originalPrice && (
@@ -639,8 +766,8 @@ const StickyPurchaseBar = ({
           onClick={onCart}
           className={`flex min-h-12 items-center justify-center gap-1.5 rounded-2xl px-3 text-xs font-black text-white transition active:scale-[0.97] sm:min-w-44 sm:px-5 sm:text-sm ${
             isInCart
-              ? "bg-emerald-700 hover:bg-emerald-800"
-              : "bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-teal-600"
+              ? "bg-emerald-600 hover:bg-emerald-700 sm:bg-emerald-700 sm:hover:bg-emerald-800"
+              : "bg-white/10 ring-1 ring-white/15 hover:bg-white/15 sm:bg-gradient-to-r sm:from-emerald-500 sm:to-teal-500 sm:shadow-lg sm:shadow-emerald-500/20 sm:ring-0 sm:hover:from-emerald-600 sm:hover:to-teal-600"
           }`}
         >
           {isInCart ? <Check size={17} /> : <ShoppingCart size={17} />}
@@ -653,7 +780,7 @@ const StickyPurchaseBar = ({
         <button
           type="button"
           onClick={onBuyNow}
-          className="flex min-h-12 items-center justify-center rounded-2xl bg-slate-950 px-3 text-xs font-black text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-800 active:scale-[0.97] sm:min-w-40 sm:px-6 sm:text-sm"
+          className="flex min-h-12 items-center justify-center rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 px-3 text-xs font-black text-slate-950 shadow-lg shadow-emerald-950/25 transition hover:from-emerald-300 hover:to-teal-300 active:scale-[0.97] sm:min-w-40 sm:bg-slate-950 sm:bg-none sm:px-6 sm:text-sm sm:text-white sm:shadow-slate-900/20 sm:hover:bg-slate-800"
         >
           Buy Now
         </button>
@@ -862,8 +989,11 @@ function AquaProductRevamp({
               />
             </div>
 
-            <div className="relative z-20 mt-4 space-y-4 pb-4 lg:mt-0 lg:space-y-0 lg:pb-0">
+            <div className="relative z-20 mt-3 space-y-3 pb-4 sm:mt-4 sm:space-y-4 lg:mt-0 lg:space-y-0 lg:pb-0">
+              <MobileStoryNav />
+
               <StoryPanel
+                id="product-overview"
                 number="01"
                 eyebrow={categoryLabel}
                 title={product?.title}
@@ -943,11 +1073,11 @@ function AquaProductRevamp({
                 </p>
 
                 {highlights.length > 0 && (
-                  <div className="mt-5 grid gap-2 sm:grid-cols-3">
+                  <div className="no-scrollbar -mx-1 mt-5 flex snap-x gap-2 overflow-x-auto px-1 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0">
                     {highlights.slice(0, 3).map((highlight, index) => (
                       <div
                         key={highlight}
-                        className="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-3 py-3 text-xs font-bold leading-5 text-emerald-950"
+                        className="min-w-[78%] snap-center rounded-2xl border border-emerald-100 bg-emerald-50/70 px-3 py-3 text-xs font-bold leading-5 text-emerald-950 sm:min-w-0"
                       >
                         <span className="mb-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-black text-white">
                           {String(index + 1).padStart(2, "0")}
@@ -985,12 +1115,13 @@ function AquaProductRevamp({
               </StoryPanel>
 
               <StoryPanel
+                id="product-specifications"
                 number="02"
                 eyebrow="Specifications"
                 title="The important numbers, without the clutter"
               >
                 {specifications.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
                     {specifications.map((spec, index) => (
                       <motion.div
                         key={`${spec.label}-${spec.value}`}
@@ -998,12 +1129,12 @@ function AquaProductRevamp({
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
                         transition={{ delay: Math.min(index * 0.05, 0.3) }}
-                        className="rounded-[1.35rem] border border-slate-200/70 bg-slate-50/80 p-4"
+                        className="min-w-0 rounded-[1.15rem] border border-slate-200/70 bg-slate-50/80 p-3 sm:rounded-[1.35rem] sm:p-4"
                       >
                         <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                           {spec.label}
                         </p>
-                        <p className="mt-2 break-words text-base font-black text-slate-900">
+                        <p className="mt-2 break-words text-sm font-black leading-5 text-slate-900 sm:text-base">
                           {spec.value}
                         </p>
                       </motion.div>
@@ -1018,6 +1149,7 @@ function AquaProductRevamp({
               </StoryPanel>
 
               <StoryPanel
+                id="product-process"
                 number="03"
                 eyebrow={processStory.eyebrow}
                 title={processStory.title}
@@ -1026,7 +1158,16 @@ function AquaProductRevamp({
                   {processStory.description}
                 </p>
 
-                <div className="relative mt-8 space-y-3 before:absolute before:bottom-5 before:left-[1.35rem] before:top-5 before:w-px before:bg-gradient-to-b before:from-cyan-400 before:via-emerald-400 before:to-teal-500">
+                <div className="mt-6 flex items-center justify-between sm:hidden">
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">
+                    Swipe the cycle
+                  </p>
+                  <p className="text-[10px] font-black tracking-[0.18em] text-slate-300">
+                    01 — {String(processStory.steps.length).padStart(2, "0")}
+                  </p>
+                </div>
+
+                <div className="no-scrollbar relative -mx-1 mt-3 flex snap-x gap-3 overflow-x-auto px-1 pb-3 before:absolute before:bottom-5 before:left-[1.35rem] before:top-5 before:hidden before:w-px before:bg-gradient-to-b before:from-cyan-400 before:via-emerald-400 before:to-teal-500 sm:mx-0 sm:mt-8 sm:block sm:space-y-3 sm:overflow-visible sm:px-0 sm:pb-0 sm:before:block">
                   {processStory.steps.map((step, index) => (
                     <motion.div
                       key={`${step.title}-${index}`}
@@ -1034,16 +1175,16 @@ function AquaProductRevamp({
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true, amount: 0.55 }}
                       transition={{ delay: Math.min(index * 0.08, 0.32) }}
-                      className="relative grid grid-cols-[2.75rem_1fr] gap-3 rounded-[1.35rem] border border-slate-200/70 bg-white/85 p-3 shadow-sm"
+                      className="relative grid min-w-[84%] snap-center grid-cols-[2.75rem_1fr] gap-3 rounded-[1.35rem] border border-white/10 bg-slate-950 p-3 text-white shadow-[0_18px_45px_rgba(15,23,42,0.18)] sm:min-w-0 sm:border-slate-200/70 sm:bg-white/85 sm:text-slate-950 sm:shadow-sm"
                     >
                       <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-emerald-500 text-sm font-black text-white shadow-lg shadow-emerald-500/20">
                         {String(index + 1).padStart(2, "0")}
                       </div>
                       <div className="py-1 pr-2">
-                        <p className="font-black text-slate-950">
+                        <p className="font-black text-white sm:text-slate-950">
                           {step.title}
                         </p>
-                        <p className="mt-1 text-sm leading-6 text-slate-500">
+                        <p className="mt-1 text-sm leading-6 text-white/60 sm:text-slate-500">
                           {step.description}
                         </p>
                       </div>
@@ -1053,6 +1194,7 @@ function AquaProductRevamp({
               </StoryPanel>
 
               <StoryPanel
+                id="product-ownership"
                 number="04"
                 eyebrow="Ownership"
                 title="What happens after you choose it"
@@ -1082,13 +1224,14 @@ function AquaProductRevamp({
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="no-scrollbar -mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-3 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0">
                   {ownershipBenefits.map((benefit) => (
                     <ProductInfo
                       key={benefit.title}
                       icon={benefit.icon}
                       title={benefit.title}
                       description={benefit.description}
+                      className="min-w-[80%] snap-center sm:min-w-0"
                     />
                   ))}
                 </div>
