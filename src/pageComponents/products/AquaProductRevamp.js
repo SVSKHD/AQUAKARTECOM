@@ -36,6 +36,7 @@ import {
 import useEmblaCarousel from "embla-carousel-react";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
+import { createPortal } from "react-dom";
 
 import AquaLayout from "@/components/Layout/Layout";
 import LazyImage from "@/components/image/LazyImage";
@@ -390,6 +391,7 @@ const ScrollProductStage = ({
   price,
   originalPrice,
   discount,
+  facts = [],
   storyRef,
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -415,15 +417,15 @@ const ScrollProductStage = ({
     [0, 0.45, 0.8, 1],
     [0.9, 1.04, 0.96, 1],
   );
-  const priceX = useTransform(
+  const priceY = useTransform(
     scrollYProgress,
-    [0, 0.07, 0.88, 1],
-    [-70, 0, 0, -45],
+    [0, 0.45, 0.75, 1],
+    [0, -10, 4, 0],
   );
-  const priceOpacity = useTransform(
+  const priceScale = useTransform(
     scrollYProgress,
-    [0, 0.07, 0.92, 1],
-    [0, 1, 1, 0.4],
+    [0, 0.3, 0.72, 1],
+    [1, 1.04, 0.98, 1],
   );
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
@@ -442,6 +444,13 @@ const ScrollProductStage = ({
       <div className="absolute inset-0 opacity-50 [background-image:linear-gradient(rgba(15,23,42,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.035)_1px,transparent_1px)] [background-size:36px_36px]" />
       <div className="absolute -left-24 top-1/3 h-64 w-64 rounded-full bg-cyan-300/25 blur-3xl" />
       <div className="absolute -right-20 bottom-10 h-72 w-72 rounded-full bg-emerald-300/25 blur-3xl" />
+      <motion.div
+        aria-hidden="true"
+        animate={shouldReduceMotion ? undefined : { rotate: 360 }}
+        transition={{ duration: 34, repeat: Infinity, ease: "linear" }}
+        className="absolute left-1/2 top-1/2 h-[58%] w-[58%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-cyan-400/35"
+      />
+      <div className="absolute left-1/2 top-1/2 h-[42%] w-[42%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/90 shadow-[0_0_80px_rgba(34,211,238,0.2)]" />
 
       <div className="absolute left-5 right-5 top-5 z-30 flex items-center justify-between lg:left-8 lg:right-8 lg:top-8">
         <div className="flex items-center gap-2 rounded-full border border-white/70 bg-white/65 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-700 shadow-sm backdrop-blur-xl sm:text-xs">
@@ -455,29 +464,57 @@ const ScrollProductStage = ({
 
       <motion.div
         style={{
-          x: shouldReduceMotion ? 0 : priceX,
-          opacity: shouldReduceMotion ? 1 : priceOpacity,
+          y: shouldReduceMotion ? 0 : priceY,
+          scale: shouldReduceMotion ? 1 : priceScale,
         }}
-        className="absolute left-4 top-[27%] z-40 rounded-[1.4rem] border border-slate-900/10 bg-slate-950 px-4 py-4 text-white shadow-[0_22px_60px_rgba(15,23,42,0.35)] sm:left-6 sm:px-5 lg:-left-3 lg:top-[25%] lg:rounded-[1.75rem] lg:px-6 lg:py-5"
+        className="absolute bottom-16 left-5 z-40 min-w-[10.5rem] overflow-hidden rounded-[1.45rem] border border-white/15 bg-[linear-gradient(145deg,#020617_0%,#0f172a_58%,#064e3b_140%)] px-4 py-4 text-white shadow-[0_24px_70px_rgba(2,6,23,0.4)] ring-1 ring-slate-950/10 sm:left-7 sm:min-w-[12rem] sm:px-5 lg:bottom-24 lg:left-8 lg:min-w-[14rem] lg:rounded-[1.8rem] lg:px-6 lg:py-5"
       >
-        <span className="absolute -right-2 top-1/2 h-4 w-4 -translate-y-1/2 rotate-45 bg-slate-950" />
-        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300 sm:text-[10px]">
-          Price
-        </p>
-        <p className="mt-1 text-xl font-black tracking-tight sm:text-2xl lg:text-3xl">
+        <div className="absolute -right-7 -top-7 h-24 w-24 rounded-full bg-emerald-400/20 blur-2xl" />
+        <div className="relative flex items-center justify-between gap-3">
+          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300 sm:text-[10px]">
+            Online price
+          </p>
+          {discount > 0 && (
+            <span className="rounded-full bg-emerald-400 px-2 py-1 text-[8px] font-black text-emerald-950 sm:text-[9px]">
+              SAVE {discount}%
+            </span>
+          )}
+        </div>
+        <p className="relative mt-2 text-2xl font-black tracking-[-0.04em] sm:text-3xl lg:text-4xl">
           ₹{formatIndianCurrency(price) || "—"}
         </p>
-        {originalPrice && (
-          <div className="mt-1.5 flex items-center gap-2 text-[10px] sm:text-xs">
+        <div className="relative mt-2 flex items-center gap-2 text-[9px] text-white/55 sm:text-[10px]">
+          {originalPrice && (
             <span className="text-white/45 line-through">
               ₹{formatIndianCurrency(originalPrice)}
             </span>
-            <span className="font-black text-emerald-300">{discount}% OFF</span>
-          </div>
-        )}
+          )}
+          <span>Inclusive of taxes</span>
+        </div>
       </motion.div>
 
-      <div className="absolute inset-x-8 bottom-12 top-20 z-20 flex items-center justify-center lg:inset-x-16 lg:bottom-20 lg:top-24">
+      {facts.length > 0 && (
+        <div className="absolute right-5 top-[24%] z-30 hidden w-36 flex-col gap-2 xl:flex">
+          {facts.map((fact, index) => (
+            <motion.div
+              key={`${fact.label}-${fact.value}`}
+              initial={{ opacity: 0, x: 18 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.25 + index * 0.1 }}
+              className="rounded-2xl border border-white/80 bg-white/72 px-4 py-3 shadow-[0_14px_35px_rgba(15,23,42,0.08)] backdrop-blur-xl"
+            >
+              <p className="text-[8px] font-black uppercase tracking-[0.17em] text-slate-400">
+                {fact.label}
+              </p>
+              <p className="mt-1 truncate text-xs font-black text-slate-900">
+                {fact.value}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      <div className="absolute inset-x-6 bottom-14 top-20 z-20 flex items-center justify-center lg:inset-x-12 lg:bottom-20 lg:top-24">
         <motion.div
           style={{
             rotateY: shouldReduceMotion ? 0 : rotateY,
@@ -487,7 +524,7 @@ const ScrollProductStage = ({
             transformPerspective: 1400,
             transformStyle: "preserve-3d",
           }}
-          className="relative h-full w-full"
+          className="relative h-full w-full before:absolute before:inset-[7%] before:-rotate-3 before:rounded-[2.4rem] before:border before:border-white/80 before:bg-white/22 before:shadow-[0_24px_60px_rgba(14,116,144,0.12)] before:backdrop-blur-sm after:absolute after:inset-[10%] after:rotate-2 after:rounded-[2.2rem] after:border after:border-cyan-100/80 after:bg-cyan-100/15"
         >
           <div className="absolute bottom-[8%] left-1/2 h-[12%] w-[58%] -translate-x-1/2 rounded-[50%] bg-slate-900/18 blur-2xl" />
           <AnimatePresence mode="wait">
@@ -499,7 +536,7 @@ const ScrollProductStage = ({
               animate={{ opacity: 1, scale: 1, rotateY: 0 }}
               exit={{ opacity: 0, scale: 1.04, rotateY: 8 }}
               transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_28px_26px_rgba(15,23,42,0.2)]"
+              className="absolute inset-0 z-10 h-full w-full scale-[1.03] object-contain drop-shadow-[0_30px_28px_rgba(15,23,42,0.22)] lg:scale-[1.08]"
               loading={activeImageIndex === 0 ? "eager" : "lazy"}
             />
           </AnimatePresence>
@@ -540,63 +577,91 @@ const StickyPurchaseBar = ({
   image,
   title,
   price,
+  originalPrice,
+  discount,
   isInCart,
   onCart,
   onBuyNow,
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 40 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.35, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-    className="pointer-events-none fixed inset-x-0 bottom-[calc(4.7rem+env(safe-area-inset-bottom))] z-[60] px-3 sm:bottom-4 sm:px-5"
-  >
-    <div className="pointer-events-auto mx-auto grid max-w-4xl grid-cols-[auto_1fr_1fr] items-center gap-2 rounded-[1.35rem] border border-white/75 bg-white/86 p-2 shadow-[0_20px_70px_rgba(15,23,42,0.2)] backdrop-blur-2xl sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:gap-3 sm:rounded-[1.75rem] sm:p-3">
-      <div className="flex min-w-0 items-center gap-3 px-1 sm:px-2">
-        <div className="relative hidden h-12 w-12 flex-none overflow-hidden rounded-2xl bg-slate-50 ring-1 ring-slate-200 sm:block">
-          <LazyImage
-            src={image}
-            alt=""
-            fill
-            className="h-full w-full"
-            imgClassName="object-contain p-1"
-          />
+}) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setMounted(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <motion.aside
+      aria-label="Purchase this product"
+      initial={{ opacity: 0, y: 36, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay: 0.2, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(4.8rem+env(safe-area-inset-bottom))] z-[90] px-3 sm:bottom-5 sm:px-5"
+    >
+      <div className="pointer-events-auto mx-auto grid max-w-5xl grid-cols-[auto_1fr_1fr] items-center gap-2 overflow-hidden rounded-[1.35rem] border border-white/80 bg-white/92 p-2 shadow-[0_24px_90px_rgba(15,23,42,0.28)] ring-1 ring-slate-900/5 backdrop-blur-2xl sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:gap-3 sm:rounded-[1.8rem] sm:p-3">
+        <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
+        <div className="flex min-w-0 items-center gap-3 px-1 sm:px-2">
+          <div className="relative hidden h-14 w-14 flex-none overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-50 to-emerald-50 ring-1 ring-slate-200 sm:block">
+            <LazyImage
+              src={image}
+              alt=""
+              fill
+              className="h-full w-full"
+              imgClassName="object-contain p-1"
+            />
+          </div>
+          <div className="min-w-0">
+            <p className="hidden max-w-sm truncate text-xs font-bold text-slate-500 sm:block">
+              {title}
+            </p>
+            <div className="flex items-baseline gap-2">
+              <p className="text-sm font-black tracking-tight text-slate-950 sm:mt-0.5 sm:text-xl">
+                ₹{formatIndianCurrency(price) || "—"}
+              </p>
+              {originalPrice && (
+                <span className="hidden text-xs text-slate-400 line-through md:inline">
+                  ₹{formatIndianCurrency(originalPrice)}
+                </span>
+              )}
+              {discount > 0 && (
+                <span className="hidden rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-black text-emerald-700 md:inline">
+                  {discount}% OFF
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="min-w-0">
-          <p className="hidden truncate text-xs font-bold text-slate-500 sm:block">
-            {title}
-          </p>
-          <p className="text-sm font-black text-slate-950 sm:mt-0.5 sm:text-lg">
-            ₹{formatIndianCurrency(price) || "—"}
-          </p>
-        </div>
+
+        <button
+          type="button"
+          onClick={onCart}
+          className={`flex min-h-12 items-center justify-center gap-1.5 rounded-2xl px-3 text-xs font-black text-white transition active:scale-[0.97] sm:min-w-44 sm:px-5 sm:text-sm ${
+            isInCart
+              ? "bg-emerald-700 hover:bg-emerald-800"
+              : "bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-teal-600"
+          }`}
+        >
+          {isInCart ? <Check size={17} /> : <ShoppingCart size={17} />}
+          <span className="hidden sm:inline">
+            {isInCart ? "Added to Cart" : "Add to Cart"}
+          </span>
+          <span className="sm:hidden">{isInCart ? "Added" : "Cart"}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onBuyNow}
+          className="flex min-h-12 items-center justify-center rounded-2xl bg-slate-950 px-3 text-xs font-black text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-800 active:scale-[0.97] sm:min-w-40 sm:px-6 sm:text-sm"
+        >
+          Buy Now
+        </button>
       </div>
-
-      <button
-        type="button"
-        onClick={onCart}
-        className={`flex min-h-12 items-center justify-center gap-1.5 rounded-2xl px-3 text-xs font-black text-white transition active:scale-[0.97] sm:min-w-44 sm:px-5 sm:text-sm ${
-          isInCart
-            ? "bg-emerald-700 hover:bg-emerald-800"
-            : "bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-teal-600"
-        }`}
-      >
-        {isInCart ? <Check size={17} /> : <ShoppingCart size={17} />}
-        <span className="hidden sm:inline">
-          {isInCart ? "Added" : "Add to Cart"}
-        </span>
-        <span className="sm:hidden">{isInCart ? "Added" : "Cart"}</span>
-      </button>
-
-      <button
-        type="button"
-        onClick={onBuyNow}
-        className="flex min-h-12 items-center justify-center rounded-2xl bg-slate-950 px-3 text-xs font-black text-white transition hover:bg-slate-800 active:scale-[0.97] sm:min-w-36 sm:px-6 sm:text-sm"
-      >
-        Buy Now
-      </button>
-    </div>
-  </motion.div>
-);
+    </motion.aside>,
+    document.body,
+  );
+};
 
 function AquaProductRevamp({
   product,
@@ -670,6 +735,15 @@ function AquaProductRevamp({
   const specifications = useMemo(() => buildSpecifications(product), [product]);
   const highlights = useMemo(() => buildHighlights(product), [product]);
   const processStory = useMemo(() => buildProcessStory(product), [product]);
+  const stageFacts = useMemo(() => {
+    const preferredLabels = ["Capacity", "Model", "Warranty", "Brand"];
+    return preferredLabels
+      .map((label) =>
+        specifications.find((specification) => specification.label === label),
+      )
+      .filter(Boolean)
+      .slice(0, 3);
+  }, [specifications]);
 
   const { cartData = [], favData = [] } = useSelector((state) => ({
     cartData: state.cartData || [],
@@ -728,9 +802,13 @@ function AquaProductRevamp({
         )
       : 0;
   const categoryLabel = resolveDisplayText(product?.category) || "Water care";
-  const summary = stripHtml(
+  const fullSummary = stripHtml(
     product?.shortDescription || product?.description,
-  ).slice(0, 520);
+  );
+  const summary =
+    fullSummary.length > 320
+      ? `${fullSummary.slice(0, 317).trim()}...`
+      : fullSummary;
 
   const ownershipBenefits = [
     {
@@ -779,6 +857,7 @@ function AquaProductRevamp({
                 price={price}
                 originalPrice={originalPrice}
                 discount={discount}
+                facts={stageFacts}
                 storyRef={storyRef}
               />
             </div>
@@ -824,10 +903,60 @@ function AquaProductRevamp({
                   )}
                 </div>
 
-                <p className="mt-6 text-base leading-8 text-slate-600 sm:text-lg">
+                <div className="relative mt-6 overflow-hidden rounded-[1.6rem] bg-[linear-gradient(135deg,#020617_0%,#0f172a_62%,#064e3b_145%)] p-5 text-white shadow-[0_22px_60px_rgba(15,23,42,0.2)] sm:p-6">
+                  <div className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-emerald-400/20 blur-3xl" />
+                  <div className="relative flex items-end justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">
+                        Aquakart online price
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-baseline gap-3">
+                        <p className="text-3xl font-black tracking-[-0.045em] sm:text-4xl">
+                          ₹{formatIndianCurrency(price) || "—"}
+                        </p>
+                        {originalPrice && (
+                          <span className="text-sm text-white/40 line-through">
+                            ₹{formatIndianCurrency(originalPrice)}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-2 text-xs font-semibold text-white/55">
+                        Inclusive of all taxes
+                      </p>
+                    </div>
+                    {discount > 0 && (
+                      <div className="flex h-16 w-16 flex-none rotate-6 flex-col items-center justify-center rounded-2xl bg-emerald-400 text-emerald-950 shadow-lg shadow-emerald-950/20">
+                        <span className="text-xl font-black leading-none">
+                          {discount}%
+                        </span>
+                        <span className="mt-1 text-[8px] font-black uppercase tracking-wider">
+                          Savings
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <p className="mt-6 max-h-[10rem] overflow-hidden text-base leading-7 text-slate-600 sm:text-[1.05rem]">
                   {summary ||
                     "A carefully selected water-care product supported by Aquakart's product and service team."}
                 </p>
+
+                {highlights.length > 0 && (
+                  <div className="mt-5 grid gap-2 sm:grid-cols-3">
+                    {highlights.slice(0, 3).map((highlight, index) => (
+                      <div
+                        key={highlight}
+                        className="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-3 py-3 text-xs font-bold leading-5 text-emerald-950"
+                      >
+                        <span className="mb-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-black text-white">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        {highlight}
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 <div className="mt-7 flex items-center gap-2">
                   <button
@@ -1051,6 +1180,8 @@ function AquaProductRevamp({
           image={images[0]?.url || fallbackImage}
           title={product?.title}
           price={price}
+          originalPrice={originalPrice}
+          discount={discount}
           isInCart={isInCart}
           onCart={handleCart}
           onBuyNow={handleRedirectToCheckout}
