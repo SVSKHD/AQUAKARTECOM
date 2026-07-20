@@ -13,7 +13,14 @@
 }
 
 main[data-route="/product/[id]"] {
-  overflow-x: hidden;
+  /*
+   * Keep the product story's desktop visual sticky to the viewport.
+   * `hidden` creates a scroll container on this app-level shell, so the
+   * nested sticky stage tracks a container that never scrolls. `clip`
+   * still contains the cinematic artwork without changing sticky's
+   * scrolling ancestor.
+   */
+  overflow-x: clip;
 }
 
 main[data-route="/product/[id]"] .touch-pan-y > div > .relative.flex.aspect-square {
