@@ -366,7 +366,7 @@ const StoryPanel = ({ number, eyebrow, title, children }) => (
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: false, amount: 0.25 }}
     transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-    className="flex min-h-[72vh] items-center py-8 lg:min-h-[88vh] lg:py-16"
+    className="flex items-center py-2 sm:py-4 lg:min-h-[78svh] lg:py-10"
   >
     <div className="w-full rounded-[2rem] border border-white/75 bg-white/78 p-5 shadow-[0_28px_90px_rgba(15,23,42,0.08)] backdrop-blur-2xl sm:p-7 lg:rounded-[2.5rem] lg:p-9">
       <div className="flex items-center gap-3">
@@ -440,7 +440,7 @@ const ScrollProductStage = ({
   const activeImage = images[activeImageIndex] || images[0];
 
   return (
-    <div className="relative isolate h-[48vh] min-h-[390px] overflow-hidden rounded-[2.25rem] border border-white/70 bg-[radial-gradient(circle_at_50%_25%,rgba(255,255,255,1),rgba(224,242,254,0.78)_44%,rgba(209,250,229,0.72)_100%)] shadow-[0_36px_120px_rgba(15,23,42,0.15)] lg:h-[calc(100vh-7.5rem)] lg:min-h-[650px] lg:rounded-[3rem]">
+    <div className="relative isolate h-[56svh] min-h-[430px] max-h-[560px] overflow-hidden rounded-[2.25rem] border border-white/70 bg-[radial-gradient(circle_at_50%_25%,rgba(255,255,255,1),rgba(224,242,254,0.78)_44%,rgba(209,250,229,0.72)_100%)] shadow-[0_28px_80px_rgba(15,23,42,0.14)] lg:h-[calc(100svh-7.5rem)] lg:max-h-none lg:min-h-[650px] lg:rounded-[3rem] lg:shadow-[0_36px_120px_rgba(15,23,42,0.15)]">
       <div className="absolute inset-0 opacity-50 [background-image:linear-gradient(rgba(15,23,42,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.035)_1px,transparent_1px)] [background-size:36px_36px]" />
       <div className="absolute -left-24 top-1/3 h-64 w-64 rounded-full bg-cyan-300/25 blur-3xl" />
       <div className="absolute -right-20 bottom-10 h-72 w-72 rounded-full bg-emerald-300/25 blur-3xl" />
@@ -844,13 +844,13 @@ function AquaProductRevamp({
         />
       )}
 
-      <AquaLayout>
-        <main className="min-h-screen overflow-clip bg-[linear-gradient(135deg,#eefcf8_0%,#f8fbff_42%,#eef4ff_100%)] pb-44 font-sans text-slate-900 selection:bg-emerald-100 sm:pb-36">
+      <AquaLayout allowPageSticky>
+        <main className="min-h-screen overflow-x-clip bg-[linear-gradient(135deg,#eefcf8_0%,#f8fbff_42%,#eef4ff_100%)] pb-44 font-sans text-slate-900 selection:bg-emerald-100 sm:pb-36">
           <div
             ref={storyRef}
             className="relative mx-auto max-w-[92rem] px-3 pt-5 sm:px-5 sm:pt-7 lg:grid lg:grid-cols-[minmax(0,1.18fr)_minmax(380px,0.82fr)] lg:items-start lg:gap-10 lg:px-8"
           >
-            <div className="sticky top-20 z-10 self-start lg:top-24">
+            <div className="self-start lg:sticky lg:top-24 lg:z-10">
               <ScrollProductStage
                 images={images}
                 title={product?.title}
@@ -862,7 +862,7 @@ function AquaProductRevamp({
               />
             </div>
 
-            <div className="relative z-20 mt-5 lg:mt-0">
+            <div className="relative z-20 mt-4 space-y-4 pb-4 lg:mt-0 lg:space-y-0 lg:pb-0">
               <StoryPanel
                 number="01"
                 eyebrow={categoryLabel}
