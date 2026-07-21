@@ -1,19 +1,158 @@
 "use client";
-import { useState, useEffect, useMemo, Fragment } from "react";
+
+import { useDeferredValue, useMemo, useState } from "react";
+import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowRight,
+  BadgeCheck,
+  BadgePercent,
+  ChevronDown,
+  Droplets,
+  Funnel,
+  Grid2X2,
+  Headphones,
+  List,
+  PackageCheck,
+  RotateCcw,
+  Search,
+  ShieldCheck,
+  SlidersHorizontal,
+  Sparkles,
+  Star,
+  WandSparkles,
+  X,
+} from "lucide-react";
 import AquaLayout from "@/components/Layout/Layout";
+import AquaReuseDrawer from "@/components/reusables/drawer";
+import AquaAppLoader from "@/components/common/AquaAppLoader";
 import ProductServiceOperations from "@/services/products";
-import AQ from "@/assests/logo-white.png";
-import Image from "next/image";
+import { getProductReviewStats } from "@/utils/reviewStats";
 import ProductGrid from "./productGrid";
 import ShopFiltersPanel from "./shopFilter";
-import { Dialog, Transition } from "@headlessui/react";
-import {
-  FunnelIcon,
-  XMarkIcon,
-  Squares2X2Icon,
-  ListBulletIcon,
-} from "@heroicons/react/24/outline";
-import { motion, AnimatePresence } from "framer-motion";
+
+const defaultFilters = {
+  query: "",
+  category: "All",
+  subcategory: "All",
+  brand: "All",
+  price: null,
+  inStockOnly: false,
+  offersOnly: false,
+  rating: 0,
+};
+
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0);
+
+const normalizeText = (value) => {
+  if (value && typeof value === "object") {
+    return String(value.title || value.name || "").trim();
+  }
+  return String(value || "").trim();
+};
+
+const extractCategory = (product) =>
+  normalizeText(
+    product?.category?.title ||
+      product?.categoryTitle ||
+      product?.categoryName ||
+      product?.category ||
+      product?.mainCategory ||
+      product?.productCategory,
+  ) || "Others";
+
+const extractSubcategory = (product) =>
+  normalizeText(
+    product?.subcategory?.title ||
+      product?.subCategory?.title ||
+      product?.subCategoryName ||
+      product?.subCategory ||
+      product?.subcategory ||
+      product?.productSubCategory,
+  ) || "Others";
+
+const extractBrand = (product) =>
+  normalizeText(
+    product?.brand ||
+      product?.brandName ||
+      product?.manufacturer ||
+      product?.productBrand,
+  ) || "Aquakart";
+
+const extractPrice = (product) => {
+  const regularPrice = Number(product?.price) || 0;
+  const discountPrice = Number(product?.discountPrice) || 0;
+  const useDiscount =
+    product?.discountPriceStatus &&
+    discountPrice > 0 &&
+    (!regularPrice || discountPrice < regularPrice);
+
+  return useDiscount ? discountPrice : regularPrice || discountPrice;
+};
+
+const hasOffer = (product) => {
+  const regularPrice = Number(product?.price) || 0;
+  const discountPrice = Number(product?.discountPrice) || 0;
+  return Boolean(
+    product?.discountPriceStatus &&
+    discountPrice > 0 &&
+    regularPrice > discountPrice,
+  );
+};
+
+const isProductInStock = (product) => {
+  if (typeof product?.inStock === "boolean") return product.inStock;
+  if (typeof product?.available === "boolean") return product.available;
+
+  const stock = Number(
+    product?.stock ??
+      product?.stockQuantity ??
+      product?.availableStock ??
+      product?.quantity,
+  );
+  return Number.isFinite(stock) ? stock > 0 : true;
+};
+
+const productSearchText = (product) =>
+  [
+    product?.title,
+    product?.name,
+    extractBrand(product),
+    extractCategory(product),
+    extractSubcategory(product),
+    product?.application,
+    product?.coverage,
+    product?.capacity,
+    product?.color,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+const FilterChip = ({ label, onRemove }) => (
+  <motion.span
+    layout
+    initial={{ opacity: 0, scale: 0.9 }}
+    animate={{ opacity: 1, scale: 1 }}
+    exit={{ opacity: 0, scale: 0.9 }}
+    className="inline-flex min-h-9 items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50/85 px-3 text-[11px] font-bold text-emerald-800 shadow-sm"
+  >
+    {label}
+    <button
+      type="button"
+      onClick={onRemove}
+      className="grid h-5 w-5 place-items-center rounded-full bg-white/80 text-emerald-700 transition hover:bg-emerald-100"
+      aria-label={`Remove ${label} filter`}
+    >
+      <X size={12} />
+    </button>
+  </motion.span>
+);
 
 const AquaShopPageComponent = ({
   initialProducts = [],
@@ -26,418 +165,596 @@ const AquaShopPageComponent = ({
   const [showFilters, setShowFilters] = useState(false);
   const [error, setError] = useState(initialError);
   const [viewMode, setViewMode] = useState("grid");
-  const [sortBy, setSortBy] = useState("featured");
-  const [filters, setFilters] = useState({
-    category: "All",
-    subcategory: "All",
-    brand: "All",
-    price: 0,
-  });
+  const [sortBy, setSortBy] = useState("recommended");
+  const [filters, setFilters] = useState(defaultFilters);
+  const deferredQuery = useDeferredValue(filters.query.trim().toLowerCase());
 
-  const fetchProducts = async (signal) => {
+  const fetchProducts = async () => {
     setLoading(true);
     setError("");
 
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiBase) {
-        throw new Error(
-          "NEXT_PUBLIC_API_URL is not defined. Please configure the API endpoint.",
-        );
-      }
-
-      const response = await ProductServiceOperations.AllProducts({ signal });
+      const response = await ProductServiceOperations.AllProducts();
       const data = response?.data?.data;
-      setProducts(Array.isArray(data) ? data : []);
+      const nextProducts = Array.isArray(data) ? data : [];
+      setProducts(nextProducts);
+      if (!nextProducts.length) {
+        setError("No products are available at the moment.");
+      }
     } catch (fetchError) {
-      if (signal?.aborted) return;
       console.error("Error fetching products:", fetchError);
       setError(
         "We’re having trouble loading products right now. Please refresh or try again later.",
       );
       setProducts([]);
     } finally {
-      if (!signal?.aborted) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    if (initialProducts.length > 0 && !initialError) {
-      return undefined;
-    }
-    const controller = new AbortController();
-    fetchProducts(controller.signal);
-    return () => controller.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialProducts.length, initialError]);
-
-  const extractCategory = (product) =>
-    product?.category?.title ||
-    product?.categoryTitle ||
-    product?.categoryName ||
-    product?.category ||
-    product?.mainCategory ||
-    product?.productCategory ||
-    "Others";
-
-  const extractSubcategory = (product) =>
-    product?.subcategory?.title ||
-    product?.subCategory?.title ||
-    product?.subCategoryName ||
-    product?.subCategory ||
-    product?.subcategory ||
-    product?.productSubCategory ||
-    "Others";
-
-  const extractBrand = (product) =>
-    product?.brand ||
-    product?.brandName ||
-    product?.manufacturer ||
-    product?.productBrand ||
-    "Aquakart";
-
-  const extractPrice = (product) => {
-    const price = product?.discountPriceStatus
-      ? product?.discountPrice
-      : product?.price;
-    const numeric = Number(price);
-    if (Number.isNaN(numeric)) {
-      return 0;
-    }
-    return numeric;
   };
 
   const categoryTitlesFromProps = useMemo(
-    () => (initialCategories || []).map((item) => item?.title).filter(Boolean),
+    () => initialCategories.map((item) => normalizeText(item)).filter(Boolean),
     [initialCategories],
   );
 
   const subcategoryTitlesFromProps = useMemo(
     () =>
-      (initialSubcategories || []).map((item) => item?.title).filter(Boolean),
+      initialSubcategories.map((item) => normalizeText(item)).filter(Boolean),
     [initialSubcategories],
   );
 
   const derivedMeta = useMemo(() => {
-    if (!products.length) {
-      return {
-        categories: categoryTitlesFromProps,
-        subcategories: subcategoryTitlesFromProps,
-        brands: [],
-        priceRange: { min: 0, max: 0 },
-      };
-    }
-
-    const categoriesSet = new Set();
-    const subcategoriesSet = new Set();
-    const brandsSet = new Set();
+    const categories = new Set(categoryTitlesFromProps);
+    const subcategories = new Set(subcategoryTitlesFromProps);
+    const brands = new Set();
+    const categoryCounts = new Map();
     let minPrice = Infinity;
     let maxPrice = 0;
 
     products.forEach((product) => {
-      categoriesSet.add(extractCategory(product));
-      subcategoriesSet.add(extractSubcategory(product));
-      brandsSet.add(extractBrand(product));
-
+      const category = extractCategory(product);
+      const subcategory = extractSubcategory(product);
+      const brand = extractBrand(product);
       const price = extractPrice(product);
+
+      categories.add(category);
+      subcategories.add(subcategory);
+      brands.add(brand);
+      categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
+
       if (price > 0) {
         minPrice = Math.min(minPrice, price);
         maxPrice = Math.max(maxPrice, price);
       }
     });
 
-    categoryTitlesFromProps.forEach((title) => categoriesSet.add(title));
-    subcategoryTitlesFromProps.forEach((title) => subcategoriesSet.add(title));
-
-    if (!Number.isFinite(minPrice)) minPrice = 0;
-    if (maxPrice === 0) maxPrice = minPrice || 0;
-
-    const sortAlpha = (set) =>
-      Array.from(set)
+    const sortAlpha = (collection) =>
+      Array.from(collection)
         .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b));
+        .sort((left, right) => left.localeCompare(right));
 
     return {
-      categories: sortAlpha(categoriesSet),
-      subcategories: sortAlpha(subcategoriesSet),
-      brands: sortAlpha(brandsSet),
-      priceRange: { min: minPrice, max: maxPrice },
+      categories: sortAlpha(categories),
+      subcategories: sortAlpha(subcategories),
+      brands: sortAlpha(brands),
+      categoryCounts,
+      priceRange: {
+        min: Number.isFinite(minPrice) ? minPrice : 0,
+        max: maxPrice,
+      },
     };
   }, [products, categoryTitlesFromProps, subcategoryTitlesFromProps]);
 
-  useEffect(() => {
-    setFilters((prev) => ({
-      category: prev.category,
-      subcategory: prev.subcategory,
-      brand: prev.brand,
-      price: derivedMeta.priceRange.max || 0,
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [derivedMeta.priceRange.max]);
-
   const filteredAndSortedProducts = useMemo(() => {
-    if (!products.length) return [];
+    const priceLimit =
+      filters.price === null ? derivedMeta.priceRange.max : filters.price;
 
-    let filtered = products.filter((product) => {
-      const category = extractCategory(product);
-      const subcategory = extractSubcategory(product);
-      const brand = extractBrand(product);
-      const price = extractPrice(product);
-
-      if (filters.category !== "All" && category !== filters.category) {
-        return false;
-      }
-
+    const filtered = products.filter((product) => {
       if (
-        filters.subcategory !== "All" &&
-        subcategory !== filters.subcategory
+        deferredQuery &&
+        !productSearchText(product).includes(deferredQuery)
       ) {
         return false;
       }
-
-      if (filters.brand !== "All" && brand !== filters.brand) {
+      if (
+        filters.category !== "All" &&
+        extractCategory(product) !== filters.category
+      ) {
         return false;
       }
-
-      if (filters.price && price > filters.price) {
+      if (
+        filters.subcategory !== "All" &&
+        extractSubcategory(product) !== filters.subcategory
+      ) {
         return false;
       }
-
+      if (filters.brand !== "All" && extractBrand(product) !== filters.brand) {
+        return false;
+      }
+      if (priceLimit > 0 && extractPrice(product) > priceLimit) return false;
+      if (filters.inStockOnly && !isProductInStock(product)) return false;
+      if (filters.offersOnly && !hasOffer(product)) return false;
+      if (
+        filters.rating > 0 &&
+        getProductReviewStats(product).ratingValue < filters.rating
+      ) {
+        return false;
+      }
       return true;
     });
 
-    const sorted = [...filtered];
-    switch (sortBy) {
-      case "price-low":
-        sorted.sort((a, b) => extractPrice(a) - extractPrice(b));
-        break;
-      case "price-high":
-        sorted.sort((a, b) => extractPrice(b) - extractPrice(a));
-        break;
-      case "name":
-        sorted.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
-        break;
-      default:
-        break;
+    return [...filtered].sort((left, right) => {
+      switch (sortBy) {
+        case "price-low":
+          return extractPrice(left) - extractPrice(right);
+        case "price-high":
+          return extractPrice(right) - extractPrice(left);
+        case "rating":
+          return (
+            getProductReviewStats(right).ratingValue -
+            getProductReviewStats(left).ratingValue
+          );
+        case "saving": {
+          const leftSaving = hasOffer(left)
+            ? Number(left.price) - Number(left.discountPrice)
+            : 0;
+          const rightSaving = hasOffer(right)
+            ? Number(right.price) - Number(right.discountPrice)
+            : 0;
+          return rightSaving - leftSaving;
+        }
+        case "name":
+          return String(left?.title || "").localeCompare(
+            String(right?.title || ""),
+          );
+        default:
+          return 0;
+      }
+    });
+  }, [products, filters, deferredQuery, derivedMeta.priceRange.max, sortBy]);
+
+  const activeFilterChips = useMemo(() => {
+    const chips = [];
+    if (filters.query) {
+      chips.push({ key: "query", label: `“${filters.query}”`, value: "" });
     }
-
-    return sorted;
-  }, [products, filters, sortBy]);
-
-  const hasAnyProducts = useMemo(() => products.length > 0, [products]);
-  const hasFilteredProducts = useMemo(
-    () => filteredAndSortedProducts.length > 0,
-    [filteredAndSortedProducts],
-  );
-
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (filters.category !== "All") count++;
-    if (filters.subcategory !== "All") count++;
-    if (filters.brand !== "All") count++;
-    if (filters.price > 0 && filters.price < derivedMeta.priceRange.max)
-      count++;
-    return count;
+    if (filters.category !== "All") {
+      chips.push({
+        key: "category",
+        label: filters.category,
+        value: "All",
+      });
+    }
+    if (filters.subcategory !== "All") {
+      chips.push({
+        key: "subcategory",
+        label: filters.subcategory,
+        value: "All",
+      });
+    }
+    if (filters.brand !== "All") {
+      chips.push({ key: "brand", label: filters.brand, value: "All" });
+    }
+    if (filters.price !== null && filters.price < derivedMeta.priceRange.max) {
+      chips.push({
+        key: "price",
+        label: `Under ${formatCurrency(filters.price)}`,
+        value: null,
+      });
+    }
+    if (filters.inStockOnly) {
+      chips.push({
+        key: "inStockOnly",
+        label: "Ready to buy",
+        value: false,
+      });
+    }
+    if (filters.offersOnly) {
+      chips.push({
+        key: "offersOnly",
+        label: "Best offers",
+        value: false,
+      });
+    }
+    if (filters.rating > 0) {
+      chips.push({
+        key: "rating",
+        label: `${filters.rating}+ stars`,
+        value: 0,
+      });
+    }
+    return chips;
   }, [filters, derivedMeta.priceRange.max]);
 
-  const clearAllFilters = () => {
-    setFilters({
-      category: "All",
-      subcategory: "All",
-      brand: "All",
-      price: derivedMeta.priceRange.max || 0,
-    });
-  };
-
   const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: key === "price" ? value : value,
-    }));
+    setFilters((previous) => ({ ...previous, [key]: value }));
   };
 
-  const schemaProducts = useMemo(() => {
-    if (Array.isArray(initialProducts) && initialProducts.length > 0) {
-      return initialProducts;
-    }
-    return products;
-  }, [initialProducts, products]);
+  const clearAllFilters = () => setFilters(defaultFilters);
+  const hasAnyProducts = products.length > 0;
+  const hasFilteredProducts = filteredAndSortedProducts.length > 0;
+  const schemaProducts = initialProducts.length ? initialProducts : products;
+  const priceValue = filters.price ?? derivedMeta.priceRange.max;
+
+  const drawerFooter = (
+    <div className="grid grid-cols-[0.75fr_1.25fr] gap-2.5">
+      <button
+        type="button"
+        onClick={clearAllFilters}
+        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white text-xs font-black text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+      >
+        <RotateCcw size={15} /> Reset
+      </button>
+      <button
+        type="button"
+        onClick={() => setShowFilters(false)}
+        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 text-xs font-black text-white shadow-[0_14px_28px_rgba(15,23,42,0.2)] transition hover:bg-emerald-700"
+      >
+        View {filteredAndSortedProducts.length} products{" "}
+        <ArrowRight size={15} />
+      </button>
+    </div>
+  );
 
   return (
     <AquaLayout path="shop" productListData={schemaProducts}>
       {loading ? (
-        <div className="flex h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">
-          <div className="animate-bounce">
-            <Image
-              src={AQ}
-              alt="Loading"
-              width={80}
-              height={80}
-              className="rounded-full shadow-lg"
-              priority
-            />
-          </div>
-          <p className="mt-4 text-lg font-medium text-blue-900 animate-pulse">
-            Fetching the products for you...
-          </p>
-        </div>
+        <AquaAppLoader
+          variant="screen"
+          message="Refreshing the water studio"
+          subtext="Matching products, prices and availability for you."
+        />
       ) : error ? (
-        <div className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center gap-4 rounded-3xl border border-rose-100 bg-rose-50/80 p-8 text-center">
-          <h2 className="text-xl font-semibold text-rose-700">
-            Something went wrong
-          </h2>
-          <p className="text-sm text-rose-600">{error}</p>
+        <section className="mx-auto my-12 flex min-h-[58vh] w-[calc(100%-2rem)] max-w-3xl flex-col items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/80 bg-white/75 p-8 text-center shadow-[0_30px_80px_rgba(15,23,42,0.1)] backdrop-blur-2xl">
+          <div className="grid h-16 w-16 place-items-center rounded-2xl bg-rose-50 text-rose-500">
+            <Droplets size={28} />
+          </div>
+          <span className="mt-6 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">
+            Aquakart catalogue
+          </span>
+          <h1 className="mt-3 text-2xl font-black tracking-[-0.05em] text-slate-950 sm:text-4xl">
+            The water studio needs a moment.
+          </h1>
+          <p className="mt-4 max-w-lg text-sm leading-7 text-slate-500">
+            {error}
+          </p>
           <button
             type="button"
-            onClick={() => fetchProducts()}
-            className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow transition hover:bg-blue-700"
+            onClick={fetchProducts}
+            className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-slate-950 px-6 text-xs font-black text-white shadow-lg transition hover:bg-emerald-700"
           >
-            Try again
+            Refresh catalogue <RotateCcw size={15} />
           </button>
-        </div>
+        </section>
       ) : (
-        <div className="px-3 py-6 sm:px-4 lg:px-6">
-          <div className="mx-auto max-w-7xl">
-            {/* Hero Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8 rounded-3xl bg-gradient-to-br from-blue-50 via-white to-emerald-50 p-8 shadow-lg"
-            >
-              <h1 className="text-4xl font-bold text-slate-900 mb-2">
-                Discover Premium Water Solutions
-              </h1>
-              <p className="text-slate-600 text-lg">
-                Browse our collection of {products.length} professional-grade
-                products
-              </p>
-            </motion.div>
+        <div
+          data-aqua-preserve-surface
+          className="relative min-h-screen overflow-x-clip px-3 pb-16 pt-3 sm:px-5 sm:pt-5 lg:px-7"
+        >
+          <div className="pointer-events-none absolute left-[-12rem] top-10 h-[30rem] w-[30rem] rounded-full bg-emerald-200/25 blur-[110px]" />
+          <div className="pointer-events-none absolute right-[-12rem] top-[36rem] h-[30rem] w-[30rem] rounded-full bg-sky-200/20 blur-[120px]" />
 
-            {/* Filter Bar */}
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-4 shadow-md">
-              <div className="flex flex-wrap items-center gap-3">
+          <div className="relative mx-auto max-w-[1480px]">
+            <motion.section
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950 px-5 py-8 text-white shadow-[0_32px_90px_rgba(2,6,23,0.24)] sm:rounded-[2.75rem] sm:px-9 sm:py-11 lg:px-14 lg:py-14"
+            >
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_10%,rgba(45,212,191,0.22),transparent_30%),radial-gradient(circle_at_8%_100%,rgba(14,165,233,0.14),transparent_35%)]" />
+              <div className="pointer-events-none absolute -right-16 -top-28 h-80 w-80 rounded-full border border-white/10 shadow-[0_0_0_50px_rgba(255,255,255,0.025),0_0_0_100px_rgba(255,255,255,0.015)]" />
+
+              <div className="relative z-10 grid items-end gap-10 lg:grid-cols-[1.25fr_0.75fr]">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-200">
+                    <Sparkles size={14} /> Curated water solutions
+                  </div>
+                  <h1 className="mt-6 max-w-4xl text-[clamp(2.45rem,7vw,6.4rem)] font-black leading-[0.87] tracking-[-0.085em]">
+                    Water,
+                    <br /> thoughtfully solved.
+                  </h1>
+                  <p className="mt-6 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+                    Explore reliable softeners, purifiers and filtration systems
+                    selected for Indian homes—with clear pricing and expert help
+                    before you buy.
+                  </p>
+                  <div className="mt-7 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        document
+                          .getElementById("shop-products")
+                          ?.scrollIntoView({ behavior: "smooth" })
+                      }
+                      className="inline-flex min-h-12 items-center gap-2 rounded-full bg-emerald-400 px-5 text-xs font-black text-slate-950 shadow-[0_14px_30px_rgba(16,185,129,0.25)] transition hover:-translate-y-0.5 hover:bg-emerald-300"
+                    >
+                      Shop the collection <ArrowRight size={16} />
+                    </button>
+                    <Link
+                      href="/softener-planner"
+                      className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/15 bg-white/8 px-5 text-xs font-black text-white backdrop-blur transition hover:bg-white/14"
+                    >
+                      <WandSparkles size={16} /> Find my solution
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-1">
+                  {[
+                    [BadgeCheck, `${products.length}+`, "curated products"],
+                    [
+                      ShieldCheck,
+                      `${derivedMeta.brands.length}`,
+                      "trusted brands",
+                    ],
+                    [Headphones, "Human", "pre-buy guidance"],
+                  ].map(([Icon, value, label]) => (
+                    <div
+                      key={label}
+                      className="flex min-h-[88px] items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.065] p-4 backdrop-blur-xl last:col-span-2 sm:last:col-span-1"
+                    >
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-400/12 text-emerald-300">
+                        <Icon size={19} />
+                      </span>
+                      <span>
+                        <strong className="block text-lg font-black tracking-[-0.04em]">
+                          {value}
+                        </strong>
+                        <small className="mt-0.5 block text-[9px] uppercase tracking-[0.13em] text-slate-400">
+                          {label}
+                        </small>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.section>
+
+            <section className="mt-5 overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/70 p-3 shadow-[0_20px_60px_rgba(15,23,42,0.07)] backdrop-blur-2xl sm:p-4">
+              <div className="mb-3 flex items-center justify-between px-1 sm:px-2">
+                <div>
+                  <span className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-700">
+                    Start with your need
+                  </span>
+                  <h2 className="mt-1 text-sm font-black tracking-[-0.03em] text-slate-950 sm:text-base">
+                    Quick solution lanes
+                  </h2>
+                </div>
+                {filters.category !== "All" ? (
+                  <button
+                    type="button"
+                    onClick={() => handleFilterChange("category", "All")}
+                    className="text-[10px] font-black text-slate-500 transition hover:text-emerald-700"
+                  >
+                    Show everything
+                  </button>
+                ) : null}
+              </div>
+
+              <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
                 <button
-                  onClick={() => setShowFilters(true)}
-                  className="relative inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800"
+                  type="button"
+                  onClick={() => handleFilterChange("category", "All")}
+                  className={`flex min-w-[145px] items-center gap-3 rounded-2xl border p-3 text-left transition ${
+                    filters.category === "All"
+                      ? "border-slate-950 bg-slate-950 text-white shadow-lg"
+                      : "border-slate-200/80 bg-white/80 text-slate-700 hover:border-emerald-200"
+                  }`}
                 >
-                  <FunnelIcon className="h-5 w-5" />
-                  Filters
-                  {activeFiltersCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white">
-                      {activeFiltersCount}
-                    </span>
-                  )}
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-emerald-400/15 text-emerald-500">
+                    <Droplets size={18} />
+                  </span>
+                  <span>
+                    <strong className="block text-[11px] font-black">
+                      All solutions
+                    </strong>
+                    <small className="mt-0.5 block text-[9px] opacity-60">
+                      {products.length} products
+                    </small>
+                  </span>
                 </button>
 
-                {activeFiltersCount > 0 && (
-                  <motion.button
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    onClick={clearAllFilters}
-                    className="inline-flex items-center gap-1 rounded-full bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
+                {derivedMeta.categories.slice(0, 9).map((category, index) => (
+                  <button
+                    type="button"
+                    key={category}
+                    onClick={() => handleFilterChange("category", category)}
+                    className={`flex min-w-[170px] items-center gap-3 rounded-2xl border p-3 text-left transition ${
+                      filters.category === category
+                        ? "border-emerald-600 bg-emerald-600 text-white shadow-lg"
+                        : "border-slate-200/80 bg-white/80 text-slate-700 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md"
+                    }`}
                   >
-                    <XMarkIcon className="h-4 w-4" />
-                    Clear all
-                  </motion.button>
-                )}
+                    <span
+                      className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${
+                        filters.category === category
+                          ? "bg-white/15 text-white"
+                          : "bg-slate-100 text-emerald-700"
+                      }`}
+                    >
+                      {index % 2 ? (
+                        <PackageCheck size={18} />
+                      ) : (
+                        <Droplets size={18} />
+                      )}
+                    </span>
+                    <span className="min-w-0">
+                      <strong className="block truncate text-[11px] font-black">
+                        {category}
+                      </strong>
+                      <small className="mt-0.5 block text-[9px] opacity-60">
+                        {derivedMeta.categoryCounts.get(category) || 0} products
+                      </small>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
 
-                <div className="flex items-center gap-2 rounded-full bg-slate-50 px-4 py-2">
-                  <span className="text-sm font-medium text-slate-600">
-                    {filteredAndSortedProducts.length}{" "}
-                    {filteredAndSortedProducts.length === 1
-                      ? "product"
-                      : "products"}
+            <section id="shop-products" className="scroll-mt-28 pt-7">
+              <div className="sticky top-[76px] z-30 mb-5 rounded-[1.65rem] border border-white/80 bg-[rgba(248,252,251,0.88)] p-2.5 shadow-[0_18px_55px_rgba(15,23,42,0.09)] backdrop-blur-2xl sm:top-[92px] sm:p-3">
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowFilters(true)}
+                    className="relative inline-flex h-12 shrink-0 items-center gap-2 rounded-2xl bg-slate-950 px-4 text-xs font-black text-white shadow-lg transition hover:bg-emerald-700"
+                  >
+                    <SlidersHorizontal size={17} />
+                    <span className="hidden sm:inline">Tune filters</span>
+                    {activeFilterChips.length ? (
+                      <span className="grid h-5 min-w-5 place-items-center rounded-full bg-emerald-400 px-1 text-[9px] text-slate-950">
+                        {activeFilterChips.length}
+                      </span>
+                    ) : null}
+                  </button>
+
+                  <label className="relative min-w-0 flex-1">
+                    <Search
+                      size={17}
+                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+                    <input
+                      type="search"
+                      value={filters.query}
+                      onChange={(event) =>
+                        handleFilterChange("query", event.target.value)
+                      }
+                      placeholder="Search water solutions…"
+                      className="h-12 w-full rounded-2xl border border-slate-200/80 bg-white/90 pl-10 pr-9 text-xs font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                    />
+                    {filters.query ? (
+                      <button
+                        type="button"
+                        onClick={() => handleFilterChange("query", "")}
+                        className="absolute right-2.5 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full bg-slate-100 text-slate-500"
+                        aria-label="Clear search"
+                      >
+                        <X size={13} />
+                      </button>
+                    ) : null}
+                  </label>
+
+                  <div className="relative hidden sm:block">
+                    <select
+                      value={sortBy}
+                      onChange={(event) => setSortBy(event.target.value)}
+                      aria-label="Sort products"
+                      className="h-12 appearance-none rounded-2xl border border-slate-200/80 bg-white/90 pl-4 pr-10 text-xs font-black text-slate-700 outline-none transition hover:border-slate-300 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                    >
+                      <option value="recommended">Recommended</option>
+                      <option value="price-low">Price: low to high</option>
+                      <option value="price-high">Price: high to low</option>
+                      <option value="rating">Top rated</option>
+                      <option value="saving">Biggest saving</option>
+                      <option value="name">Name: A to Z</option>
+                    </select>
+                    <ChevronDown
+                      size={14}
+                      className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500"
+                    />
+                  </div>
+
+                  <div className="hidden h-12 items-center rounded-2xl border border-slate-200/80 bg-white/90 p-1 sm:flex">
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("grid")}
+                      className={`grid h-10 w-10 place-items-center rounded-xl transition ${
+                        viewMode === "grid"
+                          ? "bg-slate-950 text-white"
+                          : "text-slate-500 hover:bg-slate-100"
+                      }`}
+                      aria-label="Grid view"
+                    >
+                      <Grid2X2 size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("list")}
+                      className={`grid h-10 w-10 place-items-center rounded-xl transition ${
+                        viewMode === "list"
+                          ? "bg-slate-950 text-white"
+                          : "text-slate-500 hover:bg-slate-100"
+                      }`}
+                      aria-label="List view"
+                    >
+                      <List size={17} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-2 flex items-center justify-between gap-3 border-t border-slate-200/70 px-1 pt-2 sm:hidden">
+                  <div className="relative min-w-0 flex-1">
+                    <select
+                      value={sortBy}
+                      onChange={(event) => setSortBy(event.target.value)}
+                      aria-label="Sort products"
+                      className="h-9 w-full appearance-none rounded-xl border-0 bg-slate-100 pl-3 pr-8 text-[10px] font-black text-slate-700 outline-none"
+                    >
+                      <option value="recommended">Recommended</option>
+                      <option value="price-low">Price: low to high</option>
+                      <option value="price-high">Price: high to low</option>
+                      <option value="rating">Top rated</option>
+                      <option value="saving">Biggest saving</option>
+                    </select>
+                    <ChevronDown
+                      size={13}
+                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500"
+                    />
+                  </div>
+                  <span className="shrink-0 text-[10px] font-black text-slate-500">
+                    {filteredAndSortedProducts.length} results
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                >
-                  <option value="featured">Featured</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="name">Name: A to Z</option>
-                </select>
+              <AnimatePresence mode="popLayout">
+                {activeFilterChips.length ? (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mb-5 overflow-hidden"
+                  >
+                    <div className="flex flex-wrap items-center gap-2 px-1">
+                      {activeFilterChips.map((chip) => (
+                        <FilterChip
+                          key={chip.key}
+                          label={chip.label}
+                          onRemove={() =>
+                            handleFilterChange(chip.key, chip.value)
+                          }
+                        />
+                      ))}
+                      <button
+                        type="button"
+                        onClick={clearAllFilters}
+                        className="inline-flex h-9 items-center gap-1.5 px-2 text-[10px] font-black text-slate-500 transition hover:text-rose-600"
+                      >
+                        <RotateCcw size={13} /> Clear all
+                      </button>
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
 
-                <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-1">
-                  <button
-                    onClick={() => setViewMode("grid")}
-                    className={`rounded p-2 transition ${
-                      viewMode === "grid"
-                        ? "bg-slate-900 text-white"
-                        : "text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    <Squares2X2Icon className="h-5 w-5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode("list")}
-                    className={`rounded p-2 transition ${
-                      viewMode === "list"
-                        ? "bg-slate-900 text-white"
-                        : "text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    <ListBulletIcon className="h-5 w-5" />
-                  </button>
+              <div className="mb-5 flex items-end justify-between gap-6 px-1 sm:px-2">
+                <div>
+                  <span className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-700">
+                    Shop with clarity
+                  </span>
+                  <h2 className="mt-1 text-2xl font-black tracking-[-0.06em] text-slate-950 sm:text-4xl">
+                    {filters.category === "All"
+                      ? "The complete collection"
+                      : filters.category}
+                  </h2>
+                </div>
+                <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-white/75 px-3 py-2 text-[10px] font-bold text-slate-500 sm:flex">
+                  <BadgeCheck size={14} className="text-emerald-600" />
+                  {filteredAndSortedProducts.length} carefully matched
                 </div>
               </div>
-            </div>
 
-            {/* Active Filters Display */}
-            <AnimatePresence>
-              {activeFiltersCount > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mb-6 flex flex-wrap gap-2"
-                >
-                  {filters.category !== "All" && (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700">
-                      Category: {filters.category}
-                      <button
-                        onClick={() => handleFilterChange("category", "All")}
-                        className="rounded-full hover:bg-blue-100 p-0.5"
-                      >
-                        <XMarkIcon className="h-4 w-4" />
-                      </button>
-                    </span>
-                  )}
-                  {filters.subcategory !== "All" && (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
-                      Subcategory: {filters.subcategory}
-                      <button
-                        onClick={() => handleFilterChange("subcategory", "All")}
-                        className="rounded-full hover:bg-emerald-100 p-0.5"
-                      >
-                        <XMarkIcon className="h-4 w-4" />
-                      </button>
-                    </span>
-                  )}
-                  {filters.brand !== "All" && (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700">
-                      Brand: {filters.brand}
-                      <button
-                        onClick={() => handleFilterChange("brand", "All")}
-                        className="rounded-full hover:bg-amber-100 p-0.5"
-                      >
-                        <XMarkIcon className="h-4 w-4" />
-                      </button>
-                    </span>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Products Grid */}
-            <section>
               {hasAnyProducts && hasFilteredProducts ? (
                 <ProductGrid
                   products={filteredAndSortedProducts}
@@ -445,119 +762,95 @@ const AquaShopPageComponent = ({
                 />
               ) : hasAnyProducts ? (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex min-h-[40vh] flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex min-h-[44vh] flex-col items-center justify-center rounded-[2.25rem] border border-dashed border-slate-300 bg-white/65 p-8 text-center backdrop-blur-xl"
                 >
-                  <div className="rounded-full bg-slate-100 p-4">
-                    <FunnelIcon className="h-12 w-12 text-slate-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-slate-700">
-                    No products found
+                  <span className="grid h-16 w-16 place-items-center rounded-2xl bg-emerald-50 text-emerald-700">
+                    <Funnel size={26} />
+                  </span>
+                  <h3 className="mt-5 text-xl font-black tracking-[-0.04em] text-slate-950">
+                    No exact match yet
                   </h3>
-                  <p className="text-sm text-slate-500 max-w-md">
-                    No products match your current filters. Try adjusting your
-                    filters or clearing them to see more options.
+                  <p className="mt-2 max-w-md text-xs leading-6 text-slate-500">
+                    Widen the budget or remove a filter. Your full Aquakart
+                    collection is one tap away.
                   </p>
                   <button
+                    type="button"
                     onClick={clearAllFilters}
-                    className="mt-2 rounded-full bg-emerald-500 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-emerald-400"
+                    className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-slate-950 px-5 text-xs font-black text-white transition hover:bg-emerald-700"
                   >
-                    Clear all filters
+                    <RotateCcw size={15} /> Reset filters
                   </button>
                 </motion.div>
               ) : (
-                <div className="flex min-h-[40vh] items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 text-sm text-slate-500">
-                  No products available at the moment. Please check back soon.
+                <div className="flex min-h-[42vh] items-center justify-center rounded-[2.25rem] border border-dashed border-slate-300 bg-white/65 text-xs font-semibold text-slate-500">
+                  No products are available right now.
                 </div>
               )}
             </section>
 
-            {/* Filter Sidebar */}
-            <Transition appear show={showFilters} as={Fragment}>
-              <Dialog
-                as="div"
-                className="relative z-50"
-                onClose={() => setShowFilters(false)}
-              >
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
+            <section className="mt-10 grid gap-3 sm:grid-cols-3">
+              {[
+                [
+                  ShieldCheck,
+                  "Confident purchase",
+                  "Clear specifications and transparent prices.",
+                ],
+                [
+                  Headphones,
+                  "Human guidance",
+                  "Talk to our team before choosing a system.",
+                ],
+                [
+                  BadgePercent,
+                  "Value that lasts",
+                  "Compare offers without losing product context.",
+                ],
+              ].map(([Icon, title, description]) => (
+                <div
+                  key={title}
+                  className="flex items-start gap-3 rounded-2xl border border-white/80 bg-white/65 p-4 shadow-sm backdrop-blur"
                 >
-                  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
-                </Transition.Child>
-
-                <div className="fixed inset-0 overflow-y-auto">
-                  <div className="flex min-h-full justify-end">
-                    <Transition.Child
-                      as={Fragment}
-                      enter="ease-out duration-300"
-                      enterFrom="translate-x-full"
-                      enterTo="translate-x-0"
-                      leave="ease-in duration-200"
-                      leaveFrom="translate-x-0"
-                      leaveTo="translate-x-full"
-                    >
-                      <Dialog.Panel className="w-full max-w-md bg-white shadow-2xl">
-                        <div className="flex h-full flex-col">
-                          <div className="flex items-center justify-between border-b border-slate-200 p-6">
-                            <Dialog.Title className="text-2xl font-bold text-slate-900">
-                              Filters
-                            </Dialog.Title>
-                            <button
-                              onClick={() => setShowFilters(false)}
-                              className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                            >
-                              <XMarkIcon className="h-6 w-6" />
-                            </button>
-                          </div>
-
-                          <div className="flex-1 overflow-y-auto p-6">
-                            <ShopFiltersPanel
-                              filters={filters}
-                              onFilterChange={handleFilterChange}
-                              categoryOptions={derivedMeta.categories}
-                              subcategoryOptions={derivedMeta.subcategories}
-                              brandOptions={derivedMeta.brands}
-                              priceRange={{
-                                min: derivedMeta.priceRange.min,
-                                max: derivedMeta.priceRange.max,
-                                value: filters.price,
-                              }}
-                            />
-                          </div>
-
-                          <div className="border-t border-slate-200 p-6">
-                            <div className="flex gap-3">
-                              <button
-                                onClick={() => {
-                                  clearAllFilters();
-                                }}
-                                className="flex-1 rounded-lg border-2 border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                              >
-                                Clear All
-                              </button>
-                              <button
-                                onClick={() => setShowFilters(false)}
-                                className="flex-1 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-emerald-400"
-                              >
-                                Show {filteredAndSortedProducts.length} Results
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </Dialog.Panel>
-                    </Transition.Child>
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-700">
+                    <Icon size={18} />
+                  </span>
+                  <div>
+                    <strong className="text-xs font-black text-slate-900">
+                      {title}
+                    </strong>
+                    <p className="mt-1 text-[10px] leading-5 text-slate-500">
+                      {description}
+                    </p>
                   </div>
                 </div>
-              </Dialog>
-            </Transition>
+              ))}
+            </section>
           </div>
+
+          <AquaReuseDrawer
+            open={showFilters}
+            close={() => setShowFilters(false)}
+            title="Tune your water solution"
+            description="Every choice updates the collection instantly. Refine only what matters to your home."
+            eyebrow="Smart catalogue"
+            size="lg"
+            footer={drawerFooter}
+          >
+            <ShopFiltersPanel
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              categoryOptions={derivedMeta.categories}
+              subcategoryOptions={derivedMeta.subcategories}
+              brandOptions={derivedMeta.brands}
+              priceRange={{
+                min: derivedMeta.priceRange.min,
+                max: derivedMeta.priceRange.max,
+                value: priceValue,
+              }}
+            />
+          </AquaReuseDrawer>
         </div>
       )}
     </AquaLayout>
