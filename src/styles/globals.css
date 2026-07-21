@@ -11,6 +11,9 @@
     var(--font-roboto-mono), var(--font-montserrat), ui-monospace,
     SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     monospace;
+  --aqua-page-surface: #f6faf9;
+  --aqua-page-surface-strong: #eef6f4;
+  --aqua-page-surface-rgb: 246, 250, 249;
 }
 
 /* Tailwind v4 theme tokens — so `font-sans` / `font-mono` utilities resolve to --app-font */
@@ -30,15 +33,66 @@ html {
 body {
   min-height: 100vh;
   font-family: var(--app-font);
-  background: linear-gradient(
-    135deg,
-    #f0f4ff 0%,
-    #e8f5f0 25%,
-    #f5f0ff 50%,
-    #eef7ff 75%,
-    #f0fdf4 100%
-  );
+  background:
+    radial-gradient(
+      circle at 8% 0%,
+      rgba(16, 185, 129, 0.055),
+      transparent 30rem
+    ),
+    radial-gradient(
+      circle at 92% 12%,
+      rgba(14, 165, 233, 0.04),
+      transparent 28rem
+    ),
+    linear-gradient(
+      180deg,
+      #f8fbfa 0%,
+      var(--aqua-page-surface) 48%,
+      #f3f8f7 100%
+    );
   background-attachment: fixed;
+}
+
+/* ── Shared Aquakart page canvas ─────────────────────────
+   Every route gets the same neutral surface from header to footer. Page-level
+   accent colours belong inside cards and decorative layers, not on the canvas.
+*/
+.aqua-site-layer {
+  background: transparent;
+}
+
+.aqua-site-content {
+  background: transparent;
+}
+
+.aqua-site-content
+  > :where(div, main, section):not([data-aqua-preserve-surface]) {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+.aqua-site-header-panel,
+.aqua-site-mobile-menu {
+  background: rgba(var(--aqua-page-surface-rgb), 0.84);
+}
+
+.aqua-site-header-panel:hover {
+  background: rgba(var(--aqua-page-surface-rgb), 0.94);
+}
+
+.aqua-site-footer-edge {
+  background: transparent;
+}
+
+@media (max-width: 639px) {
+  body {
+    background-attachment: scroll;
+  }
+
+  .aqua-site-header-panel,
+  .aqua-site-mobile-menu {
+    background: rgba(var(--aqua-page-surface-rgb), 0.9);
+  }
 }
 
 /* ── Glass Utility Classes ─────────────────────────────── */

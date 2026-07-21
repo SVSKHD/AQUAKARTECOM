@@ -91,7 +91,7 @@ const MobileBottomNav = () => {
         className="border-t border-white/40"
         style={{
           background:
-            "linear-gradient(180deg, rgba(255,255,255,0.72) 0%, rgba(245,247,250,0.85) 100%)",
+            "linear-gradient(180deg, rgba(246,250,249,0.76) 0%, rgba(238,246,244,0.9) 100%)",
           backdropFilter: "blur(40px) saturate(200%)",
           WebkitBackdropFilter: "blur(40px) saturate(200%)",
           boxShadow:

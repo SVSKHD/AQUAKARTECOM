@@ -61,7 +61,10 @@ const AquaHeader = () => {
 
   // Festival wish only on mount (or when you decide to change it)
   useEffect(() => {
-    setFestival(getFestivalWish());
+    const frame = window.requestAnimationFrame(() => {
+      setFestival(getFestivalWish());
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   // Scroll handler optimized: no state updates per scroll tick, no re-binding listener
@@ -100,7 +103,7 @@ const AquaHeader = () => {
     >
       {({ open }) => (
         <>
-          <div className="relative rounded-full border border-white/50 bg-white/50 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.7)] transition-all duration-500 hover:bg-white/65 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.8)] hover:border-white/70">
+          <div className="aqua-site-header-panel relative rounded-full border border-white/65 backdrop-blur-2xl shadow-[0_8px_32px_rgba(15,23,42,0.07),inset_0_1px_0_rgba(255,255,255,0.75)] transition-all duration-500 hover:border-white/80 hover:shadow-[0_12px_40px_rgba(15,23,42,0.09),inset_0_1px_0_rgba(255,255,255,0.85)]">
             <div className="relative flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
               {/* Mobile Menu Button */}
               <div className="absolute inset-y-0 left-0 flex items-center sm:hidden pl-2">
@@ -303,7 +306,7 @@ const AquaHeader = () => {
             leaveTo="transform scale-95 opacity-0 -translate-y-2"
           >
             <DisclosurePanel className="sm:hidden mt-2">
-              <div className="rounded-[2rem] border border-white/50 bg-white/50 backdrop-blur-3xl shadow-[0_8px_40px_rgba(0,0,0,0.08)] p-4 space-y-2 ring-1 ring-white/60">
+              <div className="aqua-site-mobile-menu space-y-2 rounded-[2rem] border border-white/65 p-4 shadow-[0_8px_40px_rgba(15,23,42,0.09)] ring-1 ring-white/70 backdrop-blur-3xl">
                 {navigation.map((item) => (
                   <DisclosureButton
                     key={item.name}
