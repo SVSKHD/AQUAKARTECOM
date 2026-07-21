@@ -20,6 +20,8 @@ import {
   Printer,
   ReceiptIndianRupee,
   ShieldCheck,
+  Sparkles,
+  Tags,
   Truck,
   UserRound,
 } from "lucide-react";
@@ -124,7 +126,7 @@ const ProductCard = ({ product, index }) => {
       <div className={styles.productVisual}>
         {product.productImage ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={product.productImage} alt="" />
+          <img src={product.productImage} alt={product.productName} />
         ) : (
           <>
             <span className={styles.productNumber}>
@@ -140,6 +142,19 @@ const ProductCard = ({ product, index }) => {
           <div>
             <span className={styles.productKicker}>Aquakart selection</span>
             <h3>{product.productName}</h3>
+            {product.productCategory || product.productSubcategory ? (
+              <div className={styles.productTags}>
+                {product.productCategory ? (
+                  <span>
+                    <Tags size={11} aria-hidden="true" />
+                    {product.productCategory}
+                  </span>
+                ) : null}
+                {product.productSubcategory ? (
+                  <span>{product.productSubcategory}</span>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           <span className={styles.quantityPill}>
             {product.productQuantity}{" "}
@@ -179,6 +194,8 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
 
   const amounts = priceUtils.getInvoiceAmounts(invoice);
   const invoiceLabel = invoice.invoice_no || invoice.id || "Invoice";
+  const customerDisplayName =
+    invoice.customer_name || invoice.gst_name || "valued customer";
 
   const handleDownload = async () => {
     if (isDownloading) return;
@@ -310,6 +327,29 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
             <ShieldCheck size={18} />
             <span>Tax treatment</span>
             <strong>{invoice.gst ? "CGST + SGST" : "Non-GST"}</strong>
+          </div>
+        </section>
+
+        <section className={styles.greetingCard}>
+          <span className={styles.greetingIcon} aria-hidden="true">
+            <Sparkles size={25} strokeWidth={1.7} />
+          </span>
+          <div className={styles.greetingCopy}>
+            <span className={styles.eyebrow}>A note from Aquakart</span>
+            <h2>Thank you, {customerDisplayName}.</h2>
+            <p>
+              Your purchase is documented, protected and ready whenever you need
+              it. Keep this invoice for warranty and service support.
+            </p>
+          </div>
+          <div className={styles.greetingFacts}>
+            <span>
+              <BadgeCheck size={16} /> Verified purchase
+            </span>
+            <span>
+              <Package size={16} /> {invoice.products.length}{" "}
+              {invoice.products.length === 1 ? "product" : "products"}
+            </span>
           </div>
         </section>
 

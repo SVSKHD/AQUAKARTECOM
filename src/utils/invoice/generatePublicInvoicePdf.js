@@ -171,6 +171,30 @@ export const downloadPublicInvoicePdf = async (invoice) => {
   });
 
   y += 66;
+  const greetingLines = doc
+    .splitTextToSize(
+      `Thank you, ${invoice.customer_name || invoice.gst_name || "valued customer"}.`,
+      contentWidth - 28,
+    )
+    .slice(0, 2);
+  const greetingHeight = greetingLines.length > 1 ? 60 : 48;
+  doc.setFillColor(240, 253, 250);
+  doc.setDrawColor(167, 243, 208);
+  doc.roundedRect(margin, y, contentWidth, greetingHeight, 8, 8, "FD");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(...BRAND);
+  doc.text(greetingLines, margin + 14, y + 18, { lineHeightFactor: 1.25 });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...MUTED);
+  doc.text(
+    "Keep this verified invoice for warranty and Aquakart service support.",
+    margin + 14,
+    y + 20 + greetingLines.length * 11,
+  );
+
+  y += greetingHeight + 14;
   const gap = 14;
   const cardWidth = (contentWidth - gap) / 2;
   const customerLines = [
@@ -215,12 +239,21 @@ export const downloadPublicInvoicePdf = async (invoice) => {
 
   invoice.products.forEach((product, index) => {
     const nameLines = doc.splitTextToSize(product.productName, 220);
+    const categoryText = [product.productCategory, product.productSubcategory]
+      .filter(Boolean)
+      .join(" / ");
+    const categoryLines = categoryText
+      ? doc.splitTextToSize(categoryText, 220)
+      : [];
     const serialLines = product.productSerialNo
       ? doc.splitTextToSize(`Serial: ${product.productSerialNo}`, 220)
       : [];
     const rowHeight = Math.max(
       45,
-      22 + nameLines.length * 11 + serialLines.length * 10,
+      22 +
+        nameLines.length * 11 +
+        categoryLines.length * 9 +
+        serialLines.length * 10,
     );
     if (y + rowHeight > height - 170) addContinuationPage();
 
@@ -234,11 +267,19 @@ export const downloadPublicInvoicePdf = async (invoice) => {
     doc.setFontSize(8.5);
     doc.setTextColor(...INK);
     doc.text(nameLines, margin + 14, y + 17);
+    let detailY = y + 17 + nameLines.length * 11;
+    if (categoryLines.length) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.8);
+      doc.setTextColor(...BRAND);
+      doc.text(categoryLines, margin + 14, detailY);
+      detailY += categoryLines.length * 9;
+    }
     if (serialLines.length) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
       doc.setTextColor(...MUTED);
-      doc.text(serialLines, margin + 14, y + 17 + nameLines.length * 11);
+      doc.text(serialLines, margin + 14, detailY);
     }
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);

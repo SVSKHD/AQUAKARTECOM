@@ -23,6 +23,12 @@ const normalizeText = (value, fallback = "") => {
   return String(value).trim();
 };
 
+const normalizeLabel = (value) => {
+  if (typeof value === "string") return normalizeText(value);
+  if (!value || typeof value !== "object") return "";
+  return normalizeText(value.title ?? value.name ?? value.label);
+};
+
 const firstImageUrl = (product) => {
   const candidates = [
     product?.productImage,
@@ -73,6 +79,18 @@ export const mapInvoiceFromApi = (payload) => {
             product?.productSerialNo ?? product?.serial_no,
           ),
           productImage: firstImageUrl(product),
+          productCategory: normalizeLabel(
+            product?.productCategory ??
+              product?.category ??
+              product?.categoryTitle ??
+              product?.categoryName,
+          ),
+          productSubcategory: normalizeLabel(
+            product?.productSubcategory ??
+              product?.productSubCategory ??
+              product?.subcategory ??
+              product?.subCategory,
+          ),
         };
       })
     : [];

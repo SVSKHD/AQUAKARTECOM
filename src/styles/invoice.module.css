@@ -384,12 +384,110 @@
   white-space: nowrap;
 }
 
+.greetingCard {
+  position: relative;
+  display: grid;
+  margin: clamp(26px, 4vw, 52px) clamp(26px, 4vw, 56px) 0;
+  padding: clamp(22px, 3vw, 32px);
+  align-items: center;
+  gap: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(110, 231, 199, 0.18);
+  border-radius: 28px;
+  color: white;
+  background:
+    radial-gradient(
+      circle at 88% 15%,
+      rgba(45, 212, 191, 0.25),
+      transparent 13rem
+    ),
+    linear-gradient(125deg, #07111f, #0a2631 62%, #075742 145%);
+  box-shadow: 0 22px 52px rgba(7, 17, 31, 0.15);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.greetingCard::after {
+  position: absolute;
+  right: -3.5rem;
+  bottom: -6rem;
+  width: 14rem;
+  height: 14rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 35px rgba(255, 255, 255, 0.018),
+    0 0 0 70px rgba(255, 255, 255, 0.012);
+  content: "";
+}
+
+.greetingIcon {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  border: 1px solid rgba(110, 231, 199, 0.24);
+  border-radius: 18px;
+  color: #6ee7c7;
+  background: rgba(16, 185, 129, 0.12);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16);
+}
+
+.greetingCopy {
+  position: relative;
+  z-index: 1;
+}
+
+.greetingCopy .eyebrow {
+  color: #6ee7c7;
+}
+
+.greetingCopy h2 {
+  margin: 6px 0 7px;
+  color: white;
+  font-size: clamp(1.2rem, 2.4vw, 1.75rem);
+  letter-spacing: -0.045em;
+}
+
+.greetingCopy p {
+  max-width: 43rem;
+  margin: 0;
+  color: #aebdca;
+  font-size: 0.72rem;
+  line-height: 1.65;
+}
+
+.greetingFacts {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-width: 190px;
+  gap: 8px;
+}
+
+.greetingFacts span {
+  display: flex;
+  min-height: 38px;
+  padding: 0 12px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #d8e4e8;
+  background: rgba(255, 255, 255, 0.055);
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+
+.greetingFacts svg {
+  color: #6ee7c7;
+}
+
 .invoiceGrid {
   display: grid;
-  padding: clamp(26px, 4vw, 56px);
+  padding: clamp(26px, 3vw, 40px) clamp(26px, 4vw, 56px) clamp(26px, 4vw, 56px);
   align-items: start;
-  gap: clamp(28px, 4vw, 56px);
-  grid-template-columns: minmax(0, 1.32fr) minmax(330px, 0.68fr);
+  gap: clamp(24px, 3vw, 38px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .sectionHeading,
@@ -452,7 +550,7 @@
   border-radius: 24px;
   background: #fff;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.045);
-  grid-template-columns: 112px minmax(0, 1fr);
+  grid-template-columns: 132px minmax(0, 1fr);
   transition:
     border-color 180ms ease,
     transform 180ms ease,
@@ -543,6 +641,33 @@
   font-size: 0.98rem;
   letter-spacing: -0.025em;
   line-height: 1.35;
+}
+
+.productTags {
+  display: flex;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.productTags span {
+  display: inline-flex;
+  min-height: 24px;
+  padding: 0 8px;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #dcebe6;
+  border-radius: 999px;
+  color: #49655d;
+  background: #f6fbf9;
+  font-size: 0.55rem;
+  font-weight: 800;
+}
+
+.productTags span:first-child {
+  border-color: #bde8dc;
+  color: #08785a;
+  background: #eaf9f4;
 }
 
 .quantityPill {
@@ -676,9 +801,8 @@
 }
 
 .detailsRail {
-  position: sticky;
-  top: 24px;
   display: grid;
+  align-content: start;
   gap: 14px;
 }
 
@@ -796,19 +920,30 @@
 }
 
 .summaryRows {
+  display: grid;
   padding: 14px 0;
+  gap: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .summaryRows > div {
-  display: flex;
-  padding: 7px 0;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
+  display: grid;
+  min-width: 0;
+  min-height: 64px;
+  padding: 10px 12px;
+  align-content: center;
+  gap: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
   color: #b6c3ce;
+  background: rgba(255, 255, 255, 0.045);
   font-size: 0.69rem;
+}
+
+.summaryRows > div:first-child {
+  grid-column: 1 / -1;
 }
 
 .summaryRows small {
@@ -817,7 +952,7 @@
 
 .summaryRows strong {
   color: white;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
 }
 
 .grandTotal {
@@ -1010,6 +1145,16 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .greetingCard {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .greetingFacts {
+    min-width: 0;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .detailsRail {
     position: static;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1140,8 +1285,41 @@
     font-size: 0.7rem;
   }
 
+  .greetingCard {
+    margin: 18px 16px 0;
+    padding: 19px;
+    gap: 14px;
+    border-radius: 22px;
+    grid-template-columns: 46px minmax(0, 1fr);
+  }
+
+  .greetingIcon {
+    width: 46px;
+    height: 46px;
+    border-radius: 15px;
+  }
+
+  .greetingCopy h2 {
+    margin-top: 5px;
+    font-size: 1.05rem;
+  }
+
+  .greetingCopy p {
+    font-size: 0.64rem;
+  }
+
+  .greetingFacts {
+    gap: 6px;
+  }
+
+  .greetingFacts span {
+    min-height: 36px;
+    padding: 0 9px;
+    font-size: 0.57rem;
+  }
+
   .invoiceGrid {
-    padding: 28px 16px 34px;
+    padding: 24px 16px 34px;
     gap: 30px;
   }
 
@@ -1330,7 +1508,15 @@
   .invoiceGrid {
     padding: 26px;
     gap: 24px;
-    grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .greetingCard {
+    margin: 24px 26px 0;
+    padding: 20px;
+    box-shadow: none;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 
   .detailsRail {
@@ -1340,6 +1526,7 @@
   .productCard,
   .detailCard,
   .summaryCard,
+  .greetingCard,
   .amountWords,
   .termsCard {
     break-inside: avoid;
