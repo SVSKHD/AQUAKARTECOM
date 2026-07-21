@@ -57,7 +57,7 @@ export const getServerSideProps = async ({ params, res }) => {
       controller.signal,
     );
     const response = await fetch(
-      `${apiBase.replace(/\/$/, "")}/invoice/${encodeURIComponent(id)}`,
+      `${apiBase.replace(/\/$/, "")}crm/invoice/${encodeURIComponent(id)}`,
       {
         headers: { Accept: "application/json" },
         signal: controller.signal,
