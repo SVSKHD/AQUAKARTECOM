@@ -54,8 +54,11 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
   const [festival, setFestival] = useState(null);
 
   useEffect(() => {
-    setMounted(true);
-    setFestival(getFestivalWish());
+    const frame = window.requestAnimationFrame(() => {
+      setMounted(true);
+      setFestival(getFestivalWish());
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const formattedCategories = Array.isArray(categories) ? categories : [];
@@ -71,7 +74,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
   return (
     <footer
       aria-labelledby="footer-heading"
-      className="relative z-10 bg-white px-2 pb-2 pt-10 text-slate-300"
+      className="aqua-site-footer-edge relative z-10 px-2 pb-2 pt-10 text-slate-300"
     >
       <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 px-6 pb-8 pt-16 sm:px-12 lg:px-16">
         {/* Ambient Background Effects */}
