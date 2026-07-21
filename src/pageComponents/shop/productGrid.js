@@ -35,12 +35,16 @@ const ProductGrid = ({ products = [], viewMode = "grid" }) => {
       animate="visible"
       className={
         viewMode === "grid"
-          ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          : "flex flex-col gap-6"
+          ? "grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 2xl:grid-cols-4"
+          : "mx-auto flex max-w-6xl flex-col gap-5"
       }
     >
       {products.map((product, index) => (
-        <motion.div key={product?._id || index} variants={itemVariants}>
+        <motion.div
+          key={product?._id || index}
+          variants={itemVariants}
+          className="min-w-0"
+        >
           <ReusableProductCard product={product} viewMode={viewMode} />
         </motion.div>
       ))}
