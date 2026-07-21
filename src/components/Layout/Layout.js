@@ -155,8 +155,8 @@ const AquaLayout = (props) => {
     return (
       <>
         <AquaHeader />
-        <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-white pt-24 flex-col">
-          <main className="flex min-w-0 flex-1 flex-col items-center justify-center overflow-x-hidden bg-white">
+        <div className="aqua-site-layer flex min-h-screen w-full max-w-full flex-col overflow-x-hidden pt-24">
+          <main className="aqua-site-content flex min-w-0 flex-1 flex-col items-center justify-center overflow-x-hidden">
             <div className="glass-card mx-4 max-w-md rounded-3xl p-10 text-center">
               <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100/80">
                 <svg
@@ -225,12 +225,12 @@ const AquaLayout = (props) => {
       )}
 
       <div
-        className={`relative flex min-h-screen w-full max-w-full flex-col bg-white pt-24 pb-16 sm:pb-0 ${
+        className={`aqua-site-layer relative flex min-h-screen w-full max-w-full flex-col pt-24 pb-16 sm:pb-0 ${
           allowPageSticky ? "overflow-x-clip" : "overflow-x-hidden"
         }`}
       >
         <main
-          className={`relative z-10 min-w-0 flex-1 bg-white ${
+          className={`aqua-site-content relative z-10 min-w-0 flex-1 ${
             allowPageSticky ? "overflow-x-clip" : "overflow-x-hidden"
           }`}
         >
