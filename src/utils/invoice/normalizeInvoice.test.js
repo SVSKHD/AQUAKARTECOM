@@ -20,6 +20,8 @@ describe("mapInvoiceFromApi", () => {
             productName: "Water Softener",
             quantity: 2,
             unit_price: 15_000,
+            category: { title: "Softeners" },
+            subCategory: "Automatic",
           },
         ],
       },
@@ -33,6 +35,8 @@ describe("mapInvoiceFromApi", () => {
       productName: "Water Softener",
       productQuantity: 2,
       productPrice: 15_000,
+      productCategory: "Softeners",
+      productSubcategory: "Automatic",
     });
     expect(invoice.total_amount).toBe(30_000);
   });

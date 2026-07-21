@@ -1,4 +1,5 @@
 import InvoicePage from "@/pageComponents/invoice/InvoicePage";
+import { enrichInvoiceProducts } from "@/utils/invoice/matchInvoiceProducts";
 import { mapInvoiceFromApi } from "@/utils/invoice/normalizeInvoice";
 
 const FETCH_TIMEOUT_MS = 10_000;
@@ -10,6 +11,22 @@ const normalizeRouteId = (value) => {
   const normalized = id.trim();
   if (!normalized || normalized.length > 160) return "";
   return normalized;
+};
+
+const fetchProductCatalogue = async (apiBase, signal) => {
+  try {
+    const response = await fetch(
+      `${apiBase.replace(/\/$/, "")}/all-products?query=ecom`,
+      {
+        headers: { Accept: "application/json" },
+        signal,
+      },
+    );
+
+    return response.ok ? await response.json() : [];
+  } catch {
+    return [];
+  }
 };
 
 export const getServerSideProps = async ({ params, res }) => {
@@ -34,8 +51,13 @@ export const getServerSideProps = async ({ params, res }) => {
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
+    const catalogueApiBase = process.env.NEXT_PUBLIC_API_URL || apiBase;
+    const cataloguePromise = fetchProductCatalogue(
+      catalogueApiBase,
+      controller.signal,
+    );
     const response = await fetch(
-      `${apiBase.replace(/\/$/, "")}/crm/invoice/${encodeURIComponent(id)}`,
+      `${apiBase.replace(/\/$/, "")}/invoice/${encodeURIComponent(id)}`,
       {
         headers: { Accept: "application/json" },
         signal: controller.signal,
@@ -51,7 +73,11 @@ export const getServerSideProps = async ({ params, res }) => {
     }
 
     const payload = await response.json();
-    const invoice = mapInvoiceFromApi(payload);
+    const cataloguePayload = await cataloguePromise;
+    const invoice = enrichInvoiceProducts(
+      mapInvoiceFromApi(payload),
+      cataloguePayload,
+    );
 
     if (!invoice) {
       return { props: { invoice: null, statusCode: 502 } };
