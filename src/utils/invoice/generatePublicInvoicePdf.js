@@ -41,6 +41,7 @@ const titleCase = (value) =>
 
 const drawPageHeader = (doc, invoice, continued = false) => {
   const width = doc.internal.pageSize.getWidth();
+  const invoiceTitle = invoice.gst ? "GST TAX INVOICE" : "INVOICE";
   doc.setFillColor(...BRAND);
   doc.rect(0, 0, width, 92, "F");
   doc.setFillColor(...BRAND_BRIGHT);
@@ -58,7 +59,7 @@ const drawPageHeader = (doc, invoice, continued = false) => {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.text(
-    continued ? "TAX INVOICE / CONTINUED" : "TAX INVOICE",
+    continued ? `${invoiceTitle} / CONTINUED` : invoiceTitle,
     width - 42,
     42,
     {
@@ -230,11 +231,11 @@ export const downloadPublicInvoicePdf = async (invoice) => {
   y += Math.max(customerHeight, gstHeight) + 20;
   y = drawProductHeader(doc, y);
 
-  const addContinuationPage = () => {
+  const addContinuationPage = (showProductHeader = true) => {
     drawFooter(doc);
     doc.addPage();
     drawPageHeader(doc, invoice, true);
-    y = drawProductHeader(doc, 112);
+    y = showProductHeader ? drawProductHeader(doc, 112) : 112;
   };
 
   invoice.products.forEach((product, index) => {
@@ -305,13 +306,14 @@ export const downloadPublicInvoicePdf = async (invoice) => {
     y += 46;
   }
 
-  if (y + 190 > height - 65) addContinuationPage();
+  const summaryCardHeight = invoice.gst ? 166 : 136;
+  if (y + summaryCardHeight + 78 > height) addContinuationPage(false);
   y += 18;
 
   const wordsWidth = contentWidth * 0.54;
   doc.setFillColor(240, 253, 250);
   doc.setDrawColor(167, 243, 208);
-  doc.roundedRect(margin, y, wordsWidth, 130, 10, 10, "FD");
+  doc.roundedRect(margin, y, wordsWidth, summaryCardHeight, 10, 10, "FD");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(...BRAND);
@@ -327,22 +329,28 @@ export const downloadPublicInvoicePdf = async (invoice) => {
   doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
   doc.text(
-    "GST is included in the invoice total where applicable.",
+    invoice.gst
+      ? "The GST total is divided equally into CGST and SGST."
+      : "No GST is applied to this standard invoice.",
     margin + 15,
-    y + 109,
+    y + summaryCardHeight - 21,
   );
 
   const summaryX = margin + wordsWidth + gap;
   const summaryWidth = contentWidth - wordsWidth - gap;
   doc.setFillColor(...INK);
-  doc.roundedRect(summaryX, y, summaryWidth, 130, 10, 10, "F");
+  doc.roundedRect(summaryX, y, summaryWidth, summaryCardHeight, 10, 10, "F");
   const summaryRows = invoice.gst
     ? [
-        ["Taxable value", amounts.basePrice],
+        ["Base price", amounts.basePrice],
+        ["GST (18%)", amounts.gstValue],
         ["CGST (9%)", amounts.cgstValue],
         ["SGST (9%)", amounts.sgstValue],
       ]
-    : [["Subtotal", amounts.grandTotal]];
+    : [
+        ["Base price", amounts.basePrice],
+        ["GST (0%)", amounts.gstValue],
+      ];
   let rowY = y + 25;
   summaryRows.forEach(([label, value]) => {
     doc.setFont("helvetica", "normal");

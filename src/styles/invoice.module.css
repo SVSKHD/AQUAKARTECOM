@@ -545,12 +545,13 @@
 .productCard {
   display: grid;
   min-width: 0;
-  padding: 12px;
+  padding: 14px;
+  gap: 14px;
   border: 1px solid #dfe9e6;
-  border-radius: 24px;
+  border-radius: 28px;
   background: #fff;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.045);
-  grid-template-columns: 132px minmax(0, 1fr);
+  grid-template-columns: minmax(210px, 0.95fr) minmax(0, 1.05fr);
   transition:
     border-color 180ms ease,
     transform 180ms ease,
@@ -563,21 +564,34 @@
   transform: translateY(-2px);
 }
 
+.productShowcase {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
 .productVisual {
   position: relative;
   display: grid;
-  min-height: 124px;
+  min-height: 230px;
+  padding: 18px;
   place-items: center;
   overflow: hidden;
-  border-radius: 18px;
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 22px;
   color: #08785a;
   background:
     radial-gradient(
-      circle at 70% 20%,
-      rgba(45, 212, 191, 0.22),
-      transparent 3rem
+      circle at 74% 24%,
+      rgba(56, 189, 248, 0.19),
+      transparent 7rem
     ),
-    linear-gradient(145deg, #effcf7, #ecf8fb);
+    radial-gradient(
+      circle at 20% 88%,
+      rgba(45, 212, 191, 0.19),
+      transparent 7rem
+    ),
+    linear-gradient(145deg, #f2fffa, #edf8fc);
 }
 
 .productVisual::after {
@@ -595,7 +609,14 @@
   z-index: 1;
   width: 100%;
   height: 100%;
+  max-height: 220px;
   object-fit: contain;
+  filter: drop-shadow(0 18px 22px rgba(15, 23, 42, 0.13));
+  transition: transform 320ms ease;
+}
+
+.productCard:hover .productVisual img {
+  transform: scale(1.035) translateY(-2px);
 }
 
 .productVisual svg {
@@ -606,25 +627,74 @@
 .productNumber {
   position: absolute;
   z-index: 2;
-  top: 10px;
-  left: 10px;
-  font-size: 0.58rem;
+  top: 13px;
+  left: 13px;
+  display: grid;
+  width: 29px;
+  height: 29px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 9px;
+  color: white;
+  background: #07111f;
+  box-shadow: 0 8px 18px rgba(7, 17, 31, 0.18);
+  font-size: 0.55rem;
   font-weight: 900;
+}
+
+.productIdentity {
+  padding: 15px 8px 5px;
+}
+
+.productIdentity h3 {
+  margin: 6px 0 0;
+  overflow-wrap: anywhere;
+  font-size: 0.96rem;
+  letter-spacing: -0.03em;
+  line-height: 1.4;
 }
 
 .productContent {
   display: flex;
   min-width: 0;
-  padding: 6px 8px 6px 18px;
+  padding: 18px;
   flex-direction: column;
   justify-content: space-between;
+  border: 1px solid #e3ece9;
+  border-radius: 22px;
+  background:
+    linear-gradient(rgba(226, 232, 240, 0.24) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(226, 232, 240, 0.24) 1px, transparent 1px),
+    #f9fcfb;
+  background-size: 18px 18px;
 }
 
-.productHeading {
+.productTopline {
   display: flex;
-  align-items: flex-start;
+  padding-bottom: 14px;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
+  border-bottom: 1px solid #e1ebe8;
+}
+
+.productTopline > div span,
+.productTopline > div strong {
+  display: block;
+}
+
+.productTopline > div span {
+  color: var(--invoice-muted);
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.productTopline > div strong {
+  margin-top: 3px;
+  color: var(--invoice-green);
+  font-size: 0.76rem;
 }
 
 .productKicker {
@@ -633,14 +703,6 @@
   font-weight: 900;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-}
-
-.productHeading h3 {
-  margin: 5px 0 0;
-  overflow-wrap: anywhere;
-  font-size: 0.98rem;
-  letter-spacing: -0.025em;
-  line-height: 1.35;
 }
 
 .productTags {
@@ -683,7 +745,7 @@
 .serialNumber {
   display: inline-flex;
   width: fit-content;
-  margin: 9px 0;
+  margin: 13px 0 0;
   padding: 5px 8px;
   align-items: center;
   gap: 4px;
@@ -695,12 +757,21 @@
 
 .productPriceRow {
   display: grid;
-  margin-top: 12px;
-  padding-top: 12px;
-  align-items: end;
-  gap: 12px;
-  border-top: 1px dashed #dce5e3;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  margin-top: 14px;
+  align-items: stretch;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.productPriceRow > div {
+  display: grid;
+  min-width: 0;
+  min-height: 78px;
+  padding: 12px;
+  align-content: center;
+  border: 1px solid #dfe9e6;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
 }
 
 .productPriceRow div span,
@@ -715,19 +786,45 @@
 }
 
 .productPriceRow strong {
-  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+  font-size: 0.78rem;
 }
 
-.multiply {
-  color: #94a3b8;
-  font-size: 0.67rem;
+.productPriceRow div small {
+  display: block;
+  margin-top: 5px;
+  color: #8a9aaa;
+  font-size: 0.5rem;
+  line-height: 1.4;
 }
 
 .lineTotal {
-  text-align: right;
+  grid-column: 1 / -1;
+  text-align: left;
 }
 
 .lineTotal strong {
+  color: var(--invoice-green);
+  font-size: 1.08rem;
+  letter-spacing: -0.035em;
+}
+
+.productCalculationNote {
+  display: flex;
+  margin-top: 10px;
+  padding: 10px 11px;
+  align-items: flex-start;
+  gap: 7px;
+  border-radius: 12px;
+  color: #587068;
+  background: #eaf8f3;
+  font-size: 0.55rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.productCalculationNote svg {
+  flex: 0 0 auto;
   color: var(--invoice-green);
 }
 
@@ -928,11 +1025,11 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.summaryRows > div {
+.summaryRows > .summaryPriceCell {
   display: grid;
   min-width: 0;
-  min-height: 64px;
-  padding: 10px 12px;
+  min-height: 82px;
+  padding: 12px;
   align-content: center;
   gap: 5px;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -942,12 +1039,49 @@
   font-size: 0.69rem;
 }
 
-.summaryRows > div:first-child {
+.summaryPriceCell > small {
+  margin-top: 1px;
+  color: #8397a6;
+  font-size: 0.51rem;
+  line-height: 1.4;
+}
+
+.summaryRows > .gstBreakdown {
+  display: grid;
+  padding: 10px;
+  gap: 8px;
+  border: 1px solid rgba(110, 231, 199, 0.18);
+  border-radius: 14px;
+  background: rgba(16, 185, 129, 0.08);
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.gstBreakdown > div {
+  display: grid;
+  min-height: 62px;
+  padding: 10px;
+  align-content: center;
+  gap: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.gstBreakdown p {
+  margin: 0;
+  color: #8295a4;
+  font-size: 0.51rem;
+  line-height: 1.5;
   grid-column: 1 / -1;
 }
 
 .summaryRows small {
   color: #6ee7c7;
+}
+
+.summaryRows .summaryPriceCell > small {
+  color: #8397a6;
 }
 
 .summaryRows strong {
@@ -1335,43 +1469,53 @@
 
   .productCard {
     padding: 10px;
+    gap: 10px;
     border-radius: 20px;
-    grid-template-columns: 82px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .productVisual {
-    min-height: 118px;
-    border-radius: 15px;
+    min-height: 250px;
+    aspect-ratio: 4 / 3;
+    border-radius: 18px;
+  }
+
+  .productVisual img {
+    max-height: 235px;
+  }
+
+  .productIdentity {
+    padding: 14px 7px 8px;
+  }
+
+  .productIdentity h3 {
+    font-size: 0.9rem;
   }
 
   .productContent {
-    padding: 3px 4px 3px 12px;
-  }
-
-  .productHeading {
-    display: block;
-  }
-
-  .productHeading h3 {
-    padding-right: 2px;
-    font-size: 0.78rem;
+    padding: 15px;
+    border-radius: 18px;
   }
 
   .quantityPill {
-    display: inline-block;
-    margin-top: 7px;
+    padding: 6px 8px;
   }
 
   .productPriceRow {
-    gap: 6px;
+    gap: 7px;
+  }
+
+  .productPriceRow > div {
+    min-height: 73px;
+    padding: 10px;
   }
 
   .productPriceRow strong {
-    font-size: 0.67rem;
+    font-size: 0.72rem;
   }
 
-  .multiply {
-    font-size: 0.58rem;
+  .lineTotal strong {
+    font-size: 1rem;
   }
 
   .detailsRail {
@@ -1521,6 +1665,43 @@
 
   .detailsRail {
     position: static;
+  }
+
+  .productCard {
+    padding: 8px;
+    gap: 8px;
+    grid-template-columns: 112px minmax(0, 1fr);
+  }
+
+  .productVisual {
+    min-height: 132px;
+    padding: 8px;
+  }
+
+  .productVisual img {
+    max-height: 120px;
+  }
+
+  .productIdentity {
+    padding: 10px 4px 2px;
+  }
+
+  .productIdentity h3 {
+    font-size: 0.72rem;
+  }
+
+  .productContent {
+    padding: 10px;
+  }
+
+  .productPriceRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .productPriceRow > div,
+  .lineTotal {
+    min-height: 46px;
+    grid-column: auto;
   }
 
   .productCard,

@@ -32,6 +32,10 @@ describe("priceUtils", () => {
     });
 
     expect(result.itemsTotal).toBe(3_500);
+    expect(result.basePrice).toBe(3_500);
+    expect(result.gstValue).toBe(0);
+    expect(result.cgstValue).toBe(0);
+    expect(result.sgstValue).toBe(0);
     expect(result.grandTotal).toBe(3_500);
   });
 
