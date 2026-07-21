@@ -456,6 +456,101 @@ const MobileStoryNav = () => {
   );
 };
 
+const MobileScrollIdentity = ({ image, title, price }) => {
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const lastScrollYRef = useRef(0);
+  const hideTimerRef = useRef(null);
+
+  useEffect(() => {
+    const mountFrame = window.requestAnimationFrame(() => setMounted(true));
+    lastScrollYRef.current = window.scrollY;
+    let frame = null;
+
+    const showBriefly = () => {
+      setVisible(true);
+      window.clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = window.setTimeout(() => setVisible(false), 2600);
+    };
+
+    const handleScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+        const distance = currentScrollY - lastScrollYRef.current;
+        const isMobile = window.matchMedia("(max-width: 1023px)").matches;
+        const isPastHero = currentScrollY > window.innerHeight * 0.72;
+
+        if (!isMobile || !isPastHero) {
+          setVisible(false);
+        } else if (distance < -5) {
+          showBriefly();
+        } else if (distance > 10) {
+          setVisible(false);
+        }
+
+        if (Math.abs(distance) > 3) lastScrollYRef.current = currentScrollY;
+        frame = null;
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.cancelAnimationFrame(mountFrame);
+      if (frame) window.cancelAnimationFrame(frame);
+      window.clearTimeout(hideTimerRef.current);
+    };
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <AnimatePresence>
+      {visible && (
+        <motion.aside
+          aria-label="Current product"
+          initial={{ opacity: 0, x: -36, scale: 0.96 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, x: -28, scale: 0.97 }}
+          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+          className="pointer-events-none fixed left-0 top-[34%] z-[85] w-[10.5rem] overflow-hidden rounded-r-[1.4rem] border border-l-0 border-white/15 bg-slate-950/94 p-2.5 text-white shadow-[0_20px_65px_rgba(2,6,23,0.38)] backdrop-blur-2xl lg:hidden"
+        >
+          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-emerald-400/20 blur-2xl" />
+          <div className="relative flex items-center gap-2.5">
+            <div className="relative h-10 w-10 flex-none overflow-hidden rounded-xl bg-white ring-1 ring-white/20">
+              <LazyImage
+                src={image}
+                alt=""
+                fill
+                className="h-full w-full"
+                imgClassName="object-contain p-0.5"
+              />
+            </div>
+            <div className="min-w-0">
+              <p className="line-clamp-2 text-[9px] font-bold leading-3.5 text-white/65">
+                {title}
+              </p>
+              <p className="mt-1 text-sm font-black tracking-tight text-emerald-300">
+                ₹{formatIndianCurrency(price) || "—"}
+              </p>
+            </div>
+          </div>
+          <div className="relative mt-2 h-0.5 overflow-hidden rounded-full bg-white/10">
+            <motion.div
+              initial={{ scaleX: 1 }}
+              animate={{ scaleX: 0 }}
+              transition={{ duration: 2.6, ease: "linear" }}
+              className="h-full origin-left bg-gradient-to-r from-emerald-300 to-cyan-300"
+            />
+          </div>
+        </motion.aside>
+      )}
+    </AnimatePresence>,
+    document.body,
+  );
+};
+
 const ScrollProductStage = ({
   images,
   title,
@@ -698,6 +793,7 @@ const ScrollProductStage = ({
 };
 
 const StickyPurchaseBar = ({
+  stageRef,
   image,
   title,
   price,
@@ -708,13 +804,35 @@ const StickyPurchaseBar = ({
   onBuyNow,
 }) => {
   const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => setMounted(true));
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
-  if (!mounted) return null;
+  useEffect(() => {
+    const isPhone = window.matchMedia("(max-width: 639px)").matches;
+    if (!isPhone) {
+      const frame = window.requestAnimationFrame(() => setVisible(true));
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    const stage = stageRef?.current;
+    if (!stage || typeof IntersectionObserver === "undefined") {
+      const frame = window.requestAnimationFrame(() => setVisible(true));
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setVisible(!entry.isIntersecting),
+      { rootMargin: "-88px 0px -12% 0px", threshold: 0.08 },
+    );
+    observer.observe(stage);
+    return () => observer.disconnect();
+  }, [stageRef]);
+
+  if (!mounted || !visible) return null;
 
   return createPortal(
     <motion.aside
@@ -800,6 +918,7 @@ function AquaProductRevamp({
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const storyRef = useRef(null);
+  const visualStageRef = useRef(null);
   const router = useRouter();
   const productId = product?._id;
 
@@ -885,6 +1004,20 @@ function AquaProductRevamp({
     loop: true,
     slidesToScroll: 1,
   });
+  const [relatedIndex, setRelatedIndex] = useState(0);
+
+  useEffect(() => {
+    if (!relatedProductApi) return;
+    const updateRelatedIndex = () =>
+      setRelatedIndex(relatedProductApi.selectedScrollSnap());
+    updateRelatedIndex();
+    relatedProductApi.on("select", updateRelatedIndex);
+    relatedProductApi.on("reInit", updateRelatedIndex);
+    return () => {
+      relatedProductApi.off("select", updateRelatedIndex);
+      relatedProductApi.off("reInit", updateRelatedIndex);
+    };
+  }, [relatedProductApi]);
 
   const scrollPrev = () => relatedProductApi?.scrollPrev();
   const scrollNext = () => relatedProductApi?.scrollNext();
@@ -972,12 +1105,15 @@ function AquaProductRevamp({
       )}
 
       <AquaLayout allowPageSticky>
-        <main className="min-h-screen overflow-x-clip bg-[linear-gradient(135deg,#eefcf8_0%,#f8fbff_42%,#eef4ff_100%)] pb-44 font-sans text-slate-900 selection:bg-emerald-100 sm:pb-36">
+        <main className="min-h-screen overflow-x-clip bg-[linear-gradient(135deg,#eefcf8_0%,#f8fbff_42%,#eef4ff_100%)] pb-36 font-sans text-slate-900 selection:bg-emerald-100 sm:pb-28">
           <div
             ref={storyRef}
             className="relative mx-auto max-w-[92rem] px-3 pt-5 sm:px-5 sm:pt-7 lg:grid lg:grid-cols-[minmax(0,1.18fr)_minmax(380px,0.82fr)] lg:items-start lg:gap-10 lg:px-8"
           >
-            <div className="self-start lg:sticky lg:top-24 lg:z-10">
+            <div
+              ref={visualStageRef}
+              className="self-start lg:sticky lg:top-24 lg:z-10"
+            >
               <ScrollProductStage
                 images={images}
                 title={product?.title}
@@ -1256,7 +1392,7 @@ function AquaProductRevamp({
           </div>
 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <section id="reviews" className="scroll-mt-28 pt-12 lg:pt-20">
+            <section id="reviews" className="scroll-mt-28 pt-10 lg:pt-20">
               <ProductReviews
                 productId={product?._id}
                 reviews={reviews}
@@ -1266,13 +1402,13 @@ function AquaProductRevamp({
             </section>
 
             {relatedProducts.length > 0 && (
-              <section className="pt-16 lg:pt-24">
-                <div className="mb-8 flex items-end justify-between gap-4">
+              <section className="pb-6 pt-10 lg:pb-10 lg:pt-20">
+                <div className="mb-5 flex items-end justify-between gap-4 sm:mb-8">
                   <div>
                     <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">
                       Keep exploring
                     </p>
-                    <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+                    <h2 className="mt-1.5 text-3xl font-black tracking-tight text-slate-950 sm:mt-2">
                       Similar products
                     </h2>
                   </div>
@@ -1296,8 +1432,11 @@ function AquaProductRevamp({
                   </div>
                 </div>
 
-                <div className="overflow-hidden p-1" ref={relatedProductRef}>
-                  <div className="flex gap-5">
+                <div
+                  className="overflow-hidden px-1 pb-3"
+                  ref={relatedProductRef}
+                >
+                  <div className="flex items-stretch gap-3 sm:gap-5">
                     <Suspense
                       fallback={
                         <div className="h-96 min-w-[280px] animate-pulse rounded-[2rem] bg-white/60" />
@@ -1306,7 +1445,7 @@ function AquaProductRevamp({
                       {relatedProducts.map((item) => (
                         <div
                           key={item._id}
-                          className="min-w-[280px] flex-[0_0_84%] sm:flex-[0_0_48%] lg:flex-[0_0_31%]"
+                          className="min-w-0 flex-[0_0_88%] sm:flex-[0_0_48%] lg:flex-[0_0_31%]"
                         >
                           <AquaRelatedProductCard product={item} />
                         </div>
@@ -1314,12 +1453,40 @@ function AquaProductRevamp({
                     </Suspense>
                   </div>
                 </div>
+
+                <div className="mt-3 flex items-center justify-between lg:hidden">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                    Swipe to compare
+                  </p>
+                  <div className="flex items-center gap-1.5">
+                    {relatedProducts.slice(0, 6).map((item, index) => (
+                      <button
+                        key={item._id || item.slug || index}
+                        type="button"
+                        aria-label={`View related product ${index + 1}`}
+                        onClick={() => relatedProductApi?.scrollTo(index)}
+                        className={`h-1.5 rounded-full transition-all ${
+                          relatedIndex === index
+                            ? "w-7 bg-emerald-500"
+                            : "w-1.5 bg-slate-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
               </section>
             )}
           </div>
         </main>
 
+        <MobileScrollIdentity
+          image={images[0]?.url || fallbackImage}
+          title={product?.title}
+          price={price}
+        />
+
         <StickyPurchaseBar
+          stageRef={visualStageRef}
           image={images[0]?.url || fallbackImage}
           title={product?.title}
           price={price}
