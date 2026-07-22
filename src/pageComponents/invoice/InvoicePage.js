@@ -123,38 +123,43 @@ const ProductCard = ({ product, index }) => {
 
   return (
     <article className={styles.productCard}>
-      <div className={styles.productVisual}>
-        {product.productImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={product.productImage} alt={product.productName} />
-        ) : (
-          <>
-            <span className={styles.productNumber}>
-              {String(index + 1).padStart(2, "0")}
-            </span>
-            <Package size={30} strokeWidth={1.45} aria-hidden="true" />
-          </>
-        )}
+      <div className={styles.productShowcase}>
+        <div className={styles.productVisual}>
+          <span className={styles.productNumber}>
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          {product.productImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={product.productImage} alt={product.productName} />
+          ) : (
+            <Package size={44} strokeWidth={1.35} aria-hidden="true" />
+          )}
+        </div>
+
+        <div className={styles.productIdentity}>
+          <span className={styles.productKicker}>Aquakart selection</span>
+          <h3>{product.productName}</h3>
+          {product.productCategory || product.productSubcategory ? (
+            <div className={styles.productTags}>
+              {product.productCategory ? (
+                <span>
+                  <Tags size={11} aria-hidden="true" />
+                  {product.productCategory}
+                </span>
+              ) : null}
+              {product.productSubcategory ? (
+                <span>{product.productSubcategory}</span>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <div className={styles.productContent}>
-        <div className={styles.productHeading}>
+        <div className={styles.productTopline}>
           <div>
-            <span className={styles.productKicker}>Aquakart selection</span>
-            <h3>{product.productName}</h3>
-            {product.productCategory || product.productSubcategory ? (
-              <div className={styles.productTags}>
-                {product.productCategory ? (
-                  <span>
-                    <Tags size={11} aria-hidden="true" />
-                    {product.productCategory}
-                  </span>
-                ) : null}
-                {product.productSubcategory ? (
-                  <span>{product.productSubcategory}</span>
-                ) : null}
-              </div>
-            ) : null}
+            <span>Line item</span>
+            <strong>{String(index + 1).padStart(2, "0")}</strong>
           </div>
           <span className={styles.quantityPill}>
             {product.productQuantity}{" "}
@@ -172,12 +177,23 @@ const ProductCard = ({ product, index }) => {
           <div>
             <span>Unit price</span>
             <strong>{priceUtils.formatAmount(product.productPrice)}</strong>
+            <small>per supplied unit</small>
           </div>
-          <span className={styles.multiply}>× {product.productQuantity}</span>
+          <div>
+            <span>Quantity</span>
+            <strong>× {product.productQuantity}</strong>
+            <small>confirmed quantity</small>
+          </div>
           <div className={styles.lineTotal}>
             <span>Line total</span>
             <strong>{priceUtils.formatAmount(lineTotal)}</strong>
+            <small>invoice contribution</small>
           </div>
+        </div>
+
+        <div className={styles.productCalculationNote}>
+          <ReceiptIndianRupee size={15} aria-hidden="true" />
+          Unit price × confirmed quantity equals this line total.
         </div>
       </div>
     </article>
@@ -294,7 +310,7 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
             </div>
             <div>
               <span className={styles.eyebrow}>Premium water solutions</span>
-              <h1>Tax Invoice</h1>
+              <h1>{invoice.gst ? "GST Tax Invoice" : "Invoice"}</h1>
               <p>GSTIN 36AJOPH6387A1Z2</p>
             </div>
           </div>
@@ -508,19 +524,31 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
             <section className={styles.summaryCard}>
               <div className={styles.summaryTopline}>
                 <div>
-                  <small>Payment summary</small>
-                  <h2>Invoice total</h2>
+                  <small>
+                    {invoice.gst ? "GST tax invoice" : "Standard invoice"}
+                  </small>
+                  <h2>Price calculation</h2>
                 </div>
                 <FileText size={21} />
               </div>
 
               <div className={styles.summaryRows}>
-                <div>
-                  <span>{invoice.gst ? "Taxable value" : "Subtotal"}</span>
+                <div className={styles.summaryPriceCell}>
+                  <span>Base price</span>
                   <strong>{priceUtils.formatAmount(amounts.basePrice)}</strong>
+                  <small>Before applicable GST</small>
+                </div>
+                <div className={styles.summaryPriceCell}>
+                  <span>
+                    GST <small>{invoice.gst ? "18%" : "0%"}</small>
+                  </span>
+                  <strong>{priceUtils.formatAmount(amounts.gstValue)}</strong>
+                  <small>
+                    {invoice.gst ? "Included in total" : "Not applied"}
+                  </small>
                 </div>
                 {invoice.gst ? (
-                  <>
+                  <div className={styles.gstBreakdown}>
                     <div>
                       <span>
                         CGST <small>9%</small>
@@ -537,14 +565,21 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
                         {priceUtils.formatAmount(amounts.sgstValue)}
                       </strong>
                     </div>
-                  </>
+                    <p>
+                      CGST + SGST equals the complete 18% GST value shown above.
+                    </p>
+                  </div>
                 ) : null}
               </div>
 
               <div className={styles.grandTotal}>
                 <span>Total amount</span>
                 <strong>{priceUtils.formatAmount(amounts.grandTotal)}</strong>
-                <small>Inclusive of applicable taxes</small>
+                <small>
+                  {invoice.gst
+                    ? "Base price + 18% GST"
+                    : "Base price + GST ₹0.00"}
+                </small>
               </div>
 
               <div className={styles.paymentState}>
