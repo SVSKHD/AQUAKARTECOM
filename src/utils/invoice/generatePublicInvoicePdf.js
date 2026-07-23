@@ -1,4 +1,9 @@
 import { loadJsPDF } from "@/utils/invoice";
+import {
+  bankPaymentMethods,
+  customerCare,
+  termsAndConditions,
+} from "@/constants/invoiceStaticData";
 import priceUtils from "@/utils/priceUtils";
 
 const BRAND = [4, 120, 87];
@@ -39,9 +44,14 @@ const titleCase = (value) =>
     .replace(/[_-]+/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
-const drawPageHeader = (doc, invoice, continued = false) => {
+const drawPageHeader = (doc, invoice, continued = false, sectionLabel = "") => {
   const width = doc.internal.pageSize.getWidth();
   const invoiceTitle = invoice.gst ? "GST TAX INVOICE" : "INVOICE";
+  const documentTitle = sectionLabel
+    ? `${invoiceTitle} / ${sectionLabel}`
+    : continued
+      ? `${invoiceTitle} / CONTINUED`
+      : invoiceTitle;
   doc.setFillColor(...BRAND);
   doc.rect(0, 0, width, 92, "F");
   doc.setFillColor(...BRAND_BRIGHT);
@@ -58,14 +68,7 @@ const drawPageHeader = (doc, invoice, continued = false) => {
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
-  doc.text(
-    continued ? `${invoiceTitle} / CONTINUED` : invoiceTitle,
-    width - 42,
-    42,
-    {
-      align: "right",
-    },
-  );
+  doc.text(documentTitle, width - 42, 42, { align: "right" });
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.text(invoice.invoice_no || invoice.id || "Invoice", width - 42, 60, {
@@ -129,14 +132,371 @@ const drawProductHeader = (doc, y) => {
   return y + 34;
 };
 
-/** Download the server-normalized public invoice as a searchable A4 PDF. */
-export const downloadPublicInvoicePdf = async (invoice) => {
-  const loaded = await loadJsPDF();
-  const JsPdf = window.jspdf?.jsPDF;
-  if (!loaded || !JsPdf) {
-    throw new Error("The PDF service could not be loaded.");
+const drawSectionHeading = (doc, { y, kicker, title, description }) => {
+  const width = doc.internal.pageSize.getWidth();
+  const contentWidth = width - 84;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(...BRAND);
+  doc.text(kicker.toUpperCase(), 42, y);
+  doc.setFontSize(17);
+  doc.setTextColor(...INK);
+  doc.text(title, 42, y + 23);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(...MUTED);
+  const descriptionLines = doc
+    .splitTextToSize(description, contentWidth)
+    .slice(0, 3);
+  doc.text(descriptionLines, 42, y + 43, { lineHeightFactor: 1.35 });
+
+  return y + 50 + descriptionLines.length * 9;
+};
+
+const getTermCardMetrics = (doc, term, cardWidth) => {
+  const titleLines = doc.splitTextToSize(term.title, cardWidth - 58);
+  const descriptionLines = doc.splitTextToSize(
+    term.description,
+    cardWidth - 26,
+  );
+  const cardHeight = Math.max(
+    88,
+    43 + titleLines.length * 9 + descriptionLines.length * 8,
+  );
+
+  return { titleLines, descriptionLines, cardHeight };
+};
+
+const drawTermCard = (doc, { x, y, width, index, metrics }) => {
+  doc.setFillColor(...SOFT);
+  doc.setDrawColor(...LINE);
+  doc.roundedRect(x, y, width, metrics.cardHeight, 8, 8, "FD");
+
+  doc.setFillColor(236, 253, 245);
+  doc.roundedRect(x + 12, y + 11, 25, 25, 7, 7, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(...BRAND);
+  doc.text(String(index + 1).padStart(2, "0"), x + 24.5, y + 27, {
+    align: "center",
+  });
+
+  doc.setFontSize(8);
+  doc.setTextColor(...INK);
+  doc.text(metrics.titleLines, x + 45, y + 19, { lineHeightFactor: 1.2 });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.2);
+  doc.setTextColor(...MUTED);
+  doc.text(metrics.descriptionLines, x + 13, y + 48, {
+    lineHeightFactor: 1.35,
+  });
+};
+
+const drawCustomerCareDirectory = (doc, y) => {
+  const width = doc.internal.pageSize.getWidth();
+  const margin = 42;
+  const contentWidth = width - margin * 2;
+  const gap = 9;
+  const cardWidth = (contentWidth - gap * 2) / 3;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(...BRAND);
+  doc.text("MANUFACTURER ASSISTANCE", margin, y);
+  doc.setFontSize(11);
+  doc.setTextColor(...INK);
+  doc.text("Customer-care directory", margin, y + 18);
+  y += 30;
+
+  customerCare.forEach((contact, index) => {
+    const x = margin + index * (cardWidth + gap);
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(...LINE);
+    doc.roundedRect(x, y, cardWidth, 73, 8, 8, "FD");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...INK);
+    doc.text(
+      doc.splitTextToSize(contact.name, cardWidth - 20).slice(0, 2),
+      x + 10,
+      y + 17,
+      { lineHeightFactor: 1.2 },
+    );
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.4);
+    doc.setTextColor(...MUTED);
+    doc.text(
+      doc.splitTextToSize(contact.description, cardWidth - 20).slice(0, 2),
+      x + 10,
+      y + 38,
+      { lineHeightFactor: 1.2 },
+    );
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...BRAND);
+    doc.text(contact.phone, x + 10, y + 62);
+  });
+};
+
+const drawTermsAndSupportPages = (doc, invoice) => {
+  const width = doc.internal.pageSize.getWidth();
+  const height = doc.internal.pageSize.getHeight();
+  const margin = 42;
+  const contentWidth = width - margin * 2;
+  const gap = 12;
+  const cardWidth = (contentWidth - gap) / 2;
+
+  doc.addPage();
+  drawPageHeader(doc, invoice, false, "TERMS AND SUPPORT");
+  let y = drawSectionHeading(doc, {
+    y: 118,
+    kicker: "Commercial framework",
+    title: "Terms, responsibilities and service standards",
+    description:
+      "These terms form part of this invoice and clarify the delivery, installation, payment and after-sales responsibilities associated with the supplied products.",
+  });
+
+  for (let index = 0; index < termsAndConditions.length; index += 2) {
+    const pair = termsAndConditions.slice(index, index + 2);
+    const metrics = pair.map((term) =>
+      getTermCardMetrics(doc, term, cardWidth),
+    );
+    const rowHeight = Math.max(...metrics.map((item) => item.cardHeight));
+
+    if (y + rowHeight > height - 145) {
+      drawFooter(doc);
+      doc.addPage();
+      drawPageHeader(doc, invoice, false, "TERMS / CONTINUED");
+      y = 118;
+    }
+
+    pair.forEach((term, pairIndex) => {
+      drawTermCard(doc, {
+        x: margin + pairIndex * (cardWidth + gap),
+        y,
+        width: cardWidth,
+        index: index + pairIndex,
+        metrics: { ...metrics[pairIndex], cardHeight: rowHeight },
+      });
+    });
+
+    y += rowHeight + 10;
   }
 
+  if (y + 130 > height - 60) {
+    drawFooter(doc);
+    doc.addPage();
+    drawPageHeader(doc, invoice, false, "SUPPORT");
+    y = 118;
+  }
+
+  doc.setFillColor(...INK);
+  doc.roundedRect(margin, y, contentWidth, 56, 9, 9, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(...BRAND_BRIGHT);
+  doc.text("SERVICE ASSURANCE", margin + 14, y + 18);
+  doc.setFontSize(9);
+  doc.setTextColor(...WHITE);
+  doc.text("Protected by Aquakart support standards", margin + 14, y + 35);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.setTextColor(174, 190, 201);
+  doc.text(
+    doc.splitTextToSize(
+      "Retain this invoice for installation verification, warranty registration and service coordination.",
+      contentWidth * 0.43,
+    ),
+    width - margin - 14,
+    y + 23,
+    { align: "right", lineHeightFactor: 1.25 },
+  );
+
+  drawCustomerCareDirectory(doc, y + 79);
+  drawFooter(doc);
+};
+
+const drawBankMethodCard = (doc, { method, x, y, width, height }) => {
+  const rows =
+    method.type === "upi"
+      ? [
+          ["Google Pay", method.gpay],
+          ["PhonePe", method.phonePe],
+        ]
+      : [
+          ["Account name", method.accountName],
+          ["Account number", method.accountNumber],
+          ["IFSC", method.ifsc],
+        ];
+
+  doc.setFillColor(...SOFT);
+  doc.setDrawColor(...LINE);
+  doc.roundedRect(x, y, width, height, 10, 10, "FD");
+  doc.setFillColor(236, 253, 245);
+  doc.roundedRect(x + 13, y + 13, 30, 30, 8, 8, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(...BRAND);
+  doc.text(method.type === "upi" ? "UPI" : "BANK", x + 28, y + 32, {
+    align: "center",
+  });
+  doc.setFontSize(10);
+  doc.setTextColor(...INK);
+  doc.text(method.name, x + 52, y + 25);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6.5);
+  doc.setTextColor(...MUTED);
+  doc.text(
+    method.type === "upi" ? "Digital payment" : "Bank transfer",
+    x + 52,
+    y + 39,
+  );
+
+  let rowY = y + 61;
+  rows.forEach(([label, value]) => {
+    doc.setDrawColor(...LINE);
+    doc.line(x + 13, rowY - 8, x + width - 13, rowY - 8);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(...MUTED);
+    doc.text(label, x + 13, rowY + 5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...INK);
+    doc.text(String(value), x + width - 13, rowY + 5, { align: "right" });
+    rowY += 23;
+  });
+};
+
+const drawPaymentInstructionsPage = (doc, invoice) => {
+  const width = doc.internal.pageSize.getWidth();
+  const margin = 42;
+  const contentWidth = width - margin * 2;
+  const gap = 12;
+  const cardWidth = (contentWidth - gap) / 2;
+
+  doc.addPage();
+  drawPageHeader(doc, invoice, false, "PAYMENT");
+  let y = drawSectionHeading(doc, {
+    y: 118,
+    kicker: "Purchase-order payment",
+    title: "Approved remittance details",
+    description:
+      "Use the invoice number as the payment reference and share the remittance confirmation with Aquakart for prompt allocation and order processing.",
+  });
+
+  drawBankMethodCard(doc, {
+    method: bankPaymentMethods[0],
+    x: margin,
+    y,
+    width: cardWidth,
+    height: 144,
+  });
+  drawBankMethodCard(doc, {
+    method: bankPaymentMethods[1],
+    x: margin + cardWidth + gap,
+    y,
+    width: cardWidth,
+    height: 144,
+  });
+  y += 157;
+  drawBankMethodCard(doc, {
+    method: bankPaymentMethods[2],
+    x: margin,
+    y,
+    width: contentWidth,
+    height: 112,
+  });
+  y += 132;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(...BRAND);
+  doc.text("REMITTANCE PROCESS", margin, y);
+  doc.setFontSize(11);
+  doc.setTextColor(...INK);
+  doc.text("A clear three-step payment trail", margin, y + 18);
+  y += 32;
+
+  const steps = [
+    [
+      "01",
+      "Reference",
+      "Include the invoice number in the transfer narration.",
+    ],
+    [
+      "02",
+      "Confirmation",
+      "Share the successful payment receipt with Aquakart.",
+    ],
+    [
+      "03",
+      "Allocation",
+      "Await payment allocation and processing confirmation.",
+    ],
+  ];
+  const stepGap = 9;
+  const stepWidth = (contentWidth - stepGap * 2) / 3;
+  steps.forEach(([number, title, description], index) => {
+    const x = margin + index * (stepWidth + stepGap);
+    doc.setFillColor(...INK);
+    doc.roundedRect(x, y, stepWidth, 84, 8, 8, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(...BRAND_BRIGHT);
+    doc.text(number, x + 12, y + 18);
+    doc.setFontSize(8.5);
+    doc.setTextColor(...WHITE);
+    doc.text(title, x + 12, y + 35);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.7);
+    doc.setTextColor(174, 190, 201);
+    doc.text(doc.splitTextToSize(description, stepWidth - 24), x + 12, y + 52, {
+      lineHeightFactor: 1.25,
+    });
+  });
+  y += 99;
+
+  doc.setFillColor(240, 253, 250);
+  doc.setDrawColor(167, 243, 208);
+  doc.roundedRect(margin, y, contentWidth, 54, 8, 8, "FD");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(...BRAND);
+  doc.text("PAYMENT VERIFICATION", margin + 13, y + 18);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.2);
+  doc.setTextColor(...INK);
+  doc.text(
+    doc.splitTextToSize(
+      "Payment instructions are shown because this invoice is linked to a purchase order. Verify the beneficiary name, account number and IFSC before transfer.",
+      contentWidth - 26,
+    ),
+    margin + 13,
+    y + 34,
+    { lineHeightFactor: 1.25 },
+  );
+  drawFooter(doc);
+};
+
+const addPageNumbers = (doc) => {
+  const pageCount = doc.getNumberOfPages();
+  const width = doc.internal.pageSize.getWidth();
+  const height = doc.internal.pageSize.getHeight();
+
+  for (let page = 1; page <= pageCount; page += 1) {
+    doc.setPage(page);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...MUTED);
+    doc.text(`PAGE ${page} OF ${pageCount}`, width / 2, height - 21, {
+      align: "center",
+    });
+  }
+};
+
+/** Download the server-normalized public invoice as a searchable A4 PDF. */
+export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
   const doc = new JsPdf({ unit: "pt", format: "a4", compress: true });
   const width = doc.internal.pageSize.getWidth();
   const height = doc.internal.pageSize.getHeight();
@@ -377,6 +737,22 @@ export const downloadPublicInvoicePdf = async (invoice) => {
   );
 
   drawFooter(doc);
+  drawTermsAndSupportPages(doc, invoice);
+  if (invoice.po) drawPaymentInstructionsPage(doc, invoice);
+  addPageNumbers(doc);
+
+  return doc;
+};
+
+/** Download the server-normalized public invoice as a searchable A4 PDF. */
+export const downloadPublicInvoicePdf = async (invoice) => {
+  const loaded = await loadJsPDF();
+  const JsPdf = window.jspdf?.jsPDF;
+  if (!loaded || !JsPdf) {
+    throw new Error("The PDF service could not be loaded.");
+  }
+
+  const doc = createPublicInvoicePdfDocument(JsPdf, invoice);
   doc.save(
     `Aquakart-Invoice-${safeFilePart(invoice.invoice_no || invoice.id)}.pdf`,
   );
