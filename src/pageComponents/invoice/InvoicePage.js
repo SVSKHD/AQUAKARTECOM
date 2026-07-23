@@ -12,6 +12,7 @@ import {
   Download,
   FileText,
   Hash,
+  Headphones,
   Landmark,
   Mail,
   MapPin,
@@ -27,6 +28,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assests/logo.png";
+import {
+  bankCopyDetails,
+  bankPaymentMethods,
+  customerCare,
+  termsAndConditions,
+} from "@/constants/invoiceStaticData";
 import priceUtils from "@/utils/priceUtils";
 import styles from "@/styles/invoice.module.css";
 
@@ -200,9 +207,100 @@ const ProductCard = ({ product, index }) => {
   );
 };
 
+const TermCard = ({ term, index }) => {
+  const Icon = term.icon;
+
+  return (
+    <article className={styles.termItem}>
+      <div className={styles.termTopline}>
+        <span className={styles.termIcon} aria-hidden="true">
+          <Icon size={18} strokeWidth={1.7} />
+        </span>
+        <span className={styles.termNumber}>
+          {String(index + 1).padStart(2, "0")}
+        </span>
+      </div>
+      <h3>{term.title}</h3>
+      <p>{term.description}</p>
+    </article>
+  );
+};
+
+const CustomerCareCard = ({ contact }) => (
+  <article className={styles.careCard}>
+    <span className={styles.careIcon} aria-hidden="true">
+      <Headphones size={18} strokeWidth={1.7} />
+    </span>
+    <div>
+      <strong>{contact.name}</strong>
+      <p>{contact.description}</p>
+      <a href={`tel:${contact.phone}`}>
+        <Phone size={13} /> {contact.phone}
+      </a>
+    </div>
+  </article>
+);
+
+const BankMethodCard = ({ method, copied, onCopy }) => {
+  const isUpi = method.type === "upi";
+
+  return (
+    <article className={styles.bankCard}>
+      <div className={styles.bankTopline}>
+        <span className={styles.bankIcon} aria-hidden="true">
+          {isUpi ? (
+            <CreditCard size={19} strokeWidth={1.7} />
+          ) : (
+            <Landmark size={19} strokeWidth={1.7} />
+          )}
+        </span>
+        <span>{isUpi ? "Digital payment" : "Bank transfer"}</span>
+      </div>
+
+      <h3>{method.name}</h3>
+
+      <dl className={styles.bankDetails}>
+        {isUpi ? (
+          <>
+            <div>
+              <dt>Google Pay</dt>
+              <dd>{method.gpay}</dd>
+            </div>
+            <div>
+              <dt>PhonePe</dt>
+              <dd>{method.phonePe}</dd>
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <dt>Account name</dt>
+              <dd>{method.accountName}</dd>
+            </div>
+            <div>
+              <dt>Account number</dt>
+              <dd>{method.accountNumber}</dd>
+            </div>
+            <div>
+              <dt>IFSC</dt>
+              <dd>{method.ifsc}</dd>
+            </div>
+          </>
+        )}
+      </dl>
+
+      <button type="button" onClick={() => onCopy(method)}>
+        {copied ? <Check size={14} /> : <Copy size={14} />}
+        {copied ? "Copied" : "Copy payment details"}
+      </button>
+    </article>
+  );
+};
+
 const InvoicePage = ({ invoice, statusCode = 200 }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedPayment, setCopiedPayment] = useState("");
 
   if (!invoice || statusCode !== 200) {
     return <InvoiceError statusCode={statusCode} />;
@@ -237,6 +335,17 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
       toast.error("Could not copy the invoice link");
+    }
+  };
+
+  const handleCopyPaymentDetails = async (method) => {
+    try {
+      await navigator.clipboard.writeText(bankCopyDetails[method.key]);
+      setCopiedPayment(method.key);
+      toast.success(`${method.name} details copied`);
+      window.setTimeout(() => setCopiedPayment(""), 1800);
+    } catch {
+      toast.error("Could not copy the payment details");
     }
   };
 
@@ -411,18 +520,6 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
               <span>Amount in words</span>
               <strong>{priceUtils.numberToWords(amounts.grandTotal)}</strong>
             </div>
-
-            <div className={styles.termsCard}>
-              <ShieldCheck size={22} />
-              <div>
-                <strong>Protected by Aquakart service standards</strong>
-                <p>
-                  Warranty follows the manufacturer policy. Installation,
-                  transport and lifting are chargeable unless agreed separately.
-                  Opened or used products are not returnable.
-                </p>
-              </div>
-            </div>
           </section>
 
           <aside className={styles.detailsRail}>
@@ -589,6 +686,97 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
             </section>
           </aside>
         </div>
+
+        <section className={styles.legalSection}>
+          <div className={styles.legalHeading}>
+            <div className={styles.legalTitleGroup}>
+              <span className={styles.sectionIndex}>02</span>
+              <div>
+                <span className={styles.eyebrow}>Commercial framework</span>
+                <h2>Terms, responsibilities and service standards</h2>
+              </div>
+            </div>
+            <p>
+              These terms form part of this invoice and clarify the delivery,
+              installation, payment and after-sales responsibilities associated
+              with the supplied products.
+            </p>
+          </div>
+
+          <div className={styles.termsGrid}>
+            {termsAndConditions.map((term, index) => (
+              <TermCard key={term.title} term={term} index={index} />
+            ))}
+          </div>
+
+          <div className={styles.serviceAssurance}>
+            <div>
+              <ShieldCheck size={23} strokeWidth={1.7} />
+              <div>
+                <span>Service assurance</span>
+                <strong>Protected by Aquakart support standards</strong>
+              </div>
+            </div>
+            <p>
+              Retain this invoice for installation verification, warranty
+              registration, service coordination and eligible replacement
+              requests.
+            </p>
+          </div>
+
+          <div className={styles.careSection}>
+            <div className={styles.careHeading}>
+              <div>
+                <span className={styles.eyebrow}>Manufacturer assistance</span>
+                <h3>Customer-care directory</h3>
+              </div>
+              <span>Direct product support</span>
+            </div>
+            <div className={styles.careGrid}>
+              {customerCare.map((contact) => (
+                <CustomerCareCard key={contact.name} contact={contact} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {invoice.po ? (
+          <section className={styles.paymentInstructions}>
+            <div className={styles.paymentHeading}>
+              <div className={styles.paymentTitleGroup}>
+                <span className={styles.paymentIndex}>03</span>
+                <div>
+                  <span className={styles.eyebrow}>Purchase-order payment</span>
+                  <h2>Approved remittance details</h2>
+                </div>
+              </div>
+              <p>
+                Use the invoice number as the payment reference and share the
+                remittance confirmation with Aquakart for allocation.
+              </p>
+            </div>
+
+            <div className={styles.bankGrid}>
+              {bankPaymentMethods.map((method) => (
+                <BankMethodCard
+                  key={method.key}
+                  method={method}
+                  copied={copiedPayment === method.key}
+                  onCopy={handleCopyPaymentDetails}
+                />
+              ))}
+            </div>
+
+            <div className={styles.paymentNotice}>
+              <BadgeCheck size={18} />
+              <p>
+                Payment instructions are displayed because this invoice is
+                linked to a purchase order. Please verify the beneficiary name,
+                account number and IFSC before initiating a transfer.
+              </p>
+            </div>
+          </section>
+        ) : null}
 
         <footer className={styles.invoiceFooter}>
           <div>
