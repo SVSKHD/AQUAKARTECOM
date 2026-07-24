@@ -1,10 +1,8 @@
 import { useRouter } from "next/router";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import {
   Home,
   User,
-  Settings,
   ShoppingCart,
   Heart,
   ShoppingBag,
@@ -62,16 +60,14 @@ const AquaUserDashboardHeader = () => {
   return (
     <div className="mx-auto mt-6 w-full">
       <div className="hidden justify-center px-4 sm:flex">
-        <div className="flex items-center gap-1.5 rounded-full border border-white/50 bg-white/50 backdrop-blur-2xl px-3 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
+        <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2.5 shadow-[0_8px_26px_rgba(15,23,42,0.06)]">
           {navItems.map((item) => {
             const isActive = router.pathname === item.href;
             const Icon = item.icon;
 
             return (
               <Link key={item.id} href={item.href} className="relative">
-                <motion.span
-                  whileTap={{ scale: 0.95 }}
-                  whileHover={{ scale: 1.05 }}
+                <span
                   className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
                     isActive
                       ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/25"
@@ -84,7 +80,7 @@ const AquaUserDashboardHeader = () => {
                     className={isActive ? "text-white" : "text-slate-400"}
                   />
                   {item.label}
-                </motion.span>
+                </span>
               </Link>
             );
           })}
@@ -92,7 +88,7 @@ const AquaUserDashboardHeader = () => {
       </div>
 
       <div className="px-4 sm:hidden">
-        <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto rounded-2xl border border-white/50 bg-white/50 backdrop-blur-xl px-3 py-2 shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
+        <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
           {navItems.map((item) => {
             const isActive = router.pathname === item.href;
             const Icon = item.icon;
