@@ -254,8 +254,19 @@
   grid-row: 1 / 3;
 }
 
+.mosaicMedia {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 .mosaicImage {
+  width: 100% !important;
+  height: 100% !important;
   object-fit: cover;
+  object-position: center;
   transition: transform 500ms ease;
 }
 
@@ -269,7 +280,7 @@
   background: linear-gradient(180deg, transparent 35%, rgba(4, 22, 30, 0.82));
 }
 
-.mosaicCard > div {
+.mosaicContent {
   position: absolute;
   right: 0;
   bottom: 0;
@@ -281,21 +292,21 @@
   color: #ffffff;
 }
 
-.mosaicCard > div > span {
+.mosaicContent > span {
   color: #9ce9d7;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.14em;
 }
 
-.mosaicCard strong {
+.mosaicContent strong {
   max-width: 260px;
   margin-top: 4px;
   font-size: 16px;
   line-height: 1.25;
 }
 
-.mosaicCard small {
+.mosaicContent small {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -842,7 +853,7 @@
     border-radius: 13px;
   }
 
-  .mosaicCard > div {
+  .mosaicContent {
     padding: 12px;
   }
 

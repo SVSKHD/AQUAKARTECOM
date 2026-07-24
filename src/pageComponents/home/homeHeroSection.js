@@ -116,11 +116,12 @@ const AquaHomeHero = ({ data = [] }) => {
                       ? "(max-width: 768px) 100vw, 34vw"
                       : "(max-width: 768px) 50vw, 17vw"
                   }
+                  className={styles.mosaicMedia}
                   imgClassName={styles.mosaicImage}
                   priority={index === 0}
                 />
                 <span className={styles.mosaicShade} />
-                <div>
+                <div className={styles.mosaicContent}>
                   <span>{String(index + 1).padStart(2, "0")}</span>
                   <strong>{category.title}</strong>
                   <small>
