@@ -1,6 +1,5 @@
 import AquaHomeComponent from "@/pageComponents/home";
 import CategoryServiceOperations from "@/services/category";
-import SubCategoryServiceOperations from "@/services/subcategory";
 import ProductServiceOperations from "@/services/products";
 
 const AquaHomePage = (props) => {
@@ -14,20 +13,18 @@ const AquaHomePage = (props) => {
 export async function getServerSideProps({ res }) {
   res.setHeader(
     "Cache-Control",
-    "private, no-cache, no-store, must-revalidate, max-age=0",
+    "public, s-maxage=300, stale-while-revalidate=900",
   );
 
   try {
-    const [categoriesRes, subCategoriesRes, productsRes] = await Promise.all([
+    const [categoriesRes, productsRes] = await Promise.all([
       CategoryServiceOperations.Allcategories(),
-      SubCategoryServiceOperations.AllSubcategories(),
-      ProductServiceOperations.AllProducts(), // Consider creating a lighter endpoint or limiting fields if possible
+      ProductServiceOperations.AllProducts(),
     ]);
 
     return {
       props: {
         initialCategories: categoriesRes.data?.data || [],
-        initialSubCategories: subCategoriesRes.data?.data || [],
         initialProducts: productsRes.data?.data || [],
       },
     };
@@ -36,7 +33,6 @@ export async function getServerSideProps({ res }) {
     return {
       props: {
         initialCategories: [],
-        initialSubCategories: [],
         initialProducts: [],
       },
     };
