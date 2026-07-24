@@ -32,7 +32,12 @@ const ROUTE_COPY = {
   },
 };
 
-const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
+const AquaUserDashbordLayout = ({
+  children,
+  title,
+  subtitle,
+  focused = false,
+}) => {
   const { userData, dynamicData } = useSelector((state) => ({ ...state }));
   const categories = dynamicData?.categories || [];
   const subcategories = dynamicData?.subcategories || [];
@@ -58,13 +63,23 @@ const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
     <div className="relative min-h-screen flex flex-col items-center justify-start bg-slate-50">
       <AquaUserDashboardHeader />
       <AquaCartAddressDialog />
-      <div className="w-full max-w-5xl px-4">
-        <AquaUserGreet
-          userName={getFirstLettersFromEmail(userData?.user?.email)}
-        />
-      </div>
-      <div className="w-full max-w-5xl px-4 py-6 sm:py-8">
-        <div className="w-full glass-card rounded-3xl p-5 sm:p-8">
+      {!focused && (
+        <div className="w-full max-w-5xl px-4">
+          <AquaUserGreet
+            userName={getFirstLettersFromEmail(userData?.user?.email)}
+          />
+        </div>
+      )}
+      <div
+        className={`w-full px-4 py-6 sm:py-8 ${
+          focused ? "max-w-6xl" : "max-w-5xl"
+        }`}
+      >
+        <div
+          className={
+            focused ? "w-full" : "glass-card w-full rounded-3xl p-5 sm:p-8"
+          }
+        >
           <div className="mb-6 border-b border-white/30 pb-4">
             <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">
               {resolvedTitle}
@@ -73,7 +88,7 @@ const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
               <p className="mt-1 text-sm text-slate-500">{resolvedSubtitle}</p>
             )}
           </div>
-          <div className="min-h-[60vh]">{children}</div>
+          <div className={focused ? "" : "min-h-[60vh]"}>{children}</div>
         </div>
       </div>
       <div className="w-full mt-auto">

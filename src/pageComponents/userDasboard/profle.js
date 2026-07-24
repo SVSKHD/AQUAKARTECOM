@@ -2,13 +2,23 @@ import AquaUserDashbordLayout from "./layout/layout";
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  PencilSquareIcon,
-} from "@heroicons/react/24/solid";
+  ArrowRight,
+  BadgeCheck,
+  CalendarDays,
+  Check,
+  CircleUserRound,
+  Mail,
+  MapPin,
+  Pencil,
+  Phone,
+  Plus,
+  ShieldCheck,
+  Smartphone,
+} from "lucide-react";
 import ProfileDetailsDialog from "@/components/common/commonDialogs/profileDetailsDialog";
 import UserServiceOperations from "@/services/user";
 import AquaToast from "@/components/reusables/react-toastify";
+import styles from "@/styles/profile.module.css";
 
 const formatAddress = (address) => {
   if (!address || typeof address !== "object") {
@@ -107,79 +117,55 @@ const AquaUserProfilePageComponent = () => {
     () => [
       {
         key: "firstName",
-        title: "First Name",
+        title: "First name",
         value: user?.firstName || "",
-        helper: "Helps us personalise your experience.",
-        actionLabel: user?.firstName ? "Update first name" : "Add first name",
         focusField: "firstName",
         isComplete: Boolean(user?.firstName),
+        icon: CircleUserRound,
       },
       {
         key: "lastName",
-        title: "Last Name",
+        title: "Last name",
         value: user?.lastName || "",
-        helper: "We'll use this on invoices and delivery labels.",
-        actionLabel: user?.lastName ? "Update last name" : "Add last name",
         focusField: "lastName",
         isComplete: Boolean(user?.lastName),
-      },
-      {
-        key: "address",
-        title: "Saved Address",
-        value: formatAddress(primaryAddress),
-        helper:
-          addressCount > 1
-            ? `Default address set. ${addressCount - 1} additional address${
-                addressCount - 1 === 1 ? "" : "es"
-              } saved.`
-            : addressCount === 1
-              ? "Default address set for faster deliveries."
-              : "Add an address to speed up checkout and service visits.",
-        actionLabel: addressCount ? "Edit address" : "Add address",
-        focusField: "address",
-        isComplete: Boolean(addressCount),
+        icon: CircleUserRound,
       },
       {
         key: "email",
         title: "Email",
         value: user?.email || "",
-        helper: "We'll email you order updates and service reminders.",
-        actionLabel: user?.email ? "Update email" : "Add email",
         focusField: "email",
         isComplete: Boolean(user?.email),
+        icon: Mail,
       },
       {
         key: "phone",
-        title: "Primary Phone",
+        title: "Primary phone",
         value: user?.phone || "",
-        helper: "Your go-to contact number for delivery coordination.",
-        actionLabel: user?.phone ? "Update phone" : "Add phone",
         focusField: "phone",
         isComplete: Boolean(user?.phone),
+        icon: Phone,
       },
       {
         key: "alternate-phone",
-        title: "Alternate Phone",
+        title: "Alternate phone",
         value: alternatePhone,
-        helper: "Add a backup number so service teams can always reach you.",
-        actionLabel: alternatePhone ? "Update alternate" : "Add alternate",
         focusField: "alternatePhone",
         isComplete: Boolean(alternatePhone),
+        icon: Smartphone,
       },
       {
         key: "dob",
-        title: "Date of Birth",
+        title: "Date of birth",
         value: formatDob(user?.dob),
-        helper: "Helps us personalise offers and reminders.",
-        actionLabel: user?.dob ? "Update DOB" : "Add DOB",
         focusField: "dob",
         isComplete: Boolean(user?.dob),
+        icon: CalendarDays,
       },
     ],
     [
-      addressCount,
       alternatePhone,
-      primaryAddress,
       user?.dob,
       user?.email,
       user?.firstName,
@@ -187,6 +173,27 @@ const AquaUserProfilePageComponent = () => {
       user?.phone,
     ],
   );
+
+  const profileCompletion = useMemo(() => {
+    const completedFields =
+      profileHighlights.filter((item) => item.isComplete).length +
+      (addressCount ? 1 : 0);
+    return Math.round((completedFields / (profileHighlights.length + 1)) * 100);
+  }, [addressCount, profileHighlights]);
+
+  const displayName =
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+    user?.name ||
+    "Aquakart customer";
+  const initials =
+    [user?.firstName, user?.lastName]
+      .filter(Boolean)
+      .map((value) => value.charAt(0))
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() ||
+    user?.email?.charAt(0)?.toUpperCase() ||
+    "A";
 
   const handleOpenDialog = (focusField) => {
     setDialogFocus(focusField || null);
@@ -355,157 +362,239 @@ const AquaUserProfilePageComponent = () => {
   };
 
   return (
-    <AquaUserDashbordLayout>
-      <div className="grid gap-5 px-2 sm:grid-cols-2 sm:px-0">
-        {profileHighlights.map((item) => {
-          const isComplete = Boolean(item.isComplete);
-          const StatusIcon = isComplete
-            ? CheckCircleIcon
-            : ExclamationTriangleIcon;
-          const statusClasses = isComplete
-            ? "bg-emerald-50/80 text-emerald-700"
-            : "bg-amber-50/80 text-amber-700";
-          const cardTint = isComplete
-            ? "glass-tint-emerald"
-            : "glass-tint-amber";
+    <AquaUserDashbordLayout
+      title="Your profile"
+      subtitle="Personal details, delivery preferences and account readiness."
+      focused
+    >
+      <div className={styles.profilePage}>
+        <section className={styles.profileHero}>
+          <div className={styles.identityBlock}>
+            <div className={styles.avatar} aria-hidden="true">
+              {initials}
+              <span>
+                <BadgeCheck size={17} />
+              </span>
+            </div>
+            <div>
+              <span className={styles.eyebrow}>Aquakart account</span>
+              <h2>{displayName}</h2>
+              <p>{user?.email || "Add an email to receive account updates."}</p>
+            </div>
+          </div>
 
-          return (
-            <div
-              key={item.key}
-              className={`group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${cardTint}`}
-            >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-                    {item.title}
-                  </h3>
-                  <p className="mt-2 text-base font-medium text-gray-900">
-                    {item.value || "Not provided yet"}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${statusClasses}`}
-                  >
-                    <StatusIcon className="h-4 w-4" aria-hidden="true" />
-                    {isComplete ? "Updated" : "Pending"}
-                  </span>
-                </div>
+          <div className={styles.profileActions}>
+            <div className={styles.completion}>
+              <div>
+                <span>Profile readiness</span>
+                <strong>{profileCompletion}%</strong>
               </div>
-              <p className="mt-3 text-sm text-gray-500">{item.helper}</p>
-              <div className="mt-4 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
-                <button
-                  type="button"
-                  onClick={() => handleOpenDialog(item.focusField)}
-                  className="btn-glass inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/50 px-3 py-1.5 font-medium text-indigo-600 backdrop-blur-sm hover:bg-white/80 sm:w-auto"
-                >
-                  <PencilSquareIcon className="h-4 w-4" aria-hidden="true" />
-                  {item.actionLabel}
-                </button>
+              <div
+                className={styles.progressTrack}
+                role="progressbar"
+                aria-label="Profile completion"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow={profileCompletion}
+              >
+                <span style={{ width: `${profileCompletion}%` }} />
+              </div>
+              <p>
+                {profileCompletion === 100
+                  ? "Everything is ready for a faster checkout."
+                  : "Complete pending details for smoother delivery and service."}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleOpenDialog(null)}
+              className={styles.editProfileButton}
+            >
+              <Pencil size={16} />
+              Edit profile
+            </button>
+          </div>
+        </section>
+
+        <div className={styles.profileGrid}>
+          <section className={styles.detailsPanel}>
+            <div className={styles.panelHeading}>
+              <div>
+                <span className={styles.eyebrow}>Personal information</span>
+                <h2>Details used across Aquakart</h2>
+              </div>
+              <ShieldCheck size={21} />
+            </div>
+
+            <div className={styles.detailsList}>
+              {profileHighlights.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => handleOpenDialog(item.focusField)}
+                    className={styles.detailRow}
+                  >
+                    <span className={styles.detailIcon}>
+                      <Icon size={18} />
+                    </span>
+                    <span className={styles.detailCopy}>
+                      <small>{item.title}</small>
+                      <strong>{item.value || "Add this detail"}</strong>
+                    </span>
+                    <span
+                      className={
+                        item.isComplete
+                          ? styles.completeStatus
+                          : styles.pendingStatus
+                      }
+                    >
+                      {item.isComplete ? (
+                        <Check size={13} />
+                      ) : (
+                        <Plus size={13} />
+                      )}
+                      {item.isComplete ? "Ready" : "Add"}
+                    </span>
+                    <ArrowRight size={16} className={styles.rowArrow} />
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className={styles.securityNote}>
+              <ShieldCheck size={18} />
+              <p>
+                Your contact details are used only for orders, delivery,
+                invoices and requested service communication.
+              </p>
+            </div>
+          </section>
+
+          <aside className={styles.accountPanel}>
+            <span className={styles.eyebrow}>Account snapshot</span>
+            <h2>Ready when you are.</h2>
+            <div className={styles.snapshotStats}>
+              <div>
+                <strong>{addressCount}</strong>
+                <span>Saved addresses</span>
+              </div>
+              <div>
+                <strong>
+                  {profileHighlights.filter((item) => item.isComplete).length}
+                </strong>
+                <span>Details completed</span>
               </div>
             </div>
-          );
-        })}
-      </div>
-      <section className="mt-10 glass-tint-indigo rounded-2xl p-5 sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              Delivery addresses
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Set which address should be used by default during checkout.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={handleAddAddress}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-600 transition hover:border-indigo-300 hover:bg-indigo-100 sm:w-auto"
-          >
-            + Add address
-          </button>
+            <div className={styles.defaultAddress}>
+              <MapPin size={19} />
+              <div>
+                <span>Default delivery address</span>
+                <p>
+                  {formatAddress(primaryAddress) ||
+                    "No default address selected yet."}
+                </p>
+              </div>
+            </div>
+            <button type="button" onClick={handleAddAddress}>
+              <Plus size={15} /> Add another address
+            </button>
+          </aside>
         </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          {addresses.length ? (
-            addresses.map((address) => {
-              const isDefault = addressesMatch(address, primaryAddress);
-              return (
-                <div
-                  key={address._id || address.street}
-                  className={`relative flex flex-col gap-3 rounded-2xl p-4 transition-all duration-300 ${
-                    isDefault
-                      ? "glass-tint-emerald shadow-md"
-                      : "glass-card hover:-translate-y-0.5 hover:shadow-lg"
-                  }`}
-                >
-                  <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {address?.label || "Saved address"}
-                      </p>
-                      <p className="mt-1 text-sm text-gray-600">
-                        {[
-                          address.street,
-                          address.city,
-                          address.state,
-                          address.postalCode,
-                        ]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-indigo-600">
+        <section className={styles.addressSection}>
+          <div className={styles.addressHeading}>
+            <div>
+              <span className={styles.eyebrow}>Delivery book</span>
+              <h2>Saved addresses</h2>
+              <p>
+                Select the address Aquakart should use by default during
+                checkout and service bookings.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleAddAddress}
+              className={styles.addAddressButton}
+            >
+              <Plus size={15} /> Add address
+            </button>
+          </div>
+
+          <div className={styles.addressGrid}>
+            {addresses.length ? (
+              addresses.map((address) => {
+                const isDefault = addressesMatch(address, primaryAddress);
+                return (
+                  <article
+                    key={address._id || address.street}
+                    className={`${styles.addressCard} ${
+                      isDefault ? styles.defaultAddressCard : ""
+                    }`}
+                  >
+                    <div className={styles.addressCardTop}>
+                      <span className={styles.addressIcon}>
+                        <MapPin size={18} />
+                      </span>
+                      <div>
+                        <h3>{address?.label || "Saved address"}</h3>
+                        <p>
+                          {[
+                            address.street,
+                            address.landmark,
+                            address.city,
+                            address.state,
+                            address.postalCode,
+                          ]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </p>
+                      </div>
                       {isDefault && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-1 text-xs font-medium text-indigo-600">
-                          <CheckCircleIcon
-                            className="h-4 w-4"
-                            aria-hidden="true"
-                          />
+                        <span className={styles.defaultBadge}>
+                          <Check size={12} />
                           Default
                         </span>
                       )}
+                    </div>
+                    {address.phone && (
+                      <span className={styles.addressPhone}>
+                        <Phone size={13} /> {address.phone}
+                      </span>
+                    )}
+                    <div className={styles.addressActions}>
+                      {!isDefault && (
+                        <button
+                          type="button"
+                          onClick={() => handleSelectDefaultAddress(address)}
+                        >
+                          Set as default
+                        </button>
+                      )}
                       <button
                         type="button"
-                        onClick={() => handleSelectDefaultAddress(address)}
-                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs transition ${
-                          isDefault
-                            ? "border-indigo-500 bg-indigo-500 text-white"
-                            : "border-indigo-200 bg-white text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50"
-                        }`}
+                        onClick={() => handleEditAddress(address)}
                       >
-                        {isDefault ? "Selected" : "Set as default"}
+                        <Pencil size={13} /> Edit
                       </button>
                     </div>
-                  </div>
-                  {address.phone && (
-                    <p className="text-xs text-gray-500">
-                      Contact: {address.phone}
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => handleEditAddress(address)}
-                    className="mt-3 inline-flex w-full items-center justify-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 sm:w-auto"
-                  >
-                    Edit address
-                  </button>
-                </div>
-              );
-            })
-          ) : (
-            <div className="col-span-full rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-10 text-center">
-              <h3 className="text-base font-semibold text-gray-900">
-                No addresses saved yet
-              </h3>
-              <p className="mt-2 text-sm text-gray-500">
-                Add an address from the checkout page to enable default
-                selection here.
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
+                  </article>
+                );
+              })
+            ) : (
+              <div className={styles.emptyAddress}>
+                <MapPin size={24} />
+                <h3>Your address book is empty.</h3>
+                <p>Add an address now for a quicker checkout next time.</p>
+                <button type="button" onClick={handleAddAddress}>
+                  Add first address
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
       <ProfileDetailsDialog
         open={dialogOpen}
         onClose={handleCloseDialog}

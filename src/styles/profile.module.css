@@ -1,0 +1,666 @@
+.profilePage {
+  --profile-ink: #071a25;
+  --profile-muted: #62727a;
+  --profile-line: #dfe9e7;
+  --profile-soft: #f4f8f7;
+  --profile-mint: #e5f8f2;
+  --profile-green: #008b68;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  color: var(--profile-ink);
+}
+
+.profileHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 30px;
+  padding: 32px;
+  border: 1px solid var(--profile-line);
+  border-radius: 24px;
+  background:
+    linear-gradient(130deg, rgba(229, 248, 242, 0.85), transparent 55%), #fbfdfd;
+}
+
+.identityBlock {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.avatar {
+  position: relative;
+  display: flex;
+  width: 82px;
+  height: 82px;
+  flex: 0 0 82px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #b6ddd3;
+  border-radius: 24px;
+  background: #ffffff;
+  color: var(--profile-green);
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.avatar > span {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  display: flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #f2faf7;
+  border-radius: 50%;
+  background: var(--profile-green);
+  color: #ffffff;
+}
+
+.eyebrow {
+  color: var(--profile-green);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.identityBlock h2,
+.panelHeading h2,
+.accountPanel h2,
+.addressHeading h2 {
+  margin: 6px 0 0;
+  color: var(--profile-ink);
+  font-size: 24px;
+  font-weight: 760;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+.identityBlock p {
+  margin: 7px 0 0;
+  color: var(--profile-muted);
+  font-size: 13px;
+}
+
+.profileActions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.completion {
+  width: min(100%, 330px);
+}
+
+.completion > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--profile-muted);
+  font-size: 10px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.completion strong {
+  color: var(--profile-ink);
+  font-size: 16px;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 7px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dfeae7;
+}
+
+.progressTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--profile-green), #20bea3);
+}
+
+.completion p {
+  margin: 7px 0 0;
+  color: var(--profile-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.editProfileButton,
+.addAddressButton {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--profile-ink);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  transition:
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.editProfileButton:hover,
+.addAddressButton:hover {
+  background: var(--profile-green);
+  transform: translateY(-1px);
+}
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(260px, 0.75fr);
+  gap: 20px;
+}
+
+.detailsPanel,
+.accountPanel,
+.addressSection {
+  border: 1px solid var(--profile-line);
+  border-radius: 22px;
+  background: #ffffff;
+}
+
+.detailsPanel {
+  padding: 25px;
+}
+
+.panelHeading,
+.addressHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.panelHeading h2,
+.addressHeading h2 {
+  font-size: 20px;
+}
+
+.panelHeading > svg {
+  color: var(--profile-green);
+}
+
+.detailsList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 24px;
+  overflow: hidden;
+  border: 1px solid var(--profile-line);
+  border-radius: 17px;
+}
+
+.detailRow {
+  display: grid;
+  min-width: 0;
+  min-height: 88px;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 0;
+  border-right: 1px solid var(--profile-line);
+  border-bottom: 1px solid var(--profile-line);
+  background: #ffffff;
+  text-align: left;
+  transition: background-color 160ms ease;
+}
+
+.detailRow:nth-child(2n) {
+  border-right: 0;
+}
+
+.detailRow:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.detailRow:hover {
+  background: #f9fcfb;
+}
+
+.detailIcon {
+  display: flex;
+  width: 37px;
+  height: 37px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: var(--profile-mint);
+  color: var(--profile-green);
+}
+
+.detailCopy {
+  min-width: 0;
+}
+
+.detailCopy small {
+  display: block;
+  color: #87969b;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.detailCopy strong {
+  display: block;
+  margin-top: 4px;
+  overflow: hidden;
+  color: var(--profile-ink);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.completeStatus,
+.pendingStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 7px;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.completeStatus {
+  background: var(--profile-mint);
+  color: var(--profile-green);
+}
+
+.pendingStatus {
+  background: #fff4dc;
+  color: #9a6300;
+}
+
+.rowArrow {
+  color: #a5b2b5;
+}
+
+.securityNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 18px;
+  padding: 13px;
+  border-radius: 13px;
+  background: var(--profile-soft);
+  color: var(--profile-muted);
+}
+
+.securityNote svg {
+  flex: 0 0 auto;
+  color: var(--profile-green);
+}
+
+.securityNote p {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.accountPanel {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  padding: 25px;
+  background: var(--profile-ink);
+  color: #ffffff;
+}
+
+.accountPanel .eyebrow {
+  color: #62ddc2;
+}
+
+.accountPanel h2 {
+  color: #ffffff;
+}
+
+.snapshotStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 27px;
+}
+
+.snapshotStats > div {
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.snapshotStats strong,
+.snapshotStats span {
+  display: block;
+}
+
+.snapshotStats strong {
+  color: #70e3ca;
+  font-size: 22px;
+}
+
+.snapshotStats span {
+  margin-top: 3px;
+  color: #a8bac0;
+  font-size: 9px;
+}
+
+.defaultAddress {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 15px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.065);
+}
+
+.defaultAddress svg {
+  flex: 0 0 auto;
+  color: #70e3ca;
+}
+
+.defaultAddress span {
+  color: #70e3ca;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.defaultAddress p {
+  margin: 5px 0 0;
+  color: #c4d0d4;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.accountPanel > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 19px 0 0;
+  border: 0;
+  background: transparent;
+  color: #70e3ca;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.addressSection {
+  padding: 25px;
+}
+
+.addressHeading p {
+  max-width: 540px;
+  margin: 7px 0 0;
+  color: var(--profile-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.addressGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.addressCard {
+  display: flex;
+  min-height: 210px;
+  flex-direction: column;
+  padding: 19px;
+  border: 1px solid var(--profile-line);
+  border-radius: 17px;
+  background: #ffffff;
+}
+
+.defaultAddressCard {
+  border-color: #9ed5c8;
+  background: #fbfefd;
+}
+
+.addressCardTop {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.addressIcon {
+  display: flex;
+  width: 37px;
+  height: 37px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: var(--profile-mint);
+  color: var(--profile-green);
+}
+
+.addressCard h3 {
+  margin: 2px 0 0;
+  font-size: 13px;
+}
+
+.addressCard p {
+  margin: 7px 0 0;
+  color: var(--profile-muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.defaultBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: var(--profile-mint);
+  color: var(--profile-green);
+  font-size: 8px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.addressPhone {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 14px 0 0 48px;
+  color: var(--profile-muted);
+  font-size: 10px;
+}
+
+.addressActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 17px;
+}
+
+.addressActions button {
+  display: inline-flex;
+  min-height: 33px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 11px;
+  border: 1px solid var(--profile-line);
+  border-radius: 9px;
+  background: #ffffff;
+  color: var(--profile-ink);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.addressActions button:first-child {
+  border-color: #b4dcd2;
+  color: var(--profile-green);
+}
+
+.emptyAddress {
+  grid-column: 1 / -1;
+  display: flex;
+  min-height: 220px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 30px;
+  border: 1px dashed #b8cbc7;
+  border-radius: 17px;
+  background: var(--profile-soft);
+  text-align: center;
+}
+
+.emptyAddress svg {
+  color: var(--profile-green);
+}
+
+.emptyAddress h3 {
+  margin: 12px 0 0;
+  font-size: 15px;
+}
+
+.emptyAddress p {
+  margin: 6px 0 0;
+  color: var(--profile-muted);
+  font-size: 11px;
+}
+
+.emptyAddress button {
+  margin-top: 16px;
+  border: 0;
+  background: transparent;
+  color: var(--profile-green);
+  font-size: 10px;
+  font-weight: 850;
+}
+
+@media (max-width: 850px) {
+  .profileHero,
+  .profileGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .profileActions {
+    align-items: stretch;
+  }
+
+  .completion {
+    width: 100%;
+  }
+
+  .editProfileButton {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  .profilePage {
+    gap: 14px;
+  }
+
+  .profileHero,
+  .detailsPanel,
+  .accountPanel,
+  .addressSection {
+    padding: 19px;
+    border-radius: 18px;
+  }
+
+  .profileHero {
+    gap: 24px;
+  }
+
+  .identityBlock {
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .avatar {
+    width: 62px;
+    height: 62px;
+    flex-basis: 62px;
+    border-radius: 18px;
+    font-size: 21px;
+  }
+
+  .identityBlock h2 {
+    font-size: 21px;
+  }
+
+  .identityBlock p {
+    overflow: hidden;
+    max-width: 210px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .editProfileButton,
+  .addAddressButton {
+    width: 100%;
+  }
+
+  .detailsList {
+    grid-template-columns: 1fr;
+  }
+
+  .detailRow,
+  .detailRow:nth-child(2n),
+  .detailRow:nth-last-child(-n + 2) {
+    border-right: 0;
+    border-bottom: 1px solid var(--profile-line);
+  }
+
+  .detailRow:last-child {
+    border-bottom: 0;
+  }
+
+  .accountPanel {
+    min-height: 330px;
+  }
+
+  .addressHeading {
+    flex-direction: column;
+  }
+
+  .addressGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .addressCard {
+    min-height: 205px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profilePage *,
+  .profilePage *::before,
+  .profilePage *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
