@@ -110,6 +110,7 @@ const AquaHomeHero = ({ data = [] }) => {
                 <LazyImage
                   src={getCategoryImage(category)}
                   alt={category.title}
+                  className={styles.mosaicMedia}
                   fill
                   sizes={
                     index === 0
