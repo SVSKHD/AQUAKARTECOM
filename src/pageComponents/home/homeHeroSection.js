@@ -121,7 +121,7 @@ const AquaHomeHero = ({ data = [] }) => {
                   priority={index === 0}
                 />
                 <span className={styles.mosaicShade} />
-                <div>
+                <div className={styles.mosaicMeta}>
                   <span>{String(index + 1).padStart(2, "0")}</span>
                   <strong>{category.title}</strong>
                   <small>
