@@ -248,8 +248,7 @@
   overflow: hidden;
   border-radius: 17px;
   isolation: isolate;
-  background:
-    radial-gradient(circle at 50% 28%, #ffffff 0, #edf8f5 46%, #dcebea 100%);
+  background: #071a25;
 }
 
 .mosaicPrimary {
@@ -258,14 +257,22 @@
 
 .mosaicMedia {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: calc(100% - 82px);
+  overflow: hidden;
+  background: #edf8f5;
+}
+
+.mosaicPrimary .mosaicMedia {
+  height: calc(100% - 105px);
 }
 
 .mosaicImage {
   z-index: 0;
-  padding: 16px 16px 82px;
-  object-fit: contain;
-  object-position: center 42%;
+  object-fit: cover;
+  object-position: center;
   transition: transform 500ms ease;
 }
 
@@ -274,31 +281,29 @@
 }
 
 .mosaicShade {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    180deg,
-    transparent 58%,
-    rgba(4, 22, 30, 0.08) 64%,
-    rgba(4, 22, 30, 0.88) 100%
-  );
-  pointer-events: none;
+  display: none;
 }
 
-.mosaicCard > div {
+.mosaicMeta {
   position: absolute;
   right: 0;
   bottom: 0;
   left: 0;
   z-index: 2;
   display: flex;
+  min-height: 82px;
+  justify-content: center;
   flex-direction: column;
   padding: 15px 17px;
+  background: linear-gradient(135deg, #17343d, #071a25);
   color: #ffffff;
 }
 
-.mosaicCard > div > span {
+.mosaicPrimary .mosaicMeta {
+  min-height: 105px;
+}
+
+.mosaicMeta > span {
   color: #9ce9d7;
   font-size: 9px;
   font-weight: 800;
@@ -859,8 +864,21 @@
     border-radius: 13px;
   }
 
-  .mosaicCard > div {
+  .mosaicMeta {
+    min-height: 64px;
     padding: 12px;
+  }
+
+  .mosaicPrimary .mosaicMeta {
+    min-height: 82px;
+  }
+
+  .mosaicMedia {
+    height: calc(100% - 64px);
+  }
+
+  .mosaicPrimary .mosaicMedia {
+    height: calc(100% - 82px);
   }
 
   .mosaicCard strong {
