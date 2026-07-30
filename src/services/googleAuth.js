@@ -1,7 +1,9 @@
 import { signInWithPopup, signOut } from "firebase/auth";
-import { firebaseAuth, googleProvider } from "@/lib/firebase/client";
+import { getFirebaseAuth, getGoogleProvider } from "@/lib/firebase/client";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
+const authUrl = (path) =>
+  `${API_URL.endsWith("/v1") ? API_URL : `${API_URL}/v1`}${path}`;
 
 const parseResponse = async (response) => {
   const data = await response.json().catch(() => ({}));
@@ -14,10 +16,11 @@ const parseResponse = async (response) => {
 };
 
 export const loginWithGoogle = async () => {
-  const credential = await signInWithPopup(firebaseAuth, googleProvider);
+  const firebaseAuth = getFirebaseAuth();
+  const credential = await signInWithPopup(firebaseAuth, getGoogleProvider());
   const firebaseIdToken = await credential.user.getIdToken();
 
-  const response = await fetch(`${API_URL}/v1/auth/google`, {
+  const response = await fetch(authUrl("/auth/google"), {
     method: "POST",
     headers: {
       Authorization: `Bearer ${firebaseIdToken}`,
@@ -34,5 +37,20 @@ export const loginWithGoogle = async () => {
 };
 
 export const logoutGoogleUser = async () => {
-  await signOut(firebaseAuth);
+  await signOut(getFirebaseAuth());
+};
+
+export const getCurrentUser = async (token) => {
+  const response = await fetch(authUrl("/auth/me"), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return parseResponse(response);
+};
+
+export const logoutBackendUser = async (token) => {
+  if (!token) return;
+  await fetch(authUrl("/auth/logout"), {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
 };
