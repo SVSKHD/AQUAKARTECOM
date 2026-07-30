@@ -14,6 +14,7 @@ import { useRouter } from "next/router";
 import Script from "next/script";
 import { Roboto_Mono, Montserrat } from "next/font/google";
 import AquaAppLoader from "@/components/common/AquaAppLoader";
+import { AuthProvider } from "@/context/AuthContext";
 
 const robotoMono = Roboto_Mono({
   subsets: ["latin"],
@@ -177,40 +178,42 @@ export default function App({ Component, pageProps }) {
       </Script>
 
       <PersistGate persistor={persistor} loading={<PersistLoader />}>
-        <div className={`${robotoMono.variable} ${montserrat.variable}`}>
-          {!appReady ? (
-            <AquaAppLoader
-              variant="screen"
-              message="Welcome to Aquakart"
-              subtext="Getting the page ready for you."
-            />
-          ) : null}
-          {routeLoading ? (
-            <AquaAppLoader
-              variant="route"
-              message="Opening Aquakart"
-              subtext="Preparing the next page smoothly."
-            />
-          ) : null}
-          <main
-            key={router.asPath}
-            className="aqua-page-shell aqua-page-enter"
-            data-route={router.pathname}
-            aria-hidden={shouldShowLoader}
-            style={{
-              opacity: shouldShowLoader ? 0 : 1,
-              visibility: shouldShowLoader ? "hidden" : "visible",
-              pointerEvents: shouldShowLoader ? "none" : "auto",
-              transform: shouldShowLoader ? "none" : "none",
-              transition: shouldShowLoader
-                ? "none"
-                : "opacity 420ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1)",
-            }}
-          >
-            <Component {...pageProps} />
-          </main>
-          <Toaster position="top-right" richColors closeButton />
-        </div>
+        <AuthProvider>
+          <div className={`${robotoMono.variable} ${montserrat.variable}`}>
+            {!appReady ? (
+              <AquaAppLoader
+                variant="screen"
+                message="Welcome to Aquakart"
+                subtext="Getting the page ready for you."
+              />
+            ) : null}
+            {routeLoading ? (
+              <AquaAppLoader
+                variant="route"
+                message="Opening Aquakart"
+                subtext="Preparing the next page smoothly."
+              />
+            ) : null}
+            <main
+              key={router.asPath}
+              className="aqua-page-shell aqua-page-enter"
+              data-route={router.pathname}
+              aria-hidden={shouldShowLoader}
+              style={{
+                opacity: shouldShowLoader ? 0 : 1,
+                visibility: shouldShowLoader ? "hidden" : "visible",
+                pointerEvents: shouldShowLoader ? "none" : "auto",
+                transform: shouldShowLoader ? "none" : "none",
+                transition: shouldShowLoader
+                  ? "none"
+                  : "opacity 420ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1)",
+              }}
+            >
+              <Component {...pageProps} />
+            </main>
+            <Toaster position="top-right" richColors closeButton />
+          </div>
+        </AuthProvider>
       </PersistGate>
     </Provider>
   );

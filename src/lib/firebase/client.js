@@ -10,13 +10,14 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const getFirebaseApp = () =>
+  getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-export const firebaseAuth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
+export const getFirebaseAuth = () => getAuth(getFirebaseApp());
+export const getGoogleProvider = () => {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  return provider;
+};
 
-googleProvider.setCustomParameters({
-  prompt: "select_account",
-});
-
-export default app;
+export default getFirebaseApp;
