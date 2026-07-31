@@ -34,7 +34,9 @@ const normalizeInvoice = (invoice) => {
       invoice.createdAt ??
       invoice.created_at ??
       null,
-    itemCount: products.length,
+    itemCount: Number.isFinite(Number(invoice.itemCount))
+      ? Number(invoice.itemCount)
+      : products.length,
     paidStatus:
       invoice.paidStatus ??
       invoice.paid_status ??
@@ -43,31 +45,31 @@ const normalizeInvoice = (invoice) => {
   };
 };
 
-const findInvoicesByPhone = async (phone) => {
+const findInvoicesByPhone = async (phone, token) => {
   const normalizedPhone = normalizePhone(phone);
 
   if (!/^[6-9]\d{9}$/.test(normalizedPhone)) {
     throw new Error("Please enter a valid 10-digit Indian mobile number.");
   }
 
-  const response = await axios.get(`${BASE}/crm/admin/invoice`, {
+  const headers = { Accept: "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const response = await axios.get(`${BASE}/crm/public/invoices/phone`, {
     params: { phone: normalizedPhone },
-    headers: { Accept: "application/json" },
+    headers,
   });
 
-  const payload = response.data?.data ?? response.data?.invoice ?? response.data;
-  const invoices = Array.isArray(payload) ? payload : payload ? [payload] : [];
-  const purchases = invoices.map(normalizeInvoice).filter(Boolean);
-  const found = purchases.length > 0;
+  const payload = response.data || {};
+  const invoices = Array.isArray(payload.purchases) ? payload.purchases : [];
 
   return {
-    found,
-    purchases,
-    message: found
-      ? purchases.length === 1
-        ? "We found 1 invoice linked to this phone number."
-        : `We found ${purchases.length} invoices linked to this phone number.`
-      : "No invoice was found for this phone number.",
+    found: Boolean(payload.found),
+    requiresLogin: Boolean(payload.requiresLogin),
+    purchases: invoices.map(normalizeInvoice).filter(Boolean),
+    message: payload.message || "",
+    linkedCount: Number(payload.linkedCount || 0),
+    restrictedCount: Number(payload.restrictedCount || 0),
   };
 };
 
