@@ -1,6 +1,10 @@
 import InvoicePage from "@/pageComponents/invoice/InvoicePage";
 import { enrichInvoiceProducts } from "@/utils/invoice/matchInvoiceProducts";
 import { mapInvoiceFromApi } from "@/utils/invoice/normalizeInvoice";
+import {
+  backendInvoiceRequest,
+  getInvoiceAccessToken,
+} from "@/utils/server/invoiceAccess";
 
 const FETCH_TIMEOUT_MS = 10_000;
 
@@ -29,7 +33,7 @@ const fetchProductCatalogue = async (apiBase, signal) => {
   }
 };
 
-export const getServerSideProps = async ({ params, res }) => {
+export const getServerSideProps = async ({ params, req, res }) => {
   res.setHeader(
     "Cache-Control",
     "private, no-store, no-cache, max-age=0, must-revalidate",
@@ -39,6 +43,11 @@ export const getServerSideProps = async ({ params, res }) => {
   const id = normalizeRouteId(params?.id);
   if (!id) {
     return { props: { invoice: null, statusCode: 404 } };
+  }
+
+  const accessToken = getInvoiceAccessToken(req);
+  if (!accessToken) {
+    return { props: { invoice: null, statusCode: 401 } };
   }
 
   const apiBase =
@@ -56,16 +65,13 @@ export const getServerSideProps = async ({ params, res }) => {
       catalogueApiBase,
       controller.signal,
     );
-    const response = await fetch(
-      `${apiBase.replace(/\/$/, "")}/crm/invoice/${encodeURIComponent(id)}`,
-      {
-        headers: { Accept: "application/json" },
-        signal: controller.signal,
-      },
-    );
+    const response = await backendInvoiceRequest(`/${encodeURIComponent(id)}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: controller.signal,
+    });
 
-    if (response.status === 404) {
-      return { props: { invoice: null, statusCode: 404 } };
+    if ([401, 403, 404].includes(response.status)) {
+      return { props: { invoice: null, statusCode: response.status } };
     }
 
     if (!response.ok) {
