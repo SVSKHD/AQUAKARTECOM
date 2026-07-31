@@ -125,15 +125,7 @@ const priceUtils = {
         ? toPaise(suppliedTotal)
         : itemsTotalPaise;
     const grandTotal = fromPaise(grandTotalPaise);
-    const tax = invoice?.gst
-      ? this.getGSTBreakdown(grandTotal)
-      : {
-          grossPrice: grandTotal,
-          basePrice: grandTotal,
-          gstValue: 0,
-          cgstValue: 0,
-          sgstValue: 0,
-        };
+    const tax = this.getGSTBreakdown(grandTotal);
 
     return {
       itemsTotal: fromPaise(itemsTotalPaise),

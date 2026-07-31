@@ -10,10 +10,12 @@ import {
   Copy,
   CreditCard,
   Download,
+  ExternalLink,
   FileText,
   Hash,
   Headphones,
   Landmark,
+  Link2,
   Mail,
   MapPin,
   Package,
@@ -204,6 +206,84 @@ const ProductCard = ({ product, index }) => {
         </div>
       </div>
     </article>
+  );
+};
+
+const getProductHref = (product = {}) => {
+  const directLink = product.productLink;
+  if (directLink?.startsWith("http://") || directLink?.startsWith("https://")) {
+    return directLink;
+  }
+  if (directLink?.startsWith("/")) return directLink;
+
+  const reference =
+    product.productSlug || product.catalogueProductId || product.id;
+  return reference ? `/product/${encodeURIComponent(reference)}` : "";
+};
+
+const ProductGallery = ({ products }) => {
+  const copyProductLink = async (product) => {
+    const href = getProductHref(product);
+    if (!href) {
+      toast.error("Product link is not available");
+      return;
+    }
+
+    const absoluteUrl = href.startsWith("http")
+      ? href
+      : `${window.location.origin}${href}`;
+    try {
+      await navigator.clipboard.writeText(absoluteUrl);
+      toast.success("Product link copied");
+    } catch {
+      toast.error("Could not copy the product link");
+    }
+  };
+
+  return (
+    <aside className={styles.productGallery} aria-label="Invoice products">
+      <div className={styles.galleryTrack}>
+        {products.map((product, index) => {
+          const href = getProductHref(product);
+          return (
+            <article
+              key={product.id || `${product.productName}-${index}`}
+              className={styles.galleryItem}
+            >
+              <a
+                href={href || undefined}
+                target={href ? "_blank" : undefined}
+                rel={href ? "noreferrer" : undefined}
+                aria-label={
+                  href
+                    ? `Open ${product.productName}`
+                    : `${product.productName} has no product page`
+                }
+                className={!href ? styles.galleryLinkDisabled : ""}
+              >
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                {product.productImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={product.productImage} alt={product.productName} />
+                ) : (
+                  <Package size={25} />
+                )}
+              </a>
+              <button
+                type="button"
+                onClick={() => copyProductLink(product)}
+                aria-label={`Copy ${product.productName} link`}
+              >
+                <Link2 size={12} />
+              </button>
+            </article>
+          );
+        })}
+      </div>
+      <span className={styles.galleryHint}>
+        <ExternalLink size={11} /> Open product
+      </span>
+    </aside>
   );
 };
 
@@ -419,7 +499,7 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
             </div>
             <div>
               <span className={styles.eyebrow}>Premium water solutions</span>
-              <h1>{invoice.gst ? "GST Tax Invoice" : "Invoice"}</h1>
+              <h1>{invoice.gst ? "GST Tax Invoice" : "Retail Tax Invoice"}</h1>
               <p>GSTIN 36AJOPH6387A1Z2</p>
             </div>
           </div>
@@ -451,7 +531,9 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
           <div>
             <ShieldCheck size={18} />
             <span>Tax treatment</span>
-            <strong>{invoice.gst ? "CGST + SGST" : "Non-GST"}</strong>
+            <strong>
+              {invoice.gst ? "CGST 9% + SGST 9%" : "GST 18% included"}
+            </strong>
           </div>
         </section>
 
@@ -494,26 +576,31 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
               </span>
             </div>
 
-            <div className={styles.productList}>
+            <div className={styles.productsExperience}>
               {invoice.products.length ? (
-                invoice.products.map((product, index) => (
-                  <ProductCard
-                    key={product.id || `${product.productName}-${index}`}
-                    product={product}
-                    index={index}
-                  />
-                ))
-              ) : (
-                <div className={styles.emptyProducts}>
-                  <Package size={28} />
-                  <div>
-                    <strong>No product details available</strong>
-                    <p>
-                      The invoice total and customer record are still shown.
-                    </p>
+                <ProductGallery products={invoice.products} />
+              ) : null}
+              <div className={styles.productList}>
+                {invoice.products.length ? (
+                  invoice.products.map((product, index) => (
+                    <ProductCard
+                      key={product.id || `${product.productName}-${index}`}
+                      product={product}
+                      index={index}
+                    />
+                  ))
+                ) : (
+                  <div className={styles.emptyProducts}>
+                    <Package size={28} />
+                    <div>
+                      <strong>No product details available</strong>
+                      <p>
+                        The invoice total and customer record are still shown.
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             <div className={styles.amountWords}>
@@ -622,7 +709,9 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
               <div className={styles.summaryTopline}>
                 <div>
                   <small>
-                    {invoice.gst ? "GST tax invoice" : "Standard invoice"}
+                    {invoice.gst
+                      ? "GST claim tax invoice"
+                      : "Retail tax invoice"}
                   </small>
                   <h2>Price calculation</h2>
                 </div>
@@ -637,12 +726,10 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
                 </div>
                 <div className={styles.summaryPriceCell}>
                   <span>
-                    GST <small>{invoice.gst ? "18%" : "0%"}</small>
+                    GST <small>18%</small>
                   </span>
                   <strong>{priceUtils.formatAmount(amounts.gstValue)}</strong>
-                  <small>
-                    {invoice.gst ? "Included in total" : "Not applied"}
-                  </small>
+                  <small>Included in selling price</small>
                 </div>
                 {invoice.gst ? (
                   <div className={styles.gstBreakdown}>
@@ -675,7 +762,7 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
                 <small>
                   {invoice.gst
                     ? "Base price + 18% GST"
-                    : "Base price + GST ₹0.00"}
+                    : "Base price + included GST 18%"}
                 </small>
               </div>
 

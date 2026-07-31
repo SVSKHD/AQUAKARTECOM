@@ -79,6 +79,8 @@ export const mapInvoiceFromApi = (payload) => {
             product?.productSerialNo ?? product?.serial_no,
           ),
           productImage: firstImageUrl(product),
+          productLink: normalizeText(product?.productLink ?? product?.link),
+          productSlug: normalizeText(product?.productSlug ?? product?.slug),
           productCategory: normalizeLabel(
             product?.productCategory ??
               product?.category ??

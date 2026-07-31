@@ -1,10 +1,10 @@
-import { loadJsPDF } from "@/utils/invoice";
 import {
   bankPaymentMethods,
   customerCare,
   termsAndConditions,
 } from "@/constants/invoiceStaticData";
 import priceUtils from "@/utils/priceUtils";
+import logo from "@/assests/logo.png";
 
 const BRAND = [4, 120, 87];
 const BRAND_BRIGHT = [16, 185, 129];
@@ -13,6 +13,38 @@ const MUTED = [100, 116, 139];
 const LINE = [226, 232, 240];
 const SOFT = [248, 250, 252];
 const WHITE = [255, 255, 255];
+
+const getProductUrl = (product = {}) => {
+  const directLink = product.productLink;
+  if (directLink?.startsWith("http://") || directLink?.startsWith("https://")) {
+    return directLink;
+  }
+
+  const reference =
+    directLink?.replace(/^\/product\//, "") ||
+    product.productSlug ||
+    product.catalogueProductId;
+  return reference
+    ? `https://aquakart.co.in/product/${encodeURIComponent(reference)}`
+    : "";
+};
+
+const imageUrlToDataUrl = async (source) => {
+  if (!source || typeof window === "undefined") return "";
+  try {
+    const response = await fetch(source);
+    if (!response.ok) return "";
+    const blob = await response.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(String(reader.result || ""));
+      reader.onerror = () => resolve("");
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return "";
+  }
+};
 
 const safeFilePart = (value) =>
   String(value || "invoice")
@@ -46,25 +78,54 @@ const titleCase = (value) =>
 
 const drawPageHeader = (doc, invoice, continued = false, sectionLabel = "") => {
   const width = doc.internal.pageSize.getWidth();
-  const invoiceTitle = invoice.gst ? "GST TAX INVOICE" : "INVOICE";
+  const height = doc.internal.pageSize.getHeight();
+  const invoiceTitle = invoice.gst ? "GST TAX INVOICE" : "RETAIL TAX INVOICE";
   const documentTitle = sectionLabel
     ? `${invoiceTitle} / ${sectionLabel}`
     : continued
       ? `${invoiceTitle} / CONTINUED`
       : invoiceTitle;
+  if (invoice._pdfLogoDataUrl) {
+    try {
+      doc.saveGraphicsState();
+      doc.setGState(new doc.GState({ opacity: 0.045 }));
+      doc.addImage(
+        invoice._pdfLogoDataUrl,
+        "PNG",
+        width / 2 - 120,
+        height / 2 - 120,
+        240,
+        240,
+      );
+      doc.restoreGraphicsState();
+    } catch {
+      // The PDF remains valid when a browser cannot decode the logo asset.
+    }
+  }
+
   doc.setFillColor(...BRAND);
   doc.rect(0, 0, width, 92, "F");
   doc.setFillColor(...BRAND_BRIGHT);
   doc.rect(0, 88, width, 4, "F");
 
+  if (invoice._pdfLogoDataUrl) {
+    try {
+      doc.setFillColor(...WHITE);
+      doc.roundedRect(18, 18, 48, 48, 9, 9, "F");
+      doc.addImage(invoice._pdfLogoDataUrl, "PNG", 24, 24, 36, 36);
+    } catch {
+      // Text branding below is the accessible fallback.
+    }
+  }
+
   doc.setTextColor(...WHITE);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(24);
-  doc.text("AQUAKART", 42, 42);
+  doc.text("AQUAKART", 78, 42);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.text("Premium water solutions", 42, 59);
-  doc.text("GSTIN 36AJOPH6387A1Z2  |  aquakart.co.in", 42, 74);
+  doc.text("Premium water solutions", 78, 59);
+  doc.text("GSTIN 36AJOPH6387A1Z2  |  aquakart.co.in", 78, 74);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
@@ -572,7 +633,10 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
         invoice.gst_email,
         invoice.gst_address,
       ].filter(Boolean)
-    : ["This invoice does not include a GST registration profile."];
+    : [
+        "GST at 18% is included in the selling price.",
+        "Customer GST claim details were not requested.",
+      ];
   const customerHeight = drawInfoCard(doc, {
     x: margin,
     y,
@@ -609,12 +673,14 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
     const serialLines = product.productSerialNo
       ? doc.splitTextToSize(`Serial: ${product.productSerialNo}`, 220)
       : [];
+    const productUrl = getProductUrl(product);
     const rowHeight = Math.max(
       45,
       22 +
         nameLines.length * 11 +
         categoryLines.length * 9 +
-        serialLines.length * 10,
+        serialLines.length * 10 +
+        (productUrl ? 11 : 0),
     );
     if (y + rowHeight > height - 170) addContinuationPage();
 
@@ -641,6 +707,15 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
       doc.setFontSize(7);
       doc.setTextColor(...MUTED);
       doc.text(serialLines, margin + 14, detailY);
+      detailY += serialLines.length * 10;
+    }
+    if (productUrl) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.7);
+      doc.setTextColor(...BRAND);
+      doc.textWithLink("View product online", margin + 14, detailY, {
+        url: productUrl,
+      });
     }
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
@@ -666,7 +741,7 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
     y += 46;
   }
 
-  const summaryCardHeight = invoice.gst ? 166 : 136;
+  const summaryCardHeight = invoice.gst ? 166 : 146;
   if (y + summaryCardHeight + 78 > height) addContinuationPage(false);
   y += 18;
 
@@ -691,7 +766,7 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
   doc.text(
     invoice.gst
       ? "The GST total is divided equally into CGST and SGST."
-      : "No GST is applied to this standard invoice.",
+      : "The selling price includes GST at 18%.",
     margin + 15,
     y + summaryCardHeight - 21,
   );
@@ -709,7 +784,7 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
       ]
     : [
         ["Base price", amounts.basePrice],
-        ["GST (0%)", amounts.gstValue],
+        ["GST (18%)", amounts.gstValue],
       ];
   let rowY = y + 25;
   summaryRows.forEach(([label, value]) => {
@@ -746,13 +821,14 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
 
 /** Download the server-normalized public invoice as a searchable A4 PDF. */
 export const downloadPublicInvoicePdf = async (invoice) => {
-  const loaded = await loadJsPDF();
-  const JsPdf = window.jspdf?.jsPDF;
-  if (!loaded || !JsPdf) {
-    throw new Error("The PDF service could not be loaded.");
-  }
+  const { jsPDF: JsPdf } = await import("jspdf");
 
-  const doc = createPublicInvoicePdfDocument(JsPdf, invoice);
+  const logoSource = typeof logo === "string" ? logo : logo?.src;
+  const logoDataUrl = await imageUrlToDataUrl(logoSource);
+  const doc = createPublicInvoicePdfDocument(JsPdf, {
+    ...invoice,
+    _pdfLogoDataUrl: logoDataUrl,
+  });
   doc.save(
     `Aquakart-Invoice-${safeFilePart(invoice.invoice_no || invoice.id)}.pdf`,
   );
