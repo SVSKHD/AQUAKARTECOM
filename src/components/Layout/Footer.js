@@ -2,14 +2,8 @@ import LW from "@/assests/logo-white.png";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import {
-  Facebook,
-  Instagram,
-  Twitter,
-  ArrowRight,
-  Mail,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Mail, Sparkles } from "lucide-react";
+import { FaFacebookF, FaInstagram, FaXTwitter } from "react-icons/fa6";
 import LazyImage from "../image/LazyImage";
 import { getFestivalWish } from "@/utils/festival";
 
@@ -25,14 +19,14 @@ const navigation = {
     {
       name: "Facebook",
       href: "https://www.facebook.com/AquaKart.co.in/",
-      icon: Facebook,
+      icon: FaFacebookF,
     },
     {
       name: "Instagram",
       href: "https://www.instagram.com/aquakart.co.in/",
-      icon: Instagram,
+      icon: FaInstagram,
     },
-    { name: "X", href: "https://x.com/aquakart.co.in", icon: Twitter },
+    { name: "X", href: "https://x.com/aquakart.co.in", icon: FaXTwitter },
   ],
 };
 
@@ -240,7 +234,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
                       imgClassName="object-cover object-center transition-transform duration-500 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/40 backdrop-blur-sm">
-                      <Instagram className="h-5 w-5 text-white" />
+                      <FaInstagram className="h-5 w-5 text-white" />
                     </div>
                   </a>
                 ))}
