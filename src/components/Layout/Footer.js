@@ -15,6 +15,7 @@ import { getFestivalWish } from "@/utils/festival";
 
 const navigation = {
   policy: [
+    { name: "Find my invoice", href: "/page/find-invoice" },
     { name: "Shipping policy", href: "/shipping-policy" },
     { name: "Privacy policy", href: "/privacy-policy" },
     { name: "Terms & Conditions", href: "/terms-and-conditions" },
