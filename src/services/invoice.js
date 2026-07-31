@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const BASE = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
+const BASE = (
+  process.env.NEXT_PUBLIC_API_URL || "https://api.aquakart.co.in/v1"
+).replace(/\/$/, "");
 
 const normalizePhone = (value = "") => {
   const digits = String(value).replace(/\D/g, "");
