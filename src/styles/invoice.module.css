@@ -1049,7 +1049,7 @@
 .summaryTopline small {
   display: block;
   color: var(--invoice-green);
-  font-size: 0.56rem;
+  font-size: 0.7rem;
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1057,7 +1057,7 @@
 
 .detailLine {
   display: grid;
-  padding: 11px 0;
+  padding: 14px 0;
   align-items: start;
   gap: 10px;
   border-top: 1px solid #edf2f1;
@@ -1082,7 +1082,7 @@
 .detailLabel {
   margin-bottom: 4px;
   color: var(--invoice-muted);
-  font-size: 0.55rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -1090,9 +1090,13 @@
 
 .detailValue {
   overflow-wrap: anywhere;
-  font-size: 0.69rem;
+  font-size: 0.86rem;
   font-weight: 700;
   line-height: 1.55;
+}
+
+.detailCard .cardHeading h2 {
+  font-size: 1.2rem;
 }
 
 .summaryCard {

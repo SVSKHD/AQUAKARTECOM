@@ -143,7 +143,7 @@ const drawFooter = (doc) => {
   doc.setDrawColor(...LINE);
   doc.line(42, height - 54, width - 42, height - 54);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
+  doc.setFontSize(8.5);
   doc.setTextColor(...MUTED);
   doc.text(
     "Computer-generated invoice. No physical signature is required.",
@@ -160,21 +160,21 @@ const drawFooter = (doc) => {
 
 const drawInfoCard = (doc, { x, y, width, title, lines }) => {
   const wrappedLines = lines.flatMap((line) =>
-    doc.splitTextToSize(String(line || "Not available"), width - 28),
+    doc.splitTextToSize(String(line || "Not available"), width - 32),
   );
-  const height = Math.max(92, 45 + wrappedLines.length * 12);
+  const height = Math.max(108, 50 + wrappedLines.length * 15);
 
   doc.setFillColor(...SOFT);
   doc.setDrawColor(...LINE);
   doc.roundedRect(x, y, width, height, 9, 9, "FD");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
+  doc.setFontSize(9.5);
   doc.setTextColor(...BRAND);
-  doc.text(title.toUpperCase(), x + 14, y + 19);
+  doc.text(title.toUpperCase(), x + 16, y + 21);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
+  doc.setFontSize(10.5);
   doc.setTextColor(...INK);
-  doc.text(wrappedLines, x + 14, y + 38, { lineHeightFactor: 1.35 });
+  doc.text(wrappedLines, x + 16, y + 43, { lineHeightFactor: 1.4 });
 
   return height;
 };
@@ -184,7 +184,7 @@ const drawProductHeader = (doc, y) => {
   doc.setFillColor(...INK);
   doc.roundedRect(42, y, width - 84, 28, 6, 6, "F");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.5);
+  doc.setFontSize(8.5);
   doc.setTextColor(...WHITE);
   doc.text("PRODUCT", 56, y + 18);
   doc.text("QTY", width - 220, y + 18, { align: "right" });
@@ -198,14 +198,14 @@ const drawSectionHeading = (doc, { y, kicker, title, description }) => {
   const contentWidth = width - 84;
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
+  doc.setFontSize(8);
   doc.setTextColor(...BRAND);
   doc.text(kicker.toUpperCase(), 42, y);
   doc.setFontSize(17);
   doc.setTextColor(...INK);
   doc.text(title, 42, y + 23);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.setTextColor(...MUTED);
   const descriptionLines = doc
     .splitTextToSize(description, contentWidth)
@@ -223,7 +223,7 @@ const getTermCardMetrics = (doc, term, cardWidth) => {
   );
   const cardHeight = Math.max(
     88,
-    43 + titleLines.length * 9 + descriptionLines.length * 8,
+    46 + titleLines.length * 10 + descriptionLines.length * 9,
   );
 
   return { titleLines, descriptionLines, cardHeight };
@@ -237,17 +237,17 @@ const drawTermCard = (doc, { x, y, width, index, metrics }) => {
   doc.setFillColor(236, 253, 245);
   doc.roundedRect(x + 12, y + 11, 25, 25, 7, 7, "F");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
+  doc.setFontSize(8);
   doc.setTextColor(...BRAND);
   doc.text(String(index + 1).padStart(2, "0"), x + 24.5, y + 27, {
     align: "center",
   });
 
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.setTextColor(...INK);
   doc.text(metrics.titleLines, x + 45, y + 19, { lineHeightFactor: 1.2 });
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.2);
+  doc.setFontSize(8);
   doc.setTextColor(...MUTED);
   doc.text(metrics.descriptionLines, x + 13, y + 48, {
     lineHeightFactor: 1.35,
@@ -262,7 +262,7 @@ const drawCustomerCareDirectory = (doc, y) => {
   const cardWidth = (contentWidth - gap * 2) / 3;
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
+  doc.setFontSize(8);
   doc.setTextColor(...BRAND);
   doc.text("MANUFACTURER ASSISTANCE", margin, y);
   doc.setFontSize(11);
@@ -276,7 +276,7 @@ const drawCustomerCareDirectory = (doc, y) => {
     doc.setDrawColor(...LINE);
     doc.roundedRect(x, y, cardWidth, 73, 8, 8, "FD");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.5);
+    doc.setFontSize(8.5);
     doc.setTextColor(...INK);
     doc.text(
       doc.splitTextToSize(contact.name, cardWidth - 20).slice(0, 2),
@@ -285,7 +285,7 @@ const drawCustomerCareDirectory = (doc, y) => {
       { lineHeightFactor: 1.2 },
     );
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(6.4);
+    doc.setFontSize(7.5);
     doc.setTextColor(...MUTED);
     doc.text(
       doc.splitTextToSize(contact.description, cardWidth - 20).slice(0, 2),
@@ -294,7 +294,7 @@ const drawCustomerCareDirectory = (doc, y) => {
       { lineHeightFactor: 1.2 },
     );
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.5);
+    doc.setFontSize(8.5);
     doc.setTextColor(...BRAND);
     doc.text(contact.phone, x + 10, y + 62);
   });
@@ -548,7 +548,7 @@ const addPageNumbers = (doc) => {
   for (let page = 1; page <= pageCount; page += 1) {
     doc.setPage(page);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(6.5);
+    doc.setFontSize(7.5);
     doc.setTextColor(...MUTED);
     doc.text(`PAGE ${page} OF ${pageCount}`, width / 2, height - 21, {
       align: "center",
@@ -582,11 +582,11 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
     doc.setDrawColor(...LINE);
     doc.roundedRect(x, y, metaWidth, 50, 8, 8, "FD");
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(6.5);
+    doc.setFontSize(7.5);
     doc.setTextColor(...MUTED);
     doc.text(label.toUpperCase(), x + 10, y + 16);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setTextColor(...INK);
     const valueLines = doc.splitTextToSize(String(value), metaWidth - 20);
     doc.text(valueLines.slice(0, 2), x + 10, y + 33);
@@ -604,11 +604,11 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
   doc.setDrawColor(167, 243, 208);
   doc.roundedRect(margin, y, contentWidth, greetingHeight, 8, 8, "FD");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
+  doc.setFontSize(10.5);
   doc.setTextColor(...BRAND);
   doc.text(greetingLines, margin + 14, y + 18, { lineHeightFactor: 1.25 });
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
+  doc.setFontSize(8.5);
   doc.setTextColor(...MUTED);
   doc.text(
     "Keep this verified invoice for warranty and Aquakart service support.",
@@ -677,10 +677,10 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
     const rowHeight = Math.max(
       45,
       22 +
-        nameLines.length * 11 +
-        categoryLines.length * 9 +
-        serialLines.length * 10 +
-        (productUrl ? 11 : 0),
+        nameLines.length * 13 +
+        categoryLines.length * 11 +
+        serialLines.length * 11 +
+        (productUrl ? 12 : 0),
     );
     if (y + rowHeight > height - 170) addContinuationPage();
 
@@ -691,34 +691,34 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
 
     const lineTotal = product.productPrice * product.productQuantity;
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
+    doc.setFontSize(9.5);
     doc.setTextColor(...INK);
     doc.text(nameLines, margin + 14, y + 17);
-    let detailY = y + 17 + nameLines.length * 11;
+    let detailY = y + 18 + nameLines.length * 13;
     if (categoryLines.length) {
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(6.8);
+      doc.setFontSize(8);
       doc.setTextColor(...BRAND);
       doc.text(categoryLines, margin + 14, detailY);
-      detailY += categoryLines.length * 9;
+      detailY += categoryLines.length * 11;
     }
     if (serialLines.length) {
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
+      doc.setFontSize(8);
       doc.setTextColor(...MUTED);
       doc.text(serialLines, margin + 14, detailY);
-      detailY += serialLines.length * 10;
+      detailY += serialLines.length * 11;
     }
     if (productUrl) {
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.7);
+      doc.setFontSize(8);
       doc.setTextColor(...BRAND);
       doc.textWithLink("View product online", margin + 14, detailY, {
         url: productUrl,
       });
     }
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setTextColor(...INK);
     doc.text(String(product.productQuantity), width - 220, y + 19, {
       align: "right",
@@ -750,18 +750,18 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
   doc.setDrawColor(167, 243, 208);
   doc.roundedRect(margin, y, wordsWidth, summaryCardHeight, 10, 10, "FD");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.setTextColor(...BRAND);
   doc.text("AMOUNT IN WORDS", margin + 15, y + 22);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   doc.setTextColor(...INK);
   const words = doc.splitTextToSize(
     priceUtils.numberToWords(amounts.grandTotal),
     wordsWidth - 30,
   );
   doc.text(words, margin + 15, y + 43, { lineHeightFactor: 1.4 });
-  doc.setFontSize(7.5);
+  doc.setFontSize(8.5);
   doc.setTextColor(...MUTED);
   doc.text(
     invoice.gst
@@ -789,7 +789,7 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
   let rowY = y + 25;
   summaryRows.forEach(([label, value]) => {
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
+    doc.setFontSize(8.5);
     doc.setTextColor(203, 213, 225);
     doc.text(label, summaryX + 14, rowY);
     doc.setTextColor(...WHITE);
@@ -801,7 +801,7 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
   doc.setDrawColor(71, 85, 105);
   doc.line(summaryX + 14, rowY - 7, summaryX + summaryWidth - 14, rowY - 7);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9.5);
+  doc.setFontSize(11);
   doc.setTextColor(...WHITE);
   doc.text("INVOICE TOTAL", summaryX + 14, rowY + 9);
   doc.text(
