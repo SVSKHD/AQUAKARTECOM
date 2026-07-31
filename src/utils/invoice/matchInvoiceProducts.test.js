@@ -78,6 +78,7 @@ describe("invoice product catalogue matching", () => {
       productImage: "https://cdn.aquakart.test/kent-excell-plus.png",
       productCategory: "Water Softeners",
       productSubcategory: "Automatic Softeners",
+      productLink: "/product/kent-excell-plus",
       productPrice: 58_910,
     });
   });

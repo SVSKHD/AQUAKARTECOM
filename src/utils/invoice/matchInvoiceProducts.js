@@ -153,6 +153,13 @@ export const enrichInvoiceProducts = (invoice, cataloguePayload) => {
         ...product,
         catalogueProductId: match.id,
         productSlug: match.slug,
+        productLink:
+          product.productLink ||
+          (match.slug
+            ? `/product/${encodeURIComponent(match.slug)}`
+            : match.id
+              ? `/product/${encodeURIComponent(match.id)}`
+              : ""),
         productImage: product.productImage || match.image,
         productCategory: product.productCategory || match.category,
         productSubcategory: product.productSubcategory || match.subcategory,
