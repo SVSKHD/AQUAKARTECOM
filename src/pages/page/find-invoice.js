@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   FileSearch,
   Loader2,
+  LogIn,
   Package,
   Phone,
   ReceiptText,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 
 import AquaLayout from "@/components/Layout/Layout";
+import { useAuth } from "@/context/AuthContext";
 import InvoiceServiceOperations from "@/services/invoice";
 import styles from "@/styles/find-invoice.module.css";
 
@@ -44,6 +46,11 @@ const titleCase = (value = "") =>
 
 const FindInvoicePage = () => {
   const router = useRouter();
+  const {
+    loading: authLoading,
+    session,
+    signInWithGoogle,
+  } = useAuth();
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState("idle");
   const [purchases, setPurchases] = useState([]);
@@ -52,26 +59,58 @@ const FindInvoicePage = () => {
 
   const isValidPhone = /^[6-9]\d{9}$/.test(phone);
 
-  const handleLookup = async (event) => {
-    event.preventDefault();
-    if (!isValidPhone || status === "loading") return;
+  const applyLookupResult = (result) => {
+    setPurchases(result.purchases || []);
+    setMessage(result.message || "");
 
-    setStatus("loading");
+    if (result.requiresLogin) {
+      setStatus("loginRequired");
+      return;
+    }
+
+    setStatus(result.found ? "found" : "empty");
+  };
+
+  const runLookup = async (token, nextStatus = "loading") => {
+    setStatus(nextStatus);
     setMessage("");
     setSelectedInvoice(null);
 
     try {
-      const result = await InvoiceServiceOperations.findInvoicesByPhone(phone);
-      setPurchases(result.purchases || []);
-      setMessage(result.message || "");
-      setStatus(result.found ? "found" : "empty");
+      const result = await InvoiceServiceOperations.findInvoicesByPhone(
+        phone,
+        token,
+      );
+      applyLookupResult(result);
+      return result;
     } catch (error) {
       setPurchases([]);
       setMessage(
         error?.response?.data?.message ||
+          error?.message ||
           "We could not check your purchases right now. Please try again.",
       );
       setStatus("error");
+      throw error;
+    }
+  };
+
+  const handleLookup = async (event) => {
+    event.preventDefault();
+    if (!isValidPhone || status === "loading") return;
+
+    await runLookup(session?.token).catch(() => {});
+  };
+
+  const handleGoogleContinue = async () => {
+    if (authLoading || status === "authenticating") return;
+
+    setStatus("authenticating");
+    try {
+      const authResult = await signInWithGoogle();
+      await runLookup(authResult?.token, "authenticating");
+    } catch {
+      setStatus("loginRequired");
     }
   };
 
@@ -110,14 +149,15 @@ const FindInvoicePage = () => {
               <h1>Find your purchase invoice.</h1>
               <p>
                 Enter the mobile number used for your Aquakart purchase. We’ll
-                check whether an invoice is available before showing it.
+                first check for an invoice, then ask you to sign in securely
+                before showing its details.
               </p>
 
               <div className={styles.trustNote}>
                 <ShieldCheck size={18} />
                 <span>
                   Your phone number is used only to locate matching Aquakart
-                  purchases.
+                  purchases. Invoice details are shown only after Google login.
                 </span>
               </div>
             </div>
@@ -168,6 +208,38 @@ const FindInvoicePage = () => {
                     )}
                   </button>
                 </form>
+              ) : null}
+
+              {status === "loginRequired" || status === "authenticating" ? (
+                <div className={styles.resultState}>
+                  <span className={styles.resultIcon}>
+                    <ShieldCheck size={30} />
+                  </span>
+                  <span className={styles.eyebrow}>Invoice found</span>
+                  <h2>Sign in to view it securely.</h2>
+                  <p>{message}</p>
+                  <div className={styles.resultActions}>
+                    <button
+                      type="button"
+                      onClick={handleGoogleContinue}
+                      disabled={authLoading || status === "authenticating"}
+                    >
+                      {authLoading || status === "authenticating" ? (
+                        <>
+                          <Loader2 className={styles.spinner} size={16} />
+                          Connecting securely...
+                        </>
+                      ) : (
+                        <>
+                          <LogIn size={16} /> Continue with Google
+                        </>
+                      )}
+                    </button>
+                    <button type="button" onClick={resetLookup}>
+                      <RotateCcw size={15} /> Use another number
+                    </button>
+                  </div>
+                </div>
               ) : null}
 
               {status === "empty" ? (
