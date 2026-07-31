@@ -13,7 +13,9 @@ const AquaHomePage = (props) => {
 export async function getServerSideProps({ res }) {
   res.setHeader(
     "Cache-Control",
-    "public, s-maxage=300, stale-while-revalidate=900",
+    process.env.NODE_ENV === "production"
+      ? "public, s-maxage=300, stale-while-revalidate=900"
+      : "no-store, no-cache, must-revalidate",
   );
 
   try {

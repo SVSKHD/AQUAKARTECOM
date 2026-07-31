@@ -7,7 +7,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 const nextConfig = {
   async headers() {
-    return [
+    const rules = [
       // 1) Security + robots headers for all pages
       {
         source: "/:path*",
@@ -99,6 +99,18 @@ const nextConfig = {
         headers: [{ key: "Cache-Control", value: "public, max-age=604800" }],
       },
     ];
+
+    // Development assets include the Fast Refresh runtime. Applying immutable
+    // production caching to them can leave the browser using stale HMR chunks
+    // and cause a continuous full-page reload loop.
+    if (process.env.NODE_ENV !== "production") {
+      return rules.filter(
+        (rule) =>
+          !rule.headers.some((header) => header.key === "Cache-Control"),
+      );
+    }
+
+    return rules;
   },
 
   reactStrictMode: true,
