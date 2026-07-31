@@ -2,7 +2,6 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { useSelector, useDispatch } from "react-redux";
-
 import AquaFooter from "./Footer";
 import AquaHeader from "./Header";
 import AquaSeoRevamp from "./seo/RefactoredSeo";
