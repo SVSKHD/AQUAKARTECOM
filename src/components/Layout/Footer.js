@@ -2,7 +2,7 @@ import LW from "@/assests/logo-white.png";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { Instagram, Twitter, ArrowRight, Mail, Sparkles } from "lucide-react";
+import { Instagram, X, ArrowRight, Mail, Sparkles } from "lucide-react";
 import LazyImage from "../image/LazyImage";
 import { getFestivalWish } from "@/utils/festival";
 
@@ -20,7 +20,7 @@ const navigation = {
       href: "https://www.instagram.com/aquakart.co.in/",
       icon: Instagram,
     },
-    { name: "X", href: "https://x.com/aquakart.co.in", icon: Twitter },
+    { name: "X", href: "https://x.com/aquakart.co.in", icon: X },
   ],
 };
 
