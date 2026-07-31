@@ -25,7 +25,10 @@ const Input = React.forwardRef(
     return (
       <div className={["space-y-2", className].filter(Boolean).join(" ")}>
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-semibold text-slate-800">
+          <label
+            htmlFor={inputId}
+            className="block text-sm font-semibold text-slate-800"
+          >
             {label}
           </label>
         )}
@@ -47,7 +50,10 @@ const Input = React.forwardRef(
           {...props}
         />
         {error ? (
-          <p id={`${inputId}-error`} className="text-xs font-medium text-rose-600">
+          <p
+            id={`${inputId}-error`}
+            className="text-xs font-medium text-rose-600"
+          >
             {error}
           </p>
         ) : helperText ? (

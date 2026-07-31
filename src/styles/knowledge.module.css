@@ -25,7 +25,11 @@
   border: 1px solid var(--line);
   border-radius: 32px;
   background:
-    radial-gradient(circle at 88% 8%, rgba(16, 191, 164, 0.18), transparent 30%),
+    radial-gradient(
+      circle at 88% 8%,
+      rgba(16, 191, 164, 0.18),
+      transparent 30%
+    ),
     linear-gradient(125deg, #effaf7, #f8fbfb 58%, #f1f8f7);
 }
 

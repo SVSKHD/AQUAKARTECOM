@@ -14,7 +14,9 @@ describe("EmptyState", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: /no products found/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /no products found/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/try changing the filters/i)).toBeInTheDocument();
   });
 
@@ -43,6 +45,8 @@ describe("EmptyState", () => {
   it("does not render action button without handler", () => {
     render(<EmptyState title="Empty" actionLabel="Shop now" />);
 
-    expect(screen.queryByRole("button", { name: /shop now/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /shop now/i }),
+    ).not.toBeInTheDocument();
   });
 });

@@ -17,7 +17,9 @@ describe("PageShell", () => {
       </PageShell>,
     );
 
-    expect(screen.getByRole("main", { name: /main page/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("main", { name: /main page/i }),
+    ).toBeInTheDocument();
   });
 
   it("applies optional top padding", () => {

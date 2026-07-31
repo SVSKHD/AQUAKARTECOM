@@ -2,8 +2,7 @@ import PropTypes from "prop-types";
 import AquaAppLoader from "./AquaAppLoader";
 
 const Spinner = ({ color, size, message, variant }) => {
-  const resolvedVariant =
-    variant || (size === "sm" ? "inline" : "section");
+  const resolvedVariant = variant || (size === "sm" ? "inline" : "section");
 
   return (
     <AquaAppLoader

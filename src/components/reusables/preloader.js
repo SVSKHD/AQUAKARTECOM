@@ -6,11 +6,7 @@ const AquaPreloader = ({
   variant = "screen",
 }) => {
   return (
-    <AquaAppLoader
-      variant={variant}
-      message={message}
-      subtext={subtext}
-    />
+    <AquaAppLoader variant={variant} message={message} subtext={subtext} />
   );
 };
 

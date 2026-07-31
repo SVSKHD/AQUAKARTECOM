@@ -11,10 +11,7 @@ const ErrorState = ({
 }) => {
   return (
     <Card
-      className={[
-        "border-rose-100 bg-rose-50 text-center",
-        className,
-      ]
+      className={["border-rose-100 bg-rose-50 text-center", className]
         .filter(Boolean)
         .join(" ")}
     >

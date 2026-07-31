@@ -16,7 +16,9 @@ describe("Card", () => {
       </Card>,
     );
 
-    expect(screen.getByRole("article", { name: /featured product/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("article", { name: /featured product/i }),
+    ).toBeInTheDocument();
   });
 
   it("applies dark variant", () => {

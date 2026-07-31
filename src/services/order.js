@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
-const SESSION_EXPIRED_MESSAGE = "Your session has expired. Please sign in again.";
+const SESSION_EXPIRED_MESSAGE =
+  "Your session has expired. Please sign in again.";
 
 const getServerMessage = (error) =>
   error?.response?.data?.message ||

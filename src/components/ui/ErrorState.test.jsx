@@ -7,7 +7,9 @@ describe("ErrorState", () => {
   it("renders default error content", () => {
     render(<ErrorState />);
 
-    expect(screen.getByRole("heading", { name: /something went wrong/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /something went wrong/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/please try again/i)).toBeInTheDocument();
   });
 
@@ -19,7 +21,9 @@ describe("ErrorState", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: /products unavailable/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /products unavailable/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/refresh the page/i)).toBeInTheDocument();
   });
 
@@ -36,6 +40,8 @@ describe("ErrorState", () => {
   it("does not render retry button without handler", () => {
     render(<ErrorState retryLabel="Reload" />);
 
-    expect(screen.queryByRole("button", { name: /reload/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /reload/i }),
+    ).not.toBeInTheDocument();
   });
 });

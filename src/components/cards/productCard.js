@@ -23,7 +23,9 @@ const getProductPricing = (product) => {
       product?.price ??
       0,
   );
-  const mrp = Number(product?.pricing?.mrp ?? product?.mrp ?? product?.price ?? 0);
+  const mrp = Number(
+    product?.pricing?.mrp ?? product?.mrp ?? product?.price ?? 0,
+  );
 
   return {
     finalPrice,
@@ -43,7 +45,9 @@ const AquaProductCard = ({ product = {} }) => {
   } = product;
   const { formatCurrencyINRWithK } = useCurrency;
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
-  const { cartData = [], favData = [] } = useSelector((state) => ({ ...state }));
+  const { cartData = [], favData = [] } = useSelector((state) => ({
+    ...state,
+  }));
   const router = useRouter();
 
   const [cart, setAddCart] = useState(false);

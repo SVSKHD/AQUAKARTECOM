@@ -14,7 +14,8 @@ const clampTwoLines = {
 const getCategoryLink = (category) => {
   if (!category) return "/categories";
   if (category.slug) return `/category/${category.slug}`;
-  if (category.title) return `/category/${encodeURIComponent(category.title.trim())}`;
+  if (category.title)
+    return `/category/${encodeURIComponent(category.title.trim())}`;
   return `/category/${category._id ?? "categories"}`;
 };
 

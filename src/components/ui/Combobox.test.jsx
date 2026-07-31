@@ -10,7 +10,13 @@ describe("Combobox", () => {
   ];
 
   it("renders label and placeholder", () => {
-    render(<Combobox label="Product type" data={options} placeholder="Choose product" />);
+    render(
+      <Combobox
+        label="Product type"
+        data={options}
+        placeholder="Choose product"
+      />,
+    );
 
     expect(screen.getByText(/product type/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/choose product/i)).toBeInTheDocument();
@@ -30,7 +36,9 @@ describe("Combobox", () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
 
-    render(<Combobox label="Product type" data={options} onSelect={onSelect} />);
+    render(
+      <Combobox label="Product type" data={options} onSelect={onSelect} />,
+    );
 
     await user.type(screen.getByRole("combobox"), "water");
     await user.click(await screen.findByText(/water softener/i));
@@ -44,7 +52,9 @@ describe("Combobox", () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
 
-    render(<Combobox label="Brand" data={["Kent", "Racold"]} onSelect={onSelect} />);
+    render(
+      <Combobox label="Brand" data={["Kent", "Racold"]} onSelect={onSelect} />,
+    );
 
     await user.type(screen.getByRole("combobox"), "Kent");
     await user.click(await screen.findByText("Kent"));

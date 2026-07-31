@@ -118,7 +118,8 @@ const composeAddress = (address = {}) => {
 
 const toLowerSafe = (value) => `${value || ""}`.toLowerCase();
 
-const getOrderKey = (order) => order?._id || order?.orderId || order?.transactionId;
+const getOrderKey = (order) =>
+  order?._id || order?.orderId || order?.transactionId;
 
 const getTrackingIdentifier = (order) =>
   order?.transactionId || order?.orderId || order?._id;
@@ -304,7 +305,9 @@ const AquaOrdersPageComponent = () => {
         );
 
         if (!isMounted) return;
-        const fetchedOrders = Array.isArray(response?.data) ? response.data : [];
+        const fetchedOrders = Array.isArray(response?.data)
+          ? response.data
+          : [];
         setOrders(fetchedOrders);
       } catch (fetchError) {
         if (!isMounted) return;
@@ -370,8 +373,7 @@ const AquaOrdersPageComponent = () => {
           };
         })
         .sort(
-          (a, b) =>
-            new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0),
+          (a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0),
         ),
     [orders],
   );
@@ -462,8 +464,8 @@ const AquaOrdersPageComponent = () => {
                 Your orders, invoices & tracking
               </h1>
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                Share tracking links, download clean GST invoices, and view every
-                order with less clutter.
+                Share tracking links, download clean GST invoices, and view
+                every order with less clutter.
               </p>
             </div>
 
@@ -599,7 +601,9 @@ const AquaOrdersPageComponent = () => {
                             <p className="text-xs text-emerald-100">
                               Paid / Payable
                             </p>
-                            <p className="text-lg font-bold">{order.totalLabel}</p>
+                            <p className="text-lg font-bold">
+                              {order.totalLabel}
+                            </p>
                           </div>
                         </div>
 
@@ -608,7 +612,9 @@ const AquaOrdersPageComponent = () => {
                             <div
                               key={step.key}
                               className={`h-1.5 rounded-full ${
-                                step.completed ? "bg-emerald-300" : "bg-white/20"
+                                step.completed
+                                  ? "bg-emerald-300"
+                                  : "bg-white/20"
                               }`}
                               title={step.label}
                             />
@@ -831,7 +837,9 @@ const AquaOrdersPageComponent = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={() => router.push(buildTrackingPath(trackingOrder))}
+                      onClick={() =>
+                        router.push(buildTrackingPath(trackingOrder))
+                      }
                       className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50"
                     >
                       <ExternalLink className="h-4 w-4" />

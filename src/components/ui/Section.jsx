@@ -33,9 +33,13 @@ const Section = React.forwardRef(
           .join(" ")}
         {...props}
       >
-        <div className={["mx-auto max-w-7xl px-4 sm:px-6 lg:px-8", contentClassName]
-          .filter(Boolean)
-          .join(" ")}
+        <div
+          className={[
+            "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8",
+            contentClassName,
+          ]
+            .filter(Boolean)
+            .join(" ")}
         >
           {(eyebrow || title || description) && (
             <div className="mb-8 max-w-3xl">

@@ -15,7 +15,9 @@ const normalizeItemTitle = (item) =>
   typeof item === "string" ? item : item?.title || item?.name || "";
 
 const normalizeItemId = (item, index) =>
-  typeof item === "string" ? item : item?.id || item?._id || item?.title || index;
+  typeof item === "string"
+    ? item
+    : item?.id || item?._id || item?.title || index;
 
 const Combobox = ({
   data = [],
@@ -32,7 +34,7 @@ const Combobox = ({
   const normalizedData = useMemo(
     () =>
       data.map((item, index) => ({
-        ...((typeof item === "object" && item !== null) ? item : { value: item }),
+        ...(typeof item === "object" && item !== null ? item : { value: item }),
         id: normalizeItemId(item, index),
         title: normalizeItemTitle(item),
         original: item,
@@ -104,7 +106,9 @@ const Combobox = ({
               >
                 <span
                   className={`block truncate pr-8 ${
-                    selectedItem?.id === item.id ? "font-semibold" : "font-medium"
+                    selectedItem?.id === item.id
+                      ? "font-semibold"
+                      : "font-medium"
                   }`}
                 >
                   {item.title}

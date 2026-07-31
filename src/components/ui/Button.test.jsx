@@ -7,7 +7,9 @@ describe("Button", () => {
   it("renders children", () => {
     render(<Button>Save changes</Button>);
 
-    expect(screen.getByRole("button", { name: /save changes/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /save changes/i }),
+    ).toBeInTheDocument();
   });
 
   it("calls onClick when enabled", async () => {
@@ -41,6 +43,8 @@ describe("Button", () => {
   it("supports full width styling", () => {
     render(<Button fullWidth>Continue</Button>);
 
-    expect(screen.getByRole("button", { name: /continue/i })).toHaveClass("w-full");
+    expect(screen.getByRole("button", { name: /continue/i })).toHaveClass(
+      "w-full",
+    );
   });
 });

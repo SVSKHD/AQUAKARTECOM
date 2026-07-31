@@ -45,9 +45,9 @@ const formatTopic = (value, fallback = "Water guide") => {
   if (!value || typeof value !== "string") return fallback;
   const cleaned = value.replace(/[._-]+/g, " ").trim();
   if (!cleaned || looksLikeId(cleaned)) return fallback;
-  return cleaned.toLowerCase().replace(/\b\w/g, (character) =>
-    character.toUpperCase(),
-  );
+  return cleaned
+    .toLowerCase()
+    .replace(/\b\w/g, (character) => character.toUpperCase());
 };
 
 const getPostImage = (post = {}) =>
@@ -68,10 +68,10 @@ const getExcerpt = (post = {}, length = 155) =>
     "Practical guidance from Aquakart for making better water decisions."
   ).slice(0, length);
 
-const getTopicValues = (post = {}) => [
-  ...(Array.isArray(post.tags) ? post.tags : []),
-  post.category,
-].filter(Boolean);
+const getTopicValues = (post = {}) =>
+  [...(Array.isArray(post.tags) ? post.tags : []), post.category].filter(
+    Boolean,
+  );
 
 const ArticleImage = ({ post, priority = false }) => {
   const image = getPostImage(post);
@@ -151,7 +151,8 @@ const AquaBlogComponent = ({ initialBlogs = [], initialError = "" }) => {
             formatTopic(value, post.title || "Guide").toLowerCase() ===
             topic.toLowerCase(),
         );
-      const searchable = `${post.title || ""} ${getExcerpt(post, 500)}`.toLowerCase();
+      const searchable =
+        `${post.title || ""} ${getExcerpt(post, 500)}`.toLowerCase();
       return matchesTopic && (!search || searchable.includes(search));
     });
   }, [blogs, query, topic]);
