@@ -2,14 +2,7 @@ import LW from "@/assests/logo-white.png";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import {
-  Facebook,
-  Instagram,
-  Twitter,
-  ArrowRight,
-  Mail,
-  Sparkles,
-} from "lucide-react";
+import { Instagram, Twitter, ArrowRight, Mail, Sparkles } from "lucide-react";
 import LazyImage from "../image/LazyImage";
 import { getFestivalWish } from "@/utils/festival";
 
@@ -22,11 +15,6 @@ const navigation = {
     { name: "Contact us", href: "/contact-us" },
   ],
   social: [
-    {
-      name: "Facebook",
-      href: "https://www.facebook.com/AquaKart.co.in/",
-      icon: Facebook,
-    },
     {
       name: "Instagram",
       href: "https://www.instagram.com/aquakart.co.in/",
