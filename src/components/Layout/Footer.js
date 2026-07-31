@@ -229,7 +229,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
                       imgClassName="object-cover object-center transition-transform duration-500 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/40 backdrop-blur-sm">
-                      <Instagram className="h-5 w-5 text-white" />
+                      <FaInstagram className="h-5 w-5 text-white" />
                     </div>
                   </a>
                 ))}
