@@ -1,5 +1,6 @@
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
+import fallbackImage from "@/assests/Default.png";
 
 const shimmer = (w, h) => `
   <svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
@@ -41,10 +42,15 @@ export default function LazyImage({
   placeholder = "blur",
   blurDataURL,
   onError,
+  unoptimized = false,
 }) {
   const wrapperRef = useRef(null);
   const [visible, setVisible] = useState(priority); // priority images render immediately
   const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
 
   useEffect(() => {
     if (priority) return;
@@ -64,10 +70,19 @@ export default function LazyImage({
     return () => io.disconnect();
   }, [priority]);
 
-  const safeSrc =
-    !src || failed
-      ? "/images/placeholder.png" // put a small placeholder in /public/images/placeholder.png
-      : src;
+  const safeSrc = !src || failed ? fallbackImage : src;
+  const isCloudinaryImage =
+    typeof safeSrc === "string" &&
+    safeSrc.startsWith("https://res.cloudinary.com/");
+  const shouldSkipOptimization = unoptimized || isCloudinaryImage;
+  const imageAlt = alt ? `Aquakart-${alt}` : "Aquakart products";
+
+  const handleImageError = (event) => {
+    if (!failed) {
+      setFailed(true);
+    }
+    onError?.(event);
+  };
 
   const defaultBlur =
     blurDataURL ||
@@ -81,7 +96,7 @@ export default function LazyImage({
       <div className={className}>
         <Image
           src={safeSrc}
-          alt={`Aquakart-${alt}` || "Aquakart products"}
+          alt={imageAlt}
           fill={fill}
           width={!fill ? width : undefined}
           height={!fill ? height : undefined}
@@ -92,10 +107,8 @@ export default function LazyImage({
           placeholder={placeholder}
           blurDataURL={placeholder === "blur" ? defaultBlur : undefined}
           className={imgClassName}
-          onError={(e) => {
-            setFailed(true);
-            onError?.(e);
-          }}
+          unoptimized={shouldSkipOptimization}
+          onError={handleImageError}
         />
       </div>
     );
@@ -106,7 +119,7 @@ export default function LazyImage({
       {visible ? (
         <Image
           src={safeSrc}
-          alt={`Aquakart-${alt}` || "Aquakart products"}
+          alt={imageAlt}
           fill={fill}
           width={!fill ? width : undefined}
           height={!fill ? height : undefined}
@@ -115,10 +128,8 @@ export default function LazyImage({
           placeholder={placeholder}
           blurDataURL={placeholder === "blur" ? defaultBlur : undefined}
           className={imgClassName}
-          onError={(e) => {
-            setFailed(true);
-            onError?.(e);
-          }}
+          unoptimized={shouldSkipOptimization}
+          onError={handleImageError}
         />
       ) : (
         // lightweight placeholder while not visible (no heavy Image decode)
