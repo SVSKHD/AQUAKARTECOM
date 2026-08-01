@@ -1,26 +1,50 @@
-# Use a specific version of node on Alpine for a smaller image size
-FROM node:20-alpine
+# Node version can be supplied from Jenkins
+ARG NODE_VERSION=22
 
-# Set the working directory in the container
+FROM node:${NODE_VERSION}-alpine
+
 WORKDIR /app
 
-# Copy package.json and package-lock.json (or npm-shrinkwrap.json) first for better caching
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# These arguments are supplied by Jenkins during docker build
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_API_NOTIFY
+ARG NEXT_PUBLIC_FIREBASE_API_KEY
+ARG NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+ARG NEXT_PUBLIC_FIREBASE_PROJECT_ID
+ARG NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+ARG NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+ARG NEXT_PUBLIC_FIREBASE_APP_ID
+
+# NEXT_PUBLIC variables must exist before npm run build
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_API_NOTIFY=${NEXT_PUBLIC_API_NOTIFY}
+ENV NEXT_PUBLIC_FIREBASE_API_KEY=${NEXT_PUBLIC_FIREBASE_API_KEY}
+ENV NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}
+ENV NEXT_PUBLIC_FIREBASE_PROJECT_ID=${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
+ENV NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}
+ENV NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}
+ENV NEXT_PUBLIC_FIREBASE_APP_ID=${NEXT_PUBLIC_FIREBASE_APP_ID}
+
 COPY package*.json npm-shrinkwrap.json* ./
 
-# Install PM2 globally
 RUN npm install -g pm2
 
-# Install dependencies
-RUN npm install 
+RUN npm install
 
-# Copy the rest of the application code
 COPY . .
 
-# Build the application
+# Stop deployment if Firebase build configuration is missing
+RUN test -n "${NEXT_PUBLIC_FIREBASE_API_KEY}" \
+    && test -n "${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}" \
+    && test -n "${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+    && test -n "${NEXT_PUBLIC_FIREBASE_APP_ID}"
+
 RUN npm run build
 
-# Expose the port the app runs on
+ENV NODE_ENV=production
+
 EXPOSE 3000
 
-# Command to run the application using PM2
 CMD ["pm2-runtime", "start", "npm", "--", "start"]
