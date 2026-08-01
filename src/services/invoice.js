@@ -34,6 +34,14 @@ const exchangeInvoiceToken = async (token) => {
   return response.data;
 };
 
+const loginInvoiceAccess = async (phone, firebaseIdToken) => {
+  const response = await axios.post("/api/invoice-access/login", {
+    phone: assertPhone(phone),
+    firebaseIdToken,
+  });
+  return response.data;
+};
+
 const getAccessibleInvoices = async () => {
   const response = await axios.get("/api/invoice-access");
   return response.data;
@@ -50,6 +58,7 @@ const InvoiceServiceOperations = {
   lookupInvoices,
   requestInvoiceAccess,
   exchangeInvoiceToken,
+  loginInvoiceAccess,
   getAccessibleInvoices,
   emailInvoice,
 };
