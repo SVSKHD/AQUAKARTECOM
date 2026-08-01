@@ -1,15 +1,13 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/router";
 import {
   ArrowLeft,
   ArrowRight,
-  CalendarDays,
   CheckCircle2,
   FileSearch,
   Loader2,
-  Package,
+  Mail,
   Phone,
   ReceiptText,
   RotateCcw,
@@ -17,38 +15,16 @@ import {
 } from "lucide-react";
 
 import AquaLayout from "@/components/Layout/Layout";
-import InvoiceServiceOperations from "@/services/invoice";
+import InvoiceServiceOperations, {
+  normalizeInvoicePhone,
+} from "@/services/invoice";
 import styles from "@/styles/find-invoice.module.css";
 
-const normalizePhone = (value = "") => {
-  const digits = value.replace(/\D/g, "");
-  if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);
-  return digits.slice(0, 10);
-};
-
-const formatDate = (value) => {
-  if (!value) return "Date unavailable";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-};
-
-const titleCase = (value = "") =>
-  value
-    .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-
 const FindInvoicePage = () => {
-  const router = useRouter();
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState("idle");
-  const [purchases, setPurchases] = useState([]);
+  const [result, setResult] = useState(null);
   const [message, setMessage] = useState("");
-  const [selectedInvoice, setSelectedInvoice] = useState(null);
 
   const isValidPhone = /^[6-9]\d{9}$/.test(phone);
 
@@ -58,35 +34,54 @@ const FindInvoicePage = () => {
 
     setStatus("loading");
     setMessage("");
-    setSelectedInvoice(null);
-
     try {
-      const result = await InvoiceServiceOperations.findInvoicesByPhone(phone);
-      setPurchases(result.purchases || []);
-      setMessage(result.message || "");
-      setStatus(result.found ? "found" : "empty");
+      const payload = await InvoiceServiceOperations.lookupInvoices(phone);
+      setResult(payload);
+      setMessage(payload.message || "");
+      setStatus(payload.found ? "found" : "empty");
     } catch (error) {
-      setPurchases([]);
+      setResult(null);
       setMessage(
         error?.response?.data?.message ||
+          error?.message ||
           "We could not check your purchases right now. Please try again.",
       );
       setStatus("error");
     }
   };
 
+  const handleEmail = async () => {
+    if (status === "sending") return;
+    setStatus("sending");
+    setMessage("");
+    try {
+      const payload =
+        await InvoiceServiceOperations.requestInvoiceAccess(phone);
+      setMessage(
+        payload.message ||
+          "Your secure invoice link is on its way. Please check your email.",
+      );
+      setStatus("sent");
+    } catch (error) {
+      setMessage(
+        error?.response?.data?.message ||
+          "We could not send the secure link. Please try again.",
+      );
+      setStatus("found");
+    }
+  };
+
   const resetLookup = () => {
     setPhone("");
-    setPurchases([]);
+    setResult(null);
     setMessage("");
-    setSelectedInvoice(null);
     setStatus("idle");
   };
 
   const seo = {
     title: "Find My Invoice | Aquakart",
     description:
-      "Find and securely view your Aquakart purchase invoice using your customer phone number.",
+      "Find and securely view your Aquakart purchase invoices using your customer phone number.",
     canonical: `${process.env.NEXT_PUBLIC_URL || "https://aquakart.co.in"}/page/find-invoice`,
   };
 
@@ -109,23 +104,21 @@ const FindInvoicePage = () => {
               <span className={styles.eyebrow}>Aquakart invoices</span>
               <h1>Find your purchase invoice.</h1>
               <p>
-                Enter the mobile number used for your Aquakart purchase. We’ll
-                check whether an invoice is available before showing it.
+                Enter the mobile number used for your purchase. For your
+                privacy, we’ll email a secure link instead of displaying order
+                details publicly.
               </p>
-
               <div className={styles.trustNote}>
                 <ShieldCheck size={18} />
                 <span>
-                  Your phone number is used only to locate matching Aquakart
-                  purchases.
+                  Your invoice details remain protected and links expire
+                  automatically.
                 </span>
               </div>
             </div>
 
             <div className={styles.interaction}>
-              {status === "idle" ||
-              status === "loading" ||
-              status === "error" ? (
+              {["idle", "loading", "error"].includes(status) ? (
                 <form onSubmit={handleLookup} className={styles.phoneForm}>
                   <label htmlFor="invoice-phone">Customer phone number</label>
                   <div className={styles.phoneInput}>
@@ -138,7 +131,7 @@ const FindInvoicePage = () => {
                       autoComplete="tel"
                       value={phone}
                       onChange={(event) =>
-                        setPhone(normalizePhone(event.target.value))
+                        setPhone(normalizeInvoicePhone(event.target.value))
                       }
                       placeholder="98765 43210"
                       aria-describedby="phone-help"
@@ -147,18 +140,16 @@ const FindInvoicePage = () => {
                   <small id="phone-help">
                     Use the same 10-digit number given at purchase or checkout.
                   </small>
-
                   {status === "error" ? (
                     <p className={styles.formError}>{message}</p>
                   ) : null}
-
                   <button
                     type="submit"
                     disabled={!isValidPhone || status === "loading"}
                   >
                     {status === "loading" ? (
                       <>
-                        <Loader2 className={styles.spinner} size={18} />
+                        <Loader2 className={styles.spinner} size={18} />{" "}
                         Checking purchases...
                       </>
                     ) : (
@@ -178,8 +169,8 @@ const FindInvoicePage = () => {
                   <span className={styles.eyebrow}>No invoice found</span>
                   <h2>You have no purchases yet.</h2>
                   <p>
-                    We couldn’t find an Aquakart invoice for +91 {phone}. Check
-                    the number or explore our water solutions.
+                    {message ||
+                      `We couldn’t find an Aquakart invoice for +91 ${phone}.`}
                   </p>
                   <div className={styles.resultActions}>
                     <button type="button" onClick={resetLookup}>
@@ -190,72 +181,51 @@ const FindInvoicePage = () => {
                 </div>
               ) : null}
 
-              {status === "found" ? (
+              {["found", "sending"].includes(status) ? (
                 <div className={styles.foundState}>
                   <div className={styles.foundHeading}>
-                    <CheckCircle2 size={23} />
+                    <CheckCircle2 size={25} />
                     <div>
                       <span className={styles.eyebrow}>Purchase found</span>
-                      <h2>{message}</h2>
+                      <h2>
+                        {result?.invoiceCount || 0} invoice
+                        {result?.invoiceCount === 1 ? "" : "s"} available
+                      </h2>
                     </div>
                   </div>
-
-                  <div className={styles.purchaseList}>
-                    {purchases.map((purchase) => (
-                      <article
-                        key={purchase.id}
-                        className={styles.purchaseCard}
-                      >
-                        <div className={styles.purchaseTopline}>
-                          <span>
-                            <ReceiptText size={15} /> {purchase.invoiceNo}
-                          </span>
-                          <span>{titleCase(purchase.paidStatus)}</span>
-                        </div>
-                        <div className={styles.purchaseMeta}>
-                          <span>
-                            <CalendarDays size={14} />{" "}
-                            {formatDate(purchase.date)}
-                          </span>
-                          <span>
-                            <Package size={14} /> {purchase.itemCount || 0}{" "}
-                            {purchase.itemCount === 1 ? "item" : "items"}
-                          </span>
-                        </div>
-
-                        {selectedInvoice?.id === purchase.id ? (
-                          <div className={styles.confirmation}>
-                            <p>Would you like to view this invoice?</p>
-                            <div>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  router.push(`/invoice/${purchase.id}`)
-                                }
-                              >
-                                Yes, view invoice <ArrowRight size={15} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setSelectedInvoice(null)}
-                              >
-                                Not now
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            className={styles.selectButton}
-                            onClick={() => setSelectedInvoice(purchase)}
-                          >
-                            Select invoice <ArrowRight size={15} />
-                          </button>
-                        )}
-                      </article>
-                    ))}
+                  <div className={styles.emailPanel}>
+                    <Mail size={24} />
+                    <div>
+                      <strong>Send a secure viewing link</strong>
+                      <p>
+                        {result?.canEmail
+                          ? `We’ll send it to ${result.maskedEmail}. The link is private and expires automatically.`
+                          : "This purchase has no email address attached. Please contact Aquakart support to update your details."}
+                      </p>
+                    </div>
                   </div>
-
+                  {message ? (
+                    <p className={styles.formError}>{message}</p>
+                  ) : null}
+                  {result?.canEmail ? (
+                    <button
+                      className={styles.emailButton}
+                      type="button"
+                      onClick={handleEmail}
+                      disabled={status === "sending"}
+                    >
+                      {status === "sending" ? (
+                        <>
+                          <Loader2 className={styles.spinner} size={18} />{" "}
+                          Sending secure link...
+                        </>
+                      ) : (
+                        <>
+                          <Mail size={17} /> Email my invoice link
+                        </>
+                      )}
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     className={styles.resetButton}
@@ -265,6 +235,25 @@ const FindInvoicePage = () => {
                   </button>
                 </div>
               ) : null}
+
+              {status === "sent" ? (
+                <div className={styles.resultState}>
+                  <span className={styles.resultIcon}>
+                    <Mail size={30} />
+                  </span>
+                  <span className={styles.eyebrow}>Email sent</span>
+                  <h2>Check your inbox.</h2>
+                  <p>{message}</p>
+                  <div className={styles.resultActions}>
+                    <button type="button" onClick={handleEmail}>
+                      <Mail size={15} /> Send again
+                    </button>
+                    <button type="button" onClick={resetLookup}>
+                      <RotateCcw size={15} /> Another number
+                    </button>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </section>
         </div>
@@ -272,5 +261,9 @@ const FindInvoicePage = () => {
     </AquaLayout>
   );
 };
+
+export const getServerSideProps = async () => ({
+  redirect: { destination: "/page/find-invoice", permanent: false },
+});
 
 export default FindInvoicePage;

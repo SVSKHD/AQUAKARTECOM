@@ -37,6 +37,7 @@ import {
   termsAndConditions,
 } from "@/constants/invoiceStaticData";
 import priceUtils from "@/utils/priceUtils";
+import InvoiceServiceOperations from "@/services/invoice";
 import styles from "@/styles/invoice.module.css";
 
 const formatDate = (value) => {
@@ -89,12 +90,18 @@ const StatusPill = ({ status }) => {
 
 const InvoiceError = ({ statusCode }) => {
   const notFound = statusCode === 404;
+  const unauthorized = statusCode === 401 || statusCode === 403;
 
   return (
     <div className={styles.errorPage}>
       <Head>
         <title>
-          {notFound ? "Invoice not found" : "Invoice unavailable"} | Aquakart
+          {notFound
+            ? "Invoice not found"
+            : unauthorized
+              ? "Secure access required"
+              : "Invoice unavailable"}{" "}
+          | Aquakart
         </title>
         <meta name="robots" content="noindex, nofollow, noarchive" />
       </Head>
@@ -105,19 +112,27 @@ const InvoiceError = ({ statusCode }) => {
         </div>
         <span className={styles.eyebrow}>Aquakart invoices</span>
         <h1>
-          {notFound
-            ? "We could not find that invoice."
-            : "The invoice is taking a pause."}
+          {unauthorized
+            ? "Secure access is required."
+            : notFound
+              ? "We could not find that invoice."
+              : "The invoice is taking a pause."}
         </h1>
         <p>
-          {notFound
-            ? "Check the invoice link and try again. The ID may be incomplete or no longer available."
-            : "We could not reach the invoice service. Please wait a moment and try again."}
+          {unauthorized
+            ? "Request a secure email link using the phone number attached to your purchase."
+            : notFound
+              ? "Check the invoice link and try again. The ID may be incomplete or no longer available."
+              : "We could not reach the invoice service. Please wait a moment and try again."}
         </p>
         <div className={styles.errorActions}>
-          <button type="button" onClick={() => window.location.reload()}>
-            Try again
-          </button>
+          {unauthorized ? (
+            <Link href="/page/find-invoice">Find my invoices</Link>
+          ) : (
+            <button type="button" onClick={() => window.location.reload()}>
+              Try again
+            </button>
+          )}
           <Link href="/">
             <ArrowLeft size={16} /> Back to Aquakart
           </Link>
@@ -381,6 +396,7 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copiedPayment, setCopiedPayment] = useState("");
+  const [isEmailing, setIsEmailing] = useState(false);
 
   if (!invoice || statusCode !== 200) {
     return <InvoiceError statusCode={statusCode} />;
@@ -415,6 +431,21 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
       toast.error("Could not copy the invoice link");
+    }
+  };
+
+  const handleEmail = async () => {
+    if (isEmailing) return;
+    setIsEmailing(true);
+    try {
+      const result = await InvoiceServiceOperations.emailInvoice(invoice.id);
+      toast.success(result.message || "Invoice sent to your email");
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Could not email this invoice",
+      );
+    } finally {
+      setIsEmailing(false);
     }
   };
 
@@ -458,6 +489,15 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
         </div>
 
         <div className={styles.commandActions}>
+          <button
+            type="button"
+            onClick={handleEmail}
+            disabled={isEmailing}
+            className={styles.secondaryButton}
+          >
+            <Mail size={17} />
+            <span>{isEmailing ? "Sending…" : "Email"}</span>
+          </button>
           <button
             type="button"
             onClick={handleCopy}

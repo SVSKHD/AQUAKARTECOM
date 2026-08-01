@@ -371,6 +371,52 @@
   color: #66787e;
 }
 
+.emailPanel {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 21px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #f4faf8;
+}
+
+.emailPanel > svg {
+  flex: 0 0 auto;
+  color: var(--green);
+}
+
+.emailPanel strong {
+  font-size: 13px;
+}
+
+.emailPanel p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.emailButton {
+  display: flex;
+  width: 100%;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  border-radius: 13px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.emailButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 @media (max-width: 850px) {
   .lookupCard {
     grid-template-columns: 1fr;
