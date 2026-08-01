@@ -39,3 +39,17 @@ export const invoiceAccessCookie = (token, maxAge = 1800) => {
 
 export const getInvoiceAccessToken = (req) =>
   req.cookies?.[INVOICE_ACCESS_COOKIE] || "";
+
+export const isSameOriginRequest = (req) => {
+  const origin = req.headers.origin;
+  if (!origin) return true;
+  const forwardedHost = String(req.headers["x-forwarded-host"] || "")
+    .split(",")[0]
+    .trim();
+  const host = forwardedHost || req.headers.host;
+  try {
+    return new URL(origin).host === host;
+  } catch {
+    return false;
+  }
+};
