@@ -3,6 +3,7 @@ import { enrichInvoiceProducts } from "@/utils/invoice/matchInvoiceProducts";
 import { mapInvoiceFromApi } from "@/utils/invoice/normalizeInvoice";
 import {
   backendInvoiceRequest,
+  getInvoiceApiBase,
   getInvoiceAccessToken,
 } from "@/utils/server/invoiceAccess";
 
@@ -50,11 +51,7 @@ export const getServerSideProps = async ({ params, req, res }) => {
     return { props: { invoice: null, statusCode: 401 } };
   }
 
-  const apiBase =
-    process.env.INVOICE_API_URL || process.env.NEXT_PUBLIC_API_URL;
-  if (!apiBase) {
-    return { props: { invoice: null, statusCode: 503 } };
-  }
+  const apiBase = getInvoiceApiBase();
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);

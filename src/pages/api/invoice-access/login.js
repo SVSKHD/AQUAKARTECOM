@@ -16,23 +16,38 @@ export default async function handler(req, res) {
       .status(403)
       .json({ success: false, message: "Invalid request origin" });
   }
+
+  const firebaseIdToken = String(req.body?.firebaseIdToken || "");
+  if (!firebaseIdToken) {
+    return res
+      .status(401)
+      .json({ success: false, message: "Google login is required" });
+  }
+
   try {
-    const response = await backendInvoiceRequest("/exchange", {
+    const response = await backendInvoiceRequest("/login", {
       method: "POST",
-      body: JSON.stringify({ token: req.body?.token }),
+      headers: { Authorization: `Bearer ${firebaseIdToken}` },
+      body: JSON.stringify({ phone: req.body?.phone }),
     });
-    const payload = await response.json();
+    const payload = await response.json().catch(() => ({}));
     if (!response.ok) return res.status(response.status).json(payload);
+
     res.setHeader(
       "Set-Cookie",
       invoiceAccessCookie(payload.accessToken, payload.expiresIn || 1800),
     );
-    return res
-      .status(200)
-      .json({ success: true, expiresIn: payload.expiresIn || 1800 });
+    return res.status(200).json({
+      success: true,
+      authenticated: true,
+      invoiceCount: payload.invoiceCount,
+      redirectInvoiceId: payload.redirectInvoiceId,
+      user: payload.user,
+      message: payload.message,
+    });
   } catch {
     return res
       .status(502)
-      .json({ success: false, message: "Unable to verify invoice access" });
+      .json({ success: false, message: "Invoice service is unavailable" });
   }
 }
