@@ -1,6 +1,7 @@
 import {
   backendInvoiceRequest,
   invoiceAccessCookie,
+  isSameOriginRequest,
 } from "@/utils/server/invoiceAccess";
 
 export default async function handler(req, res) {
@@ -9,6 +10,11 @@ export default async function handler(req, res) {
     return res
       .status(405)
       .json({ success: false, message: "Method not allowed" });
+  }
+  if (!isSameOriginRequest(req)) {
+    return res
+      .status(403)
+      .json({ success: false, message: "Invalid request origin" });
   }
   try {
     const response = await backendInvoiceRequest("/exchange", {
