@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -7,7 +8,7 @@ import {
   CheckCircle2,
   FileSearch,
   Loader2,
-  Mail,
+  LogIn,
   Phone,
   ReceiptText,
   RotateCcw,
@@ -15,12 +16,16 @@ import {
 } from "lucide-react";
 
 import AquaLayout from "@/components/Layout/Layout";
+import { useAuth } from "@/context/AuthContext";
+import { getCurrentFirebaseIdToken } from "@/services/googleAuth";
 import InvoiceServiceOperations, {
   normalizeInvoicePhone,
 } from "@/services/invoice";
 import styles from "@/styles/find-invoice.module.css";
 
 const FindInvoicePage = () => {
+  const router = useRouter();
+  const { signInWithGoogle } = useAuth();
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState("idle");
   const [result, setResult] = useState(null);
@@ -50,22 +55,26 @@ const FindInvoicePage = () => {
     }
   };
 
-  const handleEmail = async () => {
-    if (status === "sending") return;
-    setStatus("sending");
+  const handleGoogleAccess = async () => {
+    if (status === "authenticating") return;
+    setStatus("authenticating");
     setMessage("");
     try {
-      const payload =
-        await InvoiceServiceOperations.requestInvoiceAccess(phone);
-      setMessage(
-        payload.message ||
-          "Your secure invoice link is on its way. Please check your email.",
+      await signInWithGoogle();
+      const firebaseIdToken = await getCurrentFirebaseIdToken();
+      const payload = await InvoiceServiceOperations.loginInvoiceAccess(
+        phone,
+        firebaseIdToken,
       );
-      setStatus("sent");
+      const destination = payload.redirectInvoiceId
+        ? `/invoice/${payload.redirectInvoiceId}`
+        : "/invoices";
+      await router.push(destination);
     } catch (error) {
       setMessage(
         error?.response?.data?.message ||
-          "We could not send the secure link. Please try again.",
+          error?.message ||
+          "We could not verify your Google account. Please try again.",
       );
       setStatus("found");
     }
@@ -105,14 +114,14 @@ const FindInvoicePage = () => {
               <h1>Find your purchase invoice.</h1>
               <p>
                 Enter the mobile number used for your purchase. For your
-                privacy, we’ll email a secure link instead of displaying order
-                details publicly.
+                privacy, Google login is required before any invoice details can
+                be opened.
               </p>
               <div className={styles.trustNote}>
                 <ShieldCheck size={18} />
                 <span>
-                  Your invoice details remain protected and links expire
-                  automatically.
+                  Firebase verifies your Google identity. Aquakart remains the
+                  owner of invoice access and purchase records.
                 </span>
               </div>
             </div>
@@ -181,7 +190,7 @@ const FindInvoicePage = () => {
                 </div>
               ) : null}
 
-              {["found", "sending"].includes(status) ? (
+              {["found", "authenticating"].includes(status) ? (
                 <div className={styles.foundState}>
                   <div className={styles.foundHeading}>
                     <CheckCircle2 size={25} />
@@ -194,38 +203,36 @@ const FindInvoicePage = () => {
                     </div>
                   </div>
                   <div className={styles.emailPanel}>
-                    <Mail size={24} />
+                    <LogIn size={24} />
                     <div>
-                      <strong>Send a secure viewing link</strong>
+                      <strong>Log in to open your invoice</strong>
                       <p>
-                        {result?.canEmail
-                          ? `We’ll send it to ${result.maskedEmail}. The link is private and expires automatically.`
-                          : "This purchase has no email address attached. Please contact Aquakart support to update your details."}
+                        Continue with Google to verify your identity. We’ll use
+                        your verified name and email to complete any missing
+                        invoice customer details.
                       </p>
                     </div>
                   </div>
                   {message ? (
                     <p className={styles.formError}>{message}</p>
                   ) : null}
-                  {result?.canEmail ? (
-                    <button
-                      className={styles.emailButton}
-                      type="button"
-                      onClick={handleEmail}
-                      disabled={status === "sending"}
-                    >
-                      {status === "sending" ? (
-                        <>
-                          <Loader2 className={styles.spinner} size={18} />{" "}
-                          Sending secure link...
-                        </>
-                      ) : (
-                        <>
-                          <Mail size={17} /> Email my invoice link
-                        </>
-                      )}
-                    </button>
-                  ) : null}
+                  <button
+                    className={styles.emailButton}
+                    type="button"
+                    onClick={handleGoogleAccess}
+                    disabled={status === "authenticating"}
+                  >
+                    {status === "authenticating" ? (
+                      <>
+                        <Loader2 className={styles.spinner} size={18} />{" "}
+                        Verifying with Google...
+                      </>
+                    ) : (
+                      <>
+                        <LogIn size={17} /> Continue with Google
+                      </>
+                    )}
+                  </button>
                   <button
                     type="button"
                     className={styles.resetButton}
@@ -233,25 +240,6 @@ const FindInvoicePage = () => {
                   >
                     <RotateCcw size={14} /> Search another phone number
                   </button>
-                </div>
-              ) : null}
-
-              {status === "sent" ? (
-                <div className={styles.resultState}>
-                  <span className={styles.resultIcon}>
-                    <Mail size={30} />
-                  </span>
-                  <span className={styles.eyebrow}>Email sent</span>
-                  <h2>Check your inbox.</h2>
-                  <p>{message}</p>
-                  <div className={styles.resultActions}>
-                    <button type="button" onClick={handleEmail}>
-                      <Mail size={15} /> Send again
-                    </button>
-                    <button type="button" onClick={resetLookup}>
-                      <RotateCcw size={15} /> Another number
-                    </button>
-                  </div>
                 </div>
               ) : null}
             </div>
