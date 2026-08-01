@@ -40,6 +40,14 @@ export const logoutGoogleUser = async () => {
   await signOut(getFirebaseAuth());
 };
 
+export const getCurrentFirebaseIdToken = async () => {
+  const currentUser = getFirebaseAuth().currentUser;
+  if (!currentUser) {
+    throw new Error("Please continue with Google first");
+  }
+  return currentUser.getIdToken(true);
+};
+
 export const getCurrentUser = async (token) => {
   const response = await fetch(authUrl("/auth/me"), {
     headers: { Authorization: `Bearer ${token}` },
