@@ -104,7 +104,6 @@ const InvoiceError = ({ statusCode }) => {
   const [signingIn, setSigningIn] = useState(false);
   const [openingInvoice, setOpeningInvoice] = useState(false);
   const [accessError, setAccessError] = useState("");
-  const [verificationRequired, setVerificationRequired] = useState(false);
   const attemptedDirectAccess = useRef(false);
   const directAccessInFlight = useRef(false);
   const notFound = statusCode === 404;
@@ -112,15 +111,10 @@ const InvoiceError = ({ statusCode }) => {
   const routeId = Array.isArray(router.query.id)
     ? router.query.id[0]
     : router.query.id;
-  const findInvoiceHref = routeId
-    ? `/page/find-invoice?invoiceId=${encodeURIComponent(routeId)}`
-    : "/page/find-invoice";
   const authBusy = authLoading || signingIn || openingInvoice;
-  const clientAccessMessage = verificationRequired
-    ? "For your privacy, confirm the mobile number used for this purchase."
-    : accessError
-      ? "We could not open the invoice just now. Please try again."
-      : "";
+  const clientAccessMessage = accessError
+    ? "We could not open the invoice just now. Please try again."
+    : "";
 
   const requestDirectAccess = useCallback(
     async (backendSessionToken) => {
@@ -132,7 +126,6 @@ const InvoiceError = ({ statusCode }) => {
       directAccessInFlight.current = true;
       setOpeningInvoice(true);
       setAccessError("");
-      setVerificationRequired(false);
 
       try {
         const firebaseIdToken = await getCurrentFirebaseIdToken();
@@ -142,15 +135,14 @@ const InvoiceError = ({ statusCode }) => {
           backendSessionToken,
         );
         window.location.replace(router.asPath);
+        return true;
       } catch (error) {
-        setVerificationRequired(
-          Boolean(error?.response?.data?.verificationRequired),
-        );
         setAccessError(
           error?.response?.data?.message ||
             error?.message ||
             "We could not verify access to this invoice.",
         );
+        return false;
       } finally {
         directAccessInFlight.current = false;
         setOpeningInvoice(false);
@@ -184,8 +176,8 @@ const InvoiceError = ({ statusCode }) => {
 
     if (authenticated && session?.token) {
       attemptedDirectAccess.current = false;
-      await requestDirectAccess(session.token);
-      return;
+      const opened = await requestDirectAccess(session.token);
+      if (opened) return;
     }
 
     setSigningIn(true);
@@ -231,45 +223,29 @@ const InvoiceError = ({ statusCode }) => {
         <span className={styles.eyebrow}>Aquakart invoices</span>
         <h1>
           {unauthorized
-            ? verificationRequired
-              ? "One quick verification."
-              : "Open your invoice."
+            ? "Open your invoice."
             : notFound
               ? "We could not find that invoice."
               : "The invoice is taking a pause."}
         </h1>
         <p>
           {unauthorized
-            ? verificationRequired
-              ? "Your invoice is protected. Verify the purchase mobile number to continue."
-              : authenticated
-                ? "You are signed in. We are securely matching this invoice to your account."
-                : "Sign in with Google to securely view and download your invoice."
+            ? authenticated
+              ? "You are signed in. We are securely opening this invoice with your verified email."
+              : "Continue with Google once to securely view and download your invoice."
             : notFound
               ? "Check the invoice link and try again. The ID may be incomplete or no longer available."
               : "We could not reach the invoice service. Please wait a moment and try again."}
         </p>
         {clientAccessMessage ? (
           <p
-            className={
-              verificationRequired ? styles.accessNotice : styles.accessError
-            }
-            role={verificationRequired ? "status" : "alert"}
+            className={styles.accessError}
+            role="alert"
           >
             {clientAccessMessage}
           </p>
         ) : null}
-        <div
-          className={`${styles.errorActions} ${verificationRequired ? styles.verificationActions : ""}`}
-        >
-          {verificationRequired ? (
-            <Link
-              href={findInvoiceHref}
-              className={styles.phoneVerificationLink}
-            >
-              Verify purchase mobile
-            </Link>
-          ) : null}
+        <div className={styles.errorActions}>
           {unauthorized ? (
             <button
               type="button"
@@ -278,7 +254,7 @@ const InvoiceError = ({ statusCode }) => {
               disabled={authBusy}
             >
               <GoogleMark />
-              {verificationRequired ? "Try Google again" : primaryActionLabel}
+              {primaryActionLabel}
             </button>
           ) : (
             <button type="button" onClick={() => window.location.reload()}>

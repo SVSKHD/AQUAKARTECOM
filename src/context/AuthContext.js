@@ -15,14 +15,17 @@ import {
   loginWithGoogle,
   logoutBackendUser,
   logoutGoogleUser,
+  restoreExistingGoogleLogin,
 } from "@/services/googleAuth";
 
 const AuthContext = createContext(null);
-const AUTH_RESTORE_TIMEOUT_MS = 4_000;
+const AUTH_RESTORE_TIMEOUT_MS = 12_000;
 
 const restoreGoogleLogin = () =>
   Promise.race([
-    completeGoogleRedirectLogin(),
+    completeGoogleRedirectLogin().then(
+      (redirectResult) => redirectResult || restoreExistingGoogleLogin(),
+    ),
     new Promise((resolve) =>
       setTimeout(() => resolve(null), AUTH_RESTORE_TIMEOUT_MS),
     ),
@@ -42,7 +45,7 @@ export const AuthProvider = ({ children }) => {
   const redirectChecked = useRef(false);
 
   const applyLoginResult = useCallback(
-    async (result, requestedReturnPath) => {
+    async (result, requestedReturnPath, showSuccess = true) => {
       if (!result || result.redirecting) return result;
       dispatch({ type: "LOGGED_IN_USER", payload: result });
       dispatch({ type: "SET_AUTH_DIALOG_VISIBLE", payload: false });
@@ -54,7 +57,7 @@ export const AuthProvider = ({ children }) => {
         requestedReturnPath || storedReturnPath || router.asPath,
       );
       window.sessionStorage.removeItem("aquakart_auth_return_to");
-      toast.success(result.message);
+      if (showSuccess) toast.success(result.message);
 
       if (returnPath !== router.asPath) {
         await router.replace(returnPath);
@@ -71,7 +74,7 @@ export const AuthProvider = ({ children }) => {
     restoreGoogleLogin()
       .then((result) => {
         if (!active || !result) return null;
-        return applyLoginResult(result);
+        return applyLoginResult(result, undefined, false);
       })
       .catch((error) => {
         if (active) {
