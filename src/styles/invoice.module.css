@@ -1788,6 +1788,35 @@
   background: white;
 }
 
+.errorActions .googleSignInButton {
+  border: 1px solid #d5e0de;
+  color: #243b43;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.errorActions .googleSignInButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+}
+
+.errorActions .googleSignInButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.errorActions .homeButton {
+  border-color: var(--invoice-ink);
+  color: #fff;
+  background: var(--invoice-ink);
+}
+
+.errorActions .googleSignInButton:focus-visible,
+.errorActions .homeButton:focus-visible {
+  outline: 3px solid rgba(5, 132, 95, 0.3);
+  outline-offset: 3px;
+}
+
 @media (max-width: 980px) {
   .commandIdentity,
   .secondaryButton span {
