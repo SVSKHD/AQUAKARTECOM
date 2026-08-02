@@ -21,7 +21,7 @@
 }
 
 .shell {
-  width: min(100% - 32px, 1200px);
+  width: min(100% - 32px, 760px);
   margin: 0 auto;
   padding: 28px 0 90px;
 }
@@ -38,9 +38,9 @@
 
 .lookupCard {
   display: grid;
-  min-height: 650px;
+  min-height: 0;
   overflow: hidden;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  grid-template-columns: 1fr;
   border: 1px solid rgba(255, 255, 255, 0.86);
   border-radius: 34px;
   background: rgba(255, 255, 255, 0.68);
@@ -55,8 +55,8 @@
   align-items: flex-start;
   justify-content: center;
   flex-direction: column;
-  padding: clamp(42px, 6vw, 72px);
-  border-right: 1px solid rgba(190, 216, 210, 0.62);
+  padding: clamp(28px, 5vw, 44px);
+  border-bottom: 1px solid rgba(190, 216, 210, 0.62);
   background:
     radial-gradient(
       circle at 10% 96%,
@@ -76,7 +76,7 @@
   width: 60px;
   height: 60px;
   place-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 16px;
   border: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 19px;
   background: rgba(255, 255, 255, 0.76);
@@ -95,25 +95,26 @@
 .intro h1 {
   max-width: 500px;
   margin: 13px 0 0;
-  font-size: clamp(40px, 4.5vw, 64px);
+  font-size: clamp(34px, 7vw, 50px);
   letter-spacing: -0.058em;
   line-height: 0.98;
 }
 
 .intro > p {
   max-width: 510px;
-  margin: 22px 0 0;
+  margin: 14px 0 0;
   color: var(--muted);
   font-size: 13px;
   line-height: 1.75;
 }
 
 .trustGrid {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   width: 100%;
   gap: 10px;
-  margin-top: 34px;
-  padding-top: 24px;
+  margin-top: 22px;
+  padding-top: 18px;
   border-top: 1px solid rgba(177, 207, 199, 0.76);
 }
 
@@ -136,7 +137,8 @@
   min-width: 0;
   align-items: center;
   justify-content: center;
-  padding: clamp(32px, 5vw, 64px);
+  min-height: 310px;
+  padding: clamp(28px, 5vw, 44px);
 }
 
 .phoneForm,
@@ -537,7 +539,7 @@
   }
 
   .interaction {
-    min-height: 410px;
+    min-height: 300px;
   }
 
   .resultActions,

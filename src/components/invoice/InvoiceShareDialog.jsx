@@ -246,7 +246,7 @@ const InvoiceShareDialog = ({
                         className={styles.viewLink}
                         href={`/invoice/${invoice.id}`}
                       >
-                        View or download invoice <ExternalLink />
+                        Open invoice <ExternalLink />
                       </Link>
                     ) : null}
                   </>

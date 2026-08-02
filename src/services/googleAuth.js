@@ -7,6 +7,8 @@ import {
 import { getFirebaseAuth, getGoogleProvider } from "@/lib/firebase/client";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
+const AUTH_REQUEST_TIMEOUT_MS = 6_000;
+const FIREBASE_OPERATION_TIMEOUT_MS = 5_000;
 const authUrl = (path) =>
   `${API_URL.endsWith("/v1") ? API_URL : `${API_URL}/v1`}${path}`;
 
@@ -20,17 +22,49 @@ const parseResponse = async (response) => {
   return data;
 };
 
+const withTimeout = (promise, timeoutMs, message) =>
+  new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => reject(new Error(message)), timeoutMs);
+    Promise.resolve(promise).then(
+      (value) => {
+        clearTimeout(timeout);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timeout);
+        reject(error);
+      },
+    );
+  });
+
 const exchangeGoogleCredential = async (credential) => {
   const firebaseAuth = getFirebaseAuth();
-  const firebaseIdToken = await credential.user.getIdToken();
+  const firebaseIdToken = await withTimeout(
+    credential.user.getIdToken(),
+    FIREBASE_OPERATION_TIMEOUT_MS,
+    "Google verification took too long. Please try again.",
+  );
 
-  const response = await fetch(authUrl("/auth/google"), {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${firebaseIdToken}`,
-      "Content-Type": "application/json",
-    },
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), AUTH_REQUEST_TIMEOUT_MS);
+  let response;
+  try {
+    response = await fetch(authUrl("/auth/google"), {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${firebaseIdToken}`,
+        "Content-Type": "application/json",
+      },
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error("Google sign-in took too long. Please try again.");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   try {
     return await parseResponse(response);
@@ -70,12 +104,20 @@ export const logoutGoogleUser = async () => {
 
 export const getCurrentFirebaseIdToken = async () => {
   const firebaseAuth = getFirebaseAuth();
-  await firebaseAuth.authStateReady?.();
+  await withTimeout(
+    firebaseAuth.authStateReady?.(),
+    FIREBASE_OPERATION_TIMEOUT_MS,
+    "Google verification took too long. Please try again.",
+  );
   const currentUser = firebaseAuth.currentUser;
   if (!currentUser) {
     throw new Error("Please continue with Google first");
   }
-  return currentUser.getIdToken(true);
+  return withTimeout(
+    currentUser.getIdToken(true),
+    FIREBASE_OPERATION_TIMEOUT_MS,
+    "Google verification took too long. Please try again.",
+  );
 };
 
 export const getCurrentUser = async (token) => {

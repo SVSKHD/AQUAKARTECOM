@@ -18,6 +18,15 @@ import {
 } from "@/services/googleAuth";
 
 const AuthContext = createContext(null);
+const AUTH_RESTORE_TIMEOUT_MS = 4_000;
+
+const restoreGoogleLogin = () =>
+  Promise.race([
+    completeGoogleRedirectLogin(),
+    new Promise((resolve) =>
+      setTimeout(() => resolve(null), AUTH_RESTORE_TIMEOUT_MS),
+    ),
+  ]);
 
 const safeReturnPath = (value) =>
   typeof value === "string" && value.startsWith("/") && !value.startsWith("//")
@@ -59,7 +68,7 @@ export const AuthProvider = ({ children }) => {
     if (redirectChecked.current) return undefined;
     redirectChecked.current = true;
     let active = true;
-    completeGoogleRedirectLogin()
+    restoreGoogleLogin()
       .then((result) => {
         if (!active || !result) return null;
         return applyLoginResult(result);

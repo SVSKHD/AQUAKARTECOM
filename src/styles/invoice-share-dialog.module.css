@@ -290,8 +290,13 @@
 }
 
 .viewLink {
+  width: 100%;
+  min-height: 52px;
   margin-top: 12px;
-  color: #0b725a;
+  border: 1px solid #087a5d;
+  background: #087a5d;
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(8, 122, 93, 0.18);
 }
 
 .error,

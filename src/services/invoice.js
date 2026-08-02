@@ -1,5 +1,10 @@
 import axios from "axios";
 
+export const INVOICE_REQUEST_TIMEOUT_MS = 6_000;
+
+const invoiceRequest = (config) =>
+  axios({ timeout: INVOICE_REQUEST_TIMEOUT_MS, ...config });
+
 export const normalizeInvoicePhone = (value = "") => {
   const digits = String(value).replace(/\D/g, "");
   return digits.length === 12 && digits.startsWith("91")
@@ -28,23 +33,29 @@ const assertPhone = (phone) => {
 };
 
 const lookupInvoices = async (phone, firebaseIdToken, backendSessionToken) => {
-  const response = await axios.post("/invoice-gateway/lookup", {
-    phone: assertPhone(phone),
-    firebaseIdToken,
-    backendSessionToken,
+  const response = await invoiceRequest({
+    method: "post",
+    url: "/invoice-gateway/lookup",
+    data: { phone: assertPhone(phone), firebaseIdToken, backendSessionToken },
   });
   return response.data;
 };
 
 const requestInvoiceAccess = async (phone) => {
-  const response = await axios.post("/invoice-gateway/request", {
-    phone: assertPhone(phone),
+  const response = await invoiceRequest({
+    method: "post",
+    url: "/invoice-gateway/request",
+    data: { phone: assertPhone(phone) },
   });
   return response.data;
 };
 
 const exchangeInvoiceToken = async (token) => {
-  const response = await axios.post("/invoice-gateway/exchange", { token });
+  const response = await invoiceRequest({
+    method: "post",
+    url: "/invoice-gateway/exchange",
+    data: { token },
+  });
   return response.data;
 };
 
@@ -57,9 +68,10 @@ const loginDirectInvoiceAccess = async (
   backendSessionToken,
 ) => {
   if (!invoiceId) throw new Error("Invoice ID is required.");
-  const response = await axios.post(directInvoiceLoginPath(invoiceId), {
-    firebaseIdToken,
-    backendSessionToken,
+  const response = await invoiceRequest({
+    method: "post",
+    url: directInvoiceLoginPath(invoiceId),
+    data: { firebaseIdToken, backendSessionToken },
   });
   return response.data;
 };
@@ -69,10 +81,10 @@ const loginInvoiceAccess = async (
   firebaseIdToken,
   backendSessionToken,
 ) => {
-  const response = await axios.post("/invoice-gateway/login", {
-    phone: assertPhone(phone),
-    firebaseIdToken,
-    backendSessionToken,
+  const response = await invoiceRequest({
+    method: "post",
+    url: "/invoice-gateway/login",
+    data: { phone: assertPhone(phone), firebaseIdToken, backendSessionToken },
   });
   return response.data;
 };
