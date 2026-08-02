@@ -5,6 +5,7 @@ import {
 } from "@/utils/server/invoiceAccess";
 
 export default async function handler(req, res) {
+  res.setHeader("Cache-Control", "private, no-store, max-age=0");
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res
@@ -18,7 +19,8 @@ export default async function handler(req, res) {
   }
 
   const firebaseIdToken = String(req.body?.firebaseIdToken || "");
-  if (!firebaseIdToken) {
+  const backendSessionToken = String(req.body?.backendSessionToken || "");
+  if (!firebaseIdToken || !backendSessionToken) {
     return res
       .status(401)
       .json({ success: false, message: "Google login is required" });
@@ -27,7 +29,10 @@ export default async function handler(req, res) {
   try {
     const response = await backendInvoiceRequest("/login", {
       method: "POST",
-      headers: { Authorization: `Bearer ${firebaseIdToken}` },
+      headers: {
+        Authorization: `Bearer ${firebaseIdToken}`,
+        "X-Aquakart-Session": backendSessionToken,
+      },
       body: JSON.stringify({ phone: req.body?.phone }),
     });
     const payload = await response.json().catch(() => ({}));
@@ -35,12 +40,16 @@ export default async function handler(req, res) {
 
     res.setHeader(
       "Set-Cookie",
-      invoiceAccessCookie(payload.accessToken, payload.expiresIn || 1800),
+      payload.accessToken
+        ? invoiceAccessCookie(payload.accessToken, payload.expiresIn || 1800)
+        : invoiceAccessCookie("", 0),
     );
     return res.status(200).json({
       success: true,
       authenticated: true,
+      found: payload.found,
       invoiceCount: payload.invoiceCount,
+      invoices: payload.invoices || [],
       redirectInvoiceId: payload.redirectInvoiceId,
       user: payload.user,
       message: payload.message,

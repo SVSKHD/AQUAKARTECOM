@@ -2,13 +2,16 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import {
+  completeGoogleRedirectLogin,
   loginWithGoogle,
   logoutBackendUser,
   logoutGoogleUser,
@@ -26,6 +29,53 @@ export const AuthProvider = ({ children }) => {
   const dispatch = useDispatch();
   const session = useSelector((state) => state.userData);
   const [loading, setLoading] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
+  const redirectChecked = useRef(false);
+
+  const applyLoginResult = useCallback(
+    async (result, requestedReturnPath) => {
+      if (!result || result.redirecting) return result;
+      dispatch({ type: "LOGGED_IN_USER", payload: result });
+      dispatch({ type: "SET_AUTH_DIALOG_VISIBLE", payload: false });
+      const storedReturnPath =
+        typeof window === "undefined"
+          ? ""
+          : window.sessionStorage.getItem("aquakart_auth_return_to");
+      const returnPath = safeReturnPath(
+        requestedReturnPath || storedReturnPath || router.asPath,
+      );
+      window.sessionStorage.removeItem("aquakart_auth_return_to");
+      toast.success(result.message);
+
+      if (returnPath !== router.asPath) {
+        await router.replace(returnPath);
+      }
+      return result;
+    },
+    [dispatch, router],
+  );
+
+  useEffect(() => {
+    if (redirectChecked.current) return undefined;
+    redirectChecked.current = true;
+    let active = true;
+    completeGoogleRedirectLogin()
+      .then((result) => {
+        if (!active || !result) return null;
+        return applyLoginResult(result);
+      })
+      .catch((error) => {
+        if (active) {
+          toast.error(error.message || "Unable to complete Google login");
+        }
+      })
+      .finally(() => {
+        if (active) setAuthReady(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [applyLoginResult]);
 
   const signInWithGoogle = useCallback(async () => {
     setLoading(true);
@@ -34,26 +84,18 @@ export const AuthProvider = ({ children }) => {
         window.sessionStorage.getItem("aquakart_auth_return_to") ||
         router.asPath,
     );
+    window.sessionStorage.setItem("aquakart_auth_return_to", returnPath);
 
     try {
       const result = await loginWithGoogle();
-      dispatch({ type: "LOGGED_IN_USER", payload: result });
-      dispatch({ type: "SET_AUTH_DIALOG_VISIBLE", payload: false });
-      window.sessionStorage.removeItem("aquakart_auth_return_to");
-      toast.success(result.message);
-
-      if (returnPath !== router.asPath) {
-        await router.replace(returnPath);
-      }
-
-      return result;
+      return applyLoginResult(result, returnPath);
     } catch (error) {
       toast.error(error.message || "Unable to continue with Google");
       throw error;
     } finally {
       setLoading(false);
     }
-  }, [dispatch, router]);
+  }, [applyLoginResult, router]);
 
   const signOut = useCallback(async () => {
     setLoading(true);
@@ -70,12 +112,14 @@ export const AuthProvider = ({ children }) => {
   const value = useMemo(
     () => ({
       authenticated: Boolean(session?.token),
-      loading,
+      authReady,
+      loading: loading || !authReady,
       session,
       signInWithGoogle,
+      switchGoogleAccount: signInWithGoogle,
       signOut,
     }),
-    [loading, session, signInWithGoogle, signOut],
+    [authReady, loading, session, signInWithGoogle, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

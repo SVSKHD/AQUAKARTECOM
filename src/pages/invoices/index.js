@@ -6,11 +6,9 @@ import {
   CalendarDays,
   FileSearch,
   Loader2,
-  Mail,
   Package,
   ReceiptText,
 } from "lucide-react";
-import { toast } from "sonner";
 
 import AquaLayout from "@/components/Layout/Layout";
 import InvoiceServiceOperations from "@/services/invoice";
@@ -39,7 +37,6 @@ const InvoicesPage = () => {
     invoices: [],
     error: "",
   });
-  const [emailing, setEmailing] = useState("");
 
   useEffect(() => {
     InvoiceServiceOperations.getAccessibleInvoices()
@@ -60,20 +57,6 @@ const InvoicesPage = () => {
         }),
       );
   }, []);
-
-  const sendInvoice = async (id) => {
-    setEmailing(id);
-    try {
-      const payload = await InvoiceServiceOperations.emailInvoice(id);
-      toast.success(payload.message || "Invoice sent to your email");
-    } catch (error) {
-      toast.error(
-        error?.response?.data?.message || "Could not email this invoice",
-      );
-    } finally {
-      setEmailing("");
-    }
-  };
 
   return (
     <AquaLayout seo={{ title: "My Invoices | Aquakart" }}>
@@ -128,18 +111,7 @@ const InvoicesPage = () => {
                   </div>
                 </div>
                 <div className={styles.cardActions}>
-                  <button
-                    type="button"
-                    onClick={() => sendInvoice(invoice.id)}
-                    disabled={emailing === invoice.id}
-                  >
-                    {emailing === invoice.id ? (
-                      <Loader2 className={styles.spinner} />
-                    ) : (
-                      <Mail />
-                    )}{" "}
-                    Email
-                  </button>
+                  <Link href="/page/find-invoice">Confirm &amp; share</Link>
                   <Link href={`/invoice/${invoice.id}`}>
                     View invoice <ArrowRight />
                   </Link>

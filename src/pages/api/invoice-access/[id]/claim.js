@@ -6,43 +6,37 @@ import {
 } from "@/utils/server/invoiceAccess";
 
 export default async function handler(req, res) {
-  if (!["PATCH", "POST"].includes(req.method)) {
-    res.setHeader("Allow", "PATCH, POST");
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
     return res
       .status(405)
       .json({ success: false, message: "Method not allowed" });
   }
   const token = getInvoiceAccessToken(req);
-  if (!token)
+  if (!token) {
     return res
       .status(401)
       .json({ success: false, message: "Invoice access is required" });
+  }
   if (!isSameOriginRequest(req)) {
     return res
       .status(403)
       .json({ success: false, message: "Invalid request origin" });
   }
   try {
-    const isPermanentUpdate = req.method === "PATCH";
     const response = await backendInvoiceRequest(
-      `/${encodeURIComponent(String(req.query.id || ""))}/email`,
+      `/${encodeURIComponent(String(req.query.id || ""))}/claim`,
       {
-        method: isPermanentUpdate ? "PATCH" : "POST",
+        method: "POST",
         headers: { Authorization: `Bearer ${token}` },
-        body: JSON.stringify(
-          isPermanentUpdate
-            ? { confirm: req.body?.confirm === true }
-            : {
-                recipientEmail: req.body?.recipientEmail,
-                shareRequestId: req.body?.shareRequestId,
-              },
-        ),
+        body: JSON.stringify({ emailAction: req.body?.emailAction }),
       },
     );
     return pipeJsonResponse(response, res);
   } catch {
-    return res
-      .status(502)
-      .json({ success: false, message: "Email service is unavailable" });
+    return res.status(502).json({
+      success: false,
+      message: "Invoice confirmation service is unavailable",
+    });
   }
 }

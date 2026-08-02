@@ -18,6 +18,7 @@ export const backendInvoiceRequest = async (path, options = {}) =>
   });
 
 export const pipeJsonResponse = async (response, res) => {
+  res.setHeader("Cache-Control", "private, no-store, max-age=0");
   const payload = await response.json().catch(() => ({
     success: false,
     message: "The invoice service returned an invalid response",

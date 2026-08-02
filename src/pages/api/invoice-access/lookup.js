@@ -10,9 +10,20 @@ export default async function handler(req, res) {
       .status(405)
       .json({ success: false, message: "Method not allowed" });
   }
+  const firebaseIdToken = String(req.body?.firebaseIdToken || "");
+  const backendSessionToken = String(req.body?.backendSessionToken || "");
+  if (!firebaseIdToken || !backendSessionToken) {
+    return res
+      .status(401)
+      .json({ success: false, message: "Google login is required" });
+  }
   try {
     const response = await backendInvoiceRequest("/lookup", {
       method: "POST",
+      headers: {
+        Authorization: `Bearer ${firebaseIdToken}`,
+        "X-Aquakart-Session": backendSessionToken,
+      },
       body: JSON.stringify({ phone: req.body?.phone }),
     });
     return pipeJsonResponse(response, res);
