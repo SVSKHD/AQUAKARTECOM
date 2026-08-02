@@ -37,6 +37,7 @@ import InvoiceServiceOperations, {
 import styles from "@/styles/find-invoice.module.css";
 
 const LOOKUP_STORAGE_KEY = "aquakart_invoice_lookup_phone";
+const AUTH_UI_TIMEOUT_MS = 8_000;
 
 const money = (value) =>
   new Intl.NumberFormat("en-IN", {
@@ -107,6 +108,17 @@ const FindInvoicePage = () => {
       dispatch({ type: "AUTH_REQUIRED" });
     }
   }, [authLoading, authReady, authenticated, flow.phase, session?.user]);
+
+  useEffect(() => {
+    if (flow.phase !== INVOICE_FLOW_PHASE.AUTHENTICATING) return undefined;
+    const timeout = window.setTimeout(() => {
+      dispatch({
+        type: "AUTH_REQUIRED",
+        error: "Google verification took too long. Please try again.",
+      });
+    }, AUTH_UI_TIMEOUT_MS);
+    return () => window.clearTimeout(timeout);
+  }, [flow.phase]);
 
   const updatePhone = (value) => {
     const phone = normalizeInvoicePhone(value);
@@ -359,14 +371,11 @@ const FindInvoicePage = () => {
               <span className={styles.iconBox}>
                 <ReceiptText size={27} />
               </span>
-              <span className={styles.eyebrow}>
-                Protected invoice discovery
-              </span>
-              <h1>Find, confirm and share your invoice.</h1>
+              <span className={styles.eyebrow}>Aquakart invoices</span>
+              <h1>Find your invoice.</h1>
               <p>
-                Google verifies who you are. Aquakart then checks invoice
-                ownership before showing, updating or emailing any purchase
-                record.
+                Sign in with Google, enter the mobile number used for your
+                purchase, and open your invoice securely.
               </p>
               <div className={styles.trustGrid}>
                 <span>
@@ -385,8 +394,8 @@ const FindInvoicePage = () => {
               {isAuthenticating ? (
                 <div className={styles.centerState}>
                   <Loader2 className={styles.spinner} />
-                  <h2>Verifying with Google…</h2>
-                  <p>Your entered invoice-search details will be preserved.</p>
+                  <h2>Checking your account…</h2>
+                  <p>This should take only a moment.</p>
                 </div>
               ) : null}
 

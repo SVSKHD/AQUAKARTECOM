@@ -7,7 +7,8 @@ import {
   getInvoiceAccessToken,
 } from "@/utils/server/invoiceAccess";
 
-const FETCH_TIMEOUT_MS = 10_000;
+const FETCH_TIMEOUT_MS = 6_000;
+const CATALOGUE_GRACE_MS = 750;
 
 const normalizeRouteId = (value) => {
   const id = Array.isArray(value) ? value[0] : value;
@@ -18,19 +19,23 @@ const normalizeRouteId = (value) => {
   return normalized;
 };
 
-const fetchProductCatalogue = async (apiBase, signal) => {
+const fetchProductCatalogue = async (apiBase) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), CATALOGUE_GRACE_MS);
   try {
     const response = await fetch(
       `${apiBase.replace(/\/$/, "")}/all-products?query=ecom`,
       {
         headers: { Accept: "application/json" },
-        signal,
+        signal: controller.signal,
       },
     );
 
     return response.ok ? await response.json() : [];
   } catch {
     return [];
+  } finally {
+    clearTimeout(timeout);
   }
 };
 
@@ -58,10 +63,7 @@ export const getServerSideProps = async ({ params, req, res }) => {
 
   try {
     const catalogueApiBase = process.env.NEXT_PUBLIC_API_URL || apiBase;
-    const cataloguePromise = fetchProductCatalogue(
-      catalogueApiBase,
-      controller.signal,
-    );
+    const cataloguePromise = fetchProductCatalogue(catalogueApiBase);
     const response = await backendInvoiceRequest(`/${encodeURIComponent(id)}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
       signal: controller.signal,
