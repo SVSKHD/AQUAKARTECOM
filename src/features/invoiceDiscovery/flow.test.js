@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createInitialInvoiceFlow,
+  findRequestedInvoice,
   getInvoiceEmailScenario,
   INVOICE_FLOW_PHASE,
   invoiceFlowReducer,
@@ -35,6 +36,13 @@ describe("invoice discovery state model", () => {
         invoices: [{ id: "invoice-1" }],
       }).phase,
     ).toBe(INVOICE_FLOW_PHASE.LIST);
+  });
+
+  it("selects the invoice requested by a direct secure link", () => {
+    const invoices = [{ id: "invoice-1" }, { id: "invoice-2" }];
+    expect(findRequestedInvoice(invoices, "invoice-2")).toEqual(invoices[1]);
+    expect(findRequestedInvoice(invoices, ["invoice-1"])).toEqual(invoices[0]);
+    expect(findRequestedInvoice(invoices, "missing")).toBeNull();
   });
 
   it("requires confirmation only for unclaimed invoices", () => {
