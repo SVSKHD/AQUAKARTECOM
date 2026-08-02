@@ -1811,7 +1811,26 @@
   background: var(--invoice-ink);
 }
 
+.errorCard .accessError {
+  margin-top: 16px;
+  padding: 11px 13px;
+  border: 1px solid #f4c9c4;
+  border-radius: 12px;
+  background: #fff1ef;
+  color: #a33228;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.errorActions .phoneVerificationLink {
+  border-color: #b9ded2;
+  color: #087a5d;
+  background: #edf9f5;
+}
+
 .errorActions .googleSignInButton:focus-visible,
+.errorActions .phoneVerificationLink:focus-visible,
 .errorActions .homeButton:focus-visible {
   outline: 3px solid rgba(5, 132, 95, 0.3);
   outline-offset: 3px;
