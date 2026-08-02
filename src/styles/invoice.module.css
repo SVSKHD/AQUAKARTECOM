@@ -1757,10 +1757,10 @@
 }
 
 .errorActions {
-  display: flex;
+  display: grid;
   margin-top: 26px;
-  justify-content: center;
   gap: 9px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .errorActions button,
@@ -1793,6 +1793,11 @@
   color: #243b43;
   background: #fff;
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  grid-column: 1 / -1;
+}
+
+.errorActions.verificationActions .googleSignInButton {
+  grid-column: auto;
 }
 
 .errorActions .googleSignInButton:hover:not(:disabled) {
@@ -1806,9 +1811,11 @@
 }
 
 .errorActions .homeButton {
+  min-height: 40px;
   border-color: var(--invoice-ink);
   color: #fff;
   background: var(--invoice-ink);
+  grid-column: 1 / -1;
 }
 
 .errorCard .accessError {
@@ -1819,6 +1826,18 @@
   background: #fff1ef;
   color: #a33228;
   font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.errorCard .accessNotice {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid #b9ded2;
+  border-radius: 12px;
+  background: #edf9f5;
+  color: #087a5d;
+  font-size: 0.7rem;
   font-weight: 700;
   line-height: 1.5;
 }
@@ -2257,7 +2276,15 @@
   }
 
   .errorActions {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+  }
+
+  .errorActions .homeButton {
+    grid-column: auto;
+  }
+
+  .errorActions .googleSignInButton {
+    grid-column: auto;
   }
 }
 

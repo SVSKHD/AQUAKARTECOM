@@ -116,6 +116,11 @@ const InvoiceError = ({ statusCode }) => {
     ? `/page/find-invoice?invoiceId=${encodeURIComponent(routeId)}`
     : "/page/find-invoice";
   const authBusy = authLoading || signingIn || openingInvoice;
+  const clientAccessMessage = verificationRequired
+    ? "For your privacy, confirm the mobile number used for this purchase."
+    : accessError
+      ? "We could not open the invoice just now. Please try again."
+      : "";
 
   const requestDirectAccess = useCallback(
     async (backendSessionToken) => {
@@ -226,24 +231,45 @@ const InvoiceError = ({ statusCode }) => {
         <span className={styles.eyebrow}>Aquakart invoices</span>
         <h1>
           {unauthorized
-            ? "Secure access is required."
+            ? verificationRequired
+              ? "One quick verification."
+              : "Open your invoice."
             : notFound
               ? "We could not find that invoice."
               : "The invoice is taking a pause."}
         </h1>
         <p>
           {unauthorized
-            ? "Continue with Google to verify ownership and open this invoice at the same secure link."
+            ? verificationRequired
+              ? "Your invoice is protected. Verify the purchase mobile number to continue."
+              : authenticated
+                ? "You are signed in. We are securely matching this invoice to your account."
+                : "Sign in with Google to securely view and download your invoice."
             : notFound
               ? "Check the invoice link and try again. The ID may be incomplete or no longer available."
               : "We could not reach the invoice service. Please wait a moment and try again."}
         </p>
-        {accessError ? (
-          <p className={styles.accessError} role="alert">
-            {accessError}
+        {clientAccessMessage ? (
+          <p
+            className={
+              verificationRequired ? styles.accessNotice : styles.accessError
+            }
+            role={verificationRequired ? "status" : "alert"}
+          >
+            {clientAccessMessage}
           </p>
         ) : null}
-        <div className={styles.errorActions}>
+        <div
+          className={`${styles.errorActions} ${verificationRequired ? styles.verificationActions : ""}`}
+        >
+          {verificationRequired ? (
+            <Link
+              href={findInvoiceHref}
+              className={styles.phoneVerificationLink}
+            >
+              Verify purchase mobile
+            </Link>
+          ) : null}
           {unauthorized ? (
             <button
               type="button"
@@ -252,21 +278,13 @@ const InvoiceError = ({ statusCode }) => {
               disabled={authBusy}
             >
               <GoogleMark />
-              {primaryActionLabel}
+              {verificationRequired ? "Try Google again" : primaryActionLabel}
             </button>
           ) : (
             <button type="button" onClick={() => window.location.reload()}>
               Try again
             </button>
           )}
-          {verificationRequired ? (
-            <Link
-              href={findInvoiceHref}
-              className={styles.phoneVerificationLink}
-            >
-              Verify purchase phone
-            </Link>
-          ) : null}
           <Link href="/" className={styles.homeButton}>
             <ArrowLeft size={16} /> Back to Aquakart
           </Link>
