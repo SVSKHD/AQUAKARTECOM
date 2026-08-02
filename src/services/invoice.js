@@ -28,7 +28,7 @@ const assertPhone = (phone) => {
 };
 
 const lookupInvoices = async (phone, firebaseIdToken, backendSessionToken) => {
-  const response = await axios.post("/api/invoice-access/lookup", {
+  const response = await axios.post("/invoice-gateway/lookup", {
     phone: assertPhone(phone),
     firebaseIdToken,
     backendSessionToken,
@@ -37,19 +37,19 @@ const lookupInvoices = async (phone, firebaseIdToken, backendSessionToken) => {
 };
 
 const requestInvoiceAccess = async (phone) => {
-  const response = await axios.post("/api/invoice-access/request", {
+  const response = await axios.post("/invoice-gateway/request", {
     phone: assertPhone(phone),
   });
   return response.data;
 };
 
 const exchangeInvoiceToken = async (token) => {
-  const response = await axios.post("/api/invoice-access/exchange", { token });
+  const response = await axios.post("/invoice-gateway/exchange", { token });
   return response.data;
 };
 
 export const directInvoiceLoginPath = (invoiceId) =>
-  `/api/invoice-access/${encodeURIComponent(String(invoiceId || ""))}/login`;
+  `/invoice-gateway/${encodeURIComponent(String(invoiceId || ""))}/login`;
 
 const loginDirectInvoiceAccess = async (
   invoiceId,
@@ -69,7 +69,7 @@ const loginInvoiceAccess = async (
   firebaseIdToken,
   backendSessionToken,
 ) => {
-  const response = await axios.post("/api/invoice-access/login", {
+  const response = await axios.post("/invoice-gateway/login", {
     phone: assertPhone(phone),
     firebaseIdToken,
     backendSessionToken,
@@ -78,20 +78,20 @@ const loginInvoiceAccess = async (
 };
 
 const getAccessibleInvoices = async () => {
-  const response = await axios.get("/api/invoice-access");
+  const response = await axios.get("/invoice-gateway");
   return response.data;
 };
 
 const emailInvoice = async (invoiceId) => {
   const response = await axios.post(
-    `/api/invoice-access/${encodeURIComponent(invoiceId)}/share/email`,
+    `/invoice-gateway/${encodeURIComponent(invoiceId)}/share/email`,
   );
   return response.data;
 };
 
 const claimInvoice = async (invoiceId, emailAction) => {
   const response = await axios.post(
-    `/api/invoice-access/${encodeURIComponent(invoiceId)}/claim`,
+    `/invoice-gateway/${encodeURIComponent(invoiceId)}/claim`,
     { emailAction },
   );
   return response.data;
@@ -99,7 +99,7 @@ const claimInvoice = async (invoiceId, emailAction) => {
 
 const updateInvoiceEmail = async (invoiceId) => {
   const response = await axios.patch(
-    `/api/invoice-access/${encodeURIComponent(invoiceId)}/email`,
+    `/invoice-gateway/${encodeURIComponent(invoiceId)}/email`,
     { confirm: true },
   );
   return response.data;
@@ -114,7 +114,7 @@ const shareInvoiceByEmail = async (
     throw new Error("Enter a valid delivery email address.");
   }
   const response = await axios.post(
-    `/api/invoice-access/${encodeURIComponent(invoiceId)}/share/email`,
+    `/invoice-gateway/${encodeURIComponent(invoiceId)}/share/email`,
     {
       recipientEmail: normalizeInvoiceEmail(recipientEmail),
       shareRequestId,
@@ -125,7 +125,7 @@ const shareInvoiceByEmail = async (
 
 const getWhatsAppSharingStatus = async (invoiceId) => {
   const response = await axios.get(
-    `/api/invoice-access/${encodeURIComponent(invoiceId)}/share/whatsapp`,
+    `/invoice-gateway/${encodeURIComponent(invoiceId)}/share/whatsapp`,
   );
   return response.data;
 };
