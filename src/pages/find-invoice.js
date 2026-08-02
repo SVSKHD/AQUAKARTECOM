@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useEffect, useReducer, useRef } from "react";
 import {
   ArrowLeft,
@@ -24,6 +25,7 @@ import InvoiceShareDialog from "@/components/invoice/InvoiceShareDialog";
 import { useAuth } from "@/context/AuthContext";
 import {
   createInitialInvoiceFlow,
+  findRequestedInvoice,
   INVOICE_FLOW_PHASE,
   invoiceFlowReducer,
   validateDeliveryEmail,
@@ -66,6 +68,7 @@ const friendlyAuthError = (error) => {
 };
 
 const FindInvoicePage = () => {
+  const router = useRouter();
   const {
     authenticated,
     authReady,
@@ -137,6 +140,13 @@ const FindInvoicePage = () => {
           user: payload.user,
           message: payload.message,
         });
+        const requestedInvoice = findRequestedInvoice(
+          payload.invoices,
+          router.query.invoiceId,
+        );
+        if (requestedInvoice) {
+          dispatch({ type: "SELECT_INVOICE", invoice: requestedInvoice });
+        }
       }
     } catch (error) {
       if (accountSwitch && authenticated) {
@@ -183,6 +193,13 @@ const FindInvoicePage = () => {
         user: payload.user,
         message: payload.message,
       });
+      const requestedInvoice = findRequestedInvoice(
+        payload.invoices,
+        router.query.invoiceId,
+      );
+      if (requestedInvoice) {
+        dispatch({ type: "SELECT_INVOICE", invoice: requestedInvoice });
+      }
     } catch (error) {
       if (error?.response?.status === 401) {
         dispatch({

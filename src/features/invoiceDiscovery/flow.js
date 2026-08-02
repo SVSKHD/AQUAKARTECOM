@@ -160,6 +160,19 @@ export const invoiceFlowReducer = (state, action) => {
   }
 };
 
+export const findRequestedInvoice = (invoices, requestedId) => {
+  const normalizedId = Array.isArray(requestedId)
+    ? requestedId[0]
+    : requestedId;
+  if (typeof normalizedId !== "string" || !normalizedId.trim()) return null;
+
+  return (
+    (Array.isArray(invoices) ? invoices : []).find(
+      (invoice) => String(invoice?.id || "") === normalizedId.trim(),
+    ) || null
+  );
+};
+
 export const getInvoiceEmailScenario = (invoice) => {
   if (invoice?.emailStatus === "matches") return "matches";
   if (invoice?.emailStatus === "missing") return "missing";

@@ -1,7 +1,8 @@
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -30,6 +31,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assests/logo.png";
+import GoogleMark from "@/components/auth/GoogleMark";
+import { useAuth } from "@/context/AuthContext";
 import {
   bankCopyDetails,
   bankPaymentMethods,
@@ -88,8 +91,51 @@ const StatusPill = ({ status }) => {
 };
 
 const InvoiceError = ({ statusCode }) => {
+  const router = useRouter();
+  const {
+    authenticated,
+    authReady,
+    loading: authLoading,
+    signInWithGoogle,
+  } = useAuth();
+  const [signingIn, setSigningIn] = useState(false);
   const notFound = statusCode === 404;
   const unauthorized = statusCode === 401 || statusCode === 403;
+  const routeId = Array.isArray(router.query.id)
+    ? router.query.id[0]
+    : router.query.id;
+  const findInvoiceHref = routeId
+    ? `/page/find-invoice?invoiceId=${encodeURIComponent(routeId)}`
+    : "/page/find-invoice";
+  const authBusy = authLoading || signingIn;
+
+  useEffect(() => {
+    if (unauthorized && authReady && authenticated && !authLoading) {
+      void router.replace(findInvoiceHref);
+    }
+  }, [
+    authLoading,
+    authReady,
+    authenticated,
+    findInvoiceHref,
+    router,
+    unauthorized,
+  ]);
+
+  const continueWithGoogle = async () => {
+    if (authBusy) return;
+    setSigningIn(true);
+    try {
+      const result = await signInWithGoogle();
+      if (!result?.redirecting) {
+        await router.push(findInvoiceHref);
+      }
+    } catch {
+      // AuthContext shows the user-facing authentication error.
+    } finally {
+      setSigningIn(false);
+    }
+  };
 
   return (
     <div className={styles.errorPage}>
@@ -119,20 +165,28 @@ const InvoiceError = ({ statusCode }) => {
         </h1>
         <p>
           {unauthorized
-            ? "Continue with Google and confirm the phone number attached to your purchase."
+            ? "Continue with Google, then verify the phone number attached to your purchase to open this invoice."
             : notFound
               ? "Check the invoice link and try again. The ID may be incomplete or no longer available."
               : "We could not reach the invoice service. Please wait a moment and try again."}
         </p>
         <div className={styles.errorActions}>
           {unauthorized ? (
-            <Link href="/page/find-invoice">Find my invoices</Link>
+            <button
+              type="button"
+              className={styles.googleSignInButton}
+              onClick={continueWithGoogle}
+              disabled={authBusy}
+            >
+              <GoogleMark />
+              {authBusy ? "Checking Google session…" : "Continue with Google"}
+            </button>
           ) : (
             <button type="button" onClick={() => window.location.reload()}>
               Try again
             </button>
           )}
-          <Link href="/">
+          <Link href="/" className={styles.homeButton}>
             <ArrowLeft size={16} /> Back to Aquakart
           </Link>
         </div>
