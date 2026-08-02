@@ -14,17 +14,45 @@ const LINE = [226, 232, 240];
 const SOFT = [248, 250, 252];
 const WHITE = [255, 255, 255];
 
+const MONGO_OBJECT_ID = /^[a-f\d]{24}$/i;
+const UUID =
+  /^[a-f\d]{8}-[a-f\d]{4}-[1-5][a-f\d]{3}-[89ab][a-f\d]{3}-[a-f\d]{12}$/i;
+
+export const isInternalInvoiceIdentifier = (value) => {
+  const normalized = String(value || "").trim();
+  return MONGO_OBJECT_ID.test(normalized) || UUID.test(normalized);
+};
+
+const containsInternalInvoiceIdentifier = (value) =>
+  String(value || "")
+    .split(/[\s/?#&=|]+/)
+    .some(isInternalInvoiceIdentifier);
+
+export const getPublicInvoiceReference = (invoice = {}) => {
+  const invoiceNumber = String(invoice.invoice_no || "").trim();
+  return invoiceNumber && !isInternalInvoiceIdentifier(invoiceNumber)
+    ? invoiceNumber
+    : "Invoice";
+};
+
+export const getPublicProductClassification = (product = {}) =>
+  [product.productCategory, product.productSubcategory]
+    .map((value) => String(value || "").trim())
+    .filter((value) => value && !containsInternalInvoiceIdentifier(value))
+    .join(" / ");
+
 const getProductUrl = (product = {}) => {
   const directLink = product.productLink;
-  if (directLink?.startsWith("http://") || directLink?.startsWith("https://")) {
+  if (
+    (directLink?.startsWith("http://") || directLink?.startsWith("https://")) &&
+    !containsInternalInvoiceIdentifier(directLink)
+  ) {
     return directLink;
   }
 
   const reference =
-    directLink?.replace(/^\/product\//, "") ||
-    product.productSlug ||
-    product.catalogueProductId;
-  return reference
+    directLink?.replace(/^\/product\//, "") || product.productSlug;
+  return reference && !containsInternalInvoiceIdentifier(reference)
     ? `https://aquakart.co.in/product/${encodeURIComponent(reference)}`
     : "";
 };
@@ -132,7 +160,7 @@ const drawPageHeader = (doc, invoice, continued = false, sectionLabel = "") => {
   doc.text(documentTitle, width - 42, 42, { align: "right" });
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.text(invoice.invoice_no || invoice.id || "Invoice", width - 42, 60, {
+  doc.text(getPublicInvoiceReference(invoice), width - 42, 60, {
     align: "right",
   });
 };
@@ -201,18 +229,20 @@ const drawSectionHeading = (doc, { y, kicker, title, description }) => {
   doc.setFontSize(7);
   doc.setTextColor(...BRAND);
   doc.text(kicker.toUpperCase(), 42, y);
-  doc.setFontSize(17);
+  doc.setFontSize(15);
   doc.setTextColor(...INK);
-  doc.text(title, 42, y + 23);
+  const titleLines = doc.splitTextToSize(title, contentWidth).slice(0, 2);
+  doc.text(titleLines, 42, y + 23, { lineHeightFactor: 1.15 });
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(...MUTED);
+  const descriptionY = y + 29 + titleLines.length * 15;
   const descriptionLines = doc
     .splitTextToSize(description, contentWidth)
     .slice(0, 3);
-  doc.text(descriptionLines, 42, y + 43, { lineHeightFactor: 1.35 });
+  doc.text(descriptionLines, 42, descriptionY, { lineHeightFactor: 1.35 });
 
-  return y + 50 + descriptionLines.length * 9;
+  return descriptionY + 7 + descriptionLines.length * 9;
 };
 
 const getTermCardMetrics = (doc, term, cardWidth) => {
@@ -559,6 +589,7 @@ const addPageNumbers = (doc) => {
 /** Download the server-normalized public invoice as a searchable A4 PDF. */
 export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
   const doc = new JsPdf({ unit: "pt", format: "a4", compress: true });
+  doc.setCharSpace(0);
   const width = doc.internal.pageSize.getWidth();
   const height = doc.internal.pageSize.getHeight();
   const margin = 42;
@@ -569,7 +600,7 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
   let y = 116;
 
   const metadata = [
-    ["Invoice number", invoice.invoice_no || invoice.id || "Not available"],
+    ["Invoice number", getPublicInvoiceReference(invoice)],
     ["Invoice date", formatDate(invoice.date)],
     ["Payment", titleCase(invoice.payment_type)],
     ["Status", titleCase(invoice.paid_status)],
@@ -663,16 +694,21 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
   };
 
   invoice.products.forEach((product, index) => {
-    const nameLines = doc.splitTextToSize(product.productName, 220);
-    const categoryText = [product.productCategory, product.productSubcategory]
-      .filter(Boolean)
-      .join(" / ");
+    const publicProductName =
+      product.productName &&
+      !containsInternalInvoiceIdentifier(product.productName)
+        ? product.productName
+        : "Product";
+    const nameLines = doc.splitTextToSize(publicProductName, 220);
+    const categoryText = getPublicProductClassification(product);
     const categoryLines = categoryText
       ? doc.splitTextToSize(categoryText, 220)
       : [];
-    const serialLines = product.productSerialNo
-      ? doc.splitTextToSize(`Serial: ${product.productSerialNo}`, 220)
-      : [];
+    const serialLines =
+      product.productSerialNo &&
+      !containsInternalInvoiceIdentifier(product.productSerialNo)
+        ? doc.splitTextToSize(`Serial: ${product.productSerialNo}`, 220)
+        : [];
     const productUrl = getProductUrl(product);
     const rowHeight = Math.max(
       45,
@@ -830,6 +866,6 @@ export const downloadPublicInvoicePdf = async (invoice) => {
     _pdfLogoDataUrl: logoDataUrl,
   });
   doc.save(
-    `Aquakart-Invoice-${safeFilePart(invoice.invoice_no || invoice.id)}.pdf`,
+    `Aquakart-Invoice-${safeFilePart(getPublicInvoiceReference(invoice))}.pdf`,
   );
 };
