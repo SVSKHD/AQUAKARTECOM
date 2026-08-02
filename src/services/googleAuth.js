@@ -37,10 +37,10 @@ const withTimeout = (promise, timeoutMs, message) =>
     );
   });
 
-const exchangeGoogleCredential = async (credential) => {
+const exchangeGoogleUser = async (user) => {
   const firebaseAuth = getFirebaseAuth();
   const firebaseIdToken = await withTimeout(
-    credential.user.getIdToken(),
+    user.getIdToken(),
     FIREBASE_OPERATION_TIMEOUT_MS,
     "Google verification took too long. Please try again.",
   );
@@ -85,7 +85,7 @@ export const loginWithGoogle = async () => {
   const firebaseAuth = getFirebaseAuth();
   try {
     const credential = await signInWithPopup(firebaseAuth, getGoogleProvider());
-    return exchangeGoogleCredential(credential);
+    return exchangeGoogleUser(credential.user);
   } catch (error) {
     if (!shouldUseRedirectFallback(error)) throw error;
     await signInWithRedirect(firebaseAuth, getGoogleProvider());
@@ -95,7 +95,19 @@ export const loginWithGoogle = async () => {
 
 export const completeGoogleRedirectLogin = async () => {
   const credential = await getRedirectResult(getFirebaseAuth());
-  return credential ? exchangeGoogleCredential(credential) : null;
+  return credential ? exchangeGoogleUser(credential.user) : null;
+};
+
+export const restoreExistingGoogleLogin = async () => {
+  const firebaseAuth = getFirebaseAuth();
+  await withTimeout(
+    firebaseAuth.authStateReady?.(),
+    FIREBASE_OPERATION_TIMEOUT_MS,
+    "Google session check took too long.",
+  );
+  return firebaseAuth.currentUser
+    ? exchangeGoogleUser(firebaseAuth.currentUser)
+    : null;
 };
 
 export const logoutGoogleUser = async () => {
