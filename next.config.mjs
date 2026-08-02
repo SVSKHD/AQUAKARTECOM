@@ -122,6 +122,12 @@ const nextConfig = {
 
   async rewrites() {
     return [
+      // Keep invoice authentication on the Next.js server. The generic /api
+      // proxy below would otherwise send these BFF requests to Express.
+      {
+        source: "/invoice-gateway/:path*",
+        destination: "/api/invoice-access/:path*",
+      },
       {
         source: "/api/:path*",
         destination: "https://api.aquakart.co.in/v1/:path*",

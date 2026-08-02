@@ -37,7 +37,7 @@ describe("invoice delivery email", () => {
 describe("direct invoice Google login", () => {
   it("builds an invoice-scoped BFF path safely", () => {
     expect(directInvoiceLoginPath("invoice/with spaces")).toBe(
-      "/api/invoice-access/invoice%2Fwith%20spaces/login",
+      "/invoice-gateway/invoice%2Fwith%20spaces/login",
     );
   });
 });
