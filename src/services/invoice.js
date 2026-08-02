@@ -62,16 +62,12 @@ const exchangeInvoiceToken = async (token) => {
 export const directInvoiceLoginPath = (invoiceId) =>
   `/invoice-gateway/${encodeURIComponent(String(invoiceId || ""))}/login`;
 
-const loginDirectInvoiceAccess = async (
-  invoiceId,
-  firebaseIdToken,
-  backendSessionToken,
-) => {
+const loginDirectInvoiceAccess = async (invoiceId, firebaseIdToken) => {
   if (!invoiceId) throw new Error("Invoice ID is required.");
   const response = await invoiceRequest({
     method: "post",
     url: directInvoiceLoginPath(invoiceId),
-    data: { firebaseIdToken, backendSessionToken },
+    data: { firebaseIdToken },
   });
   return response.data;
 };

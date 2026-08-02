@@ -27,13 +27,12 @@ export default async function handler(req, res) {
 
   const invoiceId = normalizeInvoiceId(req.query.id);
   const firebaseIdToken = String(req.body?.firebaseIdToken || "");
-  const backendSessionToken = String(req.body?.backendSessionToken || "");
   if (!invoiceId) {
     return res
       .status(404)
       .json({ success: false, message: "Invoice not found" });
   }
-  if (!firebaseIdToken || !backendSessionToken) {
+  if (!firebaseIdToken) {
     return res
       .status(401)
       .json({ success: false, message: "Google login is required" });
@@ -46,7 +45,6 @@ export default async function handler(req, res) {
         method: "POST",
         headers: {
           Authorization: `Bearer ${firebaseIdToken}`,
-          "X-Aquakart-Session": backendSessionToken,
         },
       },
     );
