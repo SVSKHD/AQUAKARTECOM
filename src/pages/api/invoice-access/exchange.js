@@ -5,6 +5,7 @@ import {
 } from "@/utils/server/invoiceAccess";
 
 export default async function handler(req, res) {
+  res.setHeader("Cache-Control", "private, no-store, max-age=0");
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res

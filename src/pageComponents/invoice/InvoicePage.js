@@ -37,7 +37,6 @@ import {
   termsAndConditions,
 } from "@/constants/invoiceStaticData";
 import priceUtils from "@/utils/priceUtils";
-import InvoiceServiceOperations from "@/services/invoice";
 import styles from "@/styles/invoice.module.css";
 
 const formatDate = (value) => {
@@ -120,7 +119,7 @@ const InvoiceError = ({ statusCode }) => {
         </h1>
         <p>
           {unauthorized
-            ? "Request a secure email link using the phone number attached to your purchase."
+            ? "Continue with Google and confirm the phone number attached to your purchase."
             : notFound
               ? "Check the invoice link and try again. The ID may be incomplete or no longer available."
               : "We could not reach the invoice service. Please wait a moment and try again."}
@@ -396,7 +395,6 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copiedPayment, setCopiedPayment] = useState("");
-  const [isEmailing, setIsEmailing] = useState(false);
 
   if (!invoice || statusCode !== 200) {
     return <InvoiceError statusCode={statusCode} />;
@@ -431,21 +429,6 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
       toast.error("Could not copy the invoice link");
-    }
-  };
-
-  const handleEmail = async () => {
-    if (isEmailing) return;
-    setIsEmailing(true);
-    try {
-      const result = await InvoiceServiceOperations.emailInvoice(invoice.id);
-      toast.success(result.message || "Invoice sent to your email");
-    } catch (error) {
-      toast.error(
-        error?.response?.data?.message || "Could not email this invoice",
-      );
-    } finally {
-      setIsEmailing(false);
     }
   };
 
@@ -489,15 +472,10 @@ const InvoicePage = ({ invoice, statusCode = 200 }) => {
         </div>
 
         <div className={styles.commandActions}>
-          <button
-            type="button"
-            onClick={handleEmail}
-            disabled={isEmailing}
-            className={styles.secondaryButton}
-          >
+          <Link href="/page/find-invoice" className={styles.secondaryButton}>
             <Mail size={17} />
-            <span>{isEmailing ? "Sending…" : "Email"}</span>
-          </button>
+            <span>Email or WhatsApp</span>
+          </Link>
           <button
             type="button"
             onClick={handleCopy}
