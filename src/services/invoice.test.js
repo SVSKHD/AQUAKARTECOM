@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  directInvoiceLoginPath,
   isValidInvoiceEmail,
   normalizeInvoiceEmail,
   normalizeInvoicePhone,
@@ -29,5 +30,14 @@ describe("invoice delivery email", () => {
     expect(
       isValidInvoiceEmail("customer@example.com\r\nBcc:x@example.com"),
     ).toBe(false);
+  });
+});
+
+
+describe("direct invoice Google login", () => {
+  it("builds an invoice-scoped BFF path safely", () => {
+    expect(directInvoiceLoginPath("invoice/with spaces")).toBe(
+      "/api/invoice-access/invoice%2Fwith%20spaces/login",
+    );
   });
 });

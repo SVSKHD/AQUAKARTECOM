@@ -48,6 +48,22 @@ const exchangeInvoiceToken = async (token) => {
   return response.data;
 };
 
+export const directInvoiceLoginPath = (invoiceId) =>
+  `/api/invoice-access/${encodeURIComponent(String(invoiceId || ""))}/login`;
+
+const loginDirectInvoiceAccess = async (
+  invoiceId,
+  firebaseIdToken,
+  backendSessionToken,
+) => {
+  if (!invoiceId) throw new Error("Invoice ID is required.");
+  const response = await axios.post(directInvoiceLoginPath(invoiceId), {
+    firebaseIdToken,
+    backendSessionToken,
+  });
+  return response.data;
+};
+
 const loginInvoiceAccess = async (
   phone,
   firebaseIdToken,
@@ -119,6 +135,7 @@ const InvoiceServiceOperations = {
   requestInvoiceAccess,
   exchangeInvoiceToken,
   loginInvoiceAccess,
+  loginDirectInvoiceAccess,
   getAccessibleInvoices,
   emailInvoice,
   claimInvoice,

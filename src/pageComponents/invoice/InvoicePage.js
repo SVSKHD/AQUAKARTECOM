@@ -2,7 +2,7 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -33,6 +33,8 @@ import { toast } from "sonner";
 import logo from "@/assests/logo.png";
 import GoogleMark from "@/components/auth/GoogleMark";
 import { useAuth } from "@/context/AuthContext";
+import { getCurrentFirebaseIdToken } from "@/services/googleAuth";
+import InvoiceServiceOperations from "@/services/invoice";
 import {
   bankCopyDetails,
   bankPaymentMethods,
@@ -96,9 +98,15 @@ const InvoiceError = ({ statusCode }) => {
     authenticated,
     authReady,
     loading: authLoading,
+    session,
     signInWithGoogle,
   } = useAuth();
   const [signingIn, setSigningIn] = useState(false);
+  const [openingInvoice, setOpeningInvoice] = useState(false);
+  const [accessError, setAccessError] = useState("");
+  const [verificationRequired, setVerificationRequired] = useState(false);
+  const attemptedDirectAccess = useRef(false);
+  const directAccessInFlight = useRef(false);
   const notFound = statusCode === 404;
   const unauthorized = statusCode === 401 || statusCode === 403;
   const routeId = Array.isArray(router.query.id)
@@ -107,28 +115,80 @@ const InvoiceError = ({ statusCode }) => {
   const findInvoiceHref = routeId
     ? `/page/find-invoice?invoiceId=${encodeURIComponent(routeId)}`
     : "/page/find-invoice";
-  const authBusy = authLoading || signingIn;
+  const authBusy = authLoading || signingIn || openingInvoice;
+
+  const requestDirectAccess = useCallback(
+    async (backendSessionToken) => {
+      if (!routeId || !backendSessionToken || directAccessInFlight.current) {
+        return;
+      }
+
+      attemptedDirectAccess.current = true;
+      directAccessInFlight.current = true;
+      setOpeningInvoice(true);
+      setAccessError("");
+      setVerificationRequired(false);
+
+      try {
+        const firebaseIdToken = await getCurrentFirebaseIdToken();
+        await InvoiceServiceOperations.loginDirectInvoiceAccess(
+          routeId,
+          firebaseIdToken,
+          backendSessionToken,
+        );
+        window.location.replace(router.asPath);
+      } catch (error) {
+        setVerificationRequired(
+          Boolean(error?.response?.data?.verificationRequired),
+        );
+        setAccessError(
+          error?.response?.data?.message ||
+            error?.message ||
+            "We could not verify access to this invoice.",
+        );
+      } finally {
+        directAccessInFlight.current = false;
+        setOpeningInvoice(false);
+      }
+    },
+    [routeId, router.asPath],
+  );
 
   useEffect(() => {
-    if (unauthorized && authReady && authenticated && !authLoading) {
-      void router.replace(findInvoiceHref);
+    if (
+      unauthorized &&
+      authReady &&
+      authenticated &&
+      session?.token &&
+      !authLoading &&
+      !attemptedDirectAccess.current
+    ) {
+      void requestDirectAccess(session.token);
     }
   }, [
     authLoading,
     authReady,
     authenticated,
-    findInvoiceHref,
-    router,
+    requestDirectAccess,
+    session?.token,
     unauthorized,
   ]);
 
   const continueWithGoogle = async () => {
     if (authBusy) return;
+
+    if (authenticated && session?.token) {
+      attemptedDirectAccess.current = false;
+      await requestDirectAccess(session.token);
+      return;
+    }
+
     setSigningIn(true);
+    setAccessError("");
     try {
       const result = await signInWithGoogle();
       if (!result?.redirecting) {
-        await router.push(findInvoiceHref);
+        await requestDirectAccess(result?.token || session?.token);
       }
     } catch {
       // AuthContext shows the user-facing authentication error.
@@ -136,6 +196,14 @@ const InvoiceError = ({ statusCode }) => {
       setSigningIn(false);
     }
   };
+
+  const primaryActionLabel = openingInvoice
+    ? "Opening invoice…"
+    : signingIn || authLoading
+      ? "Checking Google session…"
+      : authenticated
+        ? "Open invoice"
+        : "Continue with Google";
 
   return (
     <div className={styles.errorPage}>
@@ -165,11 +233,16 @@ const InvoiceError = ({ statusCode }) => {
         </h1>
         <p>
           {unauthorized
-            ? "Continue with Google, then verify the phone number attached to your purchase to open this invoice."
+            ? "Continue with Google to verify ownership and open this invoice at the same secure link."
             : notFound
               ? "Check the invoice link and try again. The ID may be incomplete or no longer available."
               : "We could not reach the invoice service. Please wait a moment and try again."}
         </p>
+        {accessError ? (
+          <p className={styles.accessError} role="alert">
+            {accessError}
+          </p>
+        ) : null}
         <div className={styles.errorActions}>
           {unauthorized ? (
             <button
@@ -179,13 +252,21 @@ const InvoiceError = ({ statusCode }) => {
               disabled={authBusy}
             >
               <GoogleMark />
-              {authBusy ? "Checking Google session…" : "Continue with Google"}
+              {primaryActionLabel}
             </button>
           ) : (
             <button type="button" onClick={() => window.location.reload()}>
               Try again
             </button>
           )}
+          {verificationRequired ? (
+            <Link
+              href={findInvoiceHref}
+              className={styles.phoneVerificationLink}
+            >
+              Verify purchase phone
+            </Link>
+          ) : null}
           <Link href="/" className={styles.homeButton}>
             <ArrowLeft size={16} /> Back to Aquakart
           </Link>
