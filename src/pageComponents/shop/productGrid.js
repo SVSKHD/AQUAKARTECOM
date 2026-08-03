@@ -11,7 +11,7 @@ const ProductGrid = ({ products = [], viewMode = "grid" }) => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.05,
+        staggerChildren: 0.025,
       },
     },
   };
@@ -44,8 +44,13 @@ const ProductGrid = ({ products = [], viewMode = "grid" }) => {
           key={product?._id || index}
           variants={itemVariants}
           className="min-w-0"
+          style={{ contentVisibility: "auto", containIntrinsicSize: "420px" }}
         >
-          <ReusableProductCard product={product} viewMode={viewMode} />
+          <ReusableProductCard
+            product={product}
+            viewMode={viewMode}
+            imagePriority={index < 4}
+          />
         </motion.div>
       ))}
     </motion.div>
