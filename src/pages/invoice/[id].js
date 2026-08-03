@@ -1,13 +1,11 @@
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+
 import InvoicePage from "@/pageComponents/invoice/InvoicePage";
+import InvoiceServiceOperations from "@/services/invoice";
 import { enrichInvoiceProducts } from "@/utils/invoice/matchInvoiceProducts";
 import { mapInvoiceFromApi } from "@/utils/invoice/normalizeInvoice";
-import {
-  backendInvoiceRequest,
-  getInvoiceApiBase,
-  getInvoiceAccessToken,
-} from "@/utils/server/invoiceAccess";
 
-const FETCH_TIMEOUT_MS = 6_000;
 const CATALOGUE_GRACE_MS = 750;
 
 const normalizeRouteId = (value) => {
@@ -19,81 +17,86 @@ const normalizeRouteId = (value) => {
   return normalized;
 };
 
-const fetchProductCatalogue = async (apiBase) => {
+const fetchProductCatalogue = async (signal) => {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), CATALOGUE_GRACE_MS);
-  try {
-    const response = await fetch(
-      `${apiBase.replace(/\/$/, "")}/all-products?query=ecom`,
-      {
-        headers: { Accept: "application/json" },
-        signal: controller.signal,
-      },
-    );
+  const timeout = window.setTimeout(
+    () => controller.abort(),
+    CATALOGUE_GRACE_MS,
+  );
+  const abort = () => controller.abort();
+  signal.addEventListener("abort", abort, { once: true });
 
+  try {
+    const response = await fetch("/api/all-products?query=ecom", {
+      cache: "no-store",
+      headers: { Accept: "application/json", "Cache-Control": "no-cache" },
+      signal: controller.signal,
+    });
     return response.ok ? await response.json() : [];
   } catch {
     return [];
   } finally {
-    clearTimeout(timeout);
+    window.clearTimeout(timeout);
+    signal.removeEventListener("abort", abort);
   }
 };
 
-export const getServerSideProps = async ({ params, req, res }) => {
-  res.setHeader(
-    "Cache-Control",
-    "private, no-store, no-cache, max-age=0, must-revalidate",
-  );
-  res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
+const PublicInvoiceRoute = () => {
+  const router = useRouter();
+  const [state, setState] = useState({
+    invoice: null,
+    statusCode: 0,
+    loading: true,
+  });
 
-  const id = normalizeRouteId(params?.id);
-  if (!id) {
-    return { props: { invoice: null, statusCode: 404 } };
-  }
+  useEffect(() => {
+    if (!router.isReady) return undefined;
 
-  const accessToken = getInvoiceAccessToken(req);
-  if (!accessToken) {
-    return { props: { invoice: null, statusCode: 401 } };
-  }
-
-  const apiBase = getInvoiceApiBase();
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-
-  try {
-    const catalogueApiBase = process.env.NEXT_PUBLIC_API_URL || apiBase;
-    const cataloguePromise = fetchProductCatalogue(catalogueApiBase);
-    const response = await backendInvoiceRequest(`/${encodeURIComponent(id)}`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-      signal: controller.signal,
-    });
-
-    if ([401, 403, 404].includes(response.status)) {
-      return { props: { invoice: null, statusCode: response.status } };
+    const id = normalizeRouteId(router.query.id);
+    if (!id) {
+      setState({ invoice: null, statusCode: 404, loading: false });
+      return undefined;
     }
 
-    if (!response.ok) {
-      return { props: { invoice: null, statusCode: 502 } };
-    }
+    const controller = new AbortController();
+    setState((current) => ({ ...current, loading: true }));
 
-    const payload = await response.json();
-    const cataloguePayload = await cataloguePromise;
-    const invoice = enrichInvoiceProducts(
-      mapInvoiceFromApi(payload),
-      cataloguePayload,
-    );
+    const loadInvoice = async () => {
+      try {
+        const cataloguePromise = fetchProductCatalogue(controller.signal);
+        const payload = await InvoiceServiceOperations.getInvoiceById(
+          id,
+          controller.signal,
+        );
+        const invoice = enrichInvoiceProducts(
+          mapInvoiceFromApi(payload),
+          await cataloguePromise,
+        );
 
-    if (!invoice) {
-      return { props: { invoice: null, statusCode: 502 } };
-    }
+        if (!controller.signal.aborted) {
+          setState({
+            invoice,
+            statusCode: invoice ? 200 : 502,
+            loading: false,
+          });
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setState({
+            invoice: null,
+            statusCode: error?.response?.status || 502,
+            loading: false,
+          });
+        }
+      }
+    };
 
-    return { props: { invoice, statusCode: 200 } };
-  } catch {
-    return { props: { invoice: null, statusCode: 502 } };
-  } finally {
-    clearTimeout(timeout);
-  }
+    void loadInvoice();
+    return () => controller.abort();
+  }, [router.isReady, router.query.id]);
+
+  if (state.loading) return null;
+  return <InvoicePage invoice={state.invoice} statusCode={state.statusCode} />;
 };
 
-export default InvoicePage;
+export default PublicInvoiceRoute;

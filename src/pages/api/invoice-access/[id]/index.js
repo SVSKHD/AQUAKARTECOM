@@ -5,6 +5,12 @@ import {
 } from "@/utils/server/invoiceAccess";
 
 export default async function handler(req, res) {
+  res.setHeader(
+    "Cache-Control",
+    "private, no-store, no-cache, max-age=0, must-revalidate",
+  );
+  res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
+
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
     return res

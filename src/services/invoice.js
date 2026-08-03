@@ -62,6 +62,21 @@ const exchangeInvoiceToken = async (token) => {
 export const directInvoiceLoginPath = (invoiceId) =>
   `/invoice-gateway/${encodeURIComponent(String(invoiceId || ""))}/login`;
 
+export const invoiceByIdPath = (invoiceId) =>
+  `/invoice-gateway/${encodeURIComponent(String(invoiceId || ""))}`;
+
+const getInvoiceById = async (invoiceId, signal) => {
+  if (!invoiceId) throw new Error("Invoice ID is required.");
+  const response = await invoiceRequest({
+    method: "get",
+    url: invoiceByIdPath(invoiceId),
+    params: { refresh: Date.now() },
+    headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+    signal,
+  });
+  return response.data;
+};
+
 const loginDirectInvoiceAccess = async (invoiceId, firebaseIdToken) => {
   if (!invoiceId) throw new Error("Invoice ID is required.");
   const response = await invoiceRequest({
@@ -144,6 +159,7 @@ const InvoiceServiceOperations = {
   exchangeInvoiceToken,
   loginInvoiceAccess,
   loginDirectInvoiceAccess,
+  getInvoiceById,
   getAccessibleInvoices,
   emailInvoice,
   claimInvoice,
