@@ -50,6 +50,12 @@ export default async function handler(req, res) {
     );
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) return res.status(response.status).json(payload);
+    if (!payload.accessToken) {
+      return res.status(502).json({
+        success: false,
+        message: "Invoice access could not be created. Please try again.",
+      });
+    }
 
     res.setHeader(
       "Set-Cookie",
