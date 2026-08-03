@@ -117,8 +117,8 @@ const InvoiceError = ({ statusCode }) => {
     : "";
 
   const requestDirectAccess = useCallback(
-    async (backendSessionToken) => {
-      if (!routeId || !backendSessionToken || directAccessInFlight.current) {
+    async () => {
+      if (!routeId || directAccessInFlight.current) {
         return;
       }
 
@@ -132,7 +132,6 @@ const InvoiceError = ({ statusCode }) => {
         await InvoiceServiceOperations.loginDirectInvoiceAccess(
           routeId,
           firebaseIdToken,
-          backendSessionToken,
         );
         window.location.replace(router.asPath);
         return true;
@@ -160,7 +159,7 @@ const InvoiceError = ({ statusCode }) => {
       !authLoading &&
       !attemptedDirectAccess.current
     ) {
-      void requestDirectAccess(session.token);
+      void requestDirectAccess();
     }
   }, [
     authLoading,
@@ -176,7 +175,7 @@ const InvoiceError = ({ statusCode }) => {
 
     if (authenticated && session?.token) {
       attemptedDirectAccess.current = false;
-      const opened = await requestDirectAccess(session.token);
+      const opened = await requestDirectAccess();
       if (opened) return;
     }
 
@@ -185,7 +184,7 @@ const InvoiceError = ({ statusCode }) => {
     try {
       const result = await signInWithGoogle();
       if (!result?.redirecting) {
-        await requestDirectAccess(result?.token || session?.token);
+        await requestDirectAccess();
       }
     } catch {
       // AuthContext shows the user-facing authentication error.
