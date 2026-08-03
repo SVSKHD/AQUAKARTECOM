@@ -43,6 +43,7 @@ const fetchProductCatalogue = async (signal) => {
 
 const PublicInvoiceRoute = () => {
   const router = useRouter();
+  const [refreshKey, setRefreshKey] = useState(0);
   const [state, setState] = useState({
     invoice: null,
     statusCode: 0,
@@ -63,15 +64,11 @@ const PublicInvoiceRoute = () => {
 
     const loadInvoice = async () => {
       try {
-        const cataloguePromise = fetchProductCatalogue(controller.signal);
         const payload = await InvoiceServiceOperations.getInvoiceById(
           id,
           controller.signal,
         );
-        const invoice = enrichInvoiceProducts(
-          mapInvoiceFromApi(payload),
-          await cataloguePromise,
-        );
+        const invoice = mapInvoiceFromApi(payload);
 
         if (!controller.signal.aborted) {
           setState({
@@ -79,6 +76,17 @@ const PublicInvoiceRoute = () => {
             statusCode: invoice ? 200 : 502,
             loading: false,
           });
+        }
+
+        if (invoice) {
+          const catalogue = await fetchProductCatalogue(controller.signal);
+          if (!controller.signal.aborted) {
+            setState({
+              invoice: enrichInvoiceProducts(invoice, catalogue),
+              statusCode: 200,
+              loading: false,
+            });
+          }
         }
       } catch (error) {
         if (!controller.signal.aborted) {
@@ -93,10 +101,16 @@ const PublicInvoiceRoute = () => {
 
     void loadInvoice();
     return () => controller.abort();
-  }, [router.isReady, router.query.id]);
+  }, [refreshKey, router.isReady, router.query.id]);
 
   if (state.loading) return null;
-  return <InvoicePage invoice={state.invoice} statusCode={state.statusCode} />;
+  return (
+    <InvoicePage
+      invoice={state.invoice}
+      statusCode={state.statusCode}
+      onAccessGranted={() => setRefreshKey((current) => current + 1)}
+    />
+  );
 };
 
 export default PublicInvoiceRoute;

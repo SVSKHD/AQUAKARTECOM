@@ -93,6 +93,25 @@ export const loginWithGoogle = async () => {
   }
 };
 
+export const loginWithGoogleForInvoice = async () => {
+  const firebaseAuth = getFirebaseAuth();
+  try {
+    const credential = await signInWithPopup(firebaseAuth, getGoogleProvider());
+    return {
+      firebaseIdToken: await withTimeout(
+        credential.user.getIdToken(true),
+        FIREBASE_OPERATION_TIMEOUT_MS,
+        "Google verification took too long. Please try again.",
+      ),
+      redirecting: false,
+    };
+  } catch (error) {
+    if (!shouldUseRedirectFallback(error)) throw error;
+    await signInWithRedirect(firebaseAuth, getGoogleProvider());
+    return { redirecting: true };
+  }
+};
+
 export const completeGoogleRedirectLogin = async () => {
   const credential = await getRedirectResult(getFirebaseAuth());
   return credential ? exchangeGoogleUser(credential.user) : null;
@@ -123,7 +142,9 @@ export const getCurrentFirebaseIdToken = async () => {
   );
   const currentUser = firebaseAuth.currentUser;
   if (!currentUser) {
-    throw new Error("Please continue with Google first");
+    const error = new Error("Please continue with Google first");
+    error.code = "auth/no-current-user";
+    throw error;
   }
   return withTimeout(
     currentUser.getIdToken(true),
