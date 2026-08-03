@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   directInvoiceLoginPath,
+  invoiceByIdPath,
   isValidInvoiceEmail,
   normalizeInvoiceEmail,
   normalizeInvoicePhone,
@@ -33,11 +34,18 @@ describe("invoice delivery email", () => {
   });
 });
 
-
 describe("direct invoice Google login", () => {
   it("builds an invoice-scoped BFF path safely", () => {
     expect(directInvoiceLoginPath("invoice/with spaces")).toBe(
       "/invoice-gateway/invoice%2Fwith%20spaces/login",
+    );
+  });
+});
+
+describe("fresh invoice loading", () => {
+  it("builds an invoice-scoped client fetch path safely", () => {
+    expect(invoiceByIdPath("invoice/with spaces")).toBe(
+      "/invoice-gateway/invoice%2Fwith%20spaces",
     );
   });
 });

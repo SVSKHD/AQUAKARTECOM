@@ -581,8 +581,4 @@ const FindInvoicePage = () => {
   );
 };
 
-export const getServerSideProps = async () => ({
-  redirect: { destination: "/page/find-invoice", permanent: false },
-});
-
 export default FindInvoicePage;
