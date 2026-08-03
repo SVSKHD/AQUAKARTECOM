@@ -9,7 +9,17 @@ import LazyImage from "../image/LazyImage";
 import { useRouter } from "next/router";
 import { getProductReviewStats } from "@/utils/reviewStats";
 
-const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
+const getPhotoUrl = (photo) =>
+  typeof photo === "string"
+    ? photo
+    : photo?.delivery_url || photo?.secure_url || photo?.url || "";
+
+const ReusableProductCard = ({
+  product,
+  viewMode = "grid",
+  padded = true,
+  imagePriority = false,
+}) => {
   const [fav, setAddFav] = useState(false);
   const [cart, setAddCart] = useState(false);
 
@@ -213,13 +223,20 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
                   }}
                   transition={{ duration: 0.5, ease: "easeInOut" }}
                 >
-                  <LazyImage
-                    src={photo?.delivery_url}
-                    alt={title}
-                    width={500}
-                    height={500}
-                    imgClassName="h-full w-full object-cover object-center"
-                  />
+                  {index === activeIndex ? (
+                    <LazyImage
+                      src={getPhotoUrl(photo)}
+                      alt={title}
+                      width={480}
+                      height={480}
+                      sizes="192px"
+                      priority={imagePriority && index === 0}
+                      quality={68}
+                      imgClassName="h-full w-full object-cover object-center"
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-slate-100" />
+                  )}
                 </motion.div>
               ))}
             </div>
@@ -351,13 +368,20 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
                   animate={{ opacity: activeIndex === i ? 1 : 0.6 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <LazyImage
-                    src={p.delivery_url}
-                    alt={title}
-                    width={900}
-                    height={900}
-                    imgClassName="h-full w-full object-cover rounded-3xl p-1"
-                  />
+                  {i === activeIndex ? (
+                    <LazyImage
+                      src={getPhotoUrl(p)}
+                      alt={title}
+                      width={720}
+                      height={720}
+                      sizes="(max-width: 639px) calc(100vw - 24px), (max-width: 1023px) 50vw, (max-width: 1535px) 33vw, 25vw"
+                      priority={imagePriority && i === 0}
+                      quality={68}
+                      imgClassName="h-full w-full object-cover rounded-3xl p-1"
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-slate-100" />
+                  )}
                 </motion.div>
               ))}
             </div>
@@ -488,13 +512,20 @@ const ReusableProductCard = ({ product, viewMode = "grid", padded = true }) => {
                     }}
                     transition={{ duration: 0.5, ease: "easeInOut" }}
                   >
-                    <LazyImage
-                      src={photo?.delivery_url}
-                      alt={title}
-                      width={500}
-                      height={500}
-                      imgClassName="h-full w-full object-cover object-center rounded-3xl p-3"
-                    />
+                    {index === activeIndex ? (
+                      <LazyImage
+                        src={getPhotoUrl(photo)}
+                        alt={title}
+                        width={640}
+                        height={640}
+                        sizes="(max-width: 639px) calc(100vw - 24px), (max-width: 1023px) 50vw, 33vw"
+                        priority={imagePriority && index === 0}
+                        quality={68}
+                        imgClassName="h-full w-full object-cover object-center rounded-3xl p-3"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-slate-100" />
+                    )}
                   </motion.div>
                 ))}
               </div>
