@@ -31,6 +31,47 @@ const throwAuthError = (error) => {
   };
 };
 
+const authHeaders = (token, extra = {}) => ({
+  ...extra,
+  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+});
+
+const createCheckoutQuote = async (data, token) => {
+  try {
+    const response = await axios.post(`${BASE}/v1/checkout/quote`, data, {
+      headers: authHeaders(token),
+    });
+    return response.data;
+  } catch (error) {
+    if (isAuthFailure(error)) throwAuthError(error);
+    throw new Error(getServerMessage(error) || "Unable to validate checkout");
+  }
+};
+
+const createCheckoutCodOrder = async (data, token) => {
+  try {
+    const response = await axios.post(`${BASE}/v1/checkout/orders/cod`, data, {
+      headers: authHeaders(token),
+    });
+    return response.data;
+  } catch (error) {
+    if (isAuthFailure(error)) throwAuthError(error);
+    throw new Error(getServerMessage(error) || "Unable to create COD order");
+  }
+};
+
+const createCheckoutPayment = async (data, token, idempotencyKey) => {
+  try {
+    const response = await axios.post(`${BASE}/v1/payments`, data, {
+      headers: authHeaders(token, { "Idempotency-Key": idempotencyKey }),
+    });
+    return response.data;
+  } catch (error) {
+    if (isAuthFailure(error)) throwAuthError(error);
+    throw new Error(getServerMessage(error) || "Unable to initiate payment");
+  }
+};
+
 const createCodOrder = async (data) => {
   try {
     const response = await axios.post(`${BASE}/order/cod`, data);
@@ -152,6 +193,9 @@ const updateOrderStatus = async (id, token, data) => {
 };
 
 const orderServiceOperations = {
+  createCheckoutQuote,
+  createCheckoutCodOrder,
+  createCheckoutPayment,
   createCodOrder,
   createPhonePePayOrder,
   verifyPayment,

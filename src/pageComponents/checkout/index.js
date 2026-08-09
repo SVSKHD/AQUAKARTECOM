@@ -70,7 +70,8 @@ const AquaCheckoutComponent = () => {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [isProfileSaving, setIsProfileSaving] = useState(false);
   const [couponCode, setCouponCode] = useState("");
-  const [discount, setDiscount] = useState(0);
+  const [checkoutQuote, setCheckoutQuote] = useState(null);
+  const [isCouponApplying, setIsCouponApplying] = useState(false);
   const [couponError, setCouponError] = useState("");
 
   useEffect(() => {
@@ -91,7 +92,10 @@ const AquaCheckoutComponent = () => {
   const hasAddresses = Boolean(savedAddresses.length);
   const hasSingleAddress = savedAddresses.length === 1;
   const hasMultipleAddresses = savedAddresses.length > 1;
-  const payableTotal = Math.max(getTotalPrice() - discount, 0);
+  const discount = Number(checkoutQuote?.discount || 0);
+  const payableTotal = Number(
+    checkoutQuote?.payableAmount ?? getTotalPrice(),
+  );
   const shouldPromptAddressSelection = hasMultipleAddresses && !selectedAddress;
   const showAddressHandHint = !hasAddresses || shouldPromptAddressSelection;
   const addressHandHintText = !hasAddresses
@@ -210,15 +214,45 @@ const AquaCheckoutComponent = () => {
     [selectedAddress?.street, userData?.user],
   );
 
-  const handleApplyCoupon = () => {
-    if (couponCode.trim().toUpperCase() === "DISCOUNT10") {
-      setDiscount(100);
-      setCouponError("");
-    } else {
-      setDiscount(0);
-      setCouponError("Invalid coupon code.");
+  const quoteCart = useMemo(
+    () =>
+      cartData.map((item) => ({
+        productId: item._id || item.id,
+        quantity: item.quantity,
+      })),
+    [cartData],
+  );
+
+  const requestCheckoutQuote = async (code = "") => {
+    const response = await orderServiceOperations.createCheckoutQuote(
+      { cart: quoteCart, ...(code ? { couponCode: code } : {}) },
+      userData?.token,
+    );
+    const quote = response?.data || response;
+    setCheckoutQuote(quote);
+    return quote;
+  };
+
+  const handleApplyCoupon = async () => {
+    const code = couponCode.trim().toUpperCase();
+    if (!code) return;
+    setIsCouponApplying(true);
+    setCouponError("");
+    try {
+      await requestCheckoutQuote(code);
+      setCouponCode(code);
+    } catch (error) {
+      setCheckoutQuote(null);
+      setCouponError(error?.message || "Invalid coupon code.");
+    } finally {
+      setIsCouponApplying(false);
     }
   };
+
+  useEffect(() => {
+    setCheckoutQuote(null);
+    setCouponError("");
+  }, [quoteCart]);
 
   const handleAddressChange = (address) => {
     setSelectedAddress(address);
@@ -255,15 +289,7 @@ const AquaCheckoutComponent = () => {
     changeItemQuantity(id, nextQuantity);
   };
 
-  const productData = (data) =>
-    data.map((item) => ({
-      productId: item._id,
-      name: item.title,
-      price: item.price,
-      quantity: item.quantity,
-    }));
-
-  const handleCashOnDelivery = () => {
+  const handleCashOnDelivery = async () => {
     if (!totalItems) {
       AquaToast({ message: "Please add products to cart", type: "info" });
       return;
@@ -289,55 +315,32 @@ const AquaCheckoutComponent = () => {
 
     setButtonStatus((prev) => ({ ...prev, cod: true }));
 
-    const cashTransactionId = `AQTR-COD-${nanoid(5).toUpperCase()}D${dayjs(new Date()).format("DDMMYYYY")}`;
-    const orderId = `AQOD${dayjs(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
-
-    const newOrder = {
-      user: userData?.user?._id,
-      customerName: userData?.user?.name || "",
-      email: userData?.user?.email || "",
-      phone: userData?.user?.phone || "",
-      orderType: "Cash On Delivery",
-      items: productData(cartData),
-      transactionId: cashTransactionId,
-      totalAmount: payableTotal,
-      orderId,
-      discountAmount: discount,
-      paymentMethod: "Cash On Delivery",
-      paymentStatus: "Pending",
-      currency: "INR",
-      billingAddress: selectedAddress,
-      shippingAddress: selectedAddress,
-      shippingMethod: "Standard",
-      shippingCost: 50,
-      estimatedDelivery: new Date(
-        new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
-      ).toISOString(),
-      orderStatus: "Processing",
-    };
-
-    orderServiceOperations
-      .createCodOrder(newOrder)
-      .then((res) => {
-        AquaToast({
-          message: "COD order created successfully",
-          type: "success",
-        });
-        router.push(`/order/cod/${res.data.transactionId}`);
-      })
-      .catch((err) => {
-        console.error("order", err);
-        AquaToast({
-          message: "Failed to create COD order",
-          type: "error",
-        });
-      })
-      .finally(() => {
-        setButtonStatus((prev) => ({ ...prev, cod: false }));
-      });
+    try {
+      const quote = checkoutQuote || (await requestCheckoutQuote());
+      const res = await orderServiceOperations.createCheckoutCodOrder(
+        {
+          checkoutSessionId: quote.id || quote._id,
+          shippingAddress: selectedAddress,
+          billingAddress: selectedAddress,
+        },
+        userData?.token,
+      );
+      AquaToast({ message: "COD order created successfully", type: "success" });
+      const order = res?.data || res;
+      router.push(`/order/cod/${order.transactionId}`);
+    } catch (err) {
+      console.error("order", err);
+      AquaToast({ message: err?.message || "Failed to create COD order", type: "error" });
+    } finally {
+      setButtonStatus((prev) => ({ ...prev, cod: false }));
+    }
   };
 
-  const handlePhonePayment = () => {
+  const paymentAddress = () => ({
+      shippingAddress: selectedAddress,
+  });
+
+  const handlePhonePayment = async () => {
     if (!totalItems) {
       AquaToast({ message: "Please add products to cart", type: "info" });
       return;
@@ -361,40 +364,19 @@ const AquaCheckoutComponent = () => {
       return;
     }
 
-    const transactionId = `AQTR-PGPP${nanoid(5).toUpperCase()}D${dayjs(new Date()).format("DDMMYYYY")}`;
-    const orderId = `AQOD${dayjs(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
-
-    const newOrder = {
-      user: userData?.user?._id,
-      customerName: userData?.user?.name || "",
-      email: userData?.user?.email || "",
-      phone: userData?.user?.phone || "",
-      transactionId,
-      orderType: "Payment Method(Phone Pe Gateway)",
-      orderId,
-      items: productData(cartData),
-      totalAmount: payableTotal,
-      discountAmount: discount,
-      paymentMethod: "OTHER THAN CASH ON DELIVERY",
-      paymentStatus: "Pending",
-      currency: "INR",
-      billingAddress: selectedAddress,
-      shippingAddress: selectedAddress,
-      shippingMethod: "Standard",
-      shippingCost: 50,
-      estimatedDelivery: new Date(
-        new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
-      ).toISOString(),
-      orderStatus: "Processing",
-    };
-
     setButtonStatus((prev) => ({ ...prev, gateway: true }));
-
-    orderServiceOperations
-      .createPhonePePayOrder(newOrder, userData?.token)
-      .then((res) => {
-        setButtonStatus((prev) => ({ ...prev, gateway: false }));
-        const redirectUrl = res?.url || res?.data?.url || res?.redirectUrl;
+    try {
+      const quote = checkoutQuote || (await requestCheckoutQuote());
+      const res = await orderServiceOperations.createCheckoutPayment(
+        {
+          checkoutSessionId: quote.id || quote._id,
+          gateway: "phonepe",
+          ...paymentAddress(),
+        },
+        userData?.token,
+        `checkout-${nanoid()}`,
+      );
+        const redirectUrl = res?.url || res?.data?.url || res?.redirectUrl || res?.data?.redirectUrl;
         if (redirectUrl) {
           window.location.href = redirectUrl;
         } else {
@@ -404,15 +386,15 @@ const AquaCheckoutComponent = () => {
             type: "error",
           });
         }
-      })
-      .catch((err) => {
+    } catch (err) {
         console.error("Payment error:", err);
-        setButtonStatus((prev) => ({ ...prev, gateway: false }));
         AquaToast({
           message: err?.message || "Failed to initiate payment",
           type: "error",
         });
-      });
+    } finally {
+      setButtonStatus((prev) => ({ ...prev, gateway: false }));
+    }
   };
 
   const handleUpdateDetails = async (values) => {
@@ -1057,7 +1039,7 @@ const AquaCheckoutComponent = () => {
                         />
                         <button
                           type="button"
-                          disabled={Boolean(!couponCode)}
+                          disabled={Boolean(!couponCode) || isCouponApplying}
                           onClick={handleApplyCoupon}
                           className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500"
                         >
