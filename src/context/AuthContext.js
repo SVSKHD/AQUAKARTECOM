@@ -109,6 +109,11 @@ export const AuthProvider = ({ children }) => {
     }
   }, [applyLoginResult, router]);
 
+  const adoptGoogleSession = useCallback(
+    (result) => applyLoginResult(result, router.asPath, false),
+    [applyLoginResult, router.asPath],
+  );
+
   const signOut = useCallback(async () => {
     setLoading(true);
     try {
@@ -129,9 +134,17 @@ export const AuthProvider = ({ children }) => {
       session,
       signInWithGoogle,
       switchGoogleAccount: signInWithGoogle,
+      adoptGoogleSession,
       signOut,
     }),
-    [authReady, loading, session, signInWithGoogle, signOut],
+    [
+      adoptGoogleSession,
+      authReady,
+      loading,
+      session,
+      signInWithGoogle,
+      signOut,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
