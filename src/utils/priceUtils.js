@@ -112,20 +112,18 @@ const priceUtils = {
   getInvoiceAmounts(invoice) {
     const products = Array.isArray(invoice?.products) ? invoice.products : [];
     const itemsTotalPaise = products.reduce((total, product) => {
-      const quantity = Math.max(
-        Math.trunc(toFiniteNumber(product?.productQuantity, 1)),
-        1,
-      );
       return total + toPaise(product?.productPrice);
     }, 0);
 
     const suppliedTotal = Number(invoice?.total_amount);
     const grandTotalPaise =
-      Number.isFinite(suppliedTotal) && suppliedTotal >= 0
-        ? toPaise(suppliedTotal)
-        : itemsTotalPaise;
-    const grandTotal = fromPaise(grandTotalPaise);
-    const tax = this.getGSTBreakdown(grandTotal);
+      itemsTotalPaise > 0
+        ? itemsTotalPaise
+        : Number.isFinite(suppliedTotal) && suppliedTotal >= 0
+          ? toPaise(suppliedTotal)
+          : 0;
+    const tax = this.getGSTBreakdown(fromPaise(grandTotalPaise));
+    const grandTotal = tax.basePrice + tax.gstValue;
 
     return {
       itemsTotal: fromPaise(itemsTotalPaise),

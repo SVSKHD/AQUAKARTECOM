@@ -22,7 +22,7 @@ describe("priceUtils", () => {
     expect(result.cgstValue + result.sgstValue).toBe(result.gstValue);
   });
 
-  it("includes 18% GST in every invoice total", () => {
+  it("calculates invoice totals from GST-inclusive product prices without quantity", () => {
     const result = priceUtils.getInvoiceAmounts({
       gst: false,
       products: [
@@ -31,12 +31,12 @@ describe("priceUtils", () => {
       ],
     });
 
-    expect(result.itemsTotal).toBe(3_500);
-    expect(result.basePrice).toBe(2_966.1);
-    expect(result.gstValue).toBe(533.9);
-    expect(result.cgstValue).toBe(266.95);
-    expect(result.sgstValue).toBe(266.95);
-    expect(result.grandTotal).toBe(3_500);
+    expect(result.itemsTotal).toBe(1_500);
+    expect(result.basePrice).toBe(1_271.19);
+    expect(result.gstValue).toBe(228.81);
+    expect(result.cgstValue).toBe(114.4);
+    expect(result.sgstValue).toBe(114.41);
+    expect(result.grandTotal).toBe(1_500);
   });
 
   it("formats Indian amount words", () => {
