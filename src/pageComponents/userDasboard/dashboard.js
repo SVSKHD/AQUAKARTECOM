@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import AquaUserDashbordLayout from "./layout/layout";
 import DashboardProductCard from "./layout/cards/cartCard";
+import { getUserDisplayName } from "@/utils/user";
 
 const AquaUserDashbordPageComponent = () => {
   const router = useRouter();
@@ -77,11 +78,10 @@ const AquaUserDashbordPageComponent = () => {
     ];
   }, [safeCart.length, safeFav.length, recentOrders]);
 
-  const firstName = useMemo(() => {
-    const fullName =
-      userData?.user?.name || userData?.user?.firstName || "there";
-    return `${fullName}`.split(" ")[0];
-  }, [userData?.user]);
+  const firstName = useMemo(
+    () => getUserDisplayName(userData?.user, "there").split(" ")[0],
+    [userData?.user],
+  );
 
   const featuredCart = useMemo(() => safeCart.slice(0, 4), [safeCart]);
   const featuredFav = useMemo(() => safeFav.slice(0, 4), [safeFav]);

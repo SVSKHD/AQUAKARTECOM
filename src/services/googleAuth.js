@@ -1,16 +1,27 @@
 import {
   getRedirectResult,
+  onAuthStateChanged,
   signInWithPopup,
   signInWithRedirect,
   signOut,
 } from "firebase/auth";
-import { getFirebaseAuth, getGoogleProvider } from "@/lib/firebase/client";
+import {
+  getFirebaseAuth,
+  getGoogleProvider,
+  isFirebaseConfigured,
+} from "@/lib/firebase/client";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
 const AUTH_REQUEST_TIMEOUT_MS = 6_000;
 const FIREBASE_OPERATION_TIMEOUT_MS = 5_000;
-const authUrl = (path) =>
-  `${API_URL.endsWith("/v1") ? API_URL : `${API_URL}/v1`}${path}`;
+const authUrl = (path) => {
+  if (!API_URL) {
+    throw new Error(
+      "NEXT_PUBLIC_API_URL is not set. Add it to .env.local and restart the dev server.",
+    );
+  }
+  return `${API_URL.endsWith("/v1") ? API_URL : `${API_URL}/v1`}${path}`;
+};
 
 const parseResponse = async (response) => {
   const data = await response.json().catch(() => ({}));
@@ -121,11 +132,13 @@ export const loginWithGoogleForInvoice = async () => {
 };
 
 export const completeGoogleRedirectLogin = async () => {
+  if (!isFirebaseConfigured()) return null;
   const credential = await getRedirectResult(getFirebaseAuth());
   return credential ? exchangeGoogleUser(credential.user) : null;
 };
 
 export const restoreExistingGoogleLogin = async () => {
+  if (!isFirebaseConfigured()) return null;
   const firebaseAuth = getFirebaseAuth();
   await withTimeout(
     firebaseAuth.authStateReady?.(),
@@ -137,8 +150,22 @@ export const restoreExistingGoogleLogin = async () => {
     : null;
 };
 
+// Clears the Firebase session (IndexedDB + localStorage). Without this the SDK
+// silently restores the user on the next page load, so "sign out" never sticks.
 export const logoutGoogleUser = async () => {
+  if (!isFirebaseConfigured()) return;
   await signOut(getFirebaseAuth());
+};
+
+// Keeps Redux in sync with Firebase — covers sign-out from another tab and
+// sessions Firebase drops on its own (revoked/expired credentials).
+export const observeGoogleAuthState = (listener) => {
+  if (!isFirebaseConfigured()) return () => {};
+  try {
+    return onAuthStateChanged(getFirebaseAuth(), listener);
+  } catch {
+    return () => {};
+  }
 };
 
 export const getCurrentFirebaseIdToken = async () => {

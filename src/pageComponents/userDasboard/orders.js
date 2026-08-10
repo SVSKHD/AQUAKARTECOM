@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import AquaUserDashbordLayout from "./layout/layout";
 import orderServiceOperations from "@/services/order";
 import { generateInvoicePDF, loadJsPDF } from "@/utils/invoice";
+import { useAuth } from "@/context/AuthContext";
 import {
   ClipboardList,
   Wallet,
@@ -194,7 +195,7 @@ const getTimelineSteps = (orderStatus) => {
 
 const AquaOrdersPageComponent = () => {
   const { userData } = useSelector((state) => ({ ...state }));
-  const dispatch = useDispatch();
+  const { signOut } = useAuth();
   const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -286,8 +287,8 @@ const AquaOrdersPageComponent = () => {
   }, []);
 
   const handleReLogin = () => {
-    dispatch({ type: "LOGOUT", payload: null });
-    router.push("/");
+    // Full sign-out (Firebase included) so the next sign-in issues a fresh token.
+    signOut({ notify: false });
   };
 
   useEffect(() => {

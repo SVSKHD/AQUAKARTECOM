@@ -18,12 +18,14 @@ import {
   HeartIcon,
 } from "@heroicons/react/24/outline";
 import { FaUser } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import LW from "@/assests/logo.png";
 import useCartDrawer from "@/utils/drawer";
 import useDialog from "@/utils/dialog";
 import { getFestivalWish } from "@/utils/festival";
+import { getUserDisplayName } from "@/utils/user";
+import { useAuth } from "@/context/AuthContext";
 import LazyImage from "../image/LazyImage";
 
 const navigation = [
@@ -36,10 +38,10 @@ const navigation = [
 const classNames = (...classes) => classes.filter(Boolean).join(" ");
 
 const AquaHeader = () => {
-  const dispatch = useDispatch();
   const router = useRouter();
   const { openCartDrawer, openFavDrawer } = useCartDrawer();
   const { openAuthDialog } = useDialog();
+  const { signOut } = useAuth();
 
   const { userData, cartData, favData } = useSelector((state) => ({
     ...state,
@@ -47,12 +49,26 @@ const AquaHeader = () => {
 
   const [festival, setFestival] = useState(null);
   const [isVisible, setIsVisible] = useState(true);
+  const [signingOut, setSigningOut] = useState(false);
 
   const lastScrollYRef = useRef(0);
   const tickingRef = useRef(false);
 
   const cartCount = Array.isArray(cartData) ? cartData.length : 0;
   const favCount = Array.isArray(favData) ? favData.length : 0;
+
+  const displayName = getUserDisplayName(userData?.user, "User");
+  const displayEmail = userData?.user?.email || "";
+
+  const handleSignOut = useCallback(async () => {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await signOut();
+    } finally {
+      setSigningOut(false);
+    }
+  }, [signOut, signingOut]);
 
   const isActiveRoute = useCallback(
     (href) => router.pathname === href,
@@ -237,8 +253,13 @@ const AquaHeader = () => {
                             Signed in as
                           </p>
                           <p className="truncate text-sm font-bold text-slate-800">
-                            {userData?.user?.name || "User"}
+                            {displayName}
                           </p>
+                          {displayEmail && (
+                            <p className="truncate text-xs text-slate-500">
+                              {displayEmail}
+                            </p>
+                          )}
                         </div>
 
                         <MenuItem>
@@ -263,20 +284,16 @@ const AquaHeader = () => {
                               type="button"
                               aria-label="Logout"
                               name="Logout"
-                              onClick={() =>
-                                dispatch({
-                                  type: "LOGOUT",
-                                  payload: null,
-                                })
-                              }
+                              disabled={signingOut}
+                              onClick={handleSignOut}
                               className={classNames(
-                                "mx-2 block w-[calc(100%-16px)] rounded-xl px-4 py-2.5 text-left text-sm font-medium transition-colors",
+                                "mx-2 block w-[calc(100%-16px)] rounded-xl px-4 py-2.5 text-left text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                                 focus
                                   ? "bg-red-50 text-red-600"
                                   : "text-slate-600 hover:bg-slate-50",
                               )}
                             >
-                              Sign out
+                              {signingOut ? "Signing out…" : "Sign out"}
                             </button>
                           )}
                         </MenuItem>

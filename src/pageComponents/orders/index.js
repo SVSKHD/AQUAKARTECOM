@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { nanoid } from "nanoid";
 import {
@@ -20,6 +20,7 @@ import AquaLayout from "@/components/Layout/Layout";
 import AquaSpinner from "@/components/common/spinner";
 import AquaToast from "@/components/reusables/react-toastify";
 import orderServiceOperations from "@/services/order";
+import { useAuth } from "@/context/AuthContext";
 
 const TIMELINE_STEPS = [
   {
@@ -104,7 +105,7 @@ const deriveTimeline = (orderStatus = "") => {
 
 const AquaOrderPage = () => {
   const router = useRouter();
-  const dispatch = useDispatch();
+  const { signOut } = useAuth();
   const { id } = router.query;
   const userData = useSelector((state) => state.userData);
 
@@ -120,8 +121,8 @@ const AquaOrderPage = () => {
   const userId = userData?.user?._id;
 
   const handleReLogin = () => {
-    dispatch({ type: "LOGOUT", payload: null });
-    router.push("/");
+    // Full sign-out (Firebase included) so the next sign-in issues a fresh token.
+    signOut({ notify: false });
   };
 
   const fetchOrder = useCallback(

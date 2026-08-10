@@ -15,11 +15,14 @@ import {
   loginWithGoogle,
   logoutBackendUser,
   logoutGoogleUser,
+  observeGoogleAuthState,
   restoreExistingGoogleLogin,
 } from "@/services/googleAuth";
+import { isGoogleSession } from "@/utils/user";
 
 const AuthContext = createContext(null);
 const AUTH_RESTORE_TIMEOUT_MS = 12_000;
+const RETURN_PATH_KEY = "aquakart_auth_return_to";
 
 const restoreGoogleLogin = () =>
   Promise.race([
@@ -43,20 +46,27 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   const redirectChecked = useRef(false);
+  const signedOutRef = useRef(false);
+  const sessionRef = useRef(session);
+
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
 
   const applyLoginResult = useCallback(
     async (result, requestedReturnPath, showSuccess = true) => {
       if (!result || result.redirecting) return result;
+      signedOutRef.current = false;
       dispatch({ type: "LOGGED_IN_USER", payload: result });
       dispatch({ type: "SET_AUTH_DIALOG_VISIBLE", payload: false });
       const storedReturnPath =
         typeof window === "undefined"
           ? ""
-          : window.sessionStorage.getItem("aquakart_auth_return_to");
+          : window.sessionStorage.getItem(RETURN_PATH_KEY);
       const returnPath = safeReturnPath(
         requestedReturnPath || storedReturnPath || router.asPath,
       );
-      window.sessionStorage.removeItem("aquakart_auth_return_to");
+      window.sessionStorage.removeItem(RETURN_PATH_KEY);
       if (showSuccess) toast.success(result.message);
 
       if (returnPath !== router.asPath) {
@@ -73,7 +83,9 @@ export const AuthProvider = ({ children }) => {
     let active = true;
     restoreGoogleLogin()
       .then((result) => {
-        if (!active || !result) return null;
+        // A sign-out that landed while the restore was in flight must win,
+        // otherwise the resolved session logs the user straight back in.
+        if (!active || !result || signedOutRef.current) return null;
         return applyLoginResult(result, undefined, false);
       })
       .catch((error) => {
@@ -93,10 +105,10 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     const returnPath = safeReturnPath(
       router.query.returnUrl ||
-        window.sessionStorage.getItem("aquakart_auth_return_to") ||
+        window.sessionStorage.getItem(RETURN_PATH_KEY) ||
         router.asPath,
     );
-    window.sessionStorage.setItem("aquakart_auth_return_to", returnPath);
+    window.sessionStorage.setItem(RETURN_PATH_KEY, returnPath);
 
     try {
       const result = await loginWithGoogle();
@@ -114,17 +126,50 @@ export const AuthProvider = ({ children }) => {
     [applyLoginResult, router.asPath],
   );
 
-  const signOut = useCallback(async () => {
-    setLoading(true);
-    try {
-      await logoutBackendUser(session?.token);
-    } finally {
-      await logoutGoogleUser().catch(() => {});
+  const signOut = useCallback(
+    async ({ redirectTo = "/", notify = true } = {}) => {
+      const token = sessionRef.current?.token;
+      signedOutRef.current = true;
+      setLoading(true);
+
+      // Clear Firebase first: while its session lives, the restore on the next
+      // page load re-exchanges the ID token and signs the user back in.
+      await logoutGoogleUser().catch((error) => {
+        console.error("Firebase sign-out failed", error);
+      });
+      await logoutBackendUser(token).catch((error) => {
+        console.error("Backend sign-out failed", error);
+      });
+
       dispatch({ type: "LOGOUT", payload: null });
+      dispatch({ type: "SET_AUTH_DIALOG_VISIBLE", payload: false });
+      if (typeof window !== "undefined") {
+        window.sessionStorage.removeItem(RETURN_PATH_KEY);
+      }
+
       setLoading(false);
-      await router.push("/");
-    }
-  }, [dispatch, router, session?.token]);
+      if (notify) toast.success("Signed out successfully");
+      if (redirectTo) await router.push(redirectTo);
+    },
+    [dispatch, router],
+  );
+
+  // Firebase is the source of truth for Google sessions. If it drops the user
+  // (other tab, revoked credentials, cleared storage), drop the Redux session
+  // too so the UI can never show a signed-in state Firebase disagrees with.
+  useEffect(() => {
+    return observeGoogleAuthState((firebaseUser) => {
+      if (firebaseUser) {
+        signedOutRef.current = false;
+        return;
+      }
+      // Not signedOutRef: an in-flight redirect login must still be allowed to
+      // land. Firebase reports no user until getRedirectResult resolves.
+      if (isGoogleSession(sessionRef.current)) {
+        dispatch({ type: "LOGOUT", payload: null });
+      }
+    });
+  }, [dispatch]);
 
   const value = useMemo(
     () => ({
@@ -132,6 +177,7 @@ export const AuthProvider = ({ children }) => {
       authReady,
       loading: loading || !authReady,
       session,
+      user: session?.user ?? null,
       signInWithGoogle,
       switchGoogleAccount: signInWithGoogle,
       adoptGoogleSession,

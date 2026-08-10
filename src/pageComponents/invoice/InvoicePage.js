@@ -289,7 +289,7 @@ const InvoiceError = ({ statusCode, onAccessGranted }) => {
 };
 
 const ProductCard = ({ product, index }) => {
-  const lineTotal = product.productPrice * product.productQuantity;
+  const lineTotal = product.productPrice;
 
   return (
     <article className={styles.productCard}>
@@ -337,16 +337,16 @@ const ProductCard = ({ product, index }) => {
           </span>
         </div>
 
-        {product.productSerialNo ? (
+        {/* {product.productSerialNo ? (
           <div className={styles.serialNumber}>
             <Hash size={13} /> Serial {product.productSerialNo}
           </div>
-        ) : null}
+        ) : null} */}
 
         <div className={styles.productPriceRow}>
           <div>
             <span>Unit price</span>
-            <strong>{priceUtils.formatAmount(product.productPrice)}</strong>
+            <strong>{priceUtils.formatAmount(product.productPrice / 2)}</strong>
             <small>per supplied unit</small>
           </div>
           <div>
