@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useReducer, useRef } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -39,6 +39,37 @@ import styles from "@/styles/find-invoice.module.css";
 const LOOKUP_STORAGE_KEY = "aquakart_invoice_lookup_phone";
 const AUTH_UI_TIMEOUT_MS = 8_000;
 
+const isValidLookupPhone = (phone) => /^[6-9]\d{9}$/.test(phone);
+
+const getQueryValue = (value) => (Array.isArray(value) ? value[0] : value);
+
+const readStoredLookupPhone = () => {
+  if (typeof window === "undefined") return "";
+  try {
+    return window.sessionStorage.getItem(LOOKUP_STORAGE_KEY) || "";
+  } catch {
+    return "";
+  }
+};
+
+const writeStoredLookupPhone = (phone) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(LOOKUP_STORAGE_KEY, phone);
+  } catch {
+    // Private browsing modes can block sessionStorage; lookup still works.
+  }
+};
+
+const clearStoredLookupPhone = () => {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.removeItem(LOOKUP_STORAGE_KEY);
+  } catch {
+    // Storage cleanup is best-effort only.
+  }
+};
+
 const money = (value) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -68,6 +99,20 @@ const friendlyAuthError = (error) => {
   );
 };
 
+const lookupFailureMessage = (error) => {
+  if (error?.response?.status === 401) {
+    return (
+      error?.response?.data?.message ||
+      "Your Google session has expired. Switch or reconnect the account and try again."
+    );
+  }
+
+  return (
+    error?.response?.data?.message ||
+    "We could not check your invoices right now. Please try again."
+  );
+};
+
 const FindInvoicePage = () => {
   const router = useRouter();
   const {
@@ -84,13 +129,26 @@ const FindInvoicePage = () => {
   );
   const mutationInFlight = useRef(false);
   const sendInFlight = useRef(false);
+  const lookupInFlight = useRef(false);
+  const lookupHydrated = useRef(false);
+  const pendingPrefilledLookup = useRef(false);
+  const lastAutoLookupKey = useRef("");
 
   useEffect(() => {
-    const storedPhone = window.sessionStorage.getItem(LOOKUP_STORAGE_KEY) || "";
-    if (storedPhone) {
-      dispatch({ type: "PHONE_CHANGE", phone: storedPhone });
+    if (!router.isReady || lookupHydrated.current) return;
+    lookupHydrated.current = true;
+
+    const queryPhone = normalizeInvoicePhone(
+      getQueryValue(router.query.phone) || getQueryValue(router.query.mobile),
+    );
+    const storedPhone = normalizeInvoicePhone(readStoredLookupPhone());
+    const phone = queryPhone || storedPhone;
+
+    if (phone) {
+      pendingPrefilledLookup.current = isValidLookupPhone(phone);
+      dispatch({ type: "PHONE_CHANGE", phone });
     }
-  }, []);
+  }, [router.isReady, router.query.mobile, router.query.phone]);
 
   useEffect(() => {
     if (!authReady) return;
@@ -120,38 +178,48 @@ const FindInvoicePage = () => {
     return () => window.clearTimeout(timeout);
   }, [flow.phase]);
 
-  const updatePhone = (value) => {
-    const phone = normalizeInvoicePhone(value);
-    window.sessionStorage.setItem(LOOKUP_STORAGE_KEY, phone);
-    dispatch({ type: "PHONE_CHANGE", phone });
-  };
+  const lookupInvoices = useCallback(
+    async ({
+      phone = flow.phone,
+      user = session?.user,
+      backendSessionToken = session?.token,
+    } = {}) => {
+      const normalizedPhone = normalizeInvoicePhone(phone);
 
-  const authenticate = async (accountSwitch = false) => {
-    if (authLoading || flow.phase === INVOICE_FLOW_PHASE.AUTHENTICATING) return;
-    dispatch({ type: "AUTH_START" });
-    try {
-      const result = accountSwitch
-        ? await switchGoogleAccount()
-        : await signInWithGoogle();
-      if (result?.redirecting) return;
-      dispatch({ type: "AUTH_SUCCESS", user: result?.user });
-      if (accountSwitch && flow.phone) {
+      if (!isValidLookupPhone(normalizedPhone)) {
+        dispatch({
+          type: "FAILURE",
+          phase: INVOICE_FLOW_PHASE.LOOKUP,
+          error: "Please enter a valid 10-digit Indian mobile number.",
+        });
+        return false;
+      }
+
+      if (lookupInFlight.current) return false;
+      pendingPrefilledLookup.current = false;
+      lookupInFlight.current = true;
+      dispatch({ type: "SEARCH_START" });
+
+      try {
         const firebaseIdToken = await getCurrentFirebaseIdToken();
         const payload = await InvoiceServiceOperations.loginInvoiceAccess(
-          flow.phone,
+          normalizedPhone,
           firebaseIdToken,
-          result?.token || session?.token,
+          backendSessionToken,
         );
+
         if (!payload.found || !payload.invoices?.length) {
           dispatch({ type: "SEARCH_EMPTY", message: payload.message });
-          return;
+          return false;
         }
+
         dispatch({
           type: "SEARCH_SUCCESS",
           invoices: payload.invoices,
-          user: payload.user,
+          user: payload.user || user,
           message: payload.message,
         });
+
         const requestedInvoice = findRequestedInvoice(
           payload.invoices,
           router.query.invoiceId,
@@ -159,6 +227,86 @@ const FindInvoicePage = () => {
         if (requestedInvoice) {
           dispatch({ type: "SELECT_INVOICE", invoice: requestedInvoice });
         }
+
+        return true;
+      } catch (error) {
+        dispatch({
+          type: "FAILURE",
+          phase: INVOICE_FLOW_PHASE.LOOKUP,
+          error: lookupFailureMessage(error),
+        });
+        return false;
+      } finally {
+        lookupInFlight.current = false;
+      }
+    },
+    [flow.phone, router.query.invoiceId, session?.token, session?.user],
+  );
+
+  useEffect(() => {
+    if (
+      !pendingPrefilledLookup.current ||
+      !authReady ||
+      !authenticated ||
+      flow.phase !== INVOICE_FLOW_PHASE.LOOKUP ||
+      !isValidLookupPhone(flow.phone)
+    ) {
+      return;
+    }
+
+    const autoLookupKey = [
+      flow.phone,
+      session?.user?.email || "",
+      getQueryValue(router.query.invoiceId) || "",
+    ].join("|");
+    if (lastAutoLookupKey.current === autoLookupKey) return;
+
+    pendingPrefilledLookup.current = false;
+    lastAutoLookupKey.current = autoLookupKey;
+    void lookupInvoices({
+      phone: flow.phone,
+      user: session?.user,
+      backendSessionToken: session?.token,
+    });
+  }, [
+    authReady,
+    authenticated,
+    flow.phase,
+    flow.phone,
+    lookupInvoices,
+    router.query.invoiceId,
+    session?.token,
+    session?.user,
+  ]);
+
+  const updatePhone = (value) => {
+    const phone = normalizeInvoicePhone(value);
+    pendingPrefilledLookup.current = false;
+    writeStoredLookupPhone(phone);
+    dispatch({ type: "PHONE_CHANGE", phone });
+  };
+
+  const authenticate = async (accountSwitch = false) => {
+    if (
+      authLoading ||
+      lookupInFlight.current ||
+      flow.phase === INVOICE_FLOW_PHASE.AUTHENTICATING
+    ) {
+      return;
+    }
+    dispatch({ type: "AUTH_START" });
+    try {
+      const result = accountSwitch
+        ? await switchGoogleAccount()
+        : await signInWithGoogle();
+      if (result?.redirecting) return;
+      dispatch({ type: "AUTH_SUCCESS", user: result?.user });
+      if (isValidLookupPhone(flow.phone)) {
+        await lookupInvoices({
+          phone: flow.phone,
+          user: result?.user || session?.user,
+          backendSessionToken: result?.token || session?.token,
+        });
       }
     } catch (error) {
       if (accountSwitch && authenticated) {
@@ -182,55 +330,19 @@ const FindInvoicePage = () => {
 
   const searchInvoices = async (event) => {
     event.preventDefault();
-    if (!/^[6-9]\d{9}$/.test(flow.phone)) return;
+    if (!isValidLookupPhone(flow.phone)) {
+      dispatch({
+        type: "FAILURE",
+        phase: INVOICE_FLOW_PHASE.LOOKUP,
+        error: "Please enter a valid 10-digit Indian mobile number.",
+      });
+      return;
+    }
     if (!authenticated) {
       dispatch({ type: "AUTH_REQUIRED" });
       return;
     }
-    dispatch({ type: "SEARCH_START" });
-    try {
-      const firebaseIdToken = await getCurrentFirebaseIdToken();
-      const payload = await InvoiceServiceOperations.loginInvoiceAccess(
-        flow.phone,
-        firebaseIdToken,
-        session?.token,
-      );
-      if (!payload.found || !payload.invoices?.length) {
-        dispatch({ type: "SEARCH_EMPTY", message: payload.message });
-        return;
-      }
-      dispatch({
-        type: "SEARCH_SUCCESS",
-        invoices: payload.invoices,
-        user: payload.user,
-        message: payload.message,
-      });
-      const requestedInvoice = findRequestedInvoice(
-        payload.invoices,
-        router.query.invoiceId,
-      );
-      if (requestedInvoice) {
-        dispatch({ type: "SELECT_INVOICE", invoice: requestedInvoice });
-      }
-    } catch (error) {
-      if (error?.response?.status === 401) {
-        dispatch({
-          type: "FAILURE",
-          phase: INVOICE_FLOW_PHASE.LOOKUP,
-          error:
-            error?.response?.data?.message ||
-            "Your Google session has expired. Switch or reconnect the account and try again.",
-        });
-        return;
-      }
-      dispatch({
-        type: "FAILURE",
-        phase: INVOICE_FLOW_PHASE.LOOKUP,
-        error:
-          error?.response?.data?.message ||
-          "We could not check your invoices right now. Please try again.",
-      });
-    }
+    await lookupInvoices();
   };
 
   const confirmInvoice = async (emailAction) => {
@@ -334,7 +446,9 @@ const FindInvoicePage = () => {
   };
 
   const resetLookup = () => {
-    window.sessionStorage.removeItem(LOOKUP_STORAGE_KEY);
+    pendingPrefilledLookup.current = false;
+    lastAutoLookupKey.current = "";
+    clearStoredLookupPhone();
     dispatch({ type: "RESET_LOOKUP" });
   };
 
@@ -346,6 +460,7 @@ const FindInvoicePage = () => {
   };
 
   const isSearching = flow.phase === INVOICE_FLOW_PHASE.SEARCHING;
+  const phoneIsValid = isValidLookupPhone(flow.phone);
   const isAuthenticating =
     flow.phase === INVOICE_FLOW_PHASE.AUTHENTICATING || !authReady;
   const showLookup = [
@@ -390,7 +505,11 @@ const FindInvoicePage = () => {
               </div>
             </div>
 
-            <div className={styles.interaction} aria-live="polite">
+            <div
+              className={styles.interaction}
+              aria-busy={isAuthenticating || isSearching}
+              aria-live="polite"
+            >
               {isAuthenticating ? (
                 <div className={styles.centerState}>
                   <Loader2 className={styles.spinner} />
@@ -422,6 +541,7 @@ const FindInvoicePage = () => {
                     type="button"
                     className={styles.googleSignIn}
                     onClick={() => authenticate(false)}
+                    disabled={isAuthenticating}
                   >
                     <GoogleMark /> Continue with Google
                   </button>
@@ -429,16 +549,26 @@ const FindInvoicePage = () => {
               ) : null}
 
               {showLookup ? (
-                <form onSubmit={searchInvoices} className={styles.phoneForm}>
+                <form
+                  onSubmit={searchInvoices}
+                  className={styles.phoneForm}
+                  noValidate
+                >
                   <div className={styles.verifiedAccount}>
                     <CheckCircle2 />
                     <div>
                       <span>Verified Google account</span>
                       <strong>
-                        {flow.googleUser?.email || session?.user?.email}
+                        {flow.googleUser?.email ||
+                          session?.user?.email ||
+                          "Verified account"}
                       </strong>
                     </div>
-                    <button type="button" onClick={() => authenticate(true)}>
+                    <button
+                      type="button"
+                      onClick={() => authenticate(true)}
+                      disabled={isSearching}
+                    >
                       Switch
                     </button>
                   </div>
@@ -450,11 +580,15 @@ const FindInvoicePage = () => {
                       id="invoice-phone"
                       type="tel"
                       inputMode="numeric"
-                      autoComplete="tel"
+                      enterKeyHint="search"
+                      autoComplete="tel-national"
+                      name="phone"
+                      pattern="[6-9][0-9]{9}"
                       value={flow.phone}
                       onChange={(event) => updatePhone(event.target.value)}
                       placeholder="98765 43210"
                       aria-describedby="phone-help"
+                      aria-invalid={Boolean(flow.error && !phoneIsValid)}
                       disabled={isSearching}
                     />
                   </div>
@@ -466,10 +600,7 @@ const FindInvoicePage = () => {
                       {flow.error}
                     </p>
                   ) : null}
-                  <button
-                    type="submit"
-                    disabled={!/^[6-9]\d{9}$/.test(flow.phone) || isSearching}
-                  >
+                  <button type="submit" disabled={!phoneIsValid || isSearching}>
                     {isSearching ? (
                       <>
                         <Loader2 className={styles.spinner} /> Checking
