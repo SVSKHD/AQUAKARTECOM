@@ -116,7 +116,7 @@ const priceUtils = {
         Math.trunc(toFiniteNumber(product?.productQuantity, 1)),
         1,
       );
-      return total + toPaise(product?.productPrice) * quantity;
+      return total + toPaise(product?.productPrice);
     }, 0);
 
     const suppliedTotal = Number(invoice?.total_amount);

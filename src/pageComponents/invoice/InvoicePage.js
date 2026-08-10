@@ -346,7 +346,11 @@ const ProductCard = ({ product, index }) => {
         <div className={styles.productPriceRow}>
           <div>
             <span>Unit price</span>
-            <strong>{priceUtils.formatAmount(product.productPrice / 2)}</strong>
+            <strong>
+              {priceUtils.formatAmount(
+                product.productPrice / product.productQuantity,
+              )}
+            </strong>
             <small>per supplied unit</small>
           </div>
           <div>
