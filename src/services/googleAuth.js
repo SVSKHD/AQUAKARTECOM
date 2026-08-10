@@ -38,13 +38,21 @@ const withTimeout = (promise, timeoutMs, message) =>
   });
 
 const exchangeGoogleUser = async (user) => {
-  const firebaseAuth = getFirebaseAuth();
   const firebaseIdToken = await withTimeout(
     user.getIdToken(),
     FIREBASE_OPERATION_TIMEOUT_MS,
     "Google verification took too long. Please try again.",
   );
 
+  return exchangeFirebaseIdToken(firebaseIdToken);
+};
+
+export const exchangeFirebaseIdToken = async (firebaseIdToken) => {
+  if (!firebaseIdToken) {
+    throw new Error("Google verification is required.");
+  }
+
+  const firebaseAuth = getFirebaseAuth();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), AUTH_REQUEST_TIMEOUT_MS);
   let response;

@@ -33,9 +33,11 @@ import { toast } from "sonner";
 import logo from "@/assests/logo.png";
 import GoogleMark from "@/components/auth/GoogleMark";
 import {
+  exchangeFirebaseIdToken,
   getCurrentFirebaseIdToken,
   loginWithGoogleForInvoice,
 } from "@/services/googleAuth";
+import { useAuth } from "@/context/AuthContext";
 import InvoiceServiceOperations from "@/services/invoice";
 import { openDirectInvoiceAccess } from "@/features/invoiceAccess/directInvoice";
 import {
@@ -97,6 +99,7 @@ const StatusPill = ({ status }) => {
 
 const InvoiceError = ({ statusCode, onAccessGranted }) => {
   const router = useRouter();
+  const { adoptGoogleSession } = useAuth();
   const [checkingSession, setCheckingSession] = useState(true);
   const [hasGoogleSession, setHasGoogleSession] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
@@ -131,6 +134,8 @@ const InvoiceError = ({ statusCode, onAccessGranted }) => {
           firebaseIdToken,
           loginDirectInvoiceAccess:
             InvoiceServiceOperations.loginDirectInvoiceAccess,
+          exchangeFirebaseIdToken,
+          onStorefrontSession: adoptGoogleSession,
         });
         await onAccessGranted?.();
         return true;
@@ -146,7 +151,7 @@ const InvoiceError = ({ statusCode, onAccessGranted }) => {
         setOpeningInvoice(false);
       }
     },
-    [onAccessGranted, routeId],
+    [adoptGoogleSession, onAccessGranted, routeId],
   );
 
   useEffect(() => {
