@@ -3,6 +3,7 @@
 import { useDeferredValue, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowRight,
   BadgeCheck,
   ChevronDown,
   Droplets,
