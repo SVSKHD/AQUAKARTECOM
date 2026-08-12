@@ -451,17 +451,17 @@ const ReusableProductCard = ({
                 })}
               </div>
 
-              <div className="flex items-end justify-between border-t border-white/20 pt-3">
+              <div className="flex min-w-0 items-end border-t border-white/20 pt-3">
                 {/* Price - Left */}
-                <div className="flex flex-col">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-lg font-bold">
+                <div className="min-w-0 flex-1 pr-3">
+                  <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                    <span className="whitespace-nowrap text-[clamp(1rem,4.5vw,1.125rem)] font-bold leading-tight">
                       {discountPriceStatus
                         ? formatCurrencyINR(discountPrice)
                         : formatCurrencyINR(price)}
                     </span>
                     {discountPriceStatus && (
-                      <span className="text-xs text-white/60 line-through">
+                      <span className="whitespace-nowrap text-[11px] leading-tight text-white/60 line-through sm:text-xs">
                         {formatCurrencyINR(price)}
                       </span>
                     )}
@@ -471,7 +471,8 @@ const ReusableProductCard = ({
                 {/* Cart Button - Right */}
                 <button
                   onClick={handleCartToggle}
-                  className={`flex items-center justify-center rounded-full p-3 shadow-lg transition-all duration-300 active:scale-95 ${
+                  type="button"
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full shadow-lg transition-all duration-300 active:scale-95 ${
                     cart
                       ? "bg-emerald-500 text-white hover:bg-emerald-600"
                       : "bg-white text-slate-900 hover:bg-slate-200"
@@ -597,10 +598,10 @@ const ReusableProductCard = ({
               </div>
             </div>
 
-            <div className="mt-3 flex items-center justify-between gap-3 pt-3 border-t border-slate-50">
+            <div className="mt-3 flex min-w-0 items-center gap-3 border-t border-slate-50 pt-3">
               {/* Price - Left */}
-              <div className="flex flex-col">
-                <p className="text-sm font-bold text-slate-900">
+              <div className="min-w-0 flex-1">
+                <p className="whitespace-nowrap text-sm font-bold text-slate-900">
                   {discountPriceStatus ? (
                     <>
                       <span className="text-red-600">
@@ -622,7 +623,7 @@ const ReusableProductCard = ({
               <button
                 onClick={handleCartToggle}
                 type="button"
-                className={`flex items-center justify-center rounded-full p-2.5 shadow-md transition-all duration-300 ${
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-md transition-all duration-300 ${
                   cart
                     ? "bg-emerald-500 text-white hover:bg-emerald-600"
                     : "bg-slate-900 text-white hover:bg-slate-800"
