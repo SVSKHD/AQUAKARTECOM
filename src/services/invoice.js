@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const INVOICE_REQUEST_TIMEOUT_MS = 6_000;
+export const INVOICE_REQUEST_TIMEOUT_MS = 15_000;
 
 const invoiceRequest = (config) =>
   axios({ timeout: INVOICE_REQUEST_TIMEOUT_MS, ...config });
