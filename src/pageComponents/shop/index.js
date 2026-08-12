@@ -180,6 +180,7 @@ const AquaShopPageComponent = ({
   initialError = "",
   initialCategories = [],
   initialSubcategories = [],
+  managedSeo = null,
 }) => {
   const [products, setProducts] = useState(initialProducts);
   const [loading, setLoading] = useState(false);
@@ -446,7 +447,11 @@ const AquaShopPageComponent = ({
   );
 
   return (
-    <AquaLayout path="shop" productListData={schemaProducts}>
+    <AquaLayout
+      path="shop"
+      productListData={schemaProducts}
+      managedSeo={managedSeo}
+    >
       {loading ? (
         <AquaAppLoader
           variant="screen"

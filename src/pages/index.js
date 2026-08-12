@@ -1,6 +1,7 @@
 import AquaHomeComponent from "@/pageComponents/home";
 import CategoryServiceOperations from "@/services/category";
 import ProductServiceOperations from "@/services/products";
+import { getManagedSeoServerSide } from "@/services/seo";
 
 const AquaHomePage = (props) => {
   return (
@@ -17,15 +18,17 @@ export async function getServerSideProps({ res }) {
   );
 
   try {
-    const [categoriesRes, productsRes] = await Promise.all([
+    const [categoriesRes, productsRes, managedSeo] = await Promise.all([
       CategoryServiceOperations.Allcategories(),
       ProductServiceOperations.AllProducts(),
+      getManagedSeoServerSide("home"),
     ]);
 
     return {
       props: {
         initialCategories: categoriesRes.data?.data || [],
         initialProducts: productsRes.data?.data || [],
+        managedSeo,
       },
     };
   } catch (error) {
@@ -34,6 +37,7 @@ export async function getServerSideProps({ res }) {
       props: {
         initialCategories: [],
         initialProducts: [],
+        managedSeo: await getManagedSeoServerSide("home"),
       },
     };
   }
