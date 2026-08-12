@@ -51,7 +51,7 @@ const AquaSeoRevamp = ({
   const baseUrl = process.env.NEXT_PUBLIC_URL || "https://aquakart.co.in";
 
   let metaData = data;
-  if (path && config[path]) {
+  if (!metaData && path && config[path]) {
     metaData = config[path];
   }
   if (product) {
@@ -121,6 +121,14 @@ const AquaSeoRevamp = ({
     description = "",
     follow = true,
     photos,
+    robots,
+    ogTitle,
+    ogDescription,
+    ogImage,
+    twitterTitle,
+    twitterDescription,
+    twitterImage,
+    schemaJson,
   } = metaData || {};
 
   const canonicalUrl = toAbsoluteUrl(
@@ -129,6 +137,9 @@ const AquaSeoRevamp = ({
   );
   const photoCandidates = collectImages(photos);
   const primaryImage = photoCandidates[0] || DEFAULT_LOGO;
+  const socialImage = ogImage || primaryImage;
+  const twitterSocialImage = twitterImage || socialImage;
+  const safeJson = (value) => JSON.stringify(value).replace(/</g, "\\u003c");
 
   // Determine og:type based on page context
   const ogType = blogPage ? "article" : product ? "product" : "website";
@@ -519,28 +530,40 @@ const AquaSeoRevamp = ({
             <meta name="keyphrases" content={keyphrases} />
             <meta
               name="robots"
-              content={`index, ${follow ? "follow" : "nofollow"}, max-image-preview:large, max-snippet:-1, max-video-preview:-1`}
+              content={
+                robots ||
+                `index, ${follow ? "follow" : "nofollow"}, max-image-preview:large, max-snippet:-1, max-video-preview:-1`
+              }
             />
             <meta property="og:type" content={ogType} />
             <meta property="og:site_name" content="Aquakart" />
             <meta property="og:locale" content="en_IN" />
             <meta property="og:url" content={canonicalUrl} />
-            <meta property="og:title" content={title} />
-            <meta property="og:description" content={description} />
-            {primaryImage && (
-              <meta property="og:image" content={primaryImage} />
-            )}
+            <meta property="og:title" content={ogTitle || title} />
+            <meta
+              property="og:description"
+              content={ogDescription || description}
+            />
+            {socialImage && <meta property="og:image" content={socialImage} />}
             <meta property="og:image:width" content="1200" />
             <meta property="og:image:height" content="630" />
-            {primaryImage && <meta property="og:image:alt" content={title} />}
+            {socialImage && (
+              <meta property="og:image:alt" content={ogTitle || title} />
+            )}
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:site" content="@aquakart8" />
             <meta name="twitter:creator" content="@aquakart8" />
             <meta name="twitter:url" content={canonicalUrl} />
-            <meta name="twitter:title" content={title} />
-            <meta name="twitter:description" content={description} />
-            {primaryImage && (
-              <meta name="twitter:image" content={primaryImage} />
+            <meta
+              name="twitter:title"
+              content={twitterTitle || ogTitle || title}
+            />
+            <meta
+              name="twitter:description"
+              content={twitterDescription || ogDescription || description}
+            />
+            {twitterSocialImage && (
+              <meta name="twitter:image" content={twitterSocialImage} />
             )}
             <meta name="author" content="Aquakart" />
             <meta httpEquiv="content-language" content="en" />
@@ -551,11 +574,17 @@ const AquaSeoRevamp = ({
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
+              __html: safeJson({
                 "@context": "https://schema.org",
                 "@graph": graphNodes,
               }),
             }}
+          />
+        )}
+        {schemaJson && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: safeJson(schemaJson) }}
           />
         )}
       </Head>

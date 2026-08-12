@@ -122,7 +122,11 @@ const ArticleCard = ({ post }) => (
   </Link>
 );
 
-const AquaBlogComponent = ({ initialBlogs = [], initialError = "" }) => {
+const AquaBlogComponent = ({
+  initialBlogs = [],
+  initialError = "",
+  managedSeo = null,
+}) => {
   const router = useRouter();
   const [blogs, setBlogs] = useState(initialBlogs);
   const [query, setQuery] = useState("");
@@ -190,7 +194,7 @@ const AquaBlogComponent = ({ initialBlogs = [], initialError = "" }) => {
   };
 
   return (
-    <AquaLayout seo={seoData} blogListData={blogs}>
+    <AquaLayout seo={seoData} blogListData={blogs} managedSeo={managedSeo}>
       <main className={styles.page}>
         <div className={styles.shell}>
           <header className={styles.hero}>

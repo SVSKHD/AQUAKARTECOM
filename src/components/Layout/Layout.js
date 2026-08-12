@@ -13,6 +13,8 @@ import useNetworkStatus from "@/utils/connectivity";
 
 import CategoryServiceOperations from "@/services/category";
 import SubCategoryServiceOperations from "@/services/subcategory";
+import useManagedSeo from "@/hooks/useManagedSeo";
+import { getManagedSeoPageKey } from "@/utils/managedSeo";
 
 // Lazy client-only overlays (don’t hurt SSR/LCP)
 const AquaCartDrawer = dynamic(
@@ -69,6 +71,10 @@ const AquaLayout = (props) => {
 
     return next;
   }, [router.pathname]);
+  const managedSeo = useManagedSeo(
+    getManagedSeoPageKey(router.pathname),
+    props.managedSeo,
+  );
 
   // Mount overlays on first interaction OR after a short delay
   useEffect(() => {
@@ -197,6 +203,7 @@ const AquaLayout = (props) => {
   return (
     <>
       <AquaSeoRevamp
+        data={managedSeo || props.seo}
         path={seo.path}
         category={seo.category}
         categoryData={props?.categoryData}
