@@ -33,6 +33,7 @@ const InvoiceShareDialog = ({
   onDeliveryEmailChange,
   onSend,
   onWhatsApp,
+  whatsappSending,
 }) => {
   const scenario = getInvoiceEmailScenario(invoice);
   const busy = [
@@ -234,10 +235,14 @@ const InvoiceShareDialog = ({
                         type="button"
                         className={styles.whatsappButton}
                         onClick={onWhatsApp}
-                        disabled={busy}
+                        disabled={busy || whatsappSending}
                       >
-                        <MessageCircle /> WhatsApp
-                        <small>Coming soon</small>
+                        {whatsappSending ? (
+                          <Loader2 className={styles.spinner} />
+                        ) : (
+                          <MessageCircle />
+                        )}
+                        {whatsappSending ? "Sending…" : "Send on WhatsApp"}
                       </button>
                     </div>
 
