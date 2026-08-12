@@ -104,21 +104,21 @@ const ToggleRow = ({ checked, onChange, icon: Icon, title, description }) => (
     role="switch"
     aria-checked={checked}
     onClick={() => onChange(!checked)}
-    className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${
+    className={`grid min-h-[72px] w-full grid-cols-[36px_minmax(0,1fr)_44px] items-center gap-3 rounded-2xl border p-3 text-left transition ${
       checked
         ? "border-emerald-200 bg-emerald-50/90"
         : "border-slate-200/80 bg-white/70 hover:bg-white"
     }`}
   >
     <span
-      className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${
+      className={`grid h-9 w-9 place-items-center rounded-xl ${
         checked ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-500"
       }`}
     >
       <Icon size={17} />
     </span>
-    <span className="min-w-0 flex-1">
-      <strong className="block text-xs font-black text-slate-900">
+    <span className="min-w-0 self-center">
+      <strong className="block text-xs font-black leading-4 text-slate-900">
         {title}
       </strong>
       <small className="mt-0.5 block text-[10px] leading-4 text-slate-500">
@@ -126,7 +126,7 @@ const ToggleRow = ({ checked, onChange, icon: Icon, title, description }) => (
       </small>
     </span>
     <span
-      className={`relative h-6 w-11 shrink-0 rounded-full transition ${
+      className={`relative h-6 w-11 justify-self-end rounded-full transition ${
         checked ? "bg-emerald-500" : "bg-slate-200"
       }`}
     >
@@ -217,7 +217,7 @@ const ShopFiltersPanel = ({
         ) : null}
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2">
         <ToggleRow
           checked={filters.inStockOnly}
           onChange={(value) => onFilterChange("inStockOnly", value)}
