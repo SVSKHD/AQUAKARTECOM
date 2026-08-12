@@ -24,6 +24,7 @@ const baseProps = {
   onDeliveryEmailChange: vi.fn(),
   onSend: vi.fn(),
   onWhatsApp: vi.fn(),
+  whatsappSending: false,
 };
 
 describe("InvoiceShareDialog", () => {
@@ -90,7 +91,9 @@ describe("InvoiceShareDialog", () => {
     expect(
       screen.getByRole("button", { name: /whatsapp/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/coming soon/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /send on whatsapp/i }),
+    ).toBeEnabled();
   });
 
   it("disables sharing while an email request is active", () => {
@@ -110,5 +113,23 @@ describe("InvoiceShareDialog", () => {
     expect(
       screen.getByRole("button", { name: /sending invoice/i }),
     ).toBeDisabled();
+  });
+
+  it("shows a dedicated WhatsApp sending state", () => {
+    render(
+      <InvoiceShareDialog
+        {...baseProps}
+        phase={INVOICE_FLOW_PHASE.READY}
+        whatsappSending
+        invoice={{
+          ...baseProps.invoice,
+          emailStatus: "matches",
+          claimRequired: false,
+          canView: true,
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: /sending/i })).toBeDisabled();
   });
 });
