@@ -43,30 +43,59 @@ const formatCurrency = (value) =>
 
 const normalizeText = (value) => {
   if (value && typeof value === "object") {
-    return String(value.title || value.name || "").trim();
+    return String(
+      value.title ||
+        value.name ||
+        value.categoryTitle ||
+        value.subCategoryTitle ||
+        "",
+    ).trim();
   }
   return String(value || "").trim();
 };
 
-const extractCategory = (product) =>
-  normalizeText(
-    product?.category?.title ||
-      product?.categoryTitle ||
-      product?.categoryName ||
-      product?.category ||
-      product?.mainCategory ||
-      product?.productCategory,
-  ) || "Others";
+const isMongoObjectId = (value) => /^[a-f\d]{24}$/i.test(String(value || ""));
 
-const extractSubcategory = (product) =>
-  normalizeText(
+const buildTitleLookup = (items) =>
+  new Map(
+    items
+      .map((item) => [String(item?._id || item?.id || ""), normalizeText(item)])
+      .filter(([id, title]) => id && title),
+  );
+
+const extractCategory = (product, titleLookup = new Map()) => {
+  const value =
+    product?.category?.title ||
+    product?.categoryTitle ||
+    product?.categoryName ||
+    product?.category ||
+    product?.mainCategory ||
+    product?.productCategory;
+  const rawValue = normalizeText(value);
+  const id = String(value?._id || value?.id || rawValue);
+  return (
+    titleLookup.get(id) ||
+    (isMongoObjectId(rawValue) ? "" : rawValue) ||
+    "Others"
+  );
+};
+
+const extractSubcategory = (product, titleLookup = new Map()) => {
+  const value =
     product?.subcategory?.title ||
-      product?.subCategory?.title ||
-      product?.subCategoryName ||
-      product?.subCategory ||
-      product?.subcategory ||
-      product?.productSubCategory,
-  ) || "Others";
+    product?.subCategory?.title ||
+    product?.subCategoryName ||
+    product?.subCategory ||
+    product?.subcategory ||
+    product?.productSubCategory;
+  const rawValue = normalizeText(value);
+  const id = String(value?._id || value?.id || rawValue);
+  return (
+    titleLookup.get(id) ||
+    (isMongoObjectId(rawValue) ? "" : rawValue) ||
+    "Others"
+  );
+};
 
 const extractBrand = (product) =>
   normalizeText(
@@ -110,13 +139,13 @@ const isProductInStock = (product) => {
   return Number.isFinite(stock) ? stock > 0 : true;
 };
 
-const productSearchText = (product) =>
+const productSearchText = (product, categoryLookup, subcategoryLookup) =>
   [
     product?.title,
     product?.name,
     extractBrand(product),
-    extractCategory(product),
-    extractSubcategory(product),
+    extractCategory(product, categoryLookup),
+    extractSubcategory(product, subcategoryLookup),
     product?.application,
     product?.coverage,
     product?.capacity,
@@ -161,6 +190,15 @@ const AquaShopPageComponent = ({
   const [filters, setFilters] = useState(defaultFilters);
   const deferredQuery = useDeferredValue(filters.query.trim().toLowerCase());
 
+  const categoryTitleLookup = useMemo(
+    () => buildTitleLookup(initialCategories),
+    [initialCategories],
+  );
+  const subcategoryTitleLookup = useMemo(
+    () => buildTitleLookup(initialSubcategories),
+    [initialSubcategories],
+  );
+
   const fetchProducts = async () => {
     setLoading(true);
     setError("");
@@ -204,8 +242,8 @@ const AquaShopPageComponent = ({
     let maxPrice = 0;
 
     products.forEach((product) => {
-      const category = extractCategory(product);
-      const subcategory = extractSubcategory(product);
+      const category = extractCategory(product, categoryTitleLookup);
+      const subcategory = extractSubcategory(product, subcategoryTitleLookup);
       const brand = extractBrand(product);
       const price = extractPrice(product);
 
@@ -235,7 +273,13 @@ const AquaShopPageComponent = ({
         max: maxPrice,
       },
     };
-  }, [products, categoryTitlesFromProps, subcategoryTitlesFromProps]);
+  }, [
+    products,
+    categoryTitlesFromProps,
+    subcategoryTitlesFromProps,
+    categoryTitleLookup,
+    subcategoryTitleLookup,
+  ]);
 
   const filteredAndSortedProducts = useMemo(() => {
     const priceLimit =
@@ -244,19 +288,24 @@ const AquaShopPageComponent = ({
     const filtered = products.filter((product) => {
       if (
         deferredQuery &&
-        !productSearchText(product).includes(deferredQuery)
+        !productSearchText(
+          product,
+          categoryTitleLookup,
+          subcategoryTitleLookup,
+        ).includes(deferredQuery)
       ) {
         return false;
       }
       if (
         filters.category !== "All" &&
-        extractCategory(product) !== filters.category
+        extractCategory(product, categoryTitleLookup) !== filters.category
       ) {
         return false;
       }
       if (
         filters.subcategory !== "All" &&
-        extractSubcategory(product) !== filters.subcategory
+        extractSubcategory(product, subcategoryTitleLookup) !==
+          filters.subcategory
       ) {
         return false;
       }
@@ -303,7 +352,15 @@ const AquaShopPageComponent = ({
           return 0;
       }
     });
-  }, [products, filters, deferredQuery, derivedMeta.priceRange.max, sortBy]);
+  }, [
+    products,
+    filters,
+    deferredQuery,
+    derivedMeta.priceRange.max,
+    sortBy,
+    categoryTitleLookup,
+    subcategoryTitleLookup,
+  ]);
 
   const activeFilterChips = useMemo(() => {
     const chips = [];
@@ -466,7 +523,7 @@ const AquaShopPageComponent = ({
                 </aside>
 
                 <div className="min-w-0">
-                  <div className="sticky top-[76px] z-30 mb-5 rounded-[1.65rem] border border-white/80 bg-[rgba(248,252,251,0.92)] p-2.5 shadow-[0_18px_55px_rgba(15,23,42,0.09)] backdrop-blur-2xl sm:top-[92px] sm:p-3">
+                  <div className="sticky top-[76px] z-30 mb-10 rounded-[1.65rem] border border-white/80 bg-[rgba(248,252,251,0.96)] p-2.5 shadow-[0_18px_55px_rgba(15,23,42,0.09)] backdrop-blur-2xl sm:top-[92px] sm:p-3">
                     <div className="flex items-center gap-2.5">
                       <button
                         type="button"
