@@ -73,11 +73,13 @@ const clearStoredLookupPhone = () => {
 };
 
 const money = (value) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(Number(value) || 0);
+  value === null || value === undefined || !Number.isFinite(Number(value))
+    ? "Amount unavailable"
+    : new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0,
+      }).format(Number(value));
 
 const date = (value) => {
   const parsed = new Date(value);
@@ -691,7 +693,7 @@ const FindInvoicePage = () => {
                           </span>
                         </div>
                         <strong className={styles.invoiceTotal}>
-                          {money(invoice.total)}
+                          {money(invoice.total_price)}
                         </strong>
                         <div className={styles.purchaseMeta}>
                           <span>
