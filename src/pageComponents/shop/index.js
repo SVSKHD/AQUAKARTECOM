@@ -486,8 +486,8 @@ const AquaShopPageComponent = ({
           <div className="relative mx-auto max-w-[1480px]">
             <section id="shop-products" className="scroll-mt-28">
               <div className="grid items-start gap-5 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[310px_minmax(0,1fr)]">
-                <aside className="hidden lg:block">
-                  <div className="sticky top-[96px] max-h-[calc(100vh-112px)] overflow-y-auto rounded-[1.75rem] border border-white/80 bg-white/78 p-4 shadow-[0_18px_55px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
+                <aside className="hidden lg:sticky lg:top-[92px] lg:block lg:self-start">
+                  <div className="max-h-[calc(100vh-108px)] overflow-y-auto rounded-[1.75rem] border border-white/80 bg-white/78 p-4 shadow-[0_18px_55px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
                     <div className="mb-4 flex items-center justify-between border-b border-slate-200/70 pb-4">
                       <div>
                         <span className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-700">
@@ -523,7 +523,7 @@ const AquaShopPageComponent = ({
                 </aside>
 
                 <div className="min-w-0">
-                  <div className="sticky top-[76px] z-30 mb-10 rounded-[1.65rem] border border-white/80 bg-[rgba(248,252,251,0.96)] p-2.5 shadow-[0_18px_55px_rgba(15,23,42,0.09)] backdrop-blur-2xl sm:top-[92px] sm:p-3">
+                  <div className="sticky top-[76px] z-30 mb-10 rounded-[1.65rem] border border-white/80 bg-[rgba(248,252,251,0.96)] p-2.5 shadow-[0_18px_55px_rgba(15,23,42,0.09)] backdrop-blur-2xl sm:top-[92px] sm:p-3 lg:top-[92px]">
                     <div className="flex items-center gap-2.5">
                       <button
                         type="button"
