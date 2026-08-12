@@ -365,6 +365,18 @@
   line-height: 1.5;
 }
 
+.formNotice {
+  margin: 14px 0 0;
+  padding: 11px 13px;
+  border: 1px solid #cde1db;
+  border-radius: 11px;
+  background: rgba(235, 249, 244, 0.72);
+  color: #36645a;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
 .spinner {
   animation: spin 750ms linear infinite;
 }

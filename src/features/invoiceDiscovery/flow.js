@@ -183,3 +183,11 @@ export const validateDeliveryEmail = (value) =>
   isValidInvoiceEmail(value)
     ? ""
     : "Enter a valid email address for this delivery.";
+
+export const shouldShowInvoiceAuthLoader = ({
+  authReady,
+  authGateExpired,
+  phase,
+}) =>
+  phase === INVOICE_FLOW_PHASE.AUTHENTICATING ||
+  (!authReady && !authGateExpired);

@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -28,6 +28,7 @@ import {
   findRequestedInvoice,
   INVOICE_FLOW_PHASE,
   invoiceFlowReducer,
+  shouldShowInvoiceAuthLoader,
   validateDeliveryEmail,
 } from "@/features/invoiceDiscovery/flow";
 import { getCurrentFirebaseIdToken } from "@/services/googleAuth";
@@ -38,6 +39,7 @@ import styles from "@/styles/find-invoice.module.css";
 
 const LOOKUP_STORAGE_KEY = "aquakart_invoice_lookup_phone";
 const AUTH_UI_TIMEOUT_MS = 8_000;
+const AUTH_GATE_TIMEOUT_MS = 1_500;
 
 const isValidLookupPhone = (phone) => /^[6-9]\d{9}$/.test(phone);
 
@@ -127,12 +129,26 @@ const FindInvoicePage = () => {
     invoiceFlowReducer,
     createInitialInvoiceFlow(),
   );
+  const [authGateExpired, setAuthGateExpired] = useState(false);
   const mutationInFlight = useRef(false);
   const sendInFlight = useRef(false);
   const lookupInFlight = useRef(false);
   const lookupHydrated = useRef(false);
   const pendingPrefilledLookup = useRef(false);
   const lastAutoLookupKey = useRef("");
+
+  useEffect(() => {
+    if (authReady) {
+      setAuthGateExpired(false);
+      return undefined;
+    }
+
+    const timeout = window.setTimeout(
+      () => setAuthGateExpired(true),
+      AUTH_GATE_TIMEOUT_MS,
+    );
+    return () => window.clearTimeout(timeout);
+  }, [authReady]);
 
   useEffect(() => {
     if (!router.isReady || lookupHydrated.current) return;
@@ -288,7 +304,6 @@ const FindInvoicePage = () => {
 
   const authenticate = async (accountSwitch = false) => {
     if (
-      authLoading ||
       lookupInFlight.current ||
       flow.phase === INVOICE_FLOW_PHASE.AUTHENTICATING
     ) {
@@ -461,8 +476,11 @@ const FindInvoicePage = () => {
 
   const isSearching = flow.phase === INVOICE_FLOW_PHASE.SEARCHING;
   const phoneIsValid = isValidLookupPhone(flow.phone);
-  const isAuthenticating =
-    flow.phase === INVOICE_FLOW_PHASE.AUTHENTICATING || !authReady;
+  const isAuthenticating = shouldShowInvoiceAuthLoader({
+    authReady,
+    authGateExpired,
+    phase: flow.phase,
+  });
   const showLookup = [
     INVOICE_FLOW_PHASE.LOOKUP,
     INVOICE_FLOW_PHASE.SEARCHING,
@@ -532,6 +550,12 @@ const FindInvoicePage = () => {
                     Continue with Google before searching. This prevents invoice
                     details from being exposed through phone-number guesses.
                   </p>
+                  {!authReady && authGateExpired ? (
+                    <p className={styles.formNotice} role="status">
+                      The saved-session check is taking longer than expected.
+                      You can still continue with Google now.
+                    </p>
+                  ) : null}
                   {flow.error ? (
                     <p className={styles.formError} role="alert">
                       {flow.error}
