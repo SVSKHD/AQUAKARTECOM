@@ -5,6 +5,7 @@ import {
   getInvoiceEmailScenario,
   INVOICE_FLOW_PHASE,
   invoiceFlowReducer,
+  shouldShowInvoiceAuthLoader,
   validateDeliveryEmail,
 } from "./flow";
 
@@ -85,5 +86,29 @@ describe("invoice discovery state model", () => {
       { type: "SEND_START" },
     );
     expect(state.phase).toBe(INVOICE_FLOW_PHASE.SENDING);
+  });
+
+  it("stops blocking the invoice page when session restoration is slow", () => {
+    expect(
+      shouldShowInvoiceAuthLoader({
+        authReady: false,
+        authGateExpired: false,
+        phase: INVOICE_FLOW_PHASE.AUTH_REQUIRED,
+      }),
+    ).toBe(true);
+    expect(
+      shouldShowInvoiceAuthLoader({
+        authReady: false,
+        authGateExpired: true,
+        phase: INVOICE_FLOW_PHASE.AUTH_REQUIRED,
+      }),
+    ).toBe(false);
+    expect(
+      shouldShowInvoiceAuthLoader({
+        authReady: true,
+        authGateExpired: true,
+        phase: INVOICE_FLOW_PHASE.AUTHENTICATING,
+      }),
+    ).toBe(true);
   });
 });
