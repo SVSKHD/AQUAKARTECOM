@@ -1,4 +1,5 @@
 export const INVOICE_ACCESS_COOKIE = "aquakart_invoice_access";
+export const INVOICE_BACKEND_TIMEOUT_MS = 12_000;
 
 export const getInvoiceApiBase = () =>
   (
@@ -7,15 +8,30 @@ export const getInvoiceApiBase = () =>
     "https://api.aquakart.co.in/v1"
   ).replace(/\/$/, "");
 
-export const backendInvoiceRequest = async (path, options = {}) =>
-  fetch(`${getInvoiceApiBase()}/invoices/public${path}`, {
-    ...options,
-    headers: {
-      Accept: "application/json",
-      ...(options.body ? { "Content-Type": "application/json" } : {}),
-      ...options.headers,
-    },
-  });
+export const backendInvoiceRequest = async (path, options = {}) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(
+    () => controller.abort(),
+    INVOICE_BACKEND_TIMEOUT_MS,
+  );
+
+  try {
+    return await fetch(`${getInvoiceApiBase()}/invoices/public${path}`, {
+      ...options,
+      signal: options.signal || controller.signal,
+      headers: {
+        Accept: "application/json",
+        ...(options.body ? { "Content-Type": "application/json" } : {}),
+        ...options.headers,
+      },
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+export const isInvoiceBackendTimeout = (error) =>
+  error?.name === "AbortError" || error?.name === "TimeoutError";
 
 export const pipeJsonResponse = async (response, res) => {
   res.setHeader("Cache-Control", "private, no-store, max-age=0");

@@ -1,6 +1,7 @@
 import {
   backendInvoiceRequest,
   invoiceAccessCookie,
+  isInvoiceBackendTimeout,
   isSameOriginRequest,
 } from "@/utils/server/invoiceAccess";
 
@@ -54,7 +55,13 @@ export default async function handler(req, res) {
       user: payload.user,
       message: payload.message,
     });
-  } catch {
+  } catch (error) {
+    if (isInvoiceBackendTimeout(error)) {
+      return res.status(504).json({
+        success: false,
+        message: "Invoice lookup took too long. Please retry in a few seconds.",
+      });
+    }
     return res
       .status(502)
       .json({ success: false, message: "Invoice service is unavailable" });

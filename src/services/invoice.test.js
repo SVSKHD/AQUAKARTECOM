@@ -2,11 +2,18 @@ import { describe, expect, it } from "vitest";
 
 import {
   directInvoiceLoginPath,
+  INVOICE_REQUEST_TIMEOUT_MS,
   invoiceByIdPath,
   isValidInvoiceEmail,
   normalizeInvoiceEmail,
   normalizeInvoicePhone,
 } from "./invoice";
+
+describe("invoice request timing", () => {
+  it("allows the authenticated backend lookup enough time to finish", () => {
+    expect(INVOICE_REQUEST_TIMEOUT_MS).toBeGreaterThanOrEqual(12_000);
+  });
+});
 
 describe("normalizeInvoicePhone", () => {
   it("normalizes Indian country codes and formatting", () => {

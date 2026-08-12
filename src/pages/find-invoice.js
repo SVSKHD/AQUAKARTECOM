@@ -102,6 +102,10 @@ const friendlyAuthError = (error) => {
 };
 
 const lookupFailureMessage = (error) => {
+  if (error?.code === "ECONNABORTED") {
+    return "Invoice lookup took too long. Please retry in a few seconds.";
+  }
+
   if (error?.response?.status === 401) {
     return (
       error?.response?.data?.message ||
@@ -111,6 +115,9 @@ const lookupFailureMessage = (error) => {
 
   return (
     error?.response?.data?.message ||
+    (error?.response?.status === 429
+      ? "Too many invoice searches. Please wait a few minutes and retry."
+      : "") ||
     "We could not check your invoices right now. Please try again."
   );
 };
