@@ -139,6 +139,7 @@ const FindInvoicePage = () => {
     createInitialInvoiceFlow(),
   );
   const [authGateExpired, setAuthGateExpired] = useState(false);
+  const [whatsappSending, setWhatsappSending] = useState(false);
   const mutationInFlight = useRef(false);
   const sendInFlight = useRef(false);
   const lookupInFlight = useRef(false);
@@ -440,6 +441,7 @@ const FindInvoicePage = () => {
         type: "SEND_SUCCESS",
         message: payload.message || "Invoice emailed successfully.",
       });
+      toast.success(payload.message || "Invoice emailed successfully.");
     } catch (error) {
       dispatch({
         type: "FAILURE",
@@ -454,18 +456,23 @@ const FindInvoicePage = () => {
     }
   };
 
-  const showWhatsAppStatus = async () => {
-    if (!flow.selectedInvoice) return;
+  const sendInvoiceOnWhatsApp = async () => {
+    if (!flow.selectedInvoice || whatsappSending) return;
+    setWhatsappSending(true);
     try {
-      const payload = await InvoiceServiceOperations.getWhatsAppSharingStatus(
+      const payload = await InvoiceServiceOperations.shareInvoiceByWhatsApp(
         flow.selectedInvoice.id,
       );
-      toast.info(
-        payload.whatsapp?.message ||
-          "WhatsApp invoice sharing will be available soon.",
+      toast.success(
+        payload.message || "Invoice sent on WhatsApp successfully.",
       );
-    } catch {
-      toast.info("WhatsApp invoice sharing will be available soon.");
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          "We could not send the invoice on WhatsApp right now.",
+      );
+    } finally {
+      setWhatsappSending(false);
     }
   };
 
@@ -739,7 +746,8 @@ const FindInvoicePage = () => {
           dispatch({ type: "DELIVERY_EMAIL_CHANGE", email })
         }
         onSend={sendInvoice}
-        onWhatsApp={showWhatsAppStatus}
+        onWhatsApp={sendInvoiceOnWhatsApp}
+        whatsappSending={whatsappSending}
       />
     </AquaLayout>
   );

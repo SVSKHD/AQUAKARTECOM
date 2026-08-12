@@ -153,6 +153,14 @@ const getWhatsAppSharingStatus = async (invoiceId) => {
   return response.data;
 };
 
+const shareInvoiceByWhatsApp = async (invoiceId) => {
+  const response = await invoiceRequest({
+    method: "post",
+    url: `/invoice-gateway/${encodeURIComponent(invoiceId)}/share/whatsapp`,
+  });
+  return response.data;
+};
+
 const InvoiceServiceOperations = {
   lookupInvoices,
   requestInvoiceAccess,
@@ -166,6 +174,7 @@ const InvoiceServiceOperations = {
   updateInvoiceEmail,
   shareInvoiceByEmail,
   getWhatsAppSharingStatus,
+  shareInvoiceByWhatsApp,
 };
 
 export default InvoiceServiceOperations;
