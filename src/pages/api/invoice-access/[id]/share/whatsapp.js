@@ -5,8 +5,8 @@ import {
 } from "@/utils/server/invoiceAccess";
 
 export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    res.setHeader("Allow", "GET");
+  if (!["GET", "POST"].includes(req.method)) {
+    res.setHeader("Allow", "GET, POST");
     return res
       .status(405)
       .json({ success: false, message: "Method not allowed" });
@@ -20,13 +20,19 @@ export default async function handler(req, res) {
   try {
     const response = await backendInvoiceRequest(
       `/${encodeURIComponent(String(req.query.id || ""))}/share/whatsapp`,
-      { headers: { Authorization: `Bearer ${token}` } },
+      {
+        method: req.method,
+        headers: { Authorization: `Bearer ${token}` },
+      },
     );
     return pipeJsonResponse(response, res);
   } catch {
     return res.status(502).json({
       success: false,
-      message: "WhatsApp sharing status is unavailable",
+      message:
+        req.method === "POST"
+          ? "WhatsApp delivery is unavailable"
+          : "WhatsApp sharing status is unavailable",
     });
   }
 }
