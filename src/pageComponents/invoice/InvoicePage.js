@@ -554,7 +554,14 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
   }
 
   const amounts = priceUtils.getInvoiceAmounts(invoice);
-  const invoiceLabel = invoice.invoice_no || invoice.id || "Invoice";
+  const documentType = invoice.quotation ? "quotation" : invoice.po ? "po" : "invoice";
+  const documentName =
+    documentType === "quotation"
+      ? "Quotation"
+      : documentType === "po"
+        ? "Purchase Order"
+        : "Invoice";
+  const documentLabel = invoice.invoice_no || invoice.id || documentName;
   const customerDisplayName =
     invoice.customer_name || invoice.gst_name || "valued customer";
 
@@ -599,8 +606,8 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
   return (
     <div className={styles.page}>
       <Head>
-        <title>{invoiceLabel} | Aquakart Invoice</title>
-        <meta name="description" content={`Aquakart invoice ${invoiceLabel}`} />
+        <title>{documentLabel} | Aquakart {documentName}</title>
+        <meta name="description" content={`Aquakart ${documentName.toLowerCase()} ${documentLabel}`} />
         <meta name="robots" content="noindex, nofollow, noarchive" />
         <meta name="googlebot" content="noindex, nofollow, noarchive" />
       </Head>
@@ -615,13 +622,13 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
           </span>
           <span>
             <strong>Aquakart</strong>
-            <small>Invoice studio</small>
+            <small>{documentName} studio</small>
           </span>
         </Link>
 
         <div className={styles.commandIdentity}>
-          <BadgeCheck size={17} /> Verified invoice
-          <span>{invoiceLabel}</span>
+          <BadgeCheck size={17} /> Verified {documentName.toLowerCase()}
+          <span>{documentLabel}</span>
         </div>
 
         <div className={styles.commandActions}>
@@ -670,15 +677,15 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
             </div>
             <div>
               <span className={styles.eyebrow}>Premium water solutions</span>
-              <h1>{invoice.gst ? "GST Tax Invoice" : "Retail Tax Invoice"}</h1>
+              <h1>{invoice.quotation ? "Sales Quotation" : invoice.po ? "Purchase Order" : invoice.gst ? "GST Tax Invoice" : "Retail Tax Invoice"}</h1>
               <p>GSTIN 36AJOPH6387A1Z2</p>
             </div>
           </div>
 
           <div className={styles.heroInvoice}>
             <StatusPill status={invoice.paid_status} />
-            <span>Invoice number</span>
-            <strong>{invoiceLabel}</strong>
+            <span>{documentName} number</span>
+            <strong>{documentLabel}</strong>
             <small>Issued {formatDate(invoice.date)}</small>
           </div>
         </section>
@@ -686,7 +693,7 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
         <section className={styles.metaStrip}>
           <div>
             <CalendarDays size={18} />
-            <span>Invoice date</span>
+            <span>{documentName} date</span>
             <strong>{formatDate(invoice.date)}</strong>
           </div>
           <div>
@@ -696,7 +703,7 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
           </div>
           <div>
             <ReceiptIndianRupee size={18} />
-            <span>Invoice value</span>
+            <span>{documentName} value</span>
             <strong>{priceUtils.formatAmount(amounts.grandTotal)}</strong>
           </div>
           <div>
@@ -880,9 +887,13 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
               <div className={styles.summaryTopline}>
                 <div>
                   <small>
-                    {invoice.gst
-                      ? "GST claim tax invoice"
-                      : "Retail tax invoice"}
+                    {invoice.quotation
+                      ? "Sales quotation"
+                      : invoice.po
+                        ? "Purchase order"
+                        : invoice.gst
+                          ? "GST claim tax invoice"
+                          : "Retail tax invoice"}
                   </small>
                   <h2>Price calculation</h2>
                 </div>
@@ -1042,7 +1053,7 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
             <span>support@aquakart.co.in · +91 90147 74667</span>
           </div>
           <p>
-            This is a computer-generated invoice and does not require a
+            This is a computer-generated {documentName.toLowerCase()} and does not require a
             signature.
           </p>
         </footer>
