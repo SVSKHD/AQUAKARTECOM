@@ -1,169 +1,341 @@
-import useCurrency from "@/utils/currency";
-import React from "react";
+import Link from "next/link";
+import React, { useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { X, ShoppingCart, Heart, GitCompare } from "lucide-react";
+import {
+  BadgeCheck,
+  Check,
+  ExternalLink,
+  Heart,
+  IndianRupee,
+  PackageCheck,
+  ShoppingCart,
+  Star,
+  Tag,
+  X,
+} from "lucide-react";
 import AquaToast from "@/components/reusables/react-toastify";
 
+const stripHtml = (value = "") =>
+  String(value)
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const referenceTitle = (value) => {
+  if (!value) return "";
+  if (typeof value === "object") return value.title || value.name || "";
+  return "";
+};
+
+const getProductUrl = (product) => {
+  const value = product?.seoSlug || product?.slug || product?._id;
+  return value ? `/product/${encodeURIComponent(value)}` : "/shop";
+};
+
+const getCurrentPrice = (product) => {
+  const regular = Number(product?.price) || 0;
+  const discounted = Number(product?.discountPrice) || 0;
+  return product?.discountPriceStatus &&
+    discounted > 0 &&
+    (!regular || discounted < regular)
+    ? discounted
+    : regular || discounted;
+};
+
+const getProductDetails = (product) => ({
+  brand: product?.brand || "Not specified",
+  category:
+    referenceTitle(product?.category) ||
+    product?.categoryTitle ||
+    product?.categoryName ||
+    "Not assigned",
+  subcategory:
+    referenceTitle(product?.subCategory) ||
+    referenceTitle(product?.subcategory) ||
+    product?.subCategoryTitle ||
+    product?.subCategoryName ||
+    "Not assigned",
+  stock:
+    Number.isFinite(Number(product?.stock)) && Number(product.stock) > 0
+      ? `${Number(product.stock)} available`
+      : "Check availability",
+  rating:
+    Number(product?.ratings) > 0
+      ? `${Number(product.ratings).toFixed(1)} / 5 (${Number(
+          product?.numberOfReviews || 0,
+        )} reviews)`
+      : "No reviews yet",
+  capacity: product?.capacity || product?.coverage || "Not specified",
+  code: product?.code || product?.sku || product?.ShortName || "Not specified",
+});
+
+const comparisonRows = [
+  { key: "brand", label: "Brand", icon: Tag },
+  { key: "category", label: "Category", icon: BadgeCheck },
+  { key: "subcategory", label: "Solution type", icon: BadgeCheck },
+  { key: "capacity", label: "Capacity / coverage", icon: PackageCheck },
+  { key: "stock", label: "Availability", icon: Check },
+  { key: "rating", label: "Customer rating", icon: Star },
+  { key: "code", label: "Model / SKU", icon: Tag },
+];
+
 const AquaCompareTabContent = () => {
-  const { compare, cartData, favData } = useSelector((state) => ({ ...state }));
-  const { formatCurrencyINR } = useCurrency;
+  const { compare = [], cartData = [], favData = [] } = useSelector(
+    (state) => state,
+  );
   const dispatch = useDispatch();
 
+  const comparedProducts = useMemo(
+    () =>
+      compare.map((product) => ({
+        product,
+        details: getProductDetails(product),
+        currentPrice: getCurrentPrice(product),
+        description: stripHtml(product?.description),
+      })),
+    [compare],
+  );
+
+  const differingRows = useMemo(
+    () =>
+      new Set(
+        comparisonRows
+          .filter(({ key }) => {
+            const values = comparedProducts.map(({ details }) => details[key]);
+            return new Set(values).size > 1;
+          })
+          .map(({ key }) => key),
+      ),
+    [comparedProducts],
+  );
+
+  const formatPrice = (value) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(Number(value) || 0);
+
   const removeFromCompare = (productId) => {
-    dispatch({
-      type: "REMOVE_FROM_COMPARE",
-      payload: productId,
-    });
-    AquaToast({ message: "Removed from compare", type: "success" });
+    dispatch({ type: "REMOVE_FROM_COMPARE", payload: productId });
+    AquaToast({ message: "Removed from comparison", type: "success" });
   };
 
   const addToCart = (product) => {
-    const isInCart = cartData?.some((item) => item._id === product._id);
-    if (!isInCart) {
-      dispatch({
-        type: "ADD_TO_CART",
-        payload: product,
-      });
-      AquaToast({ message: "Added to cart", type: "success" });
-    }
+    const isInCart = cartData.some((item) => item._id === product._id);
+    if (isInCart) return;
+    dispatch({ type: "ADD_TO_CART", payload: product });
+    AquaToast({ message: "Added to cart", type: "success" });
   };
 
   const addToFavorites = (product) => {
-    const isInFav = favData?.some((item) => item._id === product._id);
-    if (!isInFav) {
-      dispatch({
-        type: "ADD_TO_FAV",
-        payload: product,
-      });
-      AquaToast({ message: "Added to favorites", type: "success" });
-    }
+    const isInFav = favData.some((item) => item._id === product._id);
+    if (isInFav) return;
+    dispatch({ type: "ADD_TO_FAV", payload: product });
+    AquaToast({ message: "Added to favourites", type: "success" });
   };
 
+  if (!comparedProducts.length) {
+    return (
+      <div className="mx-auto flex max-w-xl flex-col items-center justify-center rounded-[2rem] border border-dashed border-slate-300 bg-white/65 px-6 py-20 text-center shadow-sm backdrop-blur-xl">
+        <div className="grid h-20 w-20 place-items-center rounded-3xl bg-indigo-50 text-indigo-500">
+          <BadgeCheck className="h-9 w-9" />
+        </div>
+        <h2 className="mt-6 text-2xl font-black tracking-[-0.04em] text-slate-950">
+          Choose products to compare
+        </h2>
+        <p className="mt-3 max-w-md text-sm leading-6 text-slate-500">
+          Add two or more products from the shop to see their prices and
+          important details side by side.
+        </p>
+        <Link
+          href="/shop"
+          className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-slate-950 px-6 text-sm font-black text-white transition hover:bg-indigo-700"
+        >
+          Browse products <ExternalLink className="h-4 w-4" />
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-      {compare && compare.length > 0 ? (
-        <>
-          <div className="mb-8 text-center sm:text-left">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">
-              Compare Products
-            </h1>
-            <p className="text-slate-600">
-              Analyzing {compare.length}{" "}
-              {compare.length === 1 ? "product" : "products"} side by side
+    <section className="mx-auto max-w-7xl px-0 py-2">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
+            Product comparison
+          </span>
+          <h2 className="mt-1 text-2xl font-black tracking-[-0.05em] text-slate-950 sm:text-3xl">
+            Compare what matters
+          </h2>
+          <p className="mt-2 text-sm text-slate-500">
+            Differences are highlighted. Scroll sideways on smaller screens.
+          </p>
+        </div>
+        <span className="w-fit rounded-full border border-slate-200 bg-white/75 px-3 py-2 text-xs font-bold text-slate-600">
+          {comparedProducts.length}{" "}
+          {comparedProducts.length === 1 ? "product" : "products"}
+        </span>
+      </div>
+
+      <div className="overflow-x-auto rounded-[1.75rem] border border-white/80 bg-white/70 shadow-[0_24px_70px_rgba(15,23,42,0.1)] backdrop-blur-2xl">
+        <div
+          className="grid min-w-max"
+          style={{
+            gridTemplateColumns: `160px repeat(${comparedProducts.length}, minmax(250px, 1fr))`,
+          }}
+        >
+          <div className="sticky left-0 z-20 border-b border-r border-slate-200 bg-[rgba(248,250,252,0.97)] p-4">
+            <span className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">
+              Products
+            </span>
+            <p className="mt-2 max-w-[120px] text-xs leading-5 text-slate-400">
+              Review every key detail in one place.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {compare.map((product) => {
-              const isInCart = cartData?.some(
+          {comparedProducts.map(
+            ({ product, currentPrice, description }, productIndex) => {
+              const isInCart = cartData.some(
                 (item) => item._id === product._id,
               );
-              const isInFav = favData?.some((item) => item._id === product._id);
+              const isInFav = favData.some((item) => item._id === product._id);
+              const originalPrice = Number(product?.price) || 0;
+              const hasDiscount =
+                product?.discountPriceStatus &&
+                currentPrice > 0 &&
+                originalPrice > currentPrice;
+              const image =
+                product?.photos?.[0]?.delivery_url ||
+                product?.photos?.[0]?.secure_url;
 
               return (
-                <div
-                  key={product._id}
-                  className="group relative flex flex-col rounded-[2rem] border border-white/60 bg-white/60 backdrop-blur-2xl shadow-xl transition-all duration-500 hover:scale-[1.02] hover:bg-white/80 overflow-hidden"
+                <article
+                  key={product._id || productIndex}
+                  className="relative border-b border-r border-slate-200 p-4 last:border-r-0"
                 >
                   <button
+                    type="button"
                     onClick={() => removeFromCompare(product._id)}
-                    className="absolute top-4 right-4 z-20 p-2 bg-white/50 backdrop-blur-md rounded-full shadow-sm hover:bg-red-50 hover:text-red-600 transition-all duration-200 border border-white/40"
-                    aria-label="Remove from compare"
+                    className="absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-full border border-slate-200 bg-white/90 text-slate-500 shadow-sm transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                    aria-label={`Remove ${product.title} from comparison`}
                   >
-                    <X className="w-4 h-4" />
+                    <X className="h-4 w-4" />
                   </button>
 
-                  <div className="relative aspect-square m-4 rounded-[1.5rem] overflow-hidden bg-white">
-                    <img
-                      alt={product.title}
-                      src={product?.photos[0]?.secure_url}
-                      className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute top-3 left-3 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-indigo-900 shadow-sm">
-                      Compare Item
+                  <Link
+                    href={getProductUrl(product)}
+                    className="block rounded-2xl outline-none ring-indigo-500 focus-visible:ring-2"
+                  >
+                    <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-slate-50">
+                      {image ? (
+                        <img
+                          src={image}
+                          alt={product.title || "Aquakart product"}
+                          className="h-full w-full object-contain p-2"
+                        />
+                      ) : (
+                        <div className="grid h-full place-items-center text-xs font-bold text-slate-400">
+                          Image unavailable
+                        </div>
+                      )}
+                    </div>
+                    <h3 className="mt-4 min-h-12 text-base font-black leading-6 text-slate-950">
+                      {product.title || "Aquakart product"}
+                    </h3>
+                  </Link>
+
+                  <p className="mt-2 line-clamp-3 min-h-[60px] text-xs leading-5 text-slate-500">
+                    {description || "Product information is available on the details page."}
+                  </p>
+
+                  <div className="mt-4 rounded-2xl bg-slate-50 p-3">
+                    <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+                      <IndianRupee className="h-3 w-3" /> Current price
+                    </span>
+                    <div className="mt-1 flex flex-wrap items-end gap-2">
+                      <strong className="text-xl font-black text-slate-950">
+                        {formatPrice(currentPrice)}
+                      </strong>
+                      {hasDiscount ? (
+                        <span className="pb-0.5 text-xs text-slate-400 line-through">
+                          {formatPrice(originalPrice)}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
 
-                  <div className="flex flex-1 flex-col p-5 pt-2">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-slate-900 mb-2 line-clamp-2 leading-tight">
-                        {product.title}
-                      </h3>
-
-                      <div
-                        className="text-sm text-slate-500 line-clamp-3 mb-4 prose prose-indigo"
-                        dangerouslySetInnerHTML={{
-                          __html: product.description,
-                        }}
+                  <div className="mt-3 grid grid-cols-[1fr_42px] gap-2">
+                    <button
+                      type="button"
+                      onClick={() => addToCart(product)}
+                      disabled={isInCart}
+                      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-xs font-black transition ${
+                        isInCart
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-slate-950 text-white hover:bg-indigo-700"
+                      }`}
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      {isInCart ? "In cart" : "Add to cart"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => addToFavorites(product)}
+                      disabled={isInFav}
+                      className={`grid min-h-11 place-items-center rounded-xl border transition ${
+                        isInFav
+                          ? "border-rose-200 bg-rose-50 text-rose-500"
+                          : "border-slate-200 bg-white text-slate-500 hover:text-rose-500"
+                      }`}
+                      aria-label={
+                        isInFav ? "Already in favourites" : "Add to favourites"
+                      }
+                    >
+                      <Heart
+                        className={`h-4 w-4 ${isInFav ? "fill-current" : ""}`}
                       />
-                    </div>
-
-                    <div className="border-t border-slate-200/60 pt-4 mt-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-xs font-bold tracking-wide text-slate-400 uppercase">
-                          Price
-                        </span>
-                        <span className="text-xl font-bold text-slate-900">
-                          {formatCurrencyINR(product.price)}
-                        </span>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => addToCart(product)}
-                          disabled={isInCart}
-                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 shadow-lg ${
-                            isInCart
-                              ? "bg-emerald-100 text-emerald-800 cursor-not-allowed shadow-none"
-                              : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-indigo-500/30 hover:scale-105 active:scale-95"
-                          }`}
-                        >
-                          <ShoppingCart className="w-4 h-4" />
-                          <span className="hidden sm:inline">
-                            {isInCart ? "In Cart" : "Add to Cart"}
-                          </span>
-                        </button>
-
-                        <button
-                          onClick={() => addToFavorites(product)}
-                          disabled={isInFav}
-                          className={`p-3 rounded-xl transition-all duration-300 border shadow-md ${
-                            isInFav
-                              ? "bg-red-50 border-red-100 text-red-500"
-                              : "bg-white border-white/60 text-slate-400 hover:text-red-500 hover:bg-white active:scale-95"
-                          }`}
-                          aria-label="Add to favorites"
-                        >
-                          <Heart
-                            className={`w-5 h-5 ${isInFav ? "fill-current" : ""}`}
-                          />
-                        </button>
-                      </div>
-                    </div>
+                    </button>
                   </div>
-                </div>
+                </article>
               );
-            })}
-          </div>
-        </>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-24 px-4">
-          <div className="w-32 h-32 rounded-full flex items-center justify-center mb-6 bg-white/40 backdrop-blur-md border border-white/50 shadow-xl">
-            <GitCompare
-              className="w-12 h-12 text-indigo-300 animate-pulse"
-              strokeWidth={1.5}
-            />
-          </div>
-          <h3 className="text-2xl font-bold text-slate-900 mb-2">
-            No Products to Compare
-          </h3>
-          <p className="text-slate-500 text-center max-w-md font-light">
-            Add products from your favorites or cart to compare their features
-            and prices side by side.
-          </p>
+            },
+          )}
+
+          {comparisonRows.map(({ key, label, icon: Icon }) => {
+            const differs = differingRows.has(key);
+            return (
+              <React.Fragment key={key}>
+                <div
+                  className={`sticky left-0 z-10 flex items-center gap-2 border-b border-r border-slate-200 p-4 ${
+                    differs
+                      ? "bg-indigo-50 text-indigo-900"
+                      : "bg-[rgba(248,250,252,0.97)] text-slate-700"
+                  }`}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="text-xs font-black">{label}</span>
+                </div>
+                {comparedProducts.map(({ product, details }, index) => (
+                  <div
+                    key={`${product._id || index}-${key}`}
+                    className={`border-b border-r border-slate-200 p-4 text-sm font-semibold last:border-r-0 ${
+                      differs
+                        ? "bg-indigo-50/55 text-indigo-950"
+                        : "bg-white/50 text-slate-700"
+                    }`}
+                  >
+                    {details[key]}
+                  </div>
+                ))}
+              </React.Fragment>
+            );
+          })}
         </div>
-      )}
-    </div>
+      </div>
+    </section>
   );
 };
 
