@@ -451,6 +451,7 @@ const AquaShopPageComponent = ({
       path="shop"
       productListData={schemaProducts}
       managedSeo={managedSeo}
+      allowPageSticky
     >
       {loading ? (
         <AquaAppLoader
@@ -483,16 +484,16 @@ const AquaShopPageComponent = ({
       ) : (
         <div
           data-aqua-preserve-surface
-          className="relative min-h-screen overflow-x-clip px-3 pb-16 pt-3 sm:px-5 sm:pt-5 lg:px-7"
+          className="relative min-h-screen overflow-x-clip px-3 pb-16 pt-0 sm:px-5 sm:pt-1 lg:px-7"
         >
           <div className="pointer-events-none absolute left-[-12rem] top-10 h-[30rem] w-[30rem] rounded-full bg-emerald-200/25 blur-[110px]" />
           <div className="pointer-events-none absolute right-[-12rem] top-[36rem] h-[30rem] w-[30rem] rounded-full bg-sky-200/20 blur-[120px]" />
 
           <div className="relative mx-auto max-w-[1480px]">
             <section id="shop-products" className="scroll-mt-28">
-              <div className="grid items-start gap-5 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[310px_minmax(0,1fr)]">
+              <div className="grid items-start gap-6 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[310px_minmax(0,1fr)]">
                 <aside className="hidden lg:block">
-                  <div className="sticky top-[96px] max-h-[calc(100vh-112px)] overflow-y-auto rounded-[1.75rem] border border-white/80 bg-white/78 p-4 shadow-[0_18px_55px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
+                  <div className="sticky top-[92px] max-h-[calc(100vh-108px)] overflow-y-auto rounded-[1.75rem] border border-white/80 bg-white/78 p-4 shadow-[0_18px_55px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
                     <div className="mb-4 flex items-center justify-between border-b border-slate-200/70 pb-4">
                       <div>
                         <span className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-700">
@@ -528,7 +529,7 @@ const AquaShopPageComponent = ({
                 </aside>
 
                 <div className="min-w-0">
-                  <div className="sticky top-[76px] z-30 mb-10 rounded-[1.65rem] border border-white/80 bg-[rgba(248,252,251,0.96)] p-2.5 shadow-[0_18px_55px_rgba(15,23,42,0.09)] backdrop-blur-2xl sm:top-[92px] sm:p-3">
+                  <div className="sticky top-[76px] z-30 mb-4 rounded-[1.65rem] border border-white/80 bg-[rgba(248,252,251,0.96)] p-2.5 shadow-[0_18px_55px_rgba(15,23,42,0.09)] backdrop-blur-2xl sm:top-[92px] sm:p-3">
                     <div className="flex items-center gap-2.5">
                       <button
                         type="button"
@@ -674,7 +675,7 @@ const AquaShopPageComponent = ({
                     ) : null}
                   </AnimatePresence>
 
-                  <div className="mb-5 flex items-end justify-between gap-6 px-1 sm:px-2">
+                  <div className="mb-4 flex items-end justify-between gap-6 px-1 sm:px-2">
                     <div>
                       <span className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-700">
                         Shop with clarity
