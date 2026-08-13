@@ -30,7 +30,7 @@ const referenceTitle = (value) => {
 };
 
 const getProductUrl = (product) => {
-  const value = product?.seoSlug || product?.slug || product?._id;
+  const value = product?._id || product?.seoSlug || product?.slug;
   return value ? `/product/${encodeURIComponent(value)}` : "/shop";
 };
 
