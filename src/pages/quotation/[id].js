@@ -27,7 +27,7 @@ const PublicQuotationRoute = () => {
     const load = async () => {
       try {
         const response = await fetch(
-          `/api/crm/quotation/public/${encodeURIComponent(id)}`,
+          `/api/crm/quotations/public/${encodeURIComponent(id)}`,
           { headers: { Accept: "application/json" }, signal: controller.signal },
         );
         const payload = await response.json().catch(() => null);
