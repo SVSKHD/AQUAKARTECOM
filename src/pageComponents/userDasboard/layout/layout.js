@@ -60,39 +60,52 @@ const AquaUserDashbordLayout = ({
     return username;
   };
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-start bg-slate-50">
-      <AquaUserDashboardHeader />
+    <div className="relative min-h-screen bg-slate-50">
       <AquaCartAddressDialog />
-      {!focused && (
-        <div className="w-full max-w-5xl px-4">
-          <AquaUserGreet
-            userName={getFirstLettersFromEmail(userData?.user?.email)}
-          />
-        </div>
-      )}
-      <div
-        className={`w-full px-4 py-6 sm:py-8 ${
-          focused ? "max-w-6xl" : "max-w-5xl"
-        }`}
-      >
-        <div
-          className={
-            focused ? "w-full" : "glass-card w-full rounded-3xl p-5 sm:p-8"
-          }
-        >
-          <div className="mb-6 border-b border-white/30 pb-4">
-            <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">
-              {resolvedTitle}
-            </h1>
-            {resolvedSubtitle && (
-              <p className="mt-1 text-sm text-slate-500">{resolvedSubtitle}</p>
-            )}
-          </div>
-          <div className={focused ? "" : "min-h-[60vh]"}>{children}</div>
-        </div>
+      <div className="mx-auto flex w-full max-w-[1440px] items-start gap-5 px-3 py-4 sm:px-5 sm:py-6 lg:gap-7">
+        <AquaUserDashboardHeader />
+
+        <main className="min-w-0 flex-1 pb-24 lg:pb-0">
+          {!focused && (
+            <AquaUserGreet
+              userName={getFirstLettersFromEmail(userData?.user?.email)}
+            />
+          )}
+
+          <section
+            className={`mx-auto mt-4 w-full ${
+              focused ? "max-w-6xl" : "max-w-5xl"
+            }`}
+          >
+            <div
+              className={
+                focused
+                  ? "w-full"
+                  : "w-full rounded-[28px] border border-slate-200/80 bg-white p-4 shadow-[0_16px_45px_rgba(15,23,42,0.05)] sm:p-6 lg:p-7"
+              }
+            >
+              <header className="mb-6 flex items-end justify-between gap-4 border-b border-slate-100 pb-4">
+                <div>
+                  <h1 className="text-xl font-black text-slate-950 sm:text-2xl">
+                    {resolvedTitle}
+                  </h1>
+                  {resolvedSubtitle && (
+                    <p className="mt-1 text-sm text-slate-500">
+                      {resolvedSubtitle}
+                    </p>
+                  )}
+                </div>
+              </header>
+              <div className={focused ? "" : "min-h-[55vh]"}>{children}</div>
+            </div>
+          </section>
+        </main>
       </div>
-      <div className="w-full mt-auto">
-        <AquaFooter categories={categories} subcategories={subcategories} />
+
+      <div className="w-full lg:pl-20 xl:pl-60">
+        <div className="mx-auto max-w-6xl">
+          <AquaFooter categories={categories} subcategories={subcategories} />
+        </div>
       </div>
     </div>
   );
