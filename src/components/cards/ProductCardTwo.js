@@ -22,6 +22,8 @@ const ReusableProductCard = ({
 }) => {
   const [fav, setAddFav] = useState(false);
   const [cart, setAddCart] = useState(false);
+  const [celebration, setCelebration] = useState("");
+  const celebrationTimerRef = useRef(null);
 
   // ✅ FIX: hook must be invoked
   const { formatCurrencyINR } = useCurrency;
@@ -172,6 +174,33 @@ const ReusableProductCard = ({
     );
   };
 
+  useEffect(
+    () => () => {
+      if (celebrationTimerRef.current) {
+        clearTimeout(celebrationTimerRef.current);
+      }
+    },
+    [],
+  );
+
+  const celebrate = (type) => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    setCelebration(type);
+    if (celebrationTimerRef.current) {
+      clearTimeout(celebrationTimerRef.current);
+    }
+    celebrationTimerRef.current = window.setTimeout(
+      () => setCelebration(""),
+      720,
+    );
+  };
+
   const handleNavigate = () => router.push(productHref);
 
   const handleKeyPress = (event) => {
@@ -184,13 +213,78 @@ const ReusableProductCard = ({
   const handleFavToggle = (event) => {
     event.stopPropagation();
     event.preventDefault();
+    if (!fav) celebrate("fav");
     AddAndRemoveFav(product, setAddFav);
   };
 
   const handleCartToggle = (event) => {
     event.stopPropagation();
     event.preventDefault();
+    if (!cart) celebrate("cart");
     AddAndRemoveCart(product, setAddCart);
+  };
+
+  const renderSelectionStatus = () => {
+    if (!fav && !cart) return null;
+
+    const label = fav && cart ? "Saved + In cart" : fav ? "Saved" : "In cart";
+    return (
+      <span
+        className={`absolute right-4 top-[4.6rem] z-20 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-black shadow-lg backdrop-blur-md ${
+          fav && cart
+            ? "border-violet-200 bg-violet-600/95 text-white"
+            : fav
+              ? "border-rose-200 bg-rose-500/95 text-white"
+              : "border-emerald-200 bg-emerald-500/95 text-white"
+        }`}
+        aria-live="polite"
+      >
+        {fav && cart ? (
+          <>
+            <FaHeart size={9} />
+            <FaShoppingCart size={10} />
+          </>
+        ) : fav ? (
+          <FaHeart size={10} />
+        ) : (
+          <FaCheck size={10} />
+        )}
+        {label}
+      </span>
+    );
+  };
+
+  const renderCelebration = () => {
+    if (!celebration) return null;
+    const colors =
+      celebration === "fav"
+        ? ["#fb7185", "#f43f5e", "#fda4af", "#fbbf24"]
+        : ["#10b981", "#34d399", "#6ee7b7", "#fbbf24"];
+    const particles = [
+      [-34, -28],
+      [-18, -44],
+      [0, -50],
+      [20, -42],
+      [36, -24],
+      [-30, 4],
+      [30, 6],
+      [0, 18],
+    ];
+
+    return (
+      <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden rounded-3xl">
+        {particles.map(([x, y], index) => (
+          <motion.span
+            key={`${celebration}-${index}`}
+            className="absolute left-1/2 top-[18%] h-2 w-2 rounded-full"
+            style={{ backgroundColor: colors[index % colors.length] }}
+            initial={{ x: 0, y: 0, opacity: 1, scale: 0.4 }}
+            animate={{ x, y, opacity: 0, scale: 1 }}
+            transition={{ duration: 0.68, ease: "easeOut" }}
+          />
+        ))}
+      </div>
+    );
   };
 
   // ===========================
@@ -260,8 +354,11 @@ const ReusableProductCard = ({
           </button>
         </div>
 
+        {renderSelectionStatus()}
+        {renderCelebration()}
+
         {/* Content */}
-        <div className="flex flex-1 flex-col gap-3">
+        <div className="flex flex-1 flex-col gap-3 pr-2">
           <div className="flex flex-col gap-1">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               {product?.brand || product?.manufacturer || "Aquakart"}
@@ -401,6 +498,9 @@ const ReusableProductCard = ({
             <FaHeart size={18} />
           </button>
 
+          {renderSelectionStatus()}
+          {renderCelebration()}
+
           {/* INFO OVERLAY (Always Visible) */}
           <div
             className="
@@ -410,7 +510,7 @@ const ReusableProductCard = ({
               transition-all duration-300
             "
           >
-            <div className="px-5 pb-5 text-white">
+            <div className="px-6 pb-6 text-white">
               <div className="flex flex-col gap-1 mb-3">
                 <h3 className="text-lg font-bold leading-snug drop-shadow-sm line-clamp-2">
                   {title}
@@ -548,6 +648,8 @@ const ReusableProductCard = ({
             >
               <FaHeart size={20} />
             </button>
+            {renderSelectionStatus()}
+            {renderCelebration()}
             {/* TIMER FILLER (no dots) - Shared with padded mode */}
             <div className="absolute bottom-4 left-4 right-4 z-20 flex gap-2">
               {displayPhotos.map((_, i) => {
@@ -580,7 +682,7 @@ const ReusableProductCard = ({
             </div>
           </div>
 
-          <div className="flex flex-1 flex-col justify-between p-4">
+          <div className="flex flex-1 flex-col justify-between p-5">
             <div className="flex flex-col gap-2">
               <div className="flex flex-col gap-1 text-left">
                 <h3 className="text-sm font-semibold text-slate-900 line-clamp-2 transition group-hover:text-emerald-600">
