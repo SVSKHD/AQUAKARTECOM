@@ -2,7 +2,6 @@ import AquaUserGreet from "./greet";
 import AquaUserDashboardHeader from "./header";
 import AquaCartAddressDialog from "@/components/common/commonDialogs/cartAddress";
 import { useSelector } from "react-redux";
-import AquaFooter from "@/components/Layout/Footer";
 import { useRouter } from "next/router";
 
 const ROUTE_COPY = {
@@ -38,9 +37,7 @@ const AquaUserDashbordLayout = ({
   subtitle,
   focused = false,
 }) => {
-  const { userData, dynamicData } = useSelector((state) => ({ ...state }));
-  const categories = dynamicData?.categories || [];
-  const subcategories = dynamicData?.subcategories || [];
+  const { userData } = useSelector((state) => ({ ...state }));
   const router = useRouter();
 
   const routeMeta = ROUTE_COPY[router.pathname] || ROUTE_COPY["/dashboard"];
@@ -62,7 +59,7 @@ const AquaUserDashbordLayout = ({
   return (
     <div className="relative min-h-screen bg-slate-50">
       <AquaCartAddressDialog />
-      <div className="mx-auto flex w-full max-w-[1440px] items-start gap-5 px-3 py-4 sm:px-5 sm:py-6 lg:gap-7">
+      <div className="mx-auto flex w-full max-w-[1380px] items-start gap-4 px-3 py-4 sm:px-5 sm:py-6 lg:gap-6">
         <AquaUserDashboardHeader />
 
         <main className="min-w-0 flex-1 pb-24 lg:pb-0">
@@ -100,12 +97,6 @@ const AquaUserDashbordLayout = ({
             </div>
           </section>
         </main>
-      </div>
-
-      <div className="w-full lg:pl-20 xl:pl-60">
-        <div className="mx-auto max-w-6xl">
-          <AquaFooter categories={categories} subcategories={subcategories} />
-        </div>
       </div>
     </div>
   );
