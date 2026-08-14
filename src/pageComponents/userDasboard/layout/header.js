@@ -6,110 +6,104 @@ import {
   ShoppingCart,
   Heart,
   ShoppingBag,
-  ShoppingBagIcon,
+  Store,
+  Droplets,
 } from "lucide-react";
 
-const AquaUserDashboardHeader = () => {
-  const router = useRouter();
+const navItems = [
+  { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: Home },
+  {
+    id: "orders",
+    label: "Orders",
+    href: "/dashboard/orders",
+    icon: ShoppingBag,
+  },
+  { id: "cart", label: "Cart", href: "/dashboard/cart", icon: ShoppingCart },
+  {
+    id: "favourites",
+    label: "Favourites",
+    href: "/dashboard/fav",
+    icon: Heart,
+  },
+  { id: "profile", label: "Profile", href: "/dashboard/profile", icon: User },
+];
 
-  const navItems = [
-    {
-      id: "home",
-      label: "Shop",
-      href: "/",
-      icon: ShoppingBagIcon,
-    },
-    {
-      id: "dashboard",
-      label: "Dashboard",
-      href: "/dashboard",
-      icon: Home,
-    },
-    {
-      id: "profile",
-      label: "Profile",
-      href: "/dashboard/profile",
-      icon: User,
-    },
-    {
-      id: "orders",
-      label: "Orders",
-      href: "/dashboard/orders",
-      icon: ShoppingBag,
-    },
-    // {
-    //   id: "settings",
-    //   label: "Settings",
-    //   href: "/dashboard/settings",
-    //   icon: Settings,
-    // },
-    {
-      id: "cart",
-      label: "Cart",
-      href: "/dashboard/cart",
-      icon: ShoppingCart,
-    },
-    {
-      id: "favourites",
-      label: "Favourites",
-      href: "/dashboard/fav",
-      icon: Heart,
-    },
-  ];
+const isCurrentRoute = (pathname, href) =>
+  href === "/dashboard" ? pathname === href : pathname.startsWith(href);
+
+const NavigationItem = ({ item, pathname, compact = false }) => {
+  const active = isCurrentRoute(pathname, item.href);
+  const Icon = item.icon;
 
   return (
-    <div className="mx-auto mt-6 w-full">
-      <div className="hidden justify-center px-4 sm:flex">
-        <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2.5 shadow-[0_8px_26px_rgba(15,23,42,0.06)]">
-          {navItems.map((item) => {
-            const isActive = router.pathname === item.href;
-            const Icon = item.icon;
+    <Link
+      href={item.href}
+      aria-current={active ? "page" : undefined}
+      className={`group flex items-center rounded-2xl font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+        compact
+          ? "min-w-[64px] flex-col justify-center gap-1 px-2 py-2 text-[11px]"
+          : "gap-3 px-3 py-3 text-sm xl:px-4"
+      } ${
+        active
+          ? "bg-emerald-600 text-white shadow-sm"
+          : "text-slate-500 hover:bg-emerald-50 hover:text-emerald-700"
+      }`}
+    >
+      <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.3 : 1.8} />
+      <span className={compact ? "leading-none" : "hidden xl:block"}>
+        {item.label}
+      </span>
+    </Link>
+  );
+};
 
-            return (
-              <Link key={item.id} href={item.href} className="relative">
-                <span
-                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
-                    isActive
-                      ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/25"
-                      : "text-slate-500 hover:bg-white/60 hover:text-slate-800"
-                  }`}
-                >
-                  <Icon
-                    size={18}
-                    strokeWidth={isActive ? 2.4 : 1.6}
-                    className={isActive ? "text-white" : "text-slate-400"}
-                  />
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
+const AquaUserDashboardHeader = () => {
+  const { pathname } = useRouter();
 
-      <div className="px-4 sm:hidden">
-        <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
-          {navItems.map((item) => {
-            const isActive = router.pathname === item.href;
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.id}
-                href={item.href}
-                className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition ${
-                  isActive
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/20"
-                    : "text-slate-500 hover:bg-white/60 hover:text-slate-800"
-                }`}
-              >
-                <Icon size={16} strokeWidth={isActive ? 2.4 : 1.6} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+  return (
+    <>
+      <aside className="sticky top-6 hidden h-[calc(100vh-3rem)] w-20 shrink-0 flex-col rounded-[28px] border border-slate-200/80 bg-white p-3 shadow-[0_16px_45px_rgba(15,23,42,0.06)] lg:flex xl:w-60 xl:p-4">
+        <Link
+          href="/"
+          aria-label="Open Aquakart shop"
+          className="mb-5 flex items-center justify-center gap-3 rounded-2xl bg-slate-950 px-3 py-3 text-white xl:justify-start"
+        >
+          <Droplets className="h-6 w-6 text-emerald-400" />
+          <span className="hidden text-base font-black xl:block">Aquakart</span>
+        </Link>
+
+        <p className="mb-2 hidden px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 xl:block">
+          Your account
+        </p>
+        <nav className="space-y-2" aria-label="User dashboard">
+          {navItems.map((item) => (
+            <NavigationItem key={item.id} item={item} pathname={pathname} />
+          ))}
+        </nav>
+
+        <Link
+          href="/"
+          className="mt-auto flex items-center justify-center gap-3 rounded-2xl border border-slate-200 px-3 py-3 text-sm font-semibold text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 xl:justify-start xl:px-4"
+        >
+          <Store className="h-5 w-5" />
+          <span className="hidden xl:block">Back to shop</span>
+        </Link>
+      </aside>
+
+      <nav
+        className="fixed inset-x-3 bottom-3 z-50 flex items-center justify-around rounded-[22px] border border-slate-200/80 bg-white/95 px-1 py-1.5 shadow-[0_18px_50px_rgba(15,23,42,0.18)] backdrop-blur lg:hidden"
+        aria-label="User dashboard"
+      >
+        {navItems.map((item) => (
+          <NavigationItem
+            key={item.id}
+            item={item}
+            pathname={pathname}
+            compact
+          />
+        ))}
+      </nav>
+    </>
   );
 };
 
