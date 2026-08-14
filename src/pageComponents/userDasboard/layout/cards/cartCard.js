@@ -97,7 +97,11 @@ const getStockBadge = (product) => {
   };
 };
 
-const DashboardProductCard = ({ product = {}, variant = "default" }) => {
+const DashboardProductCard = ({
+  product = {},
+  variant = "default",
+  compact = false,
+}) => {
   const [photoIndex, setPhotoIndex] = useState(0);
   const { favData = [], cartData = [] } = useSelector((state) => ({
     favData: ensureArray(state.favData),
@@ -219,8 +223,12 @@ const DashboardProductCard = ({ product = {}, variant = "default" }) => {
   };
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-3xl glass-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)]">
-      <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
+    <article className="flex h-full flex-col overflow-hidden rounded-[22px] border border-slate-200/80 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.05)] transition-shadow hover:shadow-[0_14px_34px_rgba(15,23,42,0.09)]">
+      <div
+        className={`relative overflow-hidden bg-slate-50 ${
+          compact ? "aspect-[16/10]" : "aspect-[4/3]"
+        }`}
+      >
         <Image
           src={normalized.photos[photoIndex]?.url || FALLBACK_IMAGE}
           alt={normalized.title}
@@ -230,7 +238,7 @@ const DashboardProductCard = ({ product = {}, variant = "default" }) => {
           priority={false}
         />
 
-        {normalized.photos.length > 1 && (
+        {!compact && normalized.photos.length > 1 && (
           <>
             <button
               type="button"
@@ -268,7 +276,11 @@ const DashboardProductCard = ({ product = {}, variant = "default" }) => {
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-3 sm:gap-4 sm:p-5">
+      <div
+        className={`flex flex-1 flex-col p-4 ${
+          compact ? "gap-2" : "gap-2 sm:gap-4 sm:p-5"
+        }`}
+      >
         <div className="flex flex-col gap-1">
           <span className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
             {normalized.brand}
@@ -279,9 +291,11 @@ const DashboardProductCard = ({ product = {}, variant = "default" }) => {
           >
             {normalized.title}
           </Link>
-          <p className="line-clamp-2 text-xs text-slate-500">
-            {normalized.description}
-          </p>
+          {!compact && (
+            <p className="line-clamp-2 text-xs text-slate-500">
+              {normalized.description}
+            </p>
+          )}
         </div>
 
         <div className="flex items-baseline gap-3">
@@ -322,7 +336,14 @@ const DashboardProductCard = ({ product = {}, variant = "default" }) => {
         </div>
 
         <div className="mt-auto flex flex-col gap-2">
-          {variant === "cart" ? (
+          {compact ? (
+            <Link
+              href={normalized.href}
+              className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-700"
+            >
+              View product
+            </Link>
+          ) : variant === "cart" ? (
             <>
               <button
                 type="button"
@@ -385,7 +406,7 @@ const DashboardProductCard = ({ product = {}, variant = "default" }) => {
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 
