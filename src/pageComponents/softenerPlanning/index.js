@@ -417,6 +417,8 @@ const AquaSoftenerPlannerComponent = () => {
     setLoginPending(true);
     try {
       await signInWithGoogle();
+    } catch {
+      // AuthContext already shows the actionable sign-in error toast.
     } finally {
       setLoginPending(false);
     }
