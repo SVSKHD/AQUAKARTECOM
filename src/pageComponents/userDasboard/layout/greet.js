@@ -1,5 +1,6 @@
+import Image from "next/image";
 import { useMemo, useState } from "react";
-import { ArrowRight, Droplets, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 const TIPS = [
   "Track cartridge replacements so every glass tastes better.",
@@ -38,8 +39,14 @@ const AquaUserGreet = ({ userName = "there" }) => {
         </button>
       </div>
 
-      <div className="hidden h-20 w-20 shrink-0 place-items-center rounded-[26px] bg-slate-950 text-emerald-400 shadow-lg shadow-emerald-900/10 sm:grid">
-        <Droplets className="h-9 w-9" />
+      <div className="hidden h-20 w-20 shrink-0 place-items-center rounded-[26px] bg-slate-950 shadow-lg shadow-emerald-900/10 sm:grid">
+        <Image
+          src="/aquakart-logo-white.png"
+          alt="Aquakart"
+          width={44}
+          height={44}
+          className="h-11 w-11 object-contain"
+        />
       </div>
     </section>
   );
