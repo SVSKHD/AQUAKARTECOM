@@ -7,11 +7,10 @@ import {
   ShoppingCart,
   PackageCheck,
   Clock3,
-  CalendarCheck,
+  ArrowUpRight,
 } from "lucide-react";
 import AquaUserDashbordLayout from "./layout/layout";
 import DashboardProductCard from "./layout/cards/cartCard";
-import { getUserDisplayName } from "@/utils/user";
 
 const AquaUserDashbordPageComponent = () => {
   const router = useRouter();
@@ -78,56 +77,31 @@ const AquaUserDashbordPageComponent = () => {
     ];
   }, [safeCart.length, safeFav.length, recentOrders]);
 
-  const firstName = useMemo(
-    () => getUserDisplayName(userData?.user, "there").split(" ")[0],
-    [userData?.user],
-  );
-
-  const featuredCart = useMemo(() => safeCart.slice(0, 4), [safeCart]);
-  const featuredFav = useMemo(() => safeFav.slice(0, 4), [safeFav]);
+  const featuredCart = useMemo(() => safeCart.slice(0, 3), [safeCart]);
+  const featuredFav = useMemo(() => safeFav.slice(0, 3), [safeFav]);
 
   return (
     <AquaUserDashbordLayout>
-      <div className="space-y-10">
-        <section className="glass-tint-emerald rounded-3xl p-6 sm:p-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-wide text-emerald-600">
-                Welcome back
-              </p>
-              <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">
-                Hi {firstName}, your water essentials are ready.
-              </h1>
-              <p className="mt-2 max-w-xl text-sm text-slate-600">
-                Track your orders, manage saved products, and keep your profile
-                up to date for lightning-fast deliveries.
-              </p>
-            </div>
-            <Link
-              href="/dashboard/profile"
-              className="btn-glass btn-glass-primary self-start"
-            >
-              <CalendarCheck className="h-4 w-4" />
-              Update profile
-            </Link>
-          </div>
-        </section>
-
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="space-y-8">
+        <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           {highlightCards.map(
             ({ title, value, icon: Icon, iconTone, cardClass }) => (
               <div
                 key={title}
-                className={`flex items-center gap-3 rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${cardClass}`}
+                className={`flex min-w-0 items-center gap-3 rounded-2xl border border-slate-100 p-3 sm:p-4 ${cardClass}`}
               >
                 <span
-                  className={`flex h-12 w-12 items-center justify-center rounded-2xl ${iconTone}`}
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-11 sm:w-11 ${iconTone}`}
                 >
-                  <Icon className="h-6 w-6" aria-hidden="true" />
+                  <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
-                <div>
-                  <p className="text-sm text-slate-500">{title}</p>
-                  <p className="text-2xl font-bold text-slate-900">{value}</p>
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-semibold text-slate-500 sm:text-sm">
+                    {title}
+                  </p>
+                  <p className="text-xl font-black text-slate-950 sm:text-2xl">
+                    {value}
+                  </p>
                 </div>
               </div>
             ),
@@ -135,7 +109,7 @@ const AquaUserDashbordPageComponent = () => {
         </section>
 
         <section className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-end justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">
                 Quick cart picks
@@ -146,19 +120,20 @@ const AquaUserDashbordPageComponent = () => {
             </div>
             <Link
               href="/dashboard/cart"
-              className="text-sm font-semibold text-emerald-600 transition hover:text-emerald-500"
+              className="inline-flex items-center gap-1 text-sm font-bold text-emerald-700 transition hover:text-emerald-600"
             >
-              View cart
+              View cart <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
 
           {featuredCart.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {featuredCart.map((item) => (
                 <DashboardProductCard
                   key={item?._id}
                   product={item}
                   variant="cart"
+                  compact
                 />
               ))}
             </div>
@@ -170,7 +145,7 @@ const AquaUserDashbordPageComponent = () => {
         </section>
 
         <section className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-end justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">
                 Saved favourites
@@ -181,19 +156,20 @@ const AquaUserDashbordPageComponent = () => {
             </div>
             <Link
               href="/dashboard/fav"
-              className="text-sm font-semibold text-emerald-600 transition hover:text-emerald-500"
+              className="inline-flex items-center gap-1 text-sm font-bold text-emerald-700 transition hover:text-emerald-600"
             >
-              View favourites
+              View favourites <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
 
           {featuredFav.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {featuredFav.map((item) => (
                 <DashboardProductCard
                   key={item?._id}
                   product={item}
                   variant="fav"
+                  compact
                 />
               ))}
             </div>
