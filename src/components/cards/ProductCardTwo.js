@@ -19,11 +19,14 @@ const ReusableProductCard = ({
   viewMode = "grid",
   padded = true,
   imagePriority = false,
+  variant,
 }) => {
   const [fav, setAddFav] = useState(false);
   const [cart, setAddCart] = useState(false);
   const [celebration, setCelebration] = useState("");
   const celebrationTimerRef = useRef(null);
+  const cardVariant = variant || (padded ? "glass" : "standard");
+  const isGlass = cardVariant === "glass";
 
   // ✅ FIX: hook must be invoked
   const { formatCurrencyINR } = useCurrency;
@@ -51,7 +54,6 @@ const ReusableProductCard = ({
   const timerRef = useRef(null);
   const rafRef = useRef(null);
   const startRef = useRef(0);
-  const isPausedRef = useRef(false);
   const [progress, setProgress] = useState(0); // 0..1
 
   const stopAuto = useCallback(() => {
@@ -64,11 +66,7 @@ const ReusableProductCard = ({
   const tick = useCallback(() => {
     if (!emblaApi) return;
 
-    if (padded) {
-      if (!isHoveredRef.current) return;
-    } else {
-      if (isPausedRef.current) return;
-    }
+    if (!isGlass || !isHoveredRef.current) return;
 
     const now = performance.now();
     const elapsed = now - startRef.current;
@@ -76,7 +74,7 @@ const ReusableProductCard = ({
     setProgress(p);
     if (p >= 1) return;
     rafRef.current = requestAnimationFrame(tick);
-  }, [emblaApi, padded, AUTO_MS]);
+  }, [emblaApi, isGlass, AUTO_MS]);
 
   const startAuto = useCallback(() => {
     if (!emblaApi) return;
@@ -88,16 +86,12 @@ const ReusableProductCard = ({
     timerRef.current = setTimeout(() => {
       if (!emblaApi) return;
 
-      if (padded) {
-        if (!isHoveredRef.current) return;
-      } else {
-        if (isPausedRef.current) return;
-      }
+      if (!isGlass || !isHoveredRef.current) return;
 
       if (emblaApi.canScrollNext()) emblaApi.scrollNext();
       else emblaApi.scrollTo(0);
     }, AUTO_MS);
-  }, [emblaApi, stopAuto, tick, padded, AUTO_MS]);
+  }, [emblaApi, stopAuto, tick, isGlass, AUTO_MS]);
 
   useEffect(() => {
     const isProductInCart = cartData?.some((i) => i._id === product?._id);
@@ -121,27 +115,19 @@ const ReusableProductCard = ({
 
     const onSelect = () => {
       setActiveIndex(emblaApi.selectedScrollSnap());
-      if (padded) {
-        if (isHoveredRef.current) startAuto();
-      } else {
-        startAuto();
-      }
+      if (isGlass && isHoveredRef.current) startAuto();
     };
 
     emblaApi.on("select", onSelect);
 
-    if (padded) {
-      stopAuto();
-      setProgress(0);
-    } else {
-      startAuto();
-    }
+    stopAuto();
+    setProgress(0);
 
     return () => {
       emblaApi.off("select", onSelect);
       stopAuto();
     };
-  }, [emblaApi, startAuto, stopAuto, padded]);
+  }, [emblaApi, startAuto, stopAuto, isGlass]);
 
   const productHref = useMemo(() => {
     if (slug) return `/product/${slug}`;
@@ -151,14 +137,30 @@ const ReusableProductCard = ({
 
   const reviewStats = useMemo(() => getProductReviewStats(product), [product]);
 
+  const description = useMemo(() => {
+    const value = product?.shortDescription || product?.description || "";
+    if (typeof value !== "string") return "";
+    return value
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }, [product?.shortDescription, product?.description]);
+
+  const discountPercent = useMemo(() => {
+    const original = Number(price);
+    const sale = Number(discountPrice);
+    if (!discountPriceStatus || original <= 0 || sale >= original) return 0;
+    return Math.round(((original - sale) / original) * 100);
+  }, [discountPriceStatus, discountPrice, price]);
+
   const renderRatingBadge = (variant = "overlay") => {
     if (!reviewStats.ratingValue && !reviewStats.ratingCount) return null;
     const base =
       "absolute z-20 inline-flex items-center gap-1 rounded-full font-semibold shadow";
     const styles =
       variant === "light"
-        ? "left-2 top-2 bg-white/95 px-2 py-1 text-[11px] text-slate-800"
-        : "left-4 top-4 bg-white/90 px-2.5 py-1.5 text-xs text-slate-900 backdrop-blur";
+        ? "bottom-3 left-3 bg-white/95 px-2 py-1 text-[11px] text-slate-800"
+        : "left-4 top-14 bg-black/35 px-2.5 py-1.5 text-xs text-white backdrop-blur";
     return (
       <div className={`${base} ${styles}`}>
         <FaStar className="text-amber-400" size={12} />
@@ -419,15 +421,15 @@ const ReusableProductCard = ({
 
   // ===========================
   // GRID VIEW
-  // padded = true  -> Full-image hover details + rich cart button + timer filler
-  // padded = false -> Your existing grid card (kept)
+  // glass    -> full-bleed image with readable overlay
+  // standard -> white retail card with separate content
   // ===========================
   return (
     <>
-      {padded ? (
+      {isGlass ? (
         <div
           className={[
-            "group relative h-[420px] w-full cursor-pointer overflow-hidden rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/50 bg-white/20 backdrop-blur-sm transition-all duration-300 hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)]",
+            "group relative h-[460px] w-full cursor-pointer overflow-hidden rounded-[30px] border border-white/50 bg-white/20 shadow-[0_10px_34px_rgba(15,23,42,0.12)] backdrop-blur-sm transition-shadow duration-300 hover:shadow-[0_18px_48px_rgba(15,23,42,0.18)]",
             fav ? "ring-2 ring-rose-500 ring-offset-2" : "",
             cart
               ? "outline outline-2 outline-emerald-500 outline-offset-[-2px]"
@@ -436,23 +438,12 @@ const ReusableProductCard = ({
           onClick={handleNavigate}
           onMouseEnter={() => {
             isHoveredRef.current = true;
-            if (padded) {
-              startAuto();
-            } else {
-              isPausedRef.current = true;
-              stopAuto();
-            }
+            startAuto();
           }}
           onMouseLeave={() => {
             isHoveredRef.current = false;
-            if (padded) {
-              stopAuto();
-              setProgress(0); // Optional: reset progress bar
-              // api.scrollTo(0)? Maybe not, leave it at current image
-            } else {
-              isPausedRef.current = false;
-              startAuto();
-            }
+            stopAuto();
+            setProgress(0);
           }}
         >
           {/* IMAGE */}
@@ -487,6 +478,12 @@ const ReusableProductCard = ({
           {/* RATING */}
           {renderRatingBadge("overlay")}
 
+          {discountPercent > 0 && (
+            <span className="absolute left-4 top-4 z-20 rounded-full bg-black/35 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-md">
+              {discountPercent}% off
+            </span>
+          )}
+
           {/* FAVORITE */}
           <button
             onClick={handleFavToggle}
@@ -506,18 +503,23 @@ const ReusableProductCard = ({
             className="
               absolute inset-0 z-10
               flex flex-col justify-end
-              bg-gradient-to-t from-black/90 via-black/20 to-transparent
+              bg-gradient-to-t from-black/95 via-black/30 to-transparent
               transition-all duration-300
             "
           >
-            <div className="px-6 pb-6 text-white">
-              <div className="flex flex-col gap-1 mb-3">
-                <h3 className="text-lg font-bold leading-snug drop-shadow-sm line-clamp-2">
-                  {title}
-                </h3>
-                <p className="text-xs text-white/80 font-medium uppercase tracking-wider">
+            <div className="px-5 pb-5 text-white sm:px-6 sm:pb-6">
+              <div className="mb-3 flex flex-col gap-1">
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/70">
                   {product?.brand || "Aquakart"}
                 </p>
+                <h3 className="line-clamp-2 text-xl font-black leading-snug drop-shadow-sm">
+                  {title}
+                </h3>
+                {description && (
+                  <p className="line-clamp-2 text-sm leading-5 text-white/75">
+                    {description}
+                  </p>
+                )}
               </div>
 
               {/* Timer Filler - Relative */}
@@ -551,41 +553,36 @@ const ReusableProductCard = ({
                 })}
               </div>
 
-              <div className="flex min-w-0 items-end border-t border-white/20 pt-3">
-                {/* Price - Left */}
-                <div className="min-w-0 flex-1 pr-3">
+              <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
                   <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                    <span className="whitespace-nowrap text-[clamp(1rem,4.5vw,1.125rem)] font-bold leading-tight">
+                    <span className="whitespace-nowrap rounded-full bg-black/35 px-3 py-1 text-lg font-black leading-tight backdrop-blur-md">
                       {discountPriceStatus
                         ? formatCurrencyINR(discountPrice)
                         : formatCurrencyINR(price)}
                     </span>
                     {discountPriceStatus && (
-                      <span className="whitespace-nowrap text-[11px] leading-tight text-white/60 line-through sm:text-xs">
+                      <span className="whitespace-nowrap text-xs leading-tight text-white/60 line-through">
                         {formatCurrencyINR(price)}
                       </span>
                     )}
                   </div>
                 </div>
-
-                {/* Cart Button - Right */}
-                <button
-                  onClick={handleCartToggle}
-                  type="button"
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full shadow-lg transition-all duration-300 active:scale-95 ${
-                    cart
-                      ? "bg-emerald-500 text-white hover:bg-emerald-600"
-                      : "bg-white text-slate-900 hover:bg-slate-200"
-                  }`}
-                  aria-label={cart ? "Remove from cart" : "Add to cart"}
-                >
-                  <FaShoppingCart
-                    size={16}
-                    className={cart ? "text-white" : "text-slate-900"}
-                  />
-                  {cart && <FaCheck size={12} className="ml-1 text-white" />}
-                </button>
               </div>
+
+              <button
+                onClick={handleCartToggle}
+                type="button"
+                className={`flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-sm font-black shadow-lg transition-colors ${
+                  cart
+                    ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                    : "bg-white text-slate-950 hover:bg-slate-100"
+                }`}
+                aria-label={cart ? "Remove from cart" : "Add to cart"}
+              >
+                {cart ? <FaCheck size={14} /> : <FaShoppingCart size={15} />}
+                {cart ? "Added to cart" : "Add to cart"}
+              </button>
             </div>
           </div>
         </div>
@@ -595,17 +592,19 @@ const ReusableProductCard = ({
           tabIndex={0}
           onClick={handleNavigate}
           onKeyDown={handleKeyPress}
-          className="group relative flex h-full cursor-pointer flex-col rounded-3xl glass-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
+          className={`group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-[30px] border bg-white p-3 shadow-[0_10px_32px_rgba(15,23,42,0.07)] transition-shadow duration-300 hover:shadow-[0_16px_42px_rgba(15,23,42,0.12)] focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 ${
+            fav ? "border-rose-200" : "border-slate-200/80"
+          } ${cart ? "ring-1 ring-emerald-300" : ""}`}
           aria-label={`View details for ${title}`}
         >
           {/* Full-Width Image Carousel */}
-          <div className="relative w-full overflow-hidden rounded-t-xl">
+          <div className="relative w-full overflow-hidden rounded-[22px] bg-slate-50">
             <div className="overflow-hidden" ref={emblaRef}>
               <div className="flex">
                 {displayPhotos.map((photo, index) => (
                   <motion.div
                     key={index}
-                    className="flex h-72 w-full flex-shrink-0 rounded-3xl"
+                    className="flex h-64 w-full flex-shrink-0 sm:h-72"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{
                       opacity: activeIndex === index ? 1 : 0.5,
@@ -622,7 +621,7 @@ const ReusableProductCard = ({
                         sizes="(max-width: 639px) calc(100vw - 24px), (max-width: 1023px) 50vw, 33vw"
                         priority={imagePriority && index === 0}
                         quality={68}
-                        imgClassName="h-full w-full object-cover object-center rounded-3xl p-3"
+                        imgClassName="h-full w-full object-cover object-center"
                       />
                     ) : (
                       <div className="h-full w-full bg-slate-100" />
@@ -632,8 +631,13 @@ const ReusableProductCard = ({
               </div>
             </div>
 
-            {/* Rating Badge */}
-            {renderRatingBadge("overlay")}
+            {renderRatingBadge("light")}
+
+            {discountPercent > 0 && (
+              <span className="absolute left-3 top-3 z-20 rounded-full bg-slate-950/80 px-3 py-1.5 text-xs font-bold text-white backdrop-blur">
+                {discountPercent}% off
+              </span>
+            )}
 
             {/* Favorite Button */}
             <button
@@ -682,57 +686,60 @@ const ReusableProductCard = ({
             </div>
           </div>
 
-          <div className="flex flex-1 flex-col justify-between p-5">
+          <div className="flex flex-1 flex-col justify-between px-2 pb-2 pt-4 sm:px-3 sm:pb-3">
             <div className="flex flex-col gap-2">
               <div className="flex flex-col gap-1 text-left">
-                <h3 className="text-sm font-semibold text-slate-900 line-clamp-2 transition group-hover:text-emerald-600">
+                <h3 className="line-clamp-2 text-lg font-black leading-snug text-slate-950 transition group-hover:text-emerald-700">
                   {title}
                 </h3>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   {product?.brand || product?.manufacturer || "Aquakart"}
                 </p>
+                {description && (
+                  <p className="line-clamp-2 text-sm leading-5 text-slate-500">
+                    {description}
+                  </p>
+                )}
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-slate-500">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
                   {product?.warranty || "1 yr warranty"}
                 </span>
               </div>
             </div>
 
-            <div className="mt-3 flex min-w-0 items-center gap-3 border-t border-slate-50 pt-3">
+            <div className="mt-4 space-y-3 border-t border-slate-100 pt-3">
               {/* Price - Left */}
-              <div className="min-w-0 flex-1">
-                <p className="whitespace-nowrap text-sm font-bold text-slate-900">
+              <div className="min-w-0">
+                <p className="whitespace-nowrap text-xl font-black text-slate-950">
                   {discountPriceStatus ? (
                     <>
-                      <span className="text-red-600">
-                        {formatCurrencyINR(discountPrice)}
-                      </span>
+                      <span>{formatCurrencyINR(discountPrice)}</span>
                     </>
                   ) : (
                     formatCurrencyINR(price)
                   )}
                 </p>
                 {discountPriceStatus && (
-                  <span className="text-[10px] text-gray-400 line-through">
+                  <span className="text-xs text-slate-400 line-through">
                     {formatCurrencyINR(price)}
                   </span>
                 )}
               </div>
 
-              {/* Cart Button - Right */}
               <button
                 onClick={handleCartToggle}
                 type="button"
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-md transition-all duration-300 ${
+                className={`flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-black shadow-sm transition-colors ${
                   cart
                     ? "bg-emerald-500 text-white hover:bg-emerald-600"
-                    : "bg-slate-900 text-white hover:bg-slate-800"
+                    : "bg-slate-950 text-white hover:bg-emerald-700"
                 }`}
                 aria-label={cart ? "Remove from cart" : "Add to cart"}
               >
-                {cart ? <FaCheck size={14} /> : <FaShoppingCart size={14} />}
+                {cart ? <FaCheck size={14} /> : <FaShoppingCart size={15} />}
+                {cart ? "Added to cart" : "Add to cart"}
               </button>
             </div>
           </div>

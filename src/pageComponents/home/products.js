@@ -30,7 +30,7 @@ const AquaProducts = ({ initialProducts = [] }) => {
         <div className={styles.productGrid}>
           {visibleProducts.map((product) => (
             <div key={product._id || product.id} className={styles.productItem}>
-              <ReusableProductCard product={product} />
+              <ReusableProductCard product={product} variant="standard" />
             </div>
           ))}
         </div>
