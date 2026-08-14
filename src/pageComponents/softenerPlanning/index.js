@@ -191,7 +191,7 @@ const LoginGate = ({ loading, onLogin }) => (
           type="button"
           onClick={onLogin}
           disabled={loading}
-          className="mt-7 inline-flex min-h-13 items-center justify-center gap-3 rounded-2xl bg-slate-950 px-5 py-4 text-sm font-black text-white shadow-[0_14px_35px_rgba(15,23,42,0.22)] transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
+          className="mt-7 inline-flex min-h-[52px] items-center justify-center gap-3 rounded-2xl bg-slate-950 px-5 py-4 text-sm font-black text-white shadow-[0_14px_35px_rgba(15,23,42,0.22)] transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
         >
           <FaGoogle />
           {loading ? "Connecting…" : "Continue with Google"}
@@ -264,6 +264,7 @@ const AquaSoftenerPlannerComponent = () => {
   }, [authenticated]);
 
   const question = questions[step];
+  const QuestionIcon = question.icon;
   const selectedValue = answers[question?.key];
   const recommendations = useMemo(
     () => selectRecommendations(products, answers),
@@ -417,7 +418,7 @@ const AquaSoftenerPlannerComponent = () => {
             <section className="mt-8 grid gap-6 lg:grid-cols-[0.72fr_1.28fr]">
               <aside className="rounded-[1.75rem] bg-slate-950 p-6 text-white shadow-[0_24px_70px_rgba(15,23,42,0.16)] sm:p-8">
                 <span className="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-400 text-slate-950">
-                  <question.icon size={19} />
+                  <QuestionIcon size={19} />
                 </span>
                 <h2 className="mt-6 text-2xl font-black tracking-[-0.04em]">
                   {question.title}
