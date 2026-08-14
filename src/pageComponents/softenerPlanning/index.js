@@ -7,6 +7,7 @@ import {
   FaGoogle,
   FaHome,
   FaLock,
+  FaMapMarkerAlt,
   FaTint,
   FaUsers,
   FaWater,
@@ -16,6 +17,7 @@ import AquaAppLoader from "@/components/common/AquaAppLoader";
 import ReusableProductCard from "@/components/cards/ProductCardTwo";
 import { useAuth } from "@/context/AuthContext";
 import ProductServiceOperations from "@/services/products";
+import AquaSoftnerOperations from "@/services/softenersHyderabad";
 import { getUserDisplayName } from "@/utils/user";
 
 const DRAFT_KEY = "aquakart_softener_planner_draft";
@@ -204,10 +206,113 @@ const LoginGate = ({ loading, onLogin }) => (
   </section>
 );
 
+const InstallationGallery = ({ sections = [], loading = false }) => {
+  const images = useMemo(
+    () =>
+      sections
+        .flatMap((section) =>
+          (Array.isArray(section?.photos) ? section.photos : []).map((photo) => ({
+            id: photo?.id || photo?._id || photo?.secure_url,
+            url: photo?.secure_url || photo?.delivery_url || photo?.url || "",
+            area: section?.title || section?.area || "Aquakart installation",
+          })),
+        )
+        .filter((image) => image.url)
+        .slice(0, 10),
+    [sections],
+  );
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    if (activeIndex >= images.length) setActiveIndex(0);
+  }, [activeIndex, images.length]);
+
+  if (loading) {
+    return (
+      <section className="mt-8 animate-pulse rounded-[1.75rem] border border-white bg-white/90 p-5 shadow-sm sm:p-7">
+        <div className="h-5 w-44 rounded-full bg-slate-200" />
+        <div className="mt-5 aspect-[16/8] rounded-2xl bg-slate-200" />
+      </section>
+    );
+  }
+
+  if (!images.length) return null;
+  const active = images[activeIndex] || images[0];
+
+  return (
+    <section className="mt-8 overflow-hidden rounded-[1.75rem] border border-white bg-white/92 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-7">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+        <div>
+          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">
+            Live from Aquakart
+          </span>
+          <h2 className="mt-1 text-2xl font-black tracking-[-0.04em] text-slate-950">
+            See real installations
+          </h2>
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            Tap a thumbnail to inspect the plumbing fit and finished setup.
+          </p>
+        </div>
+        <span className="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-[10px] font-black text-emerald-700">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          {images.length} recent photos
+        </span>
+      </div>
+
+      <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_116px]">
+        <motion.figure
+          key={active.id || active.url}
+          initial={{ opacity: 0.6 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
+          className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-slate-100"
+        >
+          <img
+            src={active.url}
+            alt={`Aquakart water softener installation in ${active.area}`}
+            className="h-full w-full object-cover"
+            loading="eager"
+            decoding="async"
+          />
+          <figcaption className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-slate-950/75 px-3 py-2 text-[10px] font-bold text-white backdrop-blur">
+            <FaMapMarkerAlt /> {active.area}
+          </figcaption>
+        </motion.figure>
+
+        <div className="flex gap-2 overflow-x-auto pb-1 lg:max-h-[min(56vw,430px)] lg:flex-col lg:overflow-y-auto lg:overflow-x-hidden">
+          {images.map((image, index) => (
+            <button
+              key={image.id || image.url}
+              type="button"
+              onClick={() => setActiveIndex(index)}
+              className={[
+                "relative h-20 w-24 shrink-0 overflow-hidden rounded-xl border-2 bg-slate-100 transition lg:h-[74px] lg:w-full",
+                index === activeIndex
+                  ? "border-emerald-500 shadow-md"
+                  : "border-transparent opacity-70 hover:opacity-100",
+              ].join(" ")}
+              aria-label={`Show installation ${index + 1}`}
+              aria-pressed={index === activeIndex}
+            >
+              <img
+                src={image.url}
+                alt=""
+                className="h-full w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const AquaSoftenerPlannerComponent = () => {
-  const { authenticated, authReady, loading: authLoading, signInWithGoogle, user } =
-    useAuth();
+  const { authenticated, signInWithGoogle, user } = useAuth();
   const [step, setStep] = useState(0);
+  const [loginPending, setLoginPending] = useState(false);
   const [answers, setAnswers] = useState({
     residents: "",
     coverage: "",
@@ -216,6 +321,8 @@ const AquaSoftenerPlannerComponent = () => {
   const [products, setProducts] = useState([]);
   const [catalogueLoading, setCatalogueLoading] = useState(false);
   const [catalogueError, setCatalogueError] = useState("");
+  const [installationSections, setInstallationSections] = useState([]);
+  const [installationsLoading, setInstallationsLoading] = useState(false);
   const [complete, setComplete] = useState(false);
 
   useEffect(() => {
@@ -243,20 +350,31 @@ const AquaSoftenerPlannerComponent = () => {
     if (!authenticated) return;
     let active = true;
     setCatalogueLoading(true);
+    setInstallationsLoading(true);
     setCatalogueError("");
 
-    ProductServiceOperations.AllProducts()
-      .then((response) => {
-        if (!active) return;
-        const data = response?.data?.data;
+    Promise.allSettled([
+      ProductServiceOperations.AllProducts(),
+      AquaSoftnerOperations.getSofteners(),
+    ]).then(([productsResult, installationsResult]) => {
+      if (!active) return;
+
+      if (productsResult.status === "fulfilled") {
+        const data = productsResult.value?.data?.data;
         setProducts(Array.isArray(data) ? data : []);
-      })
-      .catch(() => {
-        if (active) setCatalogueError("We could not load the live catalogue.");
-      })
-      .finally(() => {
-        if (active) setCatalogueLoading(false);
-      });
+      } else {
+        setCatalogueError("We could not load the live catalogue.");
+      }
+
+      if (installationsResult.status === "fulfilled") {
+        const sections = installationsResult.value?.data;
+        setInstallationSections(Array.isArray(sections) ? sections : []);
+      }
+    }).finally(() => {
+      if (!active) return;
+      setCatalogueLoading(false);
+      setInstallationsLoading(false);
+    });
 
     return () => {
       active = false;
@@ -294,6 +412,18 @@ const AquaSoftenerPlannerComponent = () => {
     setStep((current) => Math.max(current - 1, 0));
   };
 
+  const handleLogin = async () => {
+    if (loginPending) return;
+    setLoginPending(true);
+    try {
+      await signInWithGoogle();
+    } catch {
+      // AuthContext already shows the actionable sign-in error toast.
+    } finally {
+      setLoginPending(false);
+    }
+  };
+
   const restart = () => {
     setAnswers({ residents: "", coverage: "", hardness: "" });
     setStep(0);
@@ -303,22 +433,10 @@ const AquaSoftenerPlannerComponent = () => {
     }
   };
 
-  if (!authReady) {
-    return (
-      <AquaLayout path="softenerPlanning">
-        <AquaAppLoader
-          variant="screen"
-          message="Checking your Aquakart session"
-          subtext="Your planner will be ready in a moment."
-        />
-      </AquaLayout>
-    );
-  }
-
   if (!authenticated) {
     return (
       <AquaLayout path="softenerPlanning">
-        <LoginGate loading={authLoading} onLogin={signInWithGoogle} />
+<LoginGate loading={loginPending} onLogin={handleLogin} />
       </AquaLayout>
     );
   }
@@ -501,6 +619,11 @@ const AquaSoftenerPlannerComponent = () => {
               </div>
             </section>
           )}
+
+          <InstallationGallery
+            sections={installationSections}
+            loading={installationsLoading}
+          />
         </div>
       </main>
     </AquaLayout>
