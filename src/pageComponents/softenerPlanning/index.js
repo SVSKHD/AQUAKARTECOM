@@ -1,793 +1,507 @@
-import { useMemo, useState } from "react";
-import AquaLayout from "@/components/Layout/Layout";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FaUser,
-  FaHome,
-  FaWater,
-  FaCalendarAlt,
-  FaLightbulb,
-  FaCheckCircle,
-  FaArrowRight,
   FaArrowLeft,
+  FaArrowRight,
+  FaCheck,
+  FaGoogle,
+  FaHome,
+  FaLock,
+  FaTint,
+  FaUsers,
+  FaWater,
 } from "react-icons/fa";
+import AquaLayout from "@/components/Layout/Layout";
+import AquaAppLoader from "@/components/common/AquaAppLoader";
 import ReusableProductCard from "@/components/cards/ProductCardTwo";
+import { useAuth } from "@/context/AuthContext";
+import ProductServiceOperations from "@/services/products";
+import { getUserDisplayName } from "@/utils/user";
 
-/**
- * Premium Glass Wrapper
- */
-const GlassCard = ({ className = "", children }) => (
-  <div
+const DRAFT_KEY = "aquakart_softener_planner_draft";
+
+const questions = [
+  {
+    key: "residents",
+    title: "How many people use water at home?",
+    helper: "This sets the daily soft-water capacity.",
+    icon: FaUsers,
+    options: [
+      { value: "1-2", label: "1–2 people", note: "Compact home" },
+      { value: "3-4", label: "3–4 people", note: "Typical family" },
+      { value: "5-7", label: "5–7 people", note: "Large family" },
+      { value: "8+", label: "8+ people", note: "Villa or shared home" },
+    ],
+  },
+  {
+    key: "coverage",
+    title: "Where do you need soft water?",
+    helper: "Choose the area that will actually use the system.",
+    icon: FaHome,
+    options: [
+      { value: "bathroom", label: "One bathroom", note: "Shower and fittings" },
+      { value: "multiple", label: "2–3 bathrooms", note: "Multiple daily users" },
+      { value: "whole-home", label: "Whole home", note: "All major outlets" },
+    ],
+  },
+  {
+    key: "hardness",
+    title: "How hard is your water?",
+    helper: "No test report? Choose “Not sure”—we can confirm it later.",
+    icon: FaTint,
+    options: [
+      { value: "mild", label: "Mild", note: "Light white marks" },
+      { value: "hard", label: "Hard", note: "Frequent scale on taps" },
+      { value: "very-hard", label: "Very hard", note: "Heavy scale or borewell" },
+      { value: "unknown", label: "Not sure", note: "Recommend with safe margin" },
+    ],
+  },
+];
+
+const extractCapacity = (product) => {
+  const text = [
+    product?.title,
+    product?.capacity,
+    product?.description,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const match = text.match(/(\d+(?:\.\d+)?)\s*(?:l|litre|liter)/i);
+  return match ? Number(match[1]) : 0;
+};
+
+const requiredCapacity = ({ residents, coverage, hardness }) => {
+  if (coverage === "bathroom") return hardness === "very-hard" ? 12 : 8;
+
+  const peopleBase = {
+    "1-2": 20,
+    "3-4": 25,
+    "5-7": 40,
+    "8+": 100,
+  }[residents] || 25;
+
+  const coverageBoost = coverage === "whole-home" ? 1.25 : 1;
+  const hardnessBoost =
+    hardness === "very-hard" ? 1.25 : hardness === "unknown" ? 1.1 : 1;
+
+  return Math.ceil(peopleBase * coverageBoost * hardnessBoost);
+};
+
+const selectRecommendations = (products, answers) => {
+  const target = requiredCapacity(answers);
+  const softeners = products
+    .filter((product) =>
+      /softener|autosoft|softner/i.test(
+        `${product?.title || ""} ${product?.category?.title || ""}`,
+      ),
+    )
+    .map((product) => ({ product, capacity: extractCapacity(product) }))
+    .sort((left, right) => {
+      const leftDistance =
+        left.capacity >= target
+          ? left.capacity - target
+          : target - left.capacity + 1000;
+      const rightDistance =
+        right.capacity >= target
+          ? right.capacity - target
+          : target - right.capacity + 1000;
+      return leftDistance - rightDistance;
+    });
+
+  return softeners.slice(0, 2).map(({ product }) => product);
+};
+
+const Choice = ({ option, selected, onSelect }) => (
+  <button
+    type="button"
+    onClick={onSelect}
     className={[
-      "relative overflow-hidden rounded-[2.8rem]",
-      "bg-white/25 backdrop-blur-2xl",
-      "border border-white/40",
-      "shadow-[0_25px_60px_-20px_rgba(0,0,0,0.35)]",
-      className,
+      "group flex min-h-[92px] items-center justify-between rounded-2xl border p-4 text-left transition duration-200",
+      "focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 active:scale-[0.99]",
+      selected
+        ? "border-emerald-400 bg-emerald-50 shadow-[0_12px_28px_rgba(16,185,129,0.12)]"
+        : "border-slate-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/40",
     ].join(" ")}
+    aria-pressed={selected}
   >
-    {/* Light sweep */}
-    <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/40 via-white/5 to-transparent opacity-80" />
-    {/* Inner ring */}
-    <div className="pointer-events-none absolute inset-0 rounded-[2.8rem] ring-1 ring-white/30" />
-    {/* Subtle noise-ish overlay */}
-    <div className="pointer-events-none absolute inset-0 opacity-[0.06] bg-[radial-gradient(circle_at_1px_1px,rgba(0,0,0,0.5)_1px,transparent_0)] [background-size:18px_18px]" />
-    <div className="relative z-10">{children}</div>
-  </div>
+    <span>
+      <strong className="block text-sm text-slate-950 sm:text-base">
+        {option.label}
+      </strong>
+      <small className="mt-1 block text-xs leading-5 text-slate-500">
+        {option.note}
+      </small>
+    </span>
+    <span
+      className={[
+        "grid h-7 w-7 shrink-0 place-items-center rounded-full border transition",
+        selected
+          ? "border-emerald-500 bg-emerald-500 text-white"
+          : "border-slate-200 bg-slate-50 text-transparent group-hover:border-emerald-300",
+      ].join(" ")}
+    >
+      <FaCheck size={11} />
+    </span>
+  </button>
+);
+
+const LoginGate = ({ loading, onLogin }) => (
+  <section className="mx-auto grid min-h-[calc(100vh-92px)] max-w-6xl place-items-center px-4 py-10">
+    <div className="grid w-full overflow-hidden rounded-[2rem] border border-white/80 bg-white/88 shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur-xl lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="relative overflow-hidden bg-slate-950 p-8 text-white sm:p-12">
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-400/20 blur-3xl" />
+        <div className="relative">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em]">
+            <FaWater /> Softener Planner
+          </span>
+          <h1 className="mt-6 max-w-xl text-4xl font-black tracking-[-0.06em] sm:text-6xl">
+            The right softener in three answers.
+          </h1>
+          <p className="mt-5 max-w-lg text-sm leading-7 text-slate-300 sm:text-base">
+            Tell us about your home and water. We’ll shortlist live Aquakart
+            products that match your expected capacity.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-2 text-xs font-bold text-slate-200">
+            {["3 quick choices", "Live products", "No technical form"].map(
+              (item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-white/10 bg-white/5 px-3 py-2"
+                >
+                  {item}
+                </span>
+              ),
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col justify-center p-8 sm:p-12">
+        <span className="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-600">
+          <FaLock />
+        </span>
+        <h2 className="mt-6 text-2xl font-black tracking-[-0.04em] text-slate-950">
+          Sign in before planning
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-slate-500">
+          Google sign-in protects your recommendations and lets you return
+          without starting again.
+        </p>
+        <button
+          type="button"
+          onClick={onLogin}
+          disabled={loading}
+          className="mt-7 inline-flex min-h-13 items-center justify-center gap-3 rounded-2xl bg-slate-950 px-5 py-4 text-sm font-black text-white shadow-[0_14px_35px_rgba(15,23,42,0.22)] transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
+        >
+          <FaGoogle />
+          {loading ? "Connecting…" : "Continue with Google"}
+        </button>
+        <p className="mt-4 text-center text-[11px] leading-5 text-slate-400">
+          You’ll return to this planner automatically after sign-in.
+        </p>
+      </div>
+    </div>
+  </section>
 );
 
 const AquaSoftenerPlannerComponent = () => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [showRecommendations, setShowRecommendations] = useState(false);
-  const [formData, setFormData] = useState({
+  const { authenticated, authReady, loading: authLoading, signInWithGoogle, user } =
+    useAuth();
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState({
     residents: "",
-    averageUsage: "",
-    usageFrequency: "",
+    coverage: "",
+    hardness: "",
   });
+  const [products, setProducts] = useState([]);
+  const [catalogueLoading, setCatalogueLoading] = useState(false);
+  const [catalogueError, setCatalogueError] = useState("");
+  const [complete, setComplete] = useState(false);
 
-  const steps = useMemo(
-    () => [
-      {
-        id: 0,
-        title: "User Info",
-        icon: <FaUser />,
-        tip: "We’ll tailor the system based on your inputs — no spam, only the right match.",
-      },
-      {
-        id: 1,
-        title: "Residents",
-        icon: <FaHome />,
-        tip: "More people = more water demand = higher resin capacity needed.",
-      },
-      {
-        id: 2,
-        title: "Usage",
-        icon: <FaWater />,
-        tip: "High daily usage needs stronger capacity so water stays soft throughout the day.",
-      },
-      {
-        id: 3,
-        title: "Frequency",
-        icon: <FaCalendarAlt />,
-        tip: "Daily use benefits most from auto-regeneration softeners for consistent softness.",
-      },
-    ],
-    [],
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = JSON.parse(window.sessionStorage.getItem(DRAFT_KEY) || "null");
+      if (saved?.answers) {
+        setAnswers((current) => ({ ...current, ...saved.answers }));
+        setStep(Math.min(Number(saved.step) || 0, questions.length - 1));
+      }
+    } catch {
+      window.sessionStorage.removeItem(DRAFT_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.sessionStorage.setItem(
+      DRAFT_KEY,
+      JSON.stringify({ answers, step }),
+    );
+  }, [answers, step]);
+
+  useEffect(() => {
+    if (!authenticated) return;
+    let active = true;
+    setCatalogueLoading(true);
+    setCatalogueError("");
+
+    ProductServiceOperations.AllProducts()
+      .then((response) => {
+        if (!active) return;
+        const data = response?.data?.data;
+        setProducts(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (active) setCatalogueError("We could not load the live catalogue.");
+      })
+      .finally(() => {
+        if (active) setCatalogueLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  const question = questions[step];
+  const selectedValue = answers[question?.key];
+  const recommendations = useMemo(
+    () => selectRecommendations(products, answers),
+    [answers, products],
   );
+  const progress = complete ? 100 : ((step + 1) / questions.length) * 100;
+  const displayName = getUserDisplayName(user, "there");
 
-  // Mock Product Data
-  const products = useMemo(
-    () => ({
-      small: {
-        _id: "kent-bathroom-water-softener",
-        title: "AquaKart Compact Softener",
-        price: 15000,
-        photos: [
-          {
-            secure_url:
-              "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
-          },
-        ],
-        description: "Perfect for small families (1–4 people).",
-        capacity: "1000L",
-        warranty: "1 Year",
-      },
-      kent25: {
-        _id: "kent-auto-25",
-        title: "Kent Autosoft 25L",
-        price: 25000,
-        photos: [
-          {
-            secure_url:
-              "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
-          },
-        ],
-        description: "Ideal for medium to large homes.",
-        capacity: "25L Resin",
-        warranty: "1 Year",
-      },
-      kent40: {
-        _id: "kent-auto-40",
-        title: "Kent Autosoft 40L",
-        price: 40000,
-        photos: [
-          {
-            secure_url:
-              "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
-          },
-        ],
-        description: "High capacity for large families.",
-        capacity: "40L Resin",
-        warranty: "1 Year",
-      },
-      kent100: {
-        _id: "kent-auto-100",
-        title: "Kent Autosoft 100L",
-        price: 90000,
-        photos: [
-          {
-            secure_url:
-              "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
-          },
-        ],
-        description:
-          "Very high capacity for villas / large families (10+ members).",
-        capacity: "100L Resin",
-        warranty: "1 Year",
-      },
-    }),
-    [],
-  );
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((p) => ({ ...p, [name]: value }));
+  const choose = (value) => {
+    setAnswers((current) => ({ ...current, [question.key]: value }));
   };
 
-  const progressPercentage = useMemo(() => {
-    const denom = steps.length - 1;
-    if (denom <= 0) return 0;
-    return (currentStep / denom) * 100;
-  }, [currentStep, steps.length]);
-
-  const canProceed = useMemo(() => {
-    if (showRecommendations) return true;
-    if (currentStep === 0) return true;
-    if (currentStep === 1) return !!formData.residents;
-    if (currentStep === 2) return !!formData.averageUsage;
-    if (currentStep === 3) return !!formData.usageFrequency;
-    return false;
-  }, [currentStep, formData, showRecommendations]);
-
-  const getRecommendations = () => {
-    const r = formData.residents;
-
-    // 1–4 members -> small
-    if (r === "1-2" || r === "3-4") return [products.small];
-
-    // 5–9 members -> 25 + 40
-    if (r === "5-6" || r === "7-9") return [products.kent25, products.kent40];
-
-    // 10+ members -> 25 + 40 + 100
-    if (r === "10+")
-      return [products.kent25, products.kent40, products.kent100];
-
-    return [];
-  };
-
-  const handleNext = () => {
-    if (!canProceed) return;
-
-    if (currentStep < steps.length - 1) {
-      setCurrentStep((p) => p + 1);
+  const next = () => {
+    if (!selectedValue) return;
+    if (step < questions.length - 1) {
+      setStep((current) => current + 1);
     } else {
-      setShowRecommendations(true);
+      setComplete(true);
     }
   };
 
-  const handleBack = () => {
-    if (showRecommendations) {
-      setShowRecommendations(false);
+  const back = () => {
+    if (complete) {
+      setComplete(false);
       return;
     }
-    if (currentStep > 0) setCurrentStep((p) => p - 1);
+    setStep((current) => Math.max(current - 1, 0));
   };
 
-  const StepperTop = () => (
-    <GlassCard className="mb-8">
-      <div className="p-5 md:p-6">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-primary/15 text-primary flex items-center justify-center border border-white/50">
-              <FaWater className="text-xl" />
-            </div>
-            <div>
-              <p className="text-sm opacity-70 font-medium">AquaKart Planner</p>
-              <h3 className="text-lg md:text-xl font-bold">
-                {showRecommendations
-                  ? "Recommendations Ready"
-                  : `Step ${currentStep + 1} of ${steps.length}`}
-              </h3>
-            </div>
-          </div>
+  const restart = () => {
+    setAnswers({ residents: "", coverage: "", hardness: "" });
+    setStep(0);
+    setComplete(false);
+    if (typeof window !== "undefined") {
+      window.sessionStorage.removeItem(DRAFT_KEY);
+    }
+  };
 
-          {/* Desktop step pills */}
-          <div className="hidden lg:flex items-center gap-2">
-            {steps.map((s, i) => {
-              const done = showRecommendations || i < currentStep;
-              const active = i === currentStep && !showRecommendations;
+  if (!authReady) {
+    return (
+      <AquaLayout path="softenerPlanning">
+        <AquaAppLoader
+          variant="screen"
+          message="Checking your Aquakart session"
+          subtext="Your planner will be ready in a moment."
+        />
+      </AquaLayout>
+    );
+  }
 
-              return (
-                <div
-                  key={s.id}
-                  className={[
-                    "px-4 py-2 rounded-full border text-sm font-semibold flex items-center gap-2 transition-all",
-                    done
-                      ? "bg-success/15 border-success/25 text-success"
-                      : active
-                        ? "bg-primary/15 border-primary/30 text-primary shadow-[0_0_20px_rgba(var(--p),0.25)]"
-                        : "bg-white/10 border-white/25 text-base-content/50",
-                  ].join(" ")}
-                >
-                  <span className="text-base">
-                    {done ? <FaCheckCircle /> : s.icon}
-                  </span>
-                  {s.title}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {!showRecommendations && (
-          <div className="mt-4">
-            <div className="h-2 rounded-full bg-white/15 overflow-hidden">
-              <motion.div
-                className="h-2 rounded-full bg-gradient-to-r from-primary to-secondary"
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPercentage}%` }}
-                transition={{ type: "spring", stiffness: 140, damping: 25 }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    </GlassCard>
-  );
+  if (!authenticated) {
+    return (
+      <AquaLayout path="softenerPlanning">
+        <LoginGate loading={authLoading} onLogin={signInWithGoogle} />
+      </AquaLayout>
+    );
+  }
 
   return (
     <AquaLayout path="softenerPlanning">
-      <div className="min-h-screen bg-base-200 p-4 md:p-8 relative overflow-hidden">
-        {/* Background Liquid Blobs */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-          <div className="absolute top-[-10%] left-[-10%] w-[520px] h-[520px] bg-primary/20 rounded-full blur-[110px] opacity-60" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[650px] h-[650px] bg-secondary/20 rounded-full blur-[130px] opacity-60" />
-          <div className="absolute top-[35%] left-[30%] w-[420px] h-[420px] bg-accent/15 rounded-full blur-[120px] opacity-50" />
-        </div>
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(167,243,208,0.28),transparent_34%),#f7faf9] px-4 py-8 sm:px-6 lg:py-12">
+        <div className="mx-auto max-w-6xl">
+          <header className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">
+                Aquakart Softener Planner
+              </span>
+              <h1 className="mt-2 text-3xl font-black tracking-[-0.055em] text-slate-950 sm:text-5xl">
+                {complete ? "Your best-fit softeners" : `Let’s size it, ${displayName}.`}
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
+                {complete
+                  ? "Matched from the current catalogue using your home, coverage and hardness."
+                  : "Three simple choices. No litres-per-day calculation required."}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-xs font-bold text-slate-600 shadow-sm">
+              <span className="text-emerald-600">
+                {complete ? "Complete" : `${step + 1} of ${questions.length}`}
+              </span>
+              <span className="mx-2 text-slate-300">•</span>
+              Signed in
+            </div>
+          </header>
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          {/* Sticky Rich Stepper */}
-          <div className="sticky top-3 z-20">
-            <StepperTop />
-          </div>
-
-          {/* Header */}
-          <div className="mb-10 text-center md:text-left">
-            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent drop-shadow-sm whitespace-pre-line">
-              {showRecommendations
-                ? "Your Recommendations"
-                : "Plan Your Perfect Water \nSoftener System"}
-            </h1>
-            <p className="mt-4 text-base-content/70 max-w-2xl text-lg font-medium">
-              {showRecommendations
-                ? "Based on your inputs, here are the best-fit options for your home."
-                : "Answer a few quick questions and we’ll match the right softener capacity for your family."}
-            </p>
-          </div>
-
-          {/* Bento Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 h-auto md:h-[650px]">
-            {/* Left: Vertical Stepper Card */}
+          <div className="mt-7 h-1.5 overflow-hidden rounded-full bg-emerald-100">
             <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="md:col-span-4 lg:col-span-3 h-fit"
-            >
-              <GlassCard>
-                <div className="p-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="avatar placeholder">
-                      <div className="bg-primary/20 text-primary rounded-full w-14 h-14 shadow-lg flex items-center justify-center border-2 border-white/50">
-                        <span className="text-xl">
-                          <FaUser />
+              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500"
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            />
+          </div>
+
+          {complete ? (
+            <section className="mt-8">
+              {catalogueLoading ? (
+                <AquaAppLoader
+                  variant="inline"
+                  message="Matching live products"
+                  subtext="Checking available softener capacities."
+                />
+              ) : catalogueError ? (
+                <div className="rounded-3xl border border-rose-100 bg-white p-8 text-center text-sm text-rose-600 shadow-sm">
+                  {catalogueError} Please try again shortly.
+                </div>
+              ) : recommendations.length ? (
+                <>
+                  <div className="grid gap-6 md:grid-cols-2">
+                    {recommendations.map((product, index) => (
+                      <div key={product._id || product.slug} className="relative">
+                        <span className="absolute left-5 top-5 z-30 rounded-full bg-slate-950 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white shadow-lg">
+                          {index === 0 ? "Best match" : "Alternative"}
                         </span>
+                        <ReusableProductCard product={product} padded />
                       </div>
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-xl text-base-content/90">
-                        Guest User
-                      </h3>
-                      <span className="badge badge-accent badge-outline font-semibold mt-1">
-                        Planning
+                    ))}
+                  </div>
+                  <div className="mt-6 rounded-3xl border border-emerald-100 bg-white p-5 text-sm leading-6 text-slate-600 shadow-sm">
+                    <strong className="text-slate-950">Final installation check:</strong>{" "}
+                    Aquakart can confirm inlet hardness and plumbing before installation.
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-3xl border border-amber-100 bg-white p-8 text-center shadow-sm">
+                  <FaWater className="mx-auto text-2xl text-amber-500" />
+                  <h2 className="mt-4 text-xl font-black text-slate-950">
+                    We need an expert match
+                  </h2>
+                  <p className="mt-2 text-sm text-slate-500">
+                    No suitable live catalogue item matched this capacity yet.
+                  </p>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={back}
+                className="mt-7 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-xs font-black text-slate-700 transition hover:border-emerald-300"
+              >
+                <FaArrowLeft /> Adjust answers
+              </button>
+              <button
+                type="button"
+                onClick={restart}
+                className="ml-3 mt-7 rounded-full px-4 py-3 text-xs font-bold text-slate-500 hover:text-slate-950"
+              >
+                Start over
+              </button>
+            </section>
+          ) : (
+            <section className="mt-8 grid gap-6 lg:grid-cols-[0.72fr_1.28fr]">
+              <aside className="rounded-[1.75rem] bg-slate-950 p-6 text-white shadow-[0_24px_70px_rgba(15,23,42,0.16)] sm:p-8">
+                <span className="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-400 text-slate-950">
+                  <question.icon size={19} />
+                </span>
+                <h2 className="mt-6 text-2xl font-black tracking-[-0.04em]">
+                  {question.title}
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-slate-300">
+                  {question.helper}
+                </p>
+                <div className="mt-8 space-y-2 text-xs text-slate-400">
+                  {questions.map((item, index) => (
+                    <div
+                      key={item.key}
+                      className={[
+                        "flex items-center gap-3 rounded-xl px-3 py-2",
+                        index === step ? "bg-white/10 text-white" : "",
+                      ].join(" ")}
+                    >
+                      <span
+                        className={[
+                          "grid h-6 w-6 place-items-center rounded-full text-[10px] font-black",
+                          index < step
+                            ? "bg-emerald-400 text-slate-950"
+                            : index === step
+                              ? "bg-white text-slate-950"
+                              : "bg-white/10",
+                        ].join(" ")}
+                      >
+                        {index < step ? <FaCheck size={9} /> : index + 1}
                       </span>
+                      {item.key === "residents"
+                        ? "Household"
+                        : item.key === "coverage"
+                          ? "Coverage"
+                          : "Hardness"}
                     </div>
-                  </div>
-
-                  <div className="divider my-2 before:bg-base-content/10 after:bg-base-content/10" />
-
-                  <div className="space-y-6 relative">
-                    <div className="absolute left-4 top-2 bottom-4 w-0.5 bg-base-content/10 -z-10" />
-
-                    {steps.map((step, idx) => {
-                      const isActive =
-                        idx === currentStep && !showRecommendations;
-                      const isDone = idx < currentStep || showRecommendations;
-
-                      return (
-                        <div
-                          key={idx}
-                          className={[
-                            "flex items-center gap-4 transition-all duration-300 relative",
-                            isActive
-                              ? "text-primary font-bold scale-[1.02]"
-                              : isDone
-                                ? "text-success font-medium"
-                                : "text-base-content/30",
-                          ].join(" ")}
-                        >
-                          <div
-                            className={[
-                              "w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all duration-300 z-10",
-                              isActive
-                                ? "border-primary bg-primary text-primary-content shadow-[0_0_15px_rgba(var(--p),0.55)] scale-110"
-                                : isDone
-                                  ? "border-success bg-success text-success-content"
-                                  : "border-base-content/20 bg-base-100",
-                            ].join(" ")}
-                          >
-                            {isDone ? <FaCheckCircle /> : step.icon}
-                          </div>
-
-                          <div className="flex flex-col">
-                            <span className="text-sm tracking-wide">
-                              {step.title}
-                            </span>
-                            {isActive && (
-                              <span className="text-xs opacity-70 mt-0.5">
-                                You’re here
-                              </span>
-                            )}
-                          </div>
-
-                          {isActive && (
-                            <motion.div
-                              layoutId="active-step-glow"
-                              className="absolute left-0 w-10 h-10 rounded-full bg-primary/30 blur-md -z-10"
-                            />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Mini summary */}
-                  <div className="mt-8 rounded-2xl border border-white/30 bg-white/10 p-4">
-                    <p className="text-xs font-semibold opacity-70">
-                      Current selections
-                    </p>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="opacity-70">Residents</span>
-                        <span className="font-semibold">
-                          {formData.residents || "—"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="opacity-70">Usage</span>
-                        <span className="font-semibold">
-                          {formData.averageUsage || "—"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="opacity-70">Frequency</span>
-                        <span className="font-semibold capitalize">
-                          {formData.usageFrequency || "—"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </GlassCard>
-            </motion.div>
+              </aside>
 
-            {/* Center: Main Interaction */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.985 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.05 }}
-              className="md:col-span-8 lg:col-span-6"
-            >
-              <GlassCard className="h-full">
-                <div className="p-8 md:p-12 flex flex-col h-full justify-between">
-                  {/* Mobile step bar */}
-                  {!showRecommendations && (
-                    <div className="lg:hidden w-full bg-white/10 rounded-full h-2 mb-8 overflow-hidden">
-                      <motion.div
-                        className="h-2 rounded-full bg-gradient-to-r from-primary to-secondary"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progressPercentage}%` }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 140,
-                          damping: 25,
-                        }}
-                      />
+              <div className="rounded-[1.75rem] border border-white bg-white/90 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={question.key}
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -12 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {question.options.map((option) => (
+                        <Choice
+                          key={option.value}
+                          option={option}
+                          selected={selectedValue === option.value}
+                          onSelect={() => choose(option.value)}
+                        />
+                      ))}
                     </div>
-                  )}
+                  </motion.div>
+                </AnimatePresence>
 
-                  <AnimatePresence mode="wait">
-                    {showRecommendations ? (
-                      <motion.div
-                        key="recommendations"
-                        initial={{ opacity: 0, y: 30, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 200,
-                          damping: 22,
-                        }}
-                        className="w-full h-full flex flex-col"
-                      >
-                        <div className="mb-6">
-                          <h3 className="text-2xl md:text-3xl font-extrabold">
-                            We found the best options for your home
-                          </h3>
-                          <p className="opacity-70 mt-2">
-                            Based on your family size and usage pattern, these
-                            match your capacity needs.
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 w-full">
-                          {getRecommendations().map((product, idx) => (
-                            <motion.div
-                              key={product._id}
-                              initial={{ opacity: 0, y: 18 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: 0.1 + idx * 0.08 }}
-                              className="min-h-[420px] transform hover:scale-[1.01] transition-transform duration-300"
-                            >
-                              <div className="relative bg-white/70 backdrop-blur-xl rounded-[2rem] shadow-xl overflow-hidden border border-white/60 p-2 h-full">
-                                <div
-                                  className={[
-                                    "badge absolute top-5 right-5 z-20 shadow-lg font-bold p-3",
-                                    idx === 0
-                                      ? "badge-secondary"
-                                      : "badge-ghost",
-                                  ].join(" ")}
-                                >
-                                  {idx === 0 ? "Best Match" : "Also Suitable"}
-                                </div>
-                                <ReusableProductCard
-                                  product={product}
-                                  viewMode="grid"
-                                  padded={true}
-                                />
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-
-                        {/* CTA strip */}
-                        <div className="mt-8 rounded-2xl border border-white/25 bg-white/10 p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                          <div>
-                            <p className="font-bold">Want exact sizing?</p>
-                            <p className="opacity-70 text-sm">
-                              Share your water hardness (TDS / hardness) and
-                              we’ll confirm the perfect capacity.
-                            </p>
-                          </div>
-                          <button className="btn btn-primary border-0 bg-gradient-to-r from-primary to-secondary text-white rounded-full px-7">
-                            Book a Free Call
-                          </button>
-                        </div>
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key={currentStep}
-                        initial={{ opacity: 0, x: 40, filter: "blur(10px)" }}
-                        animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                        exit={{ opacity: 0, x: -40, filter: "blur(10px)" }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 300,
-                          damping: 30,
-                        }}
-                        className="flex-grow flex flex-col justify-center"
-                      >
-                        <h2 className="text-3xl md:text-4xl font-extrabold mb-8 flex items-center gap-4">
-                          <span className="text-primary text-5xl drop-shadow-md">
-                            {steps[currentStep].icon}
-                          </span>
-                          {currentStep === 0
-                            ? "Welcome!"
-                            : steps[currentStep].title}
-                        </h2>
-
-                        {currentStep === 0 && (
-                          <div className="text-left">
-                            <p className="text-xl opacity-80 mb-8 leading-relaxed font-medium">
-                              Quick planner → right capacity → better skin/hair,
-                              less scaling, longer appliance life.
-                            </p>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-                              {[
-                                {
-                                  t: "Less scaling",
-                                  d: "Reduced white stains on taps & tiles.",
-                                },
-                                {
-                                  t: "Softer water",
-                                  d: "Better shower feel and smoother skin.",
-                                },
-                                {
-                                  t: "Protect appliances",
-                                  d: "Less damage to geyser & fittings.",
-                                },
-                              ].map((b) => (
-                                <div
-                                  key={b.t}
-                                  className="rounded-2xl border border-white/25 bg-white/10 p-4"
-                                >
-                                  <p className="font-bold">{b.t}</p>
-                                  <p className="text-sm opacity-70 mt-1">
-                                    {b.d}
-                                  </p>
-                                </div>
-                              ))}
-                            </div>
-
-                            <div className="flex gap-4 items-center">
-                              <button
-                                className="btn btn-circle btn-lg border-0 text-white bg-gradient-to-r from-primary to-secondary shadow-lg shadow-primary/30 hover:scale-110 transition-transform"
-                                onClick={handleNext}
-                              >
-                                <FaArrowRight />
-                              </button>
-                              <span className="text-lg font-medium opacity-70">
-                                Start Planning
-                              </span>
-                            </div>
-                          </div>
-                        )}
-
-                        {currentStep === 1 && (
-                          <div className="form-control w-full max-w-xl">
-                            <label className="label mb-2">
-                              <span className="label-text text-xl font-semibold">
-                                How many people stay in your home?
-                              </span>
-                            </label>
-
-                            <select
-                              className="select select-bordered select-lg w-full bg-white/50 backdrop-blur-sm focus:bg-white transition-colors rounded-2xl border-2 border-base-content/10 focus:border-primary shadow-sm h-16 text-lg"
-                              name="residents"
-                              value={formData.residents}
-                              onChange={handleChange}
-                            >
-                              <option disabled value="">
-                                Select Residents
-                              </option>
-                              <option value="1-2">1–2 People</option>
-                              <option value="3-4">3–4 People</option>
-                              <option value="5-6">5–6 People</option>
-                              <option value="7-9">7–9 People</option>
-                              <option value="10+">10+ People</option>
-                            </select>
-
-                            <div className="mt-5 rounded-2xl border border-white/25 bg-white/10 p-4">
-                              <p className="text-sm font-semibold">
-                                Capacity hint
-                              </p>
-                              <p className="text-sm opacity-70 mt-1">
-                                1–4: Compact • 5–9: Auto 25/40 • 10+: Auto
-                                25/40/100
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        {currentStep === 2 && (
-                          <div className="form-control w-full">
-                            <label className="label mb-4">
-                              <span className="label-text text-xl font-semibold">
-                                Daily Water Usage?
-                              </span>
-                            </label>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {[
-                                "Low (<300L)",
-                                "Medium (300-600L)",
-                                "High (600-1000L)",
-                                "Very High (1000L+)",
-                              ].map((opt) => {
-                                const selected = formData.averageUsage === opt;
-                                return (
-                                  <button
-                                    type="button"
-                                    key={opt}
-                                    className={[
-                                      "btn h-auto py-6 rounded-2xl text-lg font-medium border-2 transition-all",
-                                      "hover:scale-[1.02] active:scale-[0.99]",
-                                      selected
-                                        ? "btn-primary shadow-lg shadow-primary/30 border-primary"
-                                        : "btn-outline border-base-content/20 hover:border-primary hover:bg-primary/5",
-                                    ].join(" ")}
-                                    onClick={() =>
-                                      setFormData((p) => ({
-                                        ...p,
-                                        averageUsage: opt,
-                                      }))
-                                    }
-                                  >
-                                    {opt}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-
-                        {currentStep === 3 && (
-                          <div className="form-control w-full">
-                            <label className="label mb-4">
-                              <span className="label-text text-xl font-semibold">
-                                How often will you use it?
-                              </span>
-                            </label>
-
-                            <div className="flex flex-col md:flex-row gap-4">
-                              {["Daily", "Weekly", "Occasionally"].map(
-                                (opt) => {
-                                  const val = opt.toLowerCase();
-                                  const selected =
-                                    formData.usageFrequency === val;
-
-                                  return (
-                                    <label
-                                      key={opt}
-                                      className={[
-                                        "cursor-pointer flex-col p-6 border-2 rounded-2xl transition-all duration-200 flex-1 relative overflow-hidden",
-                                        selected
-                                          ? "border-primary bg-primary/10 shadow-md"
-                                          : "border-white/25 bg-white/10 hover:border-primary/50 hover:bg-white/15",
-                                      ].join(" ")}
-                                    >
-                                      <span className="font-bold mb-2 text-lg z-10">
-                                        {opt}
-                                      </span>
-
-                                      <div className="flex items-center gap-3 z-10">
-                                        <input
-                                          type="radio"
-                                          name="usageFrequency"
-                                          className="radio radio-primary z-10"
-                                          value={val}
-                                          checked={selected}
-                                          onChange={handleChange}
-                                        />
-                                        <span className="text-sm opacity-70">
-                                          {opt === "Daily"
-                                            ? "Best for full home use"
-                                            : opt === "Weekly"
-                                              ? "Good for partial usage"
-                                              : "For guest / occasional use"}
-                                        </span>
-                                      </div>
-
-                                      {selected && (
-                                        <motion.div
-                                          layoutId="active-blob"
-                                          className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent z-0"
-                                        />
-                                      )}
-                                    </label>
-                                  );
-                                },
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Navigation */}
-                  {(currentStep > 0 || showRecommendations) && (
-                    <div className="flex justify-between items-center mt-10 pt-8 border-t border-white/20">
-                      <button
-                        type="button"
-                        className="btn btn-ghost hover:bg-white/10 rounded-full px-6 gap-2 text-lg font-medium"
-                        onClick={handleBack}
-                      >
-                        <FaArrowLeft /> Back
-                      </button>
-
-                      {!showRecommendations && (
-                        <button
-                          type="button"
-                          disabled={!canProceed}
-                          className={[
-                            "btn btn-circle btn-lg text-2xl border-0 text-white",
-                            "bg-gradient-to-r from-primary to-secondary",
-                            "shadow-lg shadow-primary/30 transition-transform",
-                            canProceed
-                              ? "hover:scale-110"
-                              : "opacity-40 cursor-not-allowed hover:scale-100",
-                          ].join(" ")}
-                          onClick={handleNext}
-                        >
-                          {currentStep === steps.length - 1 ? (
-                            <FaCheckCircle />
-                          ) : (
-                            <FaArrowRight />
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  )}
+                <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-5">
+                  <button
+                    type="button"
+                    onClick={back}
+                    disabled={step === 0}
+                    className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black text-slate-500 transition hover:text-slate-950 disabled:invisible"
+                  >
+                    <FaArrowLeft /> Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={next}
+                    disabled={!selectedValue}
+                    className="inline-flex min-h-12 items-center gap-3 rounded-full bg-slate-950 px-6 text-xs font-black text-white shadow-lg transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-35"
+                  >
+                    {step === questions.length - 1 ? "Show my matches" : "Continue"}
+                    <FaArrowRight />
+                  </button>
                 </div>
-              </GlassCard>
-            </motion.div>
-
-            {/* Right: Tip + Promo */}
-            <motion.div
-              initial={{ opacity: 0, x: 18 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.15 }}
-              className="md:col-span-12 lg:col-span-3 lg:col-start-10"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8 h-full">
-                <GlassCard className="rounded-[2.5rem]">
-                  <div className="p-8">
-                    <h3 className="text-warning text-xl font-bold flex items-center gap-2">
-                      <FaLightbulb /> Did you know?
-                    </h3>
-                    <p className="mt-3 text-base-content/80 font-medium leading-relaxed">
-                      {steps[currentStep]?.tip ||
-                        "Water softeners can reduce scaling and improve the feel of water instantly."}
-                    </p>
-
-                    <div className="mt-6 rounded-2xl border border-white/25 bg-white/10 p-4">
-                      <p className="text-sm font-semibold">Pro tip</p>
-                      <p className="text-sm opacity-70 mt-1">
-                        If you share hardness (ppm) and water source
-                        (bore/municipal), we can confirm exact sizing.
-                      </p>
-                    </div>
-                  </div>
-                </GlassCard>
-
-                <GlassCard className="rounded-[2.5rem] bg-gradient-to-br from-primary/40 to-accent/30 border-white/30">
-                  <div className="p-8 text-primary-content relative overflow-hidden">
-                    <FaWater className="absolute -bottom-8 -right-8 text-9xl opacity-20 rotate-12" />
-                    <h3 className="font-bold text-xl">Need Help?</h3>
-                    <p className="text-primary-content/90 font-medium mt-2">
-                      Our experts can guide you with sizing, plumbing fitment,
-                      and installation.
-                    </p>
-                    <button className="btn btn-sm btn-secondary glass mt-5 w-fit rounded-full px-6 text-white border-0 shadow-lg">
-                      Contact Us
-                    </button>
-                  </div>
-                </GlassCard>
               </div>
-            </motion.div>
-          </div>
+            </section>
+          )}
         </div>
-      </div>
+      </main>
     </AquaLayout>
   );
 };
