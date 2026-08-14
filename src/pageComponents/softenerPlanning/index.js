@@ -310,9 +310,9 @@ const InstallationGallery = ({ sections = [], loading = false }) => {
 };
 
 const AquaSoftenerPlannerComponent = () => {
-  const { authenticated, authReady, loading: authLoading, signInWithGoogle, user } =
-    useAuth();
+  const { authenticated, signInWithGoogle, user } = useAuth();
   const [step, setStep] = useState(0);
+  const [loginPending, setLoginPending] = useState(false);
   const [answers, setAnswers] = useState({
     residents: "",
     coverage: "",
@@ -412,6 +412,16 @@ const AquaSoftenerPlannerComponent = () => {
     setStep((current) => Math.max(current - 1, 0));
   };
 
+  const handleLogin = async () => {
+    if (loginPending) return;
+    setLoginPending(true);
+    try {
+      await signInWithGoogle();
+    } finally {
+      setLoginPending(false);
+    }
+  };
+
   const restart = () => {
     setAnswers({ residents: "", coverage: "", hardness: "" });
     setStep(0);
@@ -424,10 +434,7 @@ const AquaSoftenerPlannerComponent = () => {
   if (!authenticated) {
     return (
       <AquaLayout path="softenerPlanning">
-        <LoginGate
-          loading={authLoading || !authReady}
-          onLogin={signInWithGoogle}
-        />
+<LoginGate loading={loginPending} onLogin={handleLogin} />
       </AquaLayout>
     );
   }
