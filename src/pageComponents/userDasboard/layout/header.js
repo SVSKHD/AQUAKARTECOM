@@ -79,8 +79,8 @@ const AquaUserDashboardHeader = () => {
         </nav>
 
         <Link
-          href="/"
-          aria-label="Back to shop"
+          href="/shop"
+          aria-label="Open Aquakart shop"
           className="group relative grid h-11 w-11 place-items-center rounded-[14px] text-slate-400 transition-colors duration-200 hover:bg-white/10 hover:text-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
         >
           <Store className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
@@ -94,6 +94,19 @@ const AquaUserDashboardHeader = () => {
         {navItems.map((item) => (
           <NavigationItem key={item.id} item={item} pathname={pathname} mobile />
         ))}
+        <span
+          className="mx-0.5 h-7 w-px shrink-0 bg-white/15"
+          aria-hidden="true"
+        />
+        <Link
+          href="/"
+          prefetch
+          aria-label="Return to Aquakart home"
+          className="group relative grid h-11 w-11 place-items-center rounded-[14px] text-slate-300 transition-[background-color,color,transform] duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 hover:text-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+        >
+          <Store className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+          <span className="sr-only">Aquakart home</span>
+        </Link>
       </nav>
     </>
   );
