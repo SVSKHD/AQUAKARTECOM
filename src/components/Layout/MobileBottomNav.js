@@ -83,7 +83,7 @@ const MobileBottomNav = () => {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-40 sm:hidden"
+      className="fixed inset-x-0 bottom-0 z-[70] sm:hidden"
       aria-label="Mobile navigation"
     >
       {/* iOS-style frosted glass bar */}

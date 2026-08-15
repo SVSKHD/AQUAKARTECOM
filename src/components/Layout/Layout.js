@@ -28,12 +28,6 @@ const AquafavDrawer = dynamic(
   },
 );
 
-// Festival widget: also lazy-load (often non-critical for LCP)
-const FestivalCornerWidget = dynamic(
-  () => import("../reusables/FestivalCornerWidget"),
-  { ssr: false },
-);
-
 // Mobile bottom nav: client-only
 const MobileBottomNav = dynamic(() => import("./MobileBottomNav"), {
   ssr: false,
@@ -227,7 +221,6 @@ const AquaLayout = (props) => {
         <>
           <AquaCartDrawer />
           <AquafavDrawer />
-          <FestivalCornerWidget />
         </>
       )}
 
