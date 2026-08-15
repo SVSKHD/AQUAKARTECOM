@@ -259,11 +259,9 @@
 @keyframes aquaPageIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 @keyframes aquaCardIn {
@@ -289,13 +287,9 @@
 @keyframes aquaSoftReveal {
   from {
     opacity: 0;
-    filter: blur(8px);
-    transform: translateY(12px);
   }
   to {
     opacity: 1;
-    filter: blur(0);
-    transform: translateY(0);
   }
 }
 @keyframes aquaMediaIn {

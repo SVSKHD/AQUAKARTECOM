@@ -82,7 +82,7 @@ const AquaUserDashbordPageComponent = () => {
 
   return (
     <AquaUserDashbordLayout>
-      <div className="space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           {highlightCards.map(
             ({ title, value, icon: Icon, iconTone, cardClass }) => (
@@ -109,18 +109,18 @@ const AquaUserDashbordPageComponent = () => {
         </section>
 
         <section className="space-y-4">
-          <div className="flex items-end justify-between gap-4">
+          <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
                 Quick cart picks
               </h2>
-              <p className="text-sm text-slate-500">
+              <p className="text-xs leading-5 text-slate-500 sm:text-sm">
                 Review items currently waiting in your cart.
               </p>
             </div>
             <Link
               href="/dashboard/cart"
-              className="inline-flex items-center gap-1 text-sm font-bold text-emerald-700 transition hover:text-emerald-600"
+              className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs font-bold text-emerald-700 transition hover:text-emerald-600 sm:text-sm"
             >
               View cart <ArrowUpRight className="h-4 w-4" />
             </Link>
@@ -138,25 +138,25 @@ const AquaUserDashbordPageComponent = () => {
               ))}
             </div>
           ) : (
-            <div className="glass-subtle rounded-2xl border border-dashed border-white/40 p-10 text-center text-sm text-slate-500">
+            <div className="glass-subtle rounded-2xl border border-dashed border-white/40 p-6 text-center text-xs leading-5 text-slate-500 sm:p-10 sm:text-sm">
               Your cart is currently empty. Browse products to add them here.
             </div>
           )}
         </section>
 
         <section className="space-y-4">
-          <div className="flex items-end justify-between gap-4">
+          <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
                 Saved favourites
               </h2>
-              <p className="text-sm text-slate-500">
+              <p className="text-xs leading-5 text-slate-500 sm:text-sm">
                 Keep an eye on the products you love.
               </p>
             </div>
             <Link
               href="/dashboard/fav"
-              className="inline-flex items-center gap-1 text-sm font-bold text-emerald-700 transition hover:text-emerald-600"
+              className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs font-bold text-emerald-700 transition hover:text-emerald-600 sm:text-sm"
             >
               View favourites <ArrowUpRight className="h-4 w-4" />
             </Link>
@@ -174,7 +174,7 @@ const AquaUserDashbordPageComponent = () => {
               ))}
             </div>
           ) : (
-            <div className="glass-subtle rounded-2xl border border-dashed border-white/40 p-10 text-center text-sm text-slate-500">
+            <div className="glass-subtle rounded-2xl border border-dashed border-white/40 p-6 text-center text-xs leading-5 text-slate-500 sm:p-10 sm:text-sm">
               You have no saved favourites yet. Tap the heart icon on a product
               to keep it here.
             </div>
