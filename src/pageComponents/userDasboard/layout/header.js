@@ -12,19 +12,9 @@ import {
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: Home },
-  {
-    id: "orders",
-    label: "Orders",
-    href: "/dashboard/orders",
-    icon: ShoppingBag,
-  },
+  { id: "orders", label: "Orders", href: "/dashboard/orders", icon: ShoppingBag },
   { id: "cart", label: "Cart", href: "/dashboard/cart", icon: ShoppingCart },
-  {
-    id: "favourites",
-    label: "Favourites",
-    href: "/dashboard/fav",
-    icon: Heart,
-  },
+  { id: "favourites", label: "Favourites", href: "/dashboard/fav", icon: Heart },
   { id: "profile", label: "Profile", href: "/dashboard/profile", icon: User },
 ];
 
@@ -38,19 +28,19 @@ const NavigationItem = ({ item, pathname, mobile = false }) => {
   return (
     <Link
       href={item.href}
+      prefetch
+      scroll={false}
       aria-label={item.label}
       aria-current={active ? "page" : undefined}
-      className={`group relative grid place-items-center rounded-2xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
-        mobile ? "h-11 w-11" : "h-12 w-12"
-      } ${
+      className={`group relative grid h-11 w-11 place-items-center rounded-[14px] transition-[background-color,color,box-shadow,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${
         active
-          ? "bg-emerald-500 text-slate-950 shadow-[0_8px_20px_rgba(16,185,129,0.28)]"
-          : "text-slate-400 hover:bg-white/10 hover:text-emerald-300"
+          ? "bg-emerald-500 text-slate-950 shadow-[0_8px_22px_rgba(16,185,129,0.3)]"
+          : "text-slate-400 hover:-translate-y-0.5 hover:bg-white/10 hover:text-emerald-300"
       }`}
     >
-      <Icon className="h-5 w-5" strokeWidth={active ? 2.4 : 1.8} />
+      <Icon className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
       {!mobile && (
-        <span className="pointer-events-none absolute left-full z-50 ml-3 whitespace-nowrap rounded-xl bg-slate-950 px-3 py-2 text-xs font-bold text-white opacity-0 shadow-xl transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+        <span className="pointer-events-none absolute left-full z-50 ml-3 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-bold text-white opacity-0 shadow-xl transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
           {item.label}
         </span>
       )}
@@ -66,26 +56,23 @@ const AquaUserDashboardHeader = () => {
 
   return (
     <>
-      <aside className="sticky top-6 hidden h-[calc(100vh-3rem)] w-[76px] shrink-0 flex-col items-center rounded-[30px] border border-white/10 bg-slate-950 px-3 py-4 shadow-[0_24px_60px_rgba(15,23,42,0.22)] lg:flex">
+      <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-[72px] shrink-0 flex-col items-center rounded-[26px] border border-white/10 bg-slate-950 px-3 py-3 shadow-[0_20px_55px_rgba(15,23,42,0.2)] lg:flex">
         <Link
           href="/"
           aria-label="Open Aquakart shop"
-          className="grid h-12 w-12 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/10 transition hover:bg-white/15"
+          className="grid h-11 w-11 place-items-center rounded-[14px] bg-white/10 ring-1 ring-white/10 transition-colors duration-200 hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
         >
           <Image
             src="/aquakart-logo-white.png"
             alt="Aquakart"
-            width={32}
-            height={32}
-            className="h-8 w-8 object-contain"
+            width={28}
+            height={28}
+            className="h-7 w-7 object-contain"
             priority
           />
         </Link>
 
-        <nav
-          className="my-auto flex flex-col items-center gap-2"
-          aria-label="User dashboard"
-        >
+        <nav className="my-auto flex flex-col items-center gap-2" aria-label="User dashboard tabs">
           {navItems.map((item) => (
             <NavigationItem key={item.id} item={item} pathname={pathname} />
           ))}
@@ -94,26 +81,18 @@ const AquaUserDashboardHeader = () => {
         <Link
           href="/"
           aria-label="Back to shop"
-          className="group relative grid h-12 w-12 place-items-center rounded-2xl text-slate-400 transition-colors hover:bg-white/10 hover:text-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+          className="group relative grid h-11 w-11 place-items-center rounded-[14px] text-slate-400 transition-colors duration-200 hover:bg-white/10 hover:text-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
         >
-          <Store className="h-5 w-5" />
-          <span className="pointer-events-none absolute left-full z-50 ml-3 whitespace-nowrap rounded-xl bg-slate-950 px-3 py-2 text-xs font-bold text-white opacity-0 shadow-xl transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+          <Store className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+          <span className="pointer-events-none absolute left-full z-50 ml-3 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-bold text-white opacity-0 shadow-xl transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
             Back to shop
           </span>
         </Link>
       </aside>
 
-      <nav
-        className="fixed bottom-3 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1 rounded-[22px] border border-white/10 bg-slate-950/95 px-2 py-2 shadow-[0_18px_50px_rgba(15,23,42,0.28)] backdrop-blur lg:hidden"
-        aria-label="User dashboard"
-      >
+      <nav className="fixed bottom-3 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1 rounded-[20px] border border-white/10 bg-slate-950/95 px-2 py-2 shadow-[0_18px_50px_rgba(15,23,42,0.28)] backdrop-blur lg:hidden" aria-label="User dashboard tabs">
         {navItems.map((item) => (
-          <NavigationItem
-            key={item.id}
-            item={item}
-            pathname={pathname}
-            mobile
-          />
+          <NavigationItem key={item.id} item={item} pathname={pathname} mobile />
         ))}
       </nav>
     </>
