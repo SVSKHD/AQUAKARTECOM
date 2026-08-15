@@ -28,21 +28,24 @@ const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
   return (
     <div className="relative min-h-screen bg-slate-50">
       <AquaCartAddressDialog />
-      <div className="mx-auto flex w-full max-w-[1320px] items-start gap-4 px-3 py-4 sm:px-5 lg:gap-5">
+      <div className="mx-auto flex w-full max-w-[1320px] items-start gap-4 px-3 py-4 sm:px-5 lg:h-screen lg:items-stretch lg:gap-5 lg:overflow-hidden">
         <AquaUserDashboardHeader />
 
-        <main className="min-h-[calc(100vh-2rem)] min-w-0 flex-1 pb-24 lg:pb-0">
+        <main className="min-h-[calc(100vh-2rem)] min-w-0 flex-1 pb-24 lg:flex lg:h-[calc(100vh-2rem)] lg:min-h-0 lg:flex-col lg:overflow-hidden lg:pb-0">
           <AquaUserGreet userName={getFirstLettersFromEmail(userData?.user?.email)} />
 
-          <section className="mx-auto mt-4 w-full max-w-5xl">
-            <div className="min-h-[calc(100vh-14rem)] w-full rounded-[28px] border border-slate-200/80 bg-white p-4 shadow-[0_16px_45px_rgba(15,23,42,0.05)] sm:p-6 lg:p-7">
-              <header className="mb-6 flex items-end justify-between gap-4 border-b border-slate-100 pb-4">
+          <section className="mx-auto mt-4 w-full max-w-5xl lg:min-h-0 lg:flex-1">
+            <div className="min-h-[calc(100vh-14rem)] w-full rounded-[28px] border border-slate-200/80 bg-white p-4 shadow-[0_16px_45px_rgba(15,23,42,0.05)] sm:p-6 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:overflow-hidden lg:p-7">
+              <header className="mb-6 flex shrink-0 items-end justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <h1 className="text-xl font-black text-slate-950 sm:text-2xl">{resolvedTitle}</h1>
                   {resolvedSubtitle && <p className="mt-1 text-sm text-slate-500">{resolvedSubtitle}</p>}
                 </div>
               </header>
-              <div key={router.pathname} className="animate-[dashboard-tab-in_180ms_cubic-bezier(0.22,1,0.36,1)]">
+              <div
+                key={router.pathname}
+                className="animate-[dashboard-tab-in_180ms_cubic-bezier(0.22,1,0.36,1)] lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-2"
+              >
                 {children}
               </div>
             </div>
