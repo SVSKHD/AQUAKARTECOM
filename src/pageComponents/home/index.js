@@ -17,6 +17,7 @@ import AquaLayout from "@/components/Layout/Layout";
 import AquaCategoryCard from "@/components/cards/categoryCard";
 import LazyImage from "@/components/image/LazyImage";
 import AquaHomeHero from "./homeHeroSection";
+import AquaHomeReviews from "./reviews";
 import styles from "@/styles/home.module.css";
 
 const AquaProducts = dynamic(() => import("./products"));
@@ -166,6 +167,8 @@ const AquaHomeComponent = ({
           </section>
 
           <AquaProducts initialProducts={initialProducts} />
+
+          <AquaHomeReviews products={initialProducts} />
 
           <section
             className={styles.collectionsSection}
