@@ -25,6 +25,7 @@ import {
   ReceiptIndianRupee,
   ShieldCheck,
   Sparkles,
+  Star,
   Tags,
   Truck,
   UserRound,
@@ -39,6 +40,7 @@ import {
 } from "@/services/googleAuth";
 import { useAuth } from "@/context/AuthContext";
 import InvoiceServiceOperations from "@/services/invoice";
+import InvoiceProductReviewDialog from "@/components/invoice/InvoiceProductReviewDialog";
 import { openDirectInvoiceAccess } from "@/features/invoiceAccess/directInvoice";
 import {
   bankCopyDetails,
@@ -546,6 +548,40 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copiedPayment, setCopiedPayment] = useState("");
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
+
+  const reviewedProductIds = new Set(invoice?.reviewedProductIds || []);
+  const reviewableProducts =
+    invoice?.products?.filter(
+      (product) =>
+        product.catalogueProductId &&
+        !reviewedProductIds.has(String(product.catalogueProductId)),
+    ) || [];
+
+  useEffect(() => {
+    if (
+      !invoice?.id ||
+      invoice.quotation ||
+      invoice.po ||
+      !reviewableProducts.length
+    ) {
+      return undefined;
+    }
+    const storageKey = `aquakart-invoice-review-prompt:${invoice.id}`;
+    if (window.sessionStorage.getItem(storageKey)) return undefined;
+    const timer = window.setTimeout(() => setShowReviewDialog(true), 1200);
+    return () => window.clearTimeout(timer);
+  }, [invoice?.id, invoice?.po, invoice?.quotation, reviewableProducts.length]);
+
+  const closeReviewDialog = () => {
+    if (invoice?.id) {
+      window.sessionStorage.setItem(
+        `aquakart-invoice-review-prompt:${invoice.id}`,
+        "closed",
+      );
+    }
+    setShowReviewDialog(false);
+  };
 
   if (!invoice || statusCode !== 200) {
     return (
@@ -554,7 +590,11 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
   }
 
   const amounts = priceUtils.getInvoiceAmounts(invoice);
-  const documentType = invoice.quotation ? "quotation" : invoice.po ? "po" : "invoice";
+  const documentType = invoice.quotation
+    ? "quotation"
+    : invoice.po
+      ? "po"
+      : "invoice";
   const documentName =
     documentType === "quotation"
       ? "Quotation"
@@ -606,8 +646,13 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
   return (
     <div className={styles.page}>
       <Head>
-        <title>{documentLabel} | Aquakart {documentName}</title>
-        <meta name="description" content={`Aquakart ${documentName.toLowerCase()} ${documentLabel}`} />
+        <title>
+          {documentLabel} | Aquakart {documentName}
+        </title>
+        <meta
+          name="description"
+          content={`Aquakart ${documentName.toLowerCase()} ${documentLabel}`}
+        />
         <meta name="robots" content="noindex, nofollow, noarchive" />
         <meta name="googlebot" content="noindex, nofollow, noarchive" />
       </Head>
@@ -677,7 +722,15 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
             </div>
             <div>
               <span className={styles.eyebrow}>Premium water solutions</span>
-              <h1>{invoice.quotation ? "Sales Quotation" : invoice.po ? "Purchase Order" : invoice.gst ? "GST Tax Invoice" : "Retail Tax Invoice"}</h1>
+              <h1>
+                {invoice.quotation
+                  ? "Sales Quotation"
+                  : invoice.po
+                    ? "Purchase Order"
+                    : invoice.gst
+                      ? "GST Tax Invoice"
+                      : "Retail Tax Invoice"}
+              </h1>
               <p>GSTIN 36AJOPH6387A1Z2</p>
             </div>
           </div>
@@ -735,6 +788,11 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
               <Package size={16} /> {invoice.products.length}{" "}
               {invoice.products.length === 1 ? "product" : "products"}
             </span>
+            {reviewableProducts.length ? (
+              <button type="button" onClick={() => setShowReviewDialog(true)}>
+                <Star size={16} /> Review purchased products
+              </button>
+            ) : null}
           </div>
         </section>
 
@@ -1053,8 +1111,8 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
             <span>support@aquakart.co.in · +91 90147 74667</span>
           </div>
           <p>
-            This is a computer-generated {documentName.toLowerCase()} and does not require a
-            signature.
+            This is a computer-generated {documentName.toLowerCase()} and does
+            not require a signature.
           </p>
         </footer>
       </main>
@@ -1073,6 +1131,12 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
           <Printer size={18} /> Print
         </button>
       </div>
+      <InvoiceProductReviewDialog
+        invoiceId={invoice.id}
+        products={reviewableProducts}
+        open={showReviewDialog}
+        onClose={closeReviewDialog}
+      />
     </div>
   );
 };

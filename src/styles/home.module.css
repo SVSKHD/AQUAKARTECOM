@@ -769,6 +769,9 @@
 }
 
 .reviewerMeta span {
+  display: flex;
+  align-items: center;
+  gap: 3px;
   margin-top: 2px;
   color: var(--home-muted);
   font-size: 9px;

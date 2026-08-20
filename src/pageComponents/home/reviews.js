@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  BadgeCheck,
   MessageSquareQuote,
   ShieldCheck,
   Star,
@@ -126,7 +127,15 @@ const AquaHomeReviews = ({ products = [] }) => {
                 </span>
                 <div>
                   <strong>{reviewerName(review)}</strong>
-                  <span>Aquakart customer</span>
+                  <span>
+                    {review.verifiedPurchase ? (
+                      <>
+                        <BadgeCheck size={10} /> Verified purchase
+                      </>
+                    ) : (
+                      "Aquakart customer"
+                    )}
+                  </span>
                 </div>
               </div>
               <Link

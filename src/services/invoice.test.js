@@ -4,6 +4,7 @@ import {
   directInvoiceLoginPath,
   INVOICE_REQUEST_TIMEOUT_MS,
   invoiceByIdPath,
+  invoiceProductReviewPath,
   isValidInvoiceEmail,
   normalizeInvoiceEmail,
   normalizeInvoicePhone,
@@ -53,6 +54,14 @@ describe("fresh invoice loading", () => {
   it("builds an invoice-scoped client fetch path safely", () => {
     expect(invoiceByIdPath("invoice/with spaces")).toBe(
       "/invoice-gateway/invoice%2Fwith%20spaces",
+    );
+  });
+});
+
+describe("invoice product review", () => {
+  it("builds a review path within the invoice gateway", () => {
+    expect(invoiceProductReviewPath("invoice/with spaces")).toBe(
+      "/invoice-gateway/invoice%2Fwith%20spaces/reviews",
     );
   });
 });

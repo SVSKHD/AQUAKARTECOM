@@ -464,7 +464,8 @@
   gap: 8px;
 }
 
-.greetingFacts span {
+.greetingFacts span,
+.greetingFacts button {
   display: flex;
   min-height: 38px;
   padding: 0 12px;
@@ -476,6 +477,18 @@
   background: rgba(255, 255, 255, 0.055);
   font-size: 0.64rem;
   font-weight: 800;
+}
+
+.greetingFacts button {
+  border-color: rgba(110, 231, 199, 0.3);
+  color: #dffff7;
+  background: rgba(110, 231, 199, 0.11);
+  cursor: pointer;
+}
+
+.greetingFacts button:hover {
+  border-color: rgba(110, 231, 199, 0.65);
+  background: rgba(110, 231, 199, 0.18);
 }
 
 .greetingFacts svg {
@@ -2072,7 +2085,8 @@
     gap: 6px;
   }
 
-  .greetingFacts span {
+  .greetingFacts span,
+  .greetingFacts button {
     min-height: 36px;
     padding: 0 9px;
     font-size: 0.57rem;

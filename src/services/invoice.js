@@ -65,6 +65,9 @@ export const directInvoiceLoginPath = (invoiceId) =>
 export const invoiceByIdPath = (invoiceId) =>
   `/invoice-gateway/${encodeURIComponent(String(invoiceId || ""))}`;
 
+export const invoiceProductReviewPath = (invoiceId) =>
+  `${invoiceByIdPath(invoiceId)}/reviews`;
+
 const getInvoiceById = async (invoiceId, signal) => {
   if (!invoiceId) throw new Error("Invoice ID is required.");
   const response = await invoiceRequest({
@@ -161,6 +164,15 @@ const shareInvoiceByWhatsApp = async (invoiceId) => {
   return response.data;
 };
 
+const submitProductReview = async (invoiceId, review) => {
+  const response = await invoiceRequest({
+    method: "post",
+    url: invoiceProductReviewPath(invoiceId),
+    data: review,
+  });
+  return response.data;
+};
+
 const InvoiceServiceOperations = {
   lookupInvoices,
   requestInvoiceAccess,
@@ -175,6 +187,7 @@ const InvoiceServiceOperations = {
   shareInvoiceByEmail,
   getWhatsAppSharingStatus,
   shareInvoiceByWhatsApp,
+  submitProductReview,
 };
 
 export default InvoiceServiceOperations;

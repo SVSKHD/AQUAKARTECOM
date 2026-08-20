@@ -1,0 +1,268 @@
+.backdrop {
+  position: fixed;
+  z-index: 10020;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(4, 20, 29, 0.66);
+  backdrop-filter: blur(12px);
+}
+
+.dialog {
+  position: relative;
+  width: min(100%, 540px);
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+  padding: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 30px 90px rgba(2, 21, 28, 0.3);
+  color: #071a25;
+}
+
+.close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: #f0f5f4;
+  color: #4e6067;
+}
+
+.headingIcon {
+  display: flex;
+  width: 50px;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  border-radius: 16px;
+  background: #e3f8f1;
+  color: #008b68;
+}
+
+.eyebrow {
+  color: #008b68;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.dialog h2 {
+  margin: 8px 0 0;
+  font-size: clamp(25px, 5vw, 35px);
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+}
+
+.dialog > p {
+  margin: 12px 0 0;
+  color: #617078;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.progress {
+  display: flex;
+  gap: 7px;
+  margin-top: 21px;
+}
+
+.progress span {
+  display: flex;
+  width: 25px;
+  height: 25px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #eaf0ef;
+  color: #75858b;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.progress .active {
+  background: #071a25;
+  color: #fff;
+}
+
+.progress .complete {
+  background: #dff8ef;
+  color: #008b68;
+}
+
+.product {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-top: 20px;
+  padding: 14px;
+  border: 1px solid #dfe9e7;
+  border-radius: 17px;
+  background: #f7faf9;
+}
+
+.product img {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 auto;
+  border-radius: 12px;
+  background: #fff;
+  object-fit: contain;
+}
+
+.product > div {
+  min-width: 0;
+}
+
+.product small,
+.product strong,
+.product span {
+  display: block;
+}
+
+.product small {
+  color: #77878d;
+  font-size: 9px;
+}
+
+.product strong {
+  margin-top: 3px;
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 5px;
+  color: #008b68;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.rating {
+  margin: 22px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.rating legend,
+.comment > span {
+  margin-bottom: 9px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.rating > div {
+  display: flex;
+  gap: 5px;
+}
+
+.rating button {
+  padding: 2px;
+  border: 0;
+  background: transparent;
+  color: #f3a718;
+}
+
+.comment {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-top: 19px;
+}
+
+.comment textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 13px 14px 25px;
+  border: 1px solid #ccd9d6;
+  border-radius: 14px;
+  outline: none;
+  color: #172c34;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.comment textarea:focus {
+  border-color: #27a98a;
+  box-shadow: 0 0 0 3px rgba(39, 169, 138, 0.11);
+}
+
+.comment small {
+  position: absolute;
+  right: 11px;
+  bottom: 8px;
+  color: #8b999d;
+  font-size: 9px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 21px;
+}
+
+.actions button {
+  min-height: 44px;
+  padding: 0 17px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.skip {
+  border: 1px solid #d5e0de;
+  background: #fff;
+  color: #596a70;
+}
+
+.submit {
+  border: 1px solid #071a25;
+  background: #071a25;
+  color: #fff;
+}
+
+.submit:disabled,
+.skip:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+@media (max-width: 600px) {
+  .backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .dialog {
+    width: 100%;
+    max-height: 92vh;
+    padding: 27px 20px 22px;
+    border-radius: 25px 25px 0 0;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}

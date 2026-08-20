@@ -8,6 +8,7 @@ import {
   MessageSquare,
   Quote,
   User,
+  BadgeCheck,
 } from "lucide-react";
 import ProductServiceOperations from "@/services/products";
 import AquaToast from "@/components/reusables/react-toastify";
@@ -115,8 +116,13 @@ const ReviewCard = ({
               <p className="truncate text-sm font-black text-slate-950 sm:text-base">
                 {displayName}
               </p>
-              <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-600">
-                Aquakart customer
+              <p className="mt-0.5 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-600">
+                {review?.verifiedPurchase ? (
+                  <BadgeCheck className="h-3 w-3" />
+                ) : null}
+                {review?.verifiedPurchase
+                  ? "Verified purchase"
+                  : "Aquakart customer"}
               </p>
             </div>
             {isOwner && (
