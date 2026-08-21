@@ -1,5 +1,6 @@
 import Link from "next/link";
 import React, { useMemo } from "react";
+import { ArrowUpRight } from "lucide-react";
 
 const FALLBACK_CATEGORY_IMAGE =
   "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-512x512_kfw439.png";
@@ -38,25 +39,39 @@ const AquaCategoryCard = ({ category, variant = "catalog" }) => {
     return (
       <Link
         href={href}
-        className={`${baseCardClass} aspect-[16/10] min-h-[142px] rounded-2xl border-white/70 shadow-[0_16px_36px_rgba(15,23,42,0.08)] hover:-translate-y-1 hover:border-emerald-200 hover:shadow-[0_22px_54px_rgba(15,23,42,0.12)]`}
+        className={`${baseCardClass} min-h-[22rem] rounded-[1.75rem] border-slate-200/80 p-2 shadow-[0_18px_48px_rgba(15,23,42,0.09)] hover:-translate-y-1 hover:border-emerald-300 hover:shadow-[0_26px_64px_rgba(15,23,42,0.14)]`}
       >
-        <img
-          src={imageUrl}
-          alt={title}
-          className="absolute inset-0 h-full w-full object-cover object-center transition duration-500 group-hover:scale-105"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/15 to-white/5 transition duration-300 group-hover:from-slate-950/70" />
-        <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-          <h3
-            className="min-h-[40px] text-sm font-extrabold leading-5 drop-shadow-md sm:text-[15px]"
-            style={clampTwoLines}
-            title={title}
+        <div className="relative h-[15rem] overflow-hidden rounded-[1.35rem] bg-gradient-to-br from-cyan-50 via-white to-emerald-50">
+          <img
+            src={imageUrl}
+            alt={title}
+            className="absolute inset-0 h-full w-full object-cover object-center transition duration-700 group-hover:scale-[1.06]"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-white/10" />
+          <span className="absolute left-3 top-3 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-sm backdrop-blur-xl">
+            Aquakart collection
+          </span>
+        </div>
+
+        <div className="flex min-h-[6rem] items-center justify-between gap-3 px-3 py-3">
+          <div className="min-w-0">
+            <span className="text-[9px] font-black uppercase tracking-[0.17em] text-slate-400">
+              Better water starts here
+            </span>
+            <h3
+              className="mt-1 text-lg font-black leading-tight tracking-tight text-slate-950 transition group-hover:text-emerald-700"
+              style={clampTwoLines}
+              title={title}
+            >
+              {title}
+            </h3>
+          </div>
+          <span
+            className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-slate-950 text-white shadow-lg transition duration-300 group-hover:rotate-6 group-hover:bg-emerald-600"
+            aria-hidden="true"
           >
-            {title}
-          </h3>
-          <span className="mt-1 inline-flex translate-y-2 items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-emerald-200 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-            View Collection
+            <ArrowUpRight size={19} />
           </span>
         </div>
       </Link>
