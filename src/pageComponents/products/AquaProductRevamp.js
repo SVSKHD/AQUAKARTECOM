@@ -1436,7 +1436,7 @@ function AquaProductRevamp({
                   className="overflow-hidden px-1 pb-3"
                   ref={relatedProductRef}
                 >
-                  <div className="flex items-stretch gap-3 sm:gap-5">
+                  <div className="flex items-stretch">
                     <Suspense
                       fallback={
                         <div className="h-96 min-w-[280px] animate-pulse rounded-[2rem] bg-white/60" />
@@ -1445,7 +1445,7 @@ function AquaProductRevamp({
                       {relatedProducts.map((item) => (
                         <div
                           key={item._id}
-                          className="min-w-0 flex-[0_0_88%] sm:flex-[0_0_48%] lg:flex-[0_0_31%]"
+                          className="box-border min-w-0 flex-[0_0_88%] pr-3 sm:flex-[0_0_48%] sm:pr-5 lg:flex-[0_0_31%]"
                         >
                           <AquaRelatedProductCard product={item} />
                         </div>
