@@ -86,7 +86,7 @@ const AquaRelatedProductCard = ({ product }) => {
   };
 
   return (
-    <article className="group flex h-full min-h-[30rem] w-full flex-col overflow-hidden rounded-[2rem] border border-white/85 bg-white/88 shadow-[0_22px_65px_rgba(15,23,42,0.1)] backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-[0_28px_75px_rgba(15,23,42,0.14)] focus-within:ring-2 focus-within:ring-emerald-400 focus-within:ring-offset-2">
+    <article className="group flex h-full min-h-[30rem] w-full flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-none transition-colors hover:border-emerald-300 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-300 focus-within:ring-offset-2">
       <div className="relative aspect-[4/3] overflow-hidden bg-[radial-gradient(circle_at_50%_35%,#ffffff_0%,#ecfeff_48%,#d1fae5_100%)]">
         {/* Embla Carousel */}
         <div className="h-full overflow-hidden" ref={emblaRef}>
@@ -125,7 +125,7 @@ const AquaRelatedProductCard = ({ product }) => {
         >
           <button
             type="button"
-            className={`rounded-full p-2.5 shadow-lg ring-1 ring-white/80 backdrop-blur-xl transition-all duration-300 ${
+            className={`rounded-full border border-slate-200 p-2.5 shadow-none backdrop-blur-xl transition-all duration-300 ${
               isFavorite ? "bg-rose-100/95" : "bg-white/80"
             } hover:bg-white`}
           >
@@ -145,14 +145,14 @@ const AquaRelatedProductCard = ({ product }) => {
         </motion.div>
 
         {priceDetails.discountPercent ? (
-          <div className="absolute left-4 top-4 inline-flex items-center rounded-full bg-emerald-500/95 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white shadow-lg shadow-emerald-500/20">
+          <div className="absolute left-4 top-4 inline-flex items-center rounded-full bg-emerald-500/95 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-white">
             Save {priceDetails.discountPercent}%
           </div>
         ) : null}
 
         {/* Timeline Indicators */}
         {displayPhotos.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 space-x-1.5 rounded-full bg-white/70 px-2.5 py-2 shadow-sm backdrop-blur-xl">
+          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 space-x-1.5 rounded-full border border-slate-200 bg-white/85 px-2.5 py-2 backdrop-blur-xl">
             {displayPhotos.slice(0, 5).map((_, index) => (
               <button
                 type="button"
@@ -211,7 +211,7 @@ const AquaRelatedProductCard = ({ product }) => {
 
           <motion.button
             type="button"
-            className={`relative inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold text-white shadow transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 ${
+            className={`relative inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 ${
               isInCart ? "bg-emerald-600" : "bg-slate-900 hover:bg-slate-800"
             }`}
             whileTap={{ scale: 0.95 }}

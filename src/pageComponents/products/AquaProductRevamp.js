@@ -914,6 +914,7 @@ function AquaProductRevamp({
   stockCount = 0,
   fallbackImage = DEFAULT_FALLBACK_IMAGE,
 }) {
+  const shouldReduceCarouselMotion = useReducedMotion();
   const [isLoading, setIsLoading] = useState(true);
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
@@ -1018,6 +1019,20 @@ function AquaProductRevamp({
       relatedProductApi.off("reInit", updateRelatedIndex);
     };
   }, [relatedProductApi]);
+
+  useEffect(() => {
+    if (
+      !relatedProductApi ||
+      shouldReduceCarouselMotion ||
+      relatedProducts.length < 2
+    )
+      return undefined;
+    const timer = window.setInterval(
+      () => relatedProductApi.scrollNext(),
+      4500,
+    );
+    return () => window.clearInterval(timer);
+  }, [relatedProductApi, relatedProducts.length, shouldReduceCarouselMotion]);
 
   const scrollPrev = () => relatedProductApi?.scrollPrev();
   const scrollNext = () => relatedProductApi?.scrollNext();
@@ -1433,10 +1448,10 @@ function AquaProductRevamp({
                 </div>
 
                 <div
-                  className="overflow-hidden px-1 pb-3"
+                  className="overflow-hidden px-2 py-2"
                   ref={relatedProductRef}
                 >
-                  <div className="flex items-stretch gap-3 sm:gap-5">
+                  <div className="flex items-stretch">
                     <Suspense
                       fallback={
                         <div className="h-96 min-w-[280px] animate-pulse rounded-[2rem] bg-white/60" />
@@ -1445,7 +1460,7 @@ function AquaProductRevamp({
                       {relatedProducts.map((item) => (
                         <div
                           key={item._id}
-                          className="min-w-0 flex-[0_0_88%] sm:flex-[0_0_48%] lg:flex-[0_0_31%]"
+                          className="box-border min-w-0 flex-[0_0_88%] pr-3 sm:flex-[0_0_48%] sm:pr-5 lg:flex-[0_0_31%]"
                         >
                           <AquaRelatedProductCard product={item} />
                         </div>
