@@ -28,7 +28,7 @@ const FilterSection = ({
   onToggle,
   children,
 }) => (
-  <section className="overflow-hidden rounded-2xl border border-slate-200/75 bg-white/70 shadow-[0_10px_30px_rgba(15,23,42,0.035)]">
+  <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
     <button
       type="button"
       onClick={onToggle}
@@ -78,7 +78,7 @@ const ChoiceButton = ({ selected, label, onClick, count }) => (
     onClick={onClick}
     className={`group flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-xs font-bold transition ${
       selected
-        ? "border-emerald-200 bg-emerald-50 text-emerald-800 shadow-sm"
+        ? "border-emerald-300 bg-emerald-50 text-emerald-800"
         : "border-transparent bg-slate-50/80 text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-950"
     }`}
   >
@@ -131,7 +131,7 @@ const ToggleRow = ({ checked, onChange, icon: Icon, title, description }) => (
       }`}
     >
       <span
-        className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+        className={`absolute top-1 h-4 w-4 rounded-full border border-slate-200 bg-white transition-transform ${
           checked ? "translate-x-6" : "translate-x-1"
         }`}
       />
@@ -301,7 +301,7 @@ const ShopFiltersPanel = ({
               onChange={(event) =>
                 onFilterChange("price", Number(event.target.value))
               }
-              className="relative z-10 h-7 w-full cursor-pointer appearance-none bg-transparent accent-emerald-500 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-emerald-500 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-emerald-500 [&::-webkit-slider-thumb]:shadow-lg"
+              className="relative z-10 h-7 w-full cursor-pointer appearance-none bg-transparent accent-emerald-500 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-emerald-500 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-emerald-500"
             />
           </div>
         </div>

@@ -156,11 +156,11 @@ const ReusableProductCard = ({
   const renderRatingBadge = (variant = "overlay") => {
     if (!reviewStats.ratingValue && !reviewStats.ratingCount) return null;
     const base =
-      "absolute z-20 inline-flex items-center gap-1 rounded-full font-semibold shadow";
+      "absolute z-20 inline-flex items-center gap-1 rounded-full border font-semibold";
     const styles =
       variant === "light"
-        ? "bottom-3 left-3 bg-white/95 px-2 py-1 text-[11px] text-slate-800"
-        : "left-4 top-14 bg-black/35 px-2.5 py-1.5 text-xs text-white backdrop-blur";
+        ? "bottom-3 left-3 border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-800"
+        : "left-4 top-14 border-white/30 bg-black/45 px-2.5 py-1.5 text-xs text-white";
     return (
       <div className={`${base} ${styles}`}>
         <FaStar className="text-amber-400" size={12} />
@@ -232,7 +232,7 @@ const ReusableProductCard = ({
     const label = fav && cart ? "Saved + In cart" : fav ? "Saved" : "In cart";
     return (
       <span
-        className={`absolute right-4 top-[4.6rem] z-20 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-black shadow-lg backdrop-blur-md ${
+        className={`absolute right-4 top-[4.6rem] z-20 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-black ${
           fav && cart
             ? "border-violet-200 bg-violet-600/95 text-white"
             : fav
@@ -299,7 +299,7 @@ const ReusableProductCard = ({
         tabIndex={0}
         onClick={handleNavigate}
         onKeyDown={handleKeyPress}
-        className={`group relative flex cursor-pointer gap-6 rounded-2xl glass-card p-4 transition-all duration-300 hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)] focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 ${
+        className={`group relative flex cursor-pointer gap-6 rounded-2xl border border-slate-200 bg-white p-4 transition-colors duration-200 hover:border-emerald-300 hover:bg-emerald-50/20 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 ${
           fav ? "border-rose-200" : ""
         } ${cart ? "ring-1 ring-emerald-300" : ""}`}
         aria-label={`View details for ${title}`}
@@ -346,7 +346,7 @@ const ReusableProductCard = ({
             type="button"
             onClick={handleFavToggle}
             aria-label={fav ? "Remove from wishlist" : "Add to wishlist"}
-            className={`absolute top-2 right-2 z-10 rounded-full border p-2 shadow-lg transition-all duration-300 ${
+            className={`absolute top-2 right-2 z-10 rounded-full border p-2 transition-colors duration-200 ${
               fav
                 ? "border-rose-500 bg-white/90 text-rose-600 hover:bg-rose-500 hover:text-white"
                 : "border-white/70 bg-white/80 text-slate-500 hover:border-rose-300 hover:text-rose-500"
@@ -401,7 +401,7 @@ const ReusableProductCard = ({
               onClick={handleCartToggle}
               type="button"
               aria-label={cart ? "Remove from cart" : "Add to cart"}
-              className={`flex-1 rounded-full py-3 text-sm font-semibold shadow-md transition-all duration-300 ${
+              className={`flex-1 rounded-full py-3 text-sm font-semibold transition-colors duration-200 ${
                 cart
                   ? "bg-emerald-500 text-white hover:bg-emerald-600"
                   : "bg-slate-900 text-white hover:bg-slate-800"
@@ -429,7 +429,7 @@ const ReusableProductCard = ({
       {isGlass ? (
         <div
           className={[
-            "group relative h-[460px] w-full cursor-pointer overflow-hidden rounded-[30px] border border-white/50 bg-white/20 shadow-[0_10px_34px_rgba(15,23,42,0.12)] backdrop-blur-sm transition-shadow duration-300 hover:shadow-[0_18px_48px_rgba(15,23,42,0.18)]",
+            "group relative h-[460px] w-full cursor-pointer overflow-hidden rounded-[30px] border border-slate-200 bg-white transition-colors duration-200 hover:border-emerald-300",
             fav ? "ring-2 ring-rose-500 ring-offset-2" : "",
             cart
               ? "outline outline-2 outline-emerald-500 outline-offset-[-2px]"
@@ -488,8 +488,10 @@ const ReusableProductCard = ({
           <button
             onClick={handleFavToggle}
             aria-label={fav ? "Remove from wishlist" : "Add to wishlist"}
-            className={`absolute right-4 top-4 z-20 rounded-full p-3 shadow ${
-              fav ? "bg-rose-500 text-white" : "bg-white/90 text-slate-600"
+            className={`absolute right-4 top-4 z-20 rounded-full border p-3 transition-colors ${
+              fav
+                ? "border-rose-500 bg-rose-500 text-white"
+                : "border-slate-200 bg-white text-slate-600 hover:border-rose-300 hover:text-rose-500"
             }`}
           >
             <FaHeart size={18} />
@@ -512,7 +514,7 @@ const ReusableProductCard = ({
                 <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/70">
                   {product?.brand || "Aquakart"}
                 </p>
-                <h3 className="line-clamp-2 text-xl font-black leading-snug drop-shadow-sm">
+                <h3 className="line-clamp-2 text-xl font-black leading-snug">
                   {title}
                 </h3>
                 {description && (
@@ -573,10 +575,10 @@ const ReusableProductCard = ({
               <button
                 onClick={handleCartToggle}
                 type="button"
-                className={`flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-sm font-black shadow-lg transition-colors ${
+                className={`flex w-full items-center justify-center gap-2 rounded-full border px-5 py-3.5 text-sm font-black transition-colors ${
                   cart
-                    ? "bg-emerald-500 text-white hover:bg-emerald-600"
-                    : "bg-white text-slate-950 hover:bg-slate-100"
+                    ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600"
+                    : "border-white bg-white text-slate-950 hover:bg-slate-100"
                 }`}
                 aria-label={cart ? "Remove from cart" : "Add to cart"}
               >
@@ -592,7 +594,7 @@ const ReusableProductCard = ({
           tabIndex={0}
           onClick={handleNavigate}
           onKeyDown={handleKeyPress}
-          className={`group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-[30px] border bg-white p-3 shadow-[0_10px_32px_rgba(15,23,42,0.07)] transition-shadow duration-300 hover:shadow-[0_16px_42px_rgba(15,23,42,0.12)] focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 ${
+          className={`group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-[26px] border bg-white p-3 transition-colors duration-200 hover:border-emerald-400 hover:bg-emerald-50/20 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 ${
             fav ? "border-rose-200" : "border-slate-200/80"
           } ${cart ? "ring-1 ring-emerald-300" : ""}`}
           aria-label={`View details for ${title}`}
@@ -644,7 +646,7 @@ const ReusableProductCard = ({
               type="button"
               onClick={handleFavToggle}
               aria-label={fav ? "Remove from wishlist" : "Add to wishlist"}
-              className={`absolute top-4 right-4 z-10 rounded-full border p-3 transition-all duration-300 shadow-lg ${
+              className={`absolute top-4 right-4 z-10 rounded-full border p-3 transition-colors duration-200 ${
                 fav
                   ? "border-rose-500 bg-white/90 text-rose-600 hover:bg-rose-500 hover:text-white"
                   : "border-white/70 bg-white/80 text-slate-500 hover:border-rose-300 hover:text-rose-500"
@@ -731,10 +733,10 @@ const ReusableProductCard = ({
               <button
                 onClick={handleCartToggle}
                 type="button"
-                className={`flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-black shadow-sm transition-colors ${
+                className={`flex w-full items-center justify-center gap-2 rounded-full border px-5 py-3 text-sm font-black transition-colors ${
                   cart
-                    ? "bg-emerald-500 text-white hover:bg-emerald-600"
-                    : "bg-slate-950 text-white hover:bg-emerald-700"
+                    ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600"
+                    : "border-slate-950 bg-slate-950 text-white hover:border-emerald-700 hover:bg-emerald-700"
                 }`}
                 aria-label={cart ? "Remove from cart" : "Add to cart"}
               >

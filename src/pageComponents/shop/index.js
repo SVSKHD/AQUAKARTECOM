@@ -161,7 +161,7 @@ const FilterChip = ({ label, onRemove }) => (
     initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
     exit={{ opacity: 0, scale: 0.9 }}
-    className="inline-flex min-h-9 items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50/85 px-3 text-[11px] font-bold text-emerald-800 shadow-sm"
+    className="inline-flex min-h-9 items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 text-[11px] font-bold text-emerald-800"
   >
     {label}
     <button
@@ -438,7 +438,7 @@ const AquaShopPageComponent = ({
       <button
         type="button"
         onClick={() => setShowFilters(false)}
-        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 text-xs font-black text-white shadow-[0_14px_28px_rgba(15,23,42,0.2)] transition hover:bg-emerald-700"
+        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-950 bg-slate-950 px-4 text-xs font-black text-white transition hover:border-emerald-700 hover:bg-emerald-700"
       >
         View {filteredAndSortedProducts.length} products{" "}
         <ArrowRight size={15} />
@@ -460,7 +460,7 @@ const AquaShopPageComponent = ({
           subtext="Matching products, prices and availability for you."
         />
       ) : error ? (
-        <section className="mx-auto my-12 flex min-h-[58vh] w-[calc(100%-2rem)] max-w-3xl flex-col items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/80 bg-white/75 p-8 text-center shadow-[0_30px_80px_rgba(15,23,42,0.1)] backdrop-blur-2xl">
+        <section className="mx-auto my-12 flex min-h-[58vh] w-[calc(100%-2rem)] max-w-3xl flex-col items-center justify-center overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-8 text-center">
           <div className="grid h-16 w-16 place-items-center rounded-2xl bg-rose-50 text-rose-500">
             <Droplets size={28} />
           </div>
@@ -476,7 +476,7 @@ const AquaShopPageComponent = ({
           <button
             type="button"
             onClick={fetchProducts}
-            className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-slate-950 px-6 text-xs font-black text-white shadow-lg transition hover:bg-emerald-700"
+            className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full border border-slate-950 bg-slate-950 px-6 text-xs font-black text-white transition hover:border-emerald-700 hover:bg-emerald-700"
           >
             Refresh catalogue <RotateCcw size={15} />
           </button>
@@ -493,7 +493,7 @@ const AquaShopPageComponent = ({
             <section id="shop-products" className="scroll-mt-28">
               <div className="grid items-start gap-6 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[310px_minmax(0,1fr)]">
                 <aside className="hidden lg:block">
-                  <div className="sticky top-[92px] max-h-[calc(100vh-108px)] overflow-y-auto rounded-[1.75rem] border border-white/80 bg-white/78 p-4 shadow-[0_18px_55px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
+                  <div className="sticky top-[92px] max-h-[calc(100vh-108px)] overflow-y-auto rounded-[1.75rem] border border-slate-200 bg-white p-4">
                     <div className="mb-4 flex items-center justify-between border-b border-slate-200/70 pb-4">
                       <div>
                         <span className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-700">
@@ -529,12 +529,12 @@ const AquaShopPageComponent = ({
                 </aside>
 
                 <div className="min-w-0">
-                  <div className="sticky top-[76px] z-30 mb-4 rounded-[1.65rem] border border-white/80 bg-[rgba(248,252,251,0.96)] p-2.5 shadow-[0_18px_55px_rgba(15,23,42,0.09)] backdrop-blur-2xl sm:top-[92px] sm:p-3">
+                  <div className="sticky top-[76px] z-30 mb-4 rounded-[1.65rem] border border-slate-200 bg-white p-2.5 sm:top-[92px] sm:p-3">
                     <div className="flex items-center gap-2.5">
                       <button
                         type="button"
                         onClick={() => setShowFilters(true)}
-                        className="relative inline-flex h-12 shrink-0 items-center gap-2 rounded-2xl bg-slate-950 px-4 text-xs font-black text-white shadow-lg transition hover:bg-emerald-700 lg:hidden"
+                        className="relative inline-flex h-12 shrink-0 items-center gap-2 rounded-2xl border border-slate-950 bg-slate-950 px-4 text-xs font-black text-white transition hover:border-emerald-700 hover:bg-emerald-700 lg:hidden"
                       >
                         <SlidersHorizontal size={17} />
                         <span className="hidden sm:inline">Tune filters</span>
