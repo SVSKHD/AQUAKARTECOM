@@ -49,7 +49,7 @@ const ProductGrid = ({ products = [], viewMode = "grid" }) => {
           <ReusableProductCard
             product={product}
             viewMode={viewMode}
-            variant="glass"
+            variant="standard"
             imagePriority={index < 4}
           />
         </motion.div>
