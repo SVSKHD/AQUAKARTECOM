@@ -198,6 +198,7 @@ const AquaOrdersPageComponent = () => {
   const { signOut } = useAuth();
   const router = useRouter();
   const [orders, setOrders] = useState([]);
+  const [serviceReminders, setServiceReminders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [authError, setAuthError] = useState(false);
@@ -300,16 +301,24 @@ const AquaOrdersPageComponent = () => {
       setError("");
       setAuthError(false);
       try {
-        const response = await orderServiceOperations.getOrdersByUserId(
-          userId,
-          token,
-        );
+        const [response, reminderResponse] = await Promise.all([
+          orderServiceOperations.getOrdersByUserId(userId, token),
+          orderServiceOperations
+            .getServiceReminders(token)
+            .catch((reminderError) => {
+              console.error("Error fetching service reminders:", reminderError);
+              return { data: [] };
+            }),
+        ]);
 
         if (!isMounted) return;
         const fetchedOrders = Array.isArray(response?.data)
           ? response.data
           : [];
         setOrders(fetchedOrders);
+        setServiceReminders(
+          Array.isArray(reminderResponse?.data) ? reminderResponse.data : [],
+        );
       } catch (fetchError) {
         if (!isMounted) return;
         if (fetchError?.authError) {
@@ -490,6 +499,87 @@ const AquaOrdersPageComponent = () => {
             </div>
           </div>
         </section>
+
+        {serviceReminders.length > 0 && (
+          <section className="rounded-[1.75rem] border border-emerald-100 bg-emerald-50/60 p-5 sm:p-6">
+            <div className="flex items-start gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white">
+                <CalendarClock className="h-5 w-5" />
+              </span>
+              <div>
+                <h2 className="text-lg font-bold text-slate-950">
+                  Product care reminders
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Regeneration and yearly service dates are calculated from your
+                  invoice purchase date.
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {serviceReminders.flatMap((entry) =>
+                entry.reminders.map((reminder) => (
+                  <div
+                    key={`${entry.invoiceId}-${entry.productName}-${reminder.type}`}
+                    className="rounded-2xl border border-emerald-100 bg-white p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-slate-900">
+                          {entry.productName}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          Invoice #{entry.invoiceNo || "—"}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                        {reminder.type === "regeneration"
+                          ? "Regeneration"
+                          : reminder.type === "warranty-expiry"
+                            ? "Warranty"
+                            : "Annual service"}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm text-slate-600">
+                      {reminder.type === "warranty-expiry"
+                        ? "Warranty expires"
+                        : "Next due"}
+                      :{" "}
+                      <strong className="text-slate-950">
+                        {formatDateLabel(reminder.nextDueDate)}
+                      </strong>
+                    </p>
+                    {reminder.type === "warranty-expiry" &&
+                      reminder.reminderDate && (
+                        <p className="mt-1 text-xs text-slate-500">
+                          WhatsApp notice:{" "}
+                          {formatDateLabel(reminder.reminderDate)}
+                        </p>
+                      )}
+                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+                      <p className="text-xs text-slate-500">
+                        Purchased {formatDateLabel(entry.purchaseDate)}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          router.push(`/invoice/${entry.invoiceId}`)
+                        }
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                      >
+                        View invoice
+                        <ExternalLink
+                          className="h-3.5 w-3.5"
+                          aria-hidden="true"
+                        />
+                      </button>
+                    </div>
+                  </div>
+                )),
+              )}
+            </div>
+          </section>
+        )}
 
         {loading ? (
           <div className="grid gap-4 lg:grid-cols-2">
