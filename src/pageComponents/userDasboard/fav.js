@@ -1,16 +1,11 @@
 import { useMemo } from "react";
 import AquaUserDashbordLayout from "./layout/layout";
 import { useSelector } from "react-redux";
-import {
-  Heart,
-  ShoppingCart,
-  PackageCheck,
-  Eye,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Heart, ShoppingCart, PackageCheck, Eye } from "lucide-react";
 import DashboardProductCard from "./layout/cards/cartCard";
-import useEmblaCarousel from "embla-carousel-react";
+import DashboardPagination, {
+  useDashboardPagination,
+} from "@/components/dashboard/DashboardPagination";
 
 const AquaUserFavPageComponent = () => {
   const { favData, cartData } = useSelector((state) => ({ ...state }));
@@ -23,6 +18,7 @@ const AquaUserFavPageComponent = () => {
     () => (Array.isArray(cartData) ? cartData : []),
     [cartData],
   );
+  const favouritesPagination = useDashboardPagination(safeFav);
 
   const { favouritesCount, inStockCount, inCartCount, viewedCount } =
     useMemo(() => {
@@ -108,7 +104,18 @@ const AquaUserFavPageComponent = () => {
                    but implementing inline for now with simple buttons */}
             </div>
 
-            <FavCarousel products={safeFav} />
+            <div className="min-h-[36rem] rounded-3xl border border-slate-100 bg-slate-50/40 p-3 sm:p-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                {favouritesPagination.pageItems.map((item, index) => (
+                  <DashboardProductCard
+                    key={item._id || `${favouritesPagination.page}-${index}`}
+                    product={item}
+                    variant="fav"
+                  />
+                ))}
+              </div>
+            </div>
+            <DashboardPagination {...favouritesPagination} />
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-10 text-center">
@@ -122,50 +129,6 @@ const AquaUserFavPageComponent = () => {
         )}
       </div>
     </AquaUserDashbordLayout>
-  );
-};
-
-const FavCarousel = ({ products }) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: "start",
-    loop: false,
-    dragFree: true,
-  });
-
-  const scrollPrev = () => emblaApi && emblaApi.scrollPrev();
-  const scrollNext = () => emblaApi && emblaApi.scrollNext();
-
-  return (
-    <div className="group relative">
-      <div className="overflow-hidden p-1 -m-1" ref={emblaRef}>
-        <div className="flex gap-4">
-          {products.map((item, index) => (
-            <div
-              key={item._id || index}
-              className="flex-[0_0_50%] min-w-0 sm:flex-[0_0_33.33%] lg:flex-[0_0_25%] xl:flex-[0_0_20%]"
-            >
-              <DashboardProductCard product={item} />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Navigation Buttons */}
-      <button
-        onClick={scrollPrev}
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 hidden sm:flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-lg text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-0"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="h-5 w-5" />
-      </button>
-      <button
-        onClick={scrollNext}
-        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 hidden sm:flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-lg text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-0"
-        aria-label="Next slide"
-      >
-        <ChevronRight className="h-5 w-5" />
-      </button>
-    </div>
   );
 };
 
