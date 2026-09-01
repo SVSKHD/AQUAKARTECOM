@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import AquaUserDashbordLayout from "./layout/layout";
+import DashboardPagination, {
+  useDashboardPagination,
+} from "@/components/dashboard/DashboardPagination";
 import orderServiceOperations from "@/services/order";
 import { generateInvoicePDF, loadJsPDF } from "@/utils/invoice";
 import { useAuth } from "@/context/AuthContext";
@@ -454,6 +457,16 @@ const AquaOrdersPageComponent = () => {
   const activeOrders =
     activeTab === "online" ? resolvedOnlineOrders : resolvedCodOrders;
 
+  const flattenedReminders = useMemo(
+    () =>
+      serviceReminders.flatMap((entry) =>
+        entry.reminders.map((reminder) => ({ entry, reminder })),
+      ),
+    [serviceReminders],
+  );
+  const orderPagination = useDashboardPagination(activeOrders);
+  const reminderPagination = useDashboardPagination(flattenedReminders);
+
   const timelineSteps = useMemo(
     () => (trackingOrder ? getTimelineSteps(trackingOrder?.orderStatus) : []),
     [trackingOrder],
@@ -516,68 +529,71 @@ const AquaOrdersPageComponent = () => {
                 </p>
               </div>
             </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              {serviceReminders.flatMap((entry) =>
-                entry.reminders.map((reminder) => (
-                  <div
-                    key={`${entry.invoiceId}-${entry.productName}-${reminder.type}`}
-                    className="rounded-2xl border border-emerald-100 bg-white p-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-semibold text-slate-900">
-                          {entry.productName}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          Invoice #{entry.invoiceNo || "—"}
-                        </p>
+            <div className="mt-4 min-h-[36rem] rounded-3xl border border-emerald-100/70 bg-white/40 p-3 sm:p-4">
+              <div className="grid gap-3 md:grid-cols-2">
+                {reminderPagination.pageItems.map(
+                  ({ entry, reminder }, index) => (
+                    <div
+                      key={`${entry.invoiceId}-${entry.productName}-${reminder.type}-${index}`}
+                      className="rounded-2xl border border-emerald-100 bg-white p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-slate-900">
+                            {entry.productName}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Invoice #{entry.invoiceNo || "—"}
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                          {reminder.type === "regeneration"
+                            ? "Regeneration"
+                            : reminder.type === "warranty-expiry"
+                              ? "Warranty"
+                              : "Annual service"}
+                        </span>
                       </div>
-                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                        {reminder.type === "regeneration"
-                          ? "Regeneration"
-                          : reminder.type === "warranty-expiry"
-                            ? "Warranty"
-                            : "Annual service"}
-                      </span>
-                    </div>
-                    <p className="mt-3 text-sm text-slate-600">
-                      {reminder.type === "warranty-expiry"
-                        ? "Warranty expires"
-                        : "Next due"}
-                      :{" "}
-                      <strong className="text-slate-950">
-                        {formatDateLabel(reminder.nextDueDate)}
-                      </strong>
-                    </p>
-                    {reminder.type === "warranty-expiry" &&
-                      reminder.reminderDate && (
-                        <p className="mt-1 text-xs text-slate-500">
-                          WhatsApp notice:{" "}
-                          {formatDateLabel(reminder.reminderDate)}
-                        </p>
-                      )}
-                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
-                      <p className="text-xs text-slate-500">
-                        Purchased {formatDateLabel(entry.purchaseDate)}
+                      <p className="mt-3 text-sm text-slate-600">
+                        {reminder.type === "warranty-expiry"
+                          ? "Warranty expires"
+                          : "Next due"}
+                        :{" "}
+                        <strong className="text-slate-950">
+                          {formatDateLabel(reminder.nextDueDate)}
+                        </strong>
                       </p>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          router.push(`/invoice/${entry.invoiceId}`)
-                        }
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700"
-                      >
-                        View invoice
-                        <ExternalLink
-                          className="h-3.5 w-3.5"
-                          aria-hidden="true"
-                        />
-                      </button>
+                      {reminder.type === "warranty-expiry" &&
+                        reminder.reminderDate && (
+                          <p className="mt-1 text-xs text-slate-500">
+                            WhatsApp notice:{" "}
+                            {formatDateLabel(reminder.reminderDate)}
+                          </p>
+                        )}
+                      <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+                        <p className="text-xs text-slate-500">
+                          Purchased {formatDateLabel(entry.purchaseDate)}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            router.push(`/invoice/${entry.invoiceId}`)
+                          }
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-slate-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                        >
+                          View invoice
+                          <ExternalLink
+                            className="h-3.5 w-3.5"
+                            aria-hidden="true"
+                          />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )),
-              )}
+                  ),
+                )}
+              </div>
             </div>
+            <DashboardPagination {...reminderPagination} />
           </section>
         )}
 
@@ -630,7 +646,10 @@ const AquaOrdersPageComponent = () => {
               <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1">
                 <button
                   type="button"
-                  onClick={() => setActiveTab("cod")}
+                  onClick={() => {
+                    setActiveTab("cod");
+                    orderPagination.setPage(1);
+                  }}
                   className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${
                     activeTab === "cod"
                       ? "bg-white text-slate-950 shadow-sm"
@@ -642,7 +661,10 @@ const AquaOrdersPageComponent = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveTab("online")}
+                  onClick={() => {
+                    setActiveTab("online");
+                    orderPagination.setPage(1);
+                  }}
                   className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${
                     activeTab === "online"
                       ? "bg-white text-slate-950 shadow-sm"
@@ -660,201 +682,206 @@ const AquaOrdersPageComponent = () => {
                 No orders found under this category yet.
               </div>
             ) : (
-              <div className="grid gap-5 lg:grid-cols-2">
-                {activeOrders.map((order) => {
-                  const orderKey = getOrderKey(order);
-                  const isGenerating = generatingFor === orderKey;
-                  const isSharing = sharingFor === orderKey;
-                  const isCopied = copiedTrackingFor === orderKey;
-                  const cardTimeline = getTimelineSteps(order?.orderStatus);
+              <div className="min-h-[36rem]">
+                <div className="grid gap-5 lg:grid-cols-2">
+                  {orderPagination.pageItems.map((order) => {
+                    const orderKey = getOrderKey(order);
+                    const isGenerating = generatingFor === orderKey;
+                    const isSharing = sharingFor === orderKey;
+                    const isCopied = copiedTrackingFor === orderKey;
+                    const cardTimeline = getTimelineSteps(order?.orderStatus);
 
-                  return (
-                    <article
-                      key={orderKey}
-                      className="group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-100 bg-white shadow-sm ring-1 ring-white/80 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
-                    >
-                      <header className="bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 p-5 text-white">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">
-                              Order ID
-                            </p>
-                            <h2 className="mt-1 truncate text-xl font-bold">
-                              #{order?.orderId || "—"}
-                            </h2>
-                            <p className="mt-2 flex items-center gap-2 text-xs text-slate-300">
-                              <CalendarClock className="h-3.5 w-3.5" />
-                              {order.orderedOn}
-                            </p>
+                    return (
+                      <article
+                        key={orderKey}
+                        className="group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-100 bg-white shadow-sm ring-1 ring-white/80 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+                      >
+                        <header className="bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 p-5 text-white">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">
+                                Order ID
+                              </p>
+                              <h2 className="mt-1 truncate text-xl font-bold">
+                                #{order?.orderId || "—"}
+                              </h2>
+                              <p className="mt-2 flex items-center gap-2 text-xs text-slate-300">
+                                <CalendarClock className="h-3.5 w-3.5" />
+                                {order.orderedOn}
+                              </p>
+                            </div>
+
+                            <div className="rounded-2xl bg-white/10 px-4 py-3 text-right backdrop-blur">
+                              <p className="text-xs text-emerald-100">
+                                Paid / Payable
+                              </p>
+                              <p className="text-lg font-bold">
+                                {order.totalLabel}
+                              </p>
+                            </div>
                           </div>
 
-                          <div className="rounded-2xl bg-white/10 px-4 py-3 text-right backdrop-blur">
-                            <p className="text-xs text-emerald-100">
-                              Paid / Payable
-                            </p>
-                            <p className="text-lg font-bold">
-                              {order.totalLabel}
-                            </p>
+                          <div className="mt-5 grid grid-cols-5 gap-2">
+                            {cardTimeline.map((step) => (
+                              <div
+                                key={step.key}
+                                className={`h-1.5 rounded-full ${
+                                  step.completed
+                                    ? "bg-emerald-300"
+                                    : "bg-white/20"
+                                }`}
+                                title={step.label}
+                              />
+                            ))}
                           </div>
-                        </div>
+                        </header>
 
-                        <div className="mt-5 grid grid-cols-5 gap-2">
-                          {cardTimeline.map((step) => (
-                            <div
-                              key={step.key}
-                              className={`h-1.5 rounded-full ${
-                                step.completed
-                                  ? "bg-emerald-300"
-                                  : "bg-white/20"
-                              }`}
-                              title={step.label}
-                            />
-                          ))}
-                        </div>
-                      </header>
-
-                      <div className="flex flex-1 flex-col gap-4 p-5">
-                        <div className="flex flex-wrap gap-2">
-                          <span
-                            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold capitalize ring-1 ${order.paymentChipTone}`}
-                          >
-                            {order.paymentChipLabel}
-                          </span>
-                          <span
-                            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold capitalize ring-1 ${order.paymentStatusTone}`}
-                          >
-                            {order?.paymentStatus || "Pending"}
-                          </span>
-                          <span
-                            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold capitalize ring-1 ${order.orderStatusTone}`}
-                          >
-                            {order?.orderStatus || "Processing"}
-                          </span>
-                        </div>
-
-                        <div className="grid gap-3 sm:grid-cols-3">
-                          <div className="rounded-2xl bg-slate-50 p-3">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                              Items
-                            </p>
-                            <p className="mt-1 text-sm font-bold text-slate-900">
-                              {order.itemCount || order.items.length} item(s)
-                            </p>
+                        <div className="flex flex-1 flex-col gap-4 p-5">
+                          <div className="flex flex-wrap gap-2">
+                            <span
+                              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold capitalize ring-1 ${order.paymentChipTone}`}
+                            >
+                              {order.paymentChipLabel}
+                            </span>
+                            <span
+                              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold capitalize ring-1 ${order.paymentStatusTone}`}
+                            >
+                              {order?.paymentStatus || "Pending"}
+                            </span>
+                            <span
+                              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold capitalize ring-1 ${order.orderStatusTone}`}
+                            >
+                              {order?.orderStatus || "Processing"}
+                            </span>
                           </div>
-                          <div className="rounded-2xl bg-slate-50 p-3">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                              ETA
-                            </p>
-                            <p className="mt-1 text-sm font-bold text-slate-900">
-                              {order.deliveryEta}
-                            </p>
+
+                          <div className="grid gap-3 sm:grid-cols-3">
+                            <div className="rounded-2xl bg-slate-50 p-3">
+                              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                Items
+                              </p>
+                              <p className="mt-1 text-sm font-bold text-slate-900">
+                                {order.itemCount || order.items.length} item(s)
+                              </p>
+                            </div>
+                            <div className="rounded-2xl bg-slate-50 p-3">
+                              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                ETA
+                              </p>
+                              <p className="mt-1 text-sm font-bold text-slate-900">
+                                {order.deliveryEta}
+                              </p>
+                            </div>
+                            <div className="rounded-2xl bg-slate-50 p-3">
+                              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                Link
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => handleShareTracking(order)}
+                                className="mt-1 inline-flex items-center gap-1 text-sm font-bold text-emerald-700 hover:text-emerald-800"
+                              >
+                                <Share2 className="h-3.5 w-3.5" />
+                                {isCopied ? "Copied" : "Share"}
+                              </button>
+                            </div>
                           </div>
-                          <div className="rounded-2xl bg-slate-50 p-3">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                              Link
-                            </p>
+
+                          <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500">
+                                <ShoppingBag className="h-4 w-4" />
+                                Items ordered
+                              </p>
+                              {order.items.length > 2 ? (
+                                <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-500">
+                                  +{order.items.length - 2} more
+                                </span>
+                              ) : null}
+                            </div>
+                            <ul className="space-y-2">
+                              {order.items.slice(0, 2).map((item) => (
+                                <li
+                                  key={
+                                    item?._id || item?.productId || item?.name
+                                  }
+                                  className="flex items-center justify-between gap-3 text-sm"
+                                >
+                                  <span className="line-clamp-1 font-semibold text-slate-800">
+                                    {item?.name || "Product"}
+                                  </span>
+                                  <span className="whitespace-nowrap rounded-full bg-white px-2.5 py-1 text-xs font-bold text-slate-600">
+                                    ×{item?.quantity || 1}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          <div className="flex gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
+                            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">
+                                Deliver to
+                              </p>
+                              <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-600">
+                                {order.addressLabel || "Address not available"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <footer className="mt-auto grid gap-2 sm:grid-cols-3">
                             <button
                               type="button"
-                              onClick={() => handleShareTracking(order)}
-                              className="mt-1 inline-flex items-center gap-1 text-sm font-bold text-emerald-700 hover:text-emerald-800"
+                              onClick={() => setTrackingOrder(order)}
+                              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
                             >
-                              <Share2 className="h-3.5 w-3.5" />
-                              {isCopied ? "Copied" : "Share"}
+                              <Truck className="h-4 w-4" />
+                              Track
                             </button>
-                          </div>
-                        </div>
+                            <button
+                              type="button"
+                              onClick={() => router.push(order.trackingPath)}
+                              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                              Open
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadInvoice(order)}
+                              disabled={isGenerating}
+                              className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition ${
+                                isGenerating
+                                  ? "cursor-wait bg-slate-100 text-slate-400"
+                                  : "bg-slate-950 text-white hover:bg-slate-800"
+                              }`}
+                            >
+                              {isGenerating ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  PDF
+                                </>
+                              ) : (
+                                <>
+                                  <Download className="h-4 w-4" />
+                                  Invoice
+                                </>
+                              )}
+                            </button>
+                          </footer>
 
-                        <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-                          <div className="mb-3 flex items-center justify-between gap-3">
-                            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500">
-                              <ShoppingBag className="h-4 w-4" />
-                              Items ordered
+                          {isSharing ? (
+                            <p className="text-center text-xs font-medium text-slate-400">
+                              Preparing share link...
                             </p>
-                            {order.items.length > 2 ? (
-                              <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-500">
-                                +{order.items.length - 2} more
-                              </span>
-                            ) : null}
-                          </div>
-                          <ul className="space-y-2">
-                            {order.items.slice(0, 2).map((item) => (
-                              <li
-                                key={item?._id || item?.productId || item?.name}
-                                className="flex items-center justify-between gap-3 text-sm"
-                              >
-                                <span className="line-clamp-1 font-semibold text-slate-800">
-                                  {item?.name || "Product"}
-                                </span>
-                                <span className="whitespace-nowrap rounded-full bg-white px-2.5 py-1 text-xs font-bold text-slate-600">
-                                  ×{item?.quantity || 1}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
+                          ) : null}
                         </div>
-
-                        <div className="flex gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
-                          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
-                          <div>
-                            <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">
-                              Deliver to
-                            </p>
-                            <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-600">
-                              {order.addressLabel || "Address not available"}
-                            </p>
-                          </div>
-                        </div>
-
-                        <footer className="mt-auto grid gap-2 sm:grid-cols-3">
-                          <button
-                            type="button"
-                            onClick={() => setTrackingOrder(order)}
-                            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
-                          >
-                            <Truck className="h-4 w-4" />
-                            Track
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => router.push(order.trackingPath)}
-                            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                            Open
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDownloadInvoice(order)}
-                            disabled={isGenerating}
-                            className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition ${
-                              isGenerating
-                                ? "cursor-wait bg-slate-100 text-slate-400"
-                                : "bg-slate-950 text-white hover:bg-slate-800"
-                            }`}
-                          >
-                            {isGenerating ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                PDF
-                              </>
-                            ) : (
-                              <>
-                                <Download className="h-4 w-4" />
-                                Invoice
-                              </>
-                            )}
-                          </button>
-                        </footer>
-
-                        {isSharing ? (
-                          <p className="text-center text-xs font-medium text-slate-400">
-                            Preparing share link...
-                          </p>
-                        ) : null}
-                      </div>
-                    </article>
-                  );
-                })}
+                      </article>
+                    );
+                  })}
+                </div>
+                <DashboardPagination {...orderPagination} />
               </div>
             )}
           </>
