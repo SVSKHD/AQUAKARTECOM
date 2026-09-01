@@ -103,6 +103,20 @@ const getOrdersByUserId = async (id, token) => {
   }
 };
 
+const getServiceReminders = async (token) => {
+  try {
+    const response = await axios.get(`${BASE}/service-reminders/mine`, {
+      headers: authHeaders(token),
+    });
+    return response.data;
+  } catch (error) {
+    if (isAuthFailure(error)) throwAuthError(error);
+    throw new Error(
+      getServerMessage(error) || "Unable to fetch service reminders",
+    );
+  }
+};
+
 const getOrdersByTransactionId = async (id, token, config = {}) => {
   try {
     const response = await axios.get(`${BASE}/order/transaction-id/${id}`, {
@@ -200,6 +214,7 @@ const orderServiceOperations = {
   createPhonePePayOrder,
   verifyPayment,
   getOrdersByUserId,
+  getServiceReminders,
   getOrdersByTransactionId,
   updateOrderStatus,
 };
