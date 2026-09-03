@@ -44,18 +44,21 @@ const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
   };
 
   return (
-    <div className="relative min-h-screen bg-slate-50">
+    <div
+      data-dashboard-shell
+      className="relative h-screen overflow-hidden bg-slate-50"
+    >
       <AquaCartAddressDialog />
-      <div className="mx-auto flex w-full max-w-[1320px] items-start gap-4 px-3 py-4 sm:px-5 lg:gap-5">
+      <div className="mx-auto flex h-full min-h-0 w-full max-w-[1320px] items-stretch gap-4 px-3 py-3 sm:px-5 sm:py-4 lg:gap-5">
         <AquaUserDashboardHeader />
 
-        <main className="min-h-[calc(100vh-2rem)] min-w-0 flex-1 pb-24 lg:pb-0">
+        <main className="flex h-full min-h-0 min-w-0 flex-1 flex-col pb-[5.5rem] lg:pb-0">
           <AquaUserGreet
             userName={getFirstLettersFromEmail(userData?.user?.email)}
           />
 
-          <section className="mx-auto mt-4 w-full max-w-5xl">
-            <div className="min-h-[calc(100vh-14rem)] w-full rounded-[28px] border border-slate-200 bg-white p-4 sm:p-6 lg:p-7">
+          <section className="mx-auto mt-3 flex min-h-0 w-full max-w-5xl flex-1 sm:mt-4">
+            <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white p-4 sm:p-6 lg:p-7">
               <header className="mb-6 flex shrink-0 items-end justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <h1 className="text-xl font-black text-slate-950 sm:text-2xl">
@@ -70,7 +73,8 @@ const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
               </header>
               <div
                 key={router.pathname}
-                className="animate-[dashboard-tab-in_180ms_cubic-bezier(0.22,1,0.36,1)]"
+                data-dashboard-scroll-region
+                className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 animate-[dashboard-tab-in_180ms_cubic-bezier(0.22,1,0.36,1)] sm:pr-2"
               >
                 {children}
               </div>
@@ -79,6 +83,21 @@ const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
         </main>
       </div>
       <style jsx global>{`
+        [data-dashboard-shell] {
+          height: 100vh;
+          overflow: hidden;
+        }
+        [data-dashboard-scroll-region] {
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior-y: contain;
+          scrollbar-gutter: stable;
+          touch-action: pan-y;
+        }
+        @supports (height: 100dvh) {
+          [data-dashboard-shell] {
+            height: 100dvh;
+          }
+        }
         @keyframes dashboard-tab-in {
           from {
             opacity: 0;
