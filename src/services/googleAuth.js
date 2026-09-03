@@ -56,7 +56,7 @@ export const friendlyGoogleAuthError = (error) => {
     code === "auth/web-storage-unsupported" ||
     message.toLowerCase().includes("database is closing/hidden")
   ) {
-    return "Safari blocked secure Google session storage. Please keep this tab open and try Continue with Google again.";
+    return "Safari blocked secure Google sign-in storage. Please keep this tab open and try Continue with Google again.";
   }
 
   if (code === "auth/popup-closed-by-user") {
