@@ -66,7 +66,10 @@ const AquaUserDashboardHeader = () => {
 
   return (
     <>
-      <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-[72px] shrink-0 flex-col items-center rounded-[26px] border border-slate-800 bg-slate-950 px-3 py-3 lg:flex">
+      <aside
+        data-dashboard-sidebar
+        className="sticky top-0 hidden h-full w-[72px] shrink-0 flex-col items-center rounded-[26px] border border-slate-800 bg-slate-950 px-3 py-3 lg:flex"
+      >
         <Link
           href="/"
           aria-label="Open Aquakart shop"

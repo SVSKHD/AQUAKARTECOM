@@ -19,7 +19,10 @@ const AquaUserGreet = ({ userName = "there" }) => {
   }, []);
 
   return (
-    <section className="mx-auto flex w-full max-w-5xl items-center justify-between gap-5 overflow-hidden rounded-[28px] border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-sky-50 p-5 sm:p-6">
+    <section
+      data-dashboard-greeting
+      className="mx-auto flex w-full max-w-5xl shrink-0 items-center justify-between gap-5 overflow-hidden rounded-[28px] border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-sky-50 p-5 sm:p-6"
+    >
       <div className="min-w-0">
         <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
           <Sparkles className="h-4 w-4" /> Your Aquakart
