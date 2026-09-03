@@ -48,6 +48,31 @@ const withTimeout = (promise, timeoutMs, message) =>
     );
   });
 
+export const friendlyGoogleAuthError = (error) => {
+  const message = error?.message || "";
+  const code = error?.code || "";
+
+  if (
+    code === "auth/web-storage-unsupported" ||
+    message.toLowerCase().includes("database is closing/hidden")
+  ) {
+    return "Safari blocked secure Google session storage. Please keep this tab open and try Continue with Google again.";
+  }
+
+  if (code === "auth/popup-closed-by-user") {
+    return "Google sign-in was closed before it finished. Please try again.";
+  }
+
+  if (code === "auth/popup-blocked") {
+    return "Please allow pop-ups for Aquakart and try Google sign-in again.";
+  }
+
+  return message || "Unable to continue with Google";
+};
+
+export const isFirebaseStorageClosingError = (error) =>
+  (error?.message || "").toLowerCase().includes("database is closing/hidden");
+
 const exchangeGoogleUser = async (user) => {
   const firebaseIdToken = await withTimeout(
     user.getIdToken(),
@@ -98,7 +123,7 @@ export const shouldUseRedirectFallback = (error) =>
     "auth/popup-blocked",
     "auth/operation-not-supported-in-this-environment",
     "auth/web-storage-unsupported",
-  ].includes(error?.code);
+  ].includes(error?.code) || isFirebaseStorageClosingError(error);
 
 export const loginWithGoogle = async () => {
   const firebaseAuth = getFirebaseAuth();
