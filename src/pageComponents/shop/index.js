@@ -492,7 +492,7 @@ const AquaShopPageComponent = ({
           <div className="relative mx-auto max-w-[1480px]">
             <section id="shop-products" className="scroll-mt-28">
               <div className="grid items-start gap-6 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[310px_minmax(0,1fr)]">
-                <aside className="hidden lg:block">
+                <aside className="hidden lg:block lg:self-stretch">
                   <div className="sticky top-[92px] max-h-[calc(100vh-108px)] overflow-y-auto rounded-[1.75rem] border border-slate-200 bg-white p-4">
                     <div className="mb-4 flex items-center justify-between border-b border-slate-200/70 pb-4">
                       <div>
