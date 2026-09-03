@@ -1,5 +1,10 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import {
+  browserSessionPersistence,
+  getAuth,
+  GoogleAuthProvider,
+  initializeAuth,
+} from "firebase/auth";
 
 const CONFIG_ENV_KEYS = {
   apiKey: "NEXT_PUBLIC_FIREBASE_API_KEY",
@@ -30,6 +35,8 @@ export const missingFirebaseConfigKeys = () =>
 export const isFirebaseConfigured = () =>
   missingFirebaseConfigKeys().length === 0;
 
+let firebaseAuthInstance;
+
 const getFirebaseApp = () => {
   const missing = missingFirebaseConfigKeys();
   if (missing.length) {
@@ -40,7 +47,20 @@ const getFirebaseApp = () => {
   return getApps().length ? getApp() : initializeApp(firebaseConfig);
 };
 
-export const getFirebaseAuth = () => getAuth(getFirebaseApp());
+export const getFirebaseAuth = () => {
+  const app = getFirebaseApp();
+  if (firebaseAuthInstance) return firebaseAuthInstance;
+
+  try {
+    firebaseAuthInstance = initializeAuth(app, {
+      persistence: browserSessionPersistence,
+    });
+  } catch {
+    firebaseAuthInstance = getAuth(app);
+  }
+
+  return firebaseAuthInstance;
+};
 export const getGoogleProvider = () => {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
