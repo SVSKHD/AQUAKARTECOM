@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import {
   completeGoogleRedirectLogin,
+  friendlyGoogleAuthError,
   loginWithGoogle,
   logoutBackendUser,
   logoutGoogleUser,
@@ -90,7 +91,7 @@ export const AuthProvider = ({ children }) => {
       })
       .catch((error) => {
         if (active) {
-          toast.error(error.message || "Unable to complete Google login");
+          toast.error(friendlyGoogleAuthError(error));
         }
       })
       .finally(() => {
@@ -114,7 +115,7 @@ export const AuthProvider = ({ children }) => {
       const result = await loginWithGoogle();
       return applyLoginResult(result, returnPath);
     } catch (error) {
-      toast.error(error.message || "Unable to continue with Google");
+      toast.error(friendlyGoogleAuthError(error));
       throw error;
     } finally {
       setLoading(false);
