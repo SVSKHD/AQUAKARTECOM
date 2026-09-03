@@ -1,6 +1,6 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
 import {
-  browserSessionPersistence,
+  browserLocalPersistence,
   getAuth,
   GoogleAuthProvider,
   initializeAuth,
@@ -53,7 +53,7 @@ export const getFirebaseAuth = () => {
 
   try {
     firebaseAuthInstance = initializeAuth(app, {
-      persistence: browserSessionPersistence,
+      persistence: browserLocalPersistence,
     });
   } catch {
     firebaseAuthInstance = getAuth(app);
