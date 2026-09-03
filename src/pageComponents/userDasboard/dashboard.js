@@ -83,7 +83,7 @@ const AquaUserDashbordPageComponent = () => {
   return (
     <AquaUserDashbordLayout>
       <div className="space-y-6 sm:space-y-8">
-        <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <section className="sticky top-0 z-10 grid grid-cols-2 gap-3 bg-white pb-4 xl:grid-cols-4">
           {highlightCards.map(
             ({ title, value, icon: Icon, iconTone, cardClass }) => (
               <div
