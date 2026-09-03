@@ -44,18 +44,20 @@ const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
   };
 
   return (
-    <div className="relative min-h-screen bg-slate-50">
+    <div className="relative min-h-screen bg-slate-50 lg:h-screen lg:overflow-hidden">
       <AquaCartAddressDialog />
-      <div className="mx-auto flex w-full max-w-[1320px] items-start gap-4 px-3 py-4 sm:px-5 lg:gap-5">
+      <div className="mx-auto flex min-h-screen w-full max-w-[1320px] items-start gap-4 px-3 py-4 sm:px-5 lg:h-full lg:min-h-0 lg:gap-5">
         <AquaUserDashboardHeader />
 
-        <main className="min-h-[calc(100vh-2rem)] min-w-0 flex-1 pb-24 lg:pb-0">
-          <AquaUserGreet
-            userName={getFirstLettersFromEmail(userData?.user?.email)}
-          />
+        <main className="flex min-h-screen min-w-0 flex-1 flex-col pb-24 lg:h-full lg:min-h-0 lg:overflow-hidden lg:pb-0">
+          <div className="sticky top-0 z-20 shrink-0 bg-slate-50 pb-4 lg:static">
+            <AquaUserGreet
+              userName={getFirstLettersFromEmail(userData?.user?.email)}
+            />
+          </div>
 
-          <section className="mx-auto mt-4 w-full max-w-5xl">
-            <div className="min-h-[calc(100vh-14rem)] w-full rounded-[28px] border border-slate-200 bg-white p-4 sm:p-6 lg:p-7">
+          <section className="mx-auto w-full max-w-5xl flex-1 lg:min-h-0 lg:overflow-hidden">
+            <div className="flex min-h-full w-full flex-col rounded-[28px] border border-slate-200 bg-white p-4 sm:p-6 lg:h-full lg:min-h-0 lg:p-7">
               <header className="mb-6 flex shrink-0 items-end justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <h1 className="text-xl font-black text-slate-950 sm:text-2xl">
@@ -70,7 +72,7 @@ const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
               </header>
               <div
                 key={router.pathname}
-                className="animate-[dashboard-tab-in_180ms_cubic-bezier(0.22,1,0.36,1)]"
+                className="flex-1 pr-1 animate-[dashboard-tab-in_180ms_cubic-bezier(0.22,1,0.36,1)] lg:min-h-0 lg:overflow-y-auto"
               >
                 {children}
               </div>
