@@ -20,7 +20,6 @@ export default function ServiceReminderConfirmation() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [notes, setNotes] = useState("");
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -42,7 +41,7 @@ export default function ServiceReminderConfirmation() {
       const response = await fetch(`${API_BASE}/service-reminders/confirm/${encodeURIComponent(token)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status, notes }),
+        body: JSON.stringify({ status }),
       });
       const body = await response.json();
       if (!response.ok) throw new Error(body.message || "Could not save your response.");
@@ -80,18 +79,15 @@ export default function ServiceReminderConfirmation() {
                 <div className="mt-1 text-sm text-slate-600">Due: {new Intl.DateTimeFormat("en-IN", { dateStyle: "long" }).format(new Date(reminder.dueDate))}</div>
               </div>
               {reminder.confirmationStatus !== "unconfirmed" && <div className="mt-5 rounded-xl bg-green-50 p-4 text-green-800">Your current response: <strong>{reminder.confirmationStatus.replaceAll("-", " ")}</strong>. You can update it below.</div>}
-              <label className="mt-6 block text-sm font-medium" htmlFor="notes">Message for Aquakart (optional)</label>
-              <textarea id="notes" value={notes} maxLength={1000} onChange={event => setNotes(event.target.value)} rows={3} className="mt-2 w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-blue-600" placeholder="Preferred call time or reminder details" />
               {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 <button disabled={saving} onClick={() => confirm("confirmed")} className="rounded-xl bg-blue-700 px-4 py-3 font-semibold text-white disabled:opacity-50">Confirm</button>
-                <button disabled={saving} onClick={() => confirm("service-required")} className="rounded-xl bg-amber-500 px-4 py-3 font-semibold text-white disabled:opacity-50">Need help</button>
                 <button disabled={saving} onClick={() => confirm("not-required")} className="rounded-xl border border-slate-300 px-4 py-3 font-semibold disabled:opacity-50">Not required</button>
               </div>
 
               <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50 p-5">
-                <p className="text-sm font-semibold text-blue-900">Need help with this reminder?</p>
-                <p className="mt-1 text-sm text-slate-600">Contact Aquakart customer care for assistance with your product or reminder.</p>
+                <p className="text-sm font-semibold text-blue-900">Aquakart customer care</p>
+                <p className="mt-1 text-sm text-slate-600">For assistance, contact our customer care team.</p>
                 <p className="mt-3 text-xl font-bold tracking-wide text-slate-900">{CUSTOMER_CARE_PHONE}</p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <button type="button" onClick={copyCustomerCareNumber} className="rounded-xl border border-blue-200 bg-white px-4 py-3 font-semibold text-blue-800 transition hover:bg-blue-100">
