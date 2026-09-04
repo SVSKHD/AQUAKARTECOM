@@ -406,11 +406,9 @@ body {
   }
 }
 
-/* ── Shop desktop: product-only scrolling ────────────────
-   The shop itself occupies the viewport below the fixed header. The page,
-   filter column and toolbar stay still; the right product column owns the
-   vertical scroll. This also means scrolling the mouse wheel anywhere over
-   the shop can be captured by the product area without moving the page.
+/* ── Shop desktop: fixed controls, product-only scrolling ────────────────
+   The shop is a viewport-height desktop workspace. Filters and the search/
+   sort toolbar remain fixed. Only the final product-results block scrolls.
 */
 @media (min-width: 1024px) {
   [data-aqua-preserve-surface] {
@@ -453,27 +451,31 @@ body {
     min-height: 0;
     height: 100%;
     flex-direction: column;
-    overflow: hidden;
+    overflow: hidden !important;
   }
 
+  /* Search / sort bar stays pinned and is never part of the scroll region. */
   [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > div.sticky {
     position: static !important;
     top: auto !important;
+    z-index: 30;
     flex: 0 0 auto;
   }
 
-  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > div.sticky ~ * {
+  /* Filter chips and collection heading remain visible above the products. */
+  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > div.sticky ~ *:not(:last-child) {
     flex: 0 0 auto;
   }
 
-  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > div:last-child,
-  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > div.mb-4:last-of-type {
+  /* Only ProductGrid / result state (the final child) owns vertical scrolling. */
+  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > :last-child {
+    flex: 1 1 auto;
     min-height: 0;
-  }
-
-  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 {
-    overflow-y: auto;
+    overflow-y: auto !important;
+    overflow-x: hidden;
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
+    padding-right: 0.25rem;
+    padding-bottom: 1rem;
   }
 }
