@@ -406,25 +406,74 @@ body {
   }
 }
 
-/* ── Shop desktop sticky filters ─────────────────────────
-   Keep the filter column pinned to the viewport while the product column
-   continues with normal page scrolling. Applying sticky to the grid item
-   itself avoids the previous nested-sticky/container-height limitation.
+/* ── Shop desktop: product-only scrolling ────────────────
+   The shop itself occupies the viewport below the fixed header. The page,
+   filter column and toolbar stay still; the right product column owns the
+   vertical scroll. This also means scrolling the mouse wheel anywhere over
+   the shop can be captured by the product area without moving the page.
 */
 @media (min-width: 1024px) {
+  [data-aqua-preserve-surface] {
+    height: calc(100vh - 96px);
+    min-height: 0 !important;
+    overflow: hidden !important;
+    padding-bottom: 0 !important;
+  }
+
+  [data-aqua-preserve-surface] > div.relative.mx-auto,
+  [data-aqua-preserve-surface] #shop-products,
+  [data-aqua-preserve-surface] #shop-products > div {
+    height: 100%;
+    min-height: 0;
+  }
+
+  [data-aqua-preserve-surface] #shop-products > div {
+    align-items: stretch !important;
+  }
+
   [data-aqua-preserve-surface] #shop-products > div > aside {
-    position: sticky !important;
-    top: 92px !important;
-    align-self: start !important;
-    max-height: calc(100vh - 108px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    position: static !important;
+    align-self: stretch !important;
+    height: 100%;
+    max-height: none !important;
+    overflow: hidden !important;
   }
 
   [data-aqua-preserve-surface] #shop-products > div > aside > div {
     position: static !important;
     top: auto !important;
+    height: 100%;
     max-height: none !important;
-    overflow: visible !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+
+  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 {
+    display: flex;
+    min-height: 0;
+    height: 100%;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > div.sticky {
+    position: static !important;
+    top: auto !important;
+    flex: 0 0 auto;
+  }
+
+  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > div.sticky ~ * {
+    flex: 0 0 auto;
+  }
+
+  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > div:last-child,
+  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > div.mb-4:last-of-type {
+    min-height: 0;
+  }
+
+  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
   }
 }
