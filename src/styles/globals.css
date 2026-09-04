@@ -405,3 +405,26 @@ body {
     -webkit-backdrop-filter: blur(16px) saturate(160%);
   }
 }
+
+/* ── Shop desktop sticky filters ─────────────────────────
+   Keep the filter column pinned to the viewport while the product column
+   continues with normal page scrolling. Applying sticky to the grid item
+   itself avoids the previous nested-sticky/container-height limitation.
+*/
+@media (min-width: 1024px) {
+  [data-aqua-preserve-surface] #shop-products > div > aside {
+    position: sticky !important;
+    top: 92px !important;
+    align-self: start !important;
+    max-height: calc(100vh - 108px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  [data-aqua-preserve-surface] #shop-products > div > aside > div {
+    position: static !important;
+    top: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
