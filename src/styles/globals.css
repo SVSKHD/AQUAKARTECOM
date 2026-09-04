@@ -406,11 +406,10 @@ body {
   }
 }
 
-/* ── Shop desktop: product-only scrolling ────────────────
-   The shop itself occupies the viewport below the fixed header. The page,
-   filter column and toolbar stay still; the right product column owns the
-   vertical scroll. This also means scrolling the mouse wheel anywhere over
-   the shop can be captured by the product area without moving the page.
+/* ── Shop desktop: fixed search, product-only scrolling ────────────────
+   Desktop Shop is a viewport-height workspace. The left filters and the
+   search/sort toolbar stay fixed. Only the final product-results block owns
+   vertical scrolling, so the search control never moves with the catalogue.
 */
 @media (min-width: 1024px) {
   [data-aqua-preserve-surface] {
@@ -453,27 +452,31 @@ body {
     min-height: 0;
     height: 100%;
     flex-direction: column;
-    overflow: hidden;
+    overflow: hidden !important;
   }
 
+  /* Search + sort + view controls stay outside the scroll region. */
   [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > div.sticky {
-    position: static !important;
+    position: relative !important;
     top: auto !important;
+    z-index: 40;
     flex: 0 0 auto;
   }
 
-  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > div.sticky ~ * {
+  /* Active chips and collection heading also remain stationary. */
+  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > div.sticky ~ *:not(:last-child) {
     flex: 0 0 auto;
   }
 
-  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > div:last-child,
-  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > div.mb-4:last-of-type {
+  /* Only the product grid / result state scrolls. */
+  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 > :last-child {
+    flex: 1 1 auto;
     min-height: 0;
-  }
-
-  [data-aqua-preserve-surface] #shop-products > div > div.min-w-0 {
-    overflow-y: auto;
+    overflow-y: auto !important;
+    overflow-x: hidden;
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
+    padding-right: 0.25rem;
+    padding-bottom: 1rem;
   }
 }
