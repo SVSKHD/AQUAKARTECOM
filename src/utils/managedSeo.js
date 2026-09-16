@@ -16,6 +16,21 @@ const STATIC_PAGE_KEYS = {
 export const getManagedSeoPageKey = (pathname = "") =>
   STATIC_PAGE_KEYS[pathname] || null;
 
+const normalizeEntityKeyPart = (value = "") =>
+  String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+
+export const getManagedSeoEntityKey = (type, value) => {
+  const normalizedType = normalizeEntityKeyPart(type);
+  const normalizedValue = normalizeEntityKeyPart(value);
+  if (!normalizedType || !normalizedValue) return null;
+  return `${normalizedType}.${normalizedValue}`;
+};
+
 export const normalizeManagedSeo = (record) => {
   if (!record || record.active === false) return null;
 
