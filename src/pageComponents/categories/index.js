@@ -3,7 +3,7 @@ import AquaLayout from "@/components/Layout/Layout";
 import CategoryServiceOperations from "@/services/category";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 const CategoriesSkeleton = () => (
   <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -20,7 +20,11 @@ const CategoriesSkeleton = () => (
   </div>
 );
 
-const AquaAllCategoriesComponent = () => {
+const AquaAllCategoriesComponent = ({
+  initialCategories = [],
+  initialError = "",
+  managedSeo = null,
+}) => {
   const router = useRouter();
   const seo = {
     title: "Aquakart | Shop by Categories - Water Softeners, Purifiers & More",
@@ -30,48 +34,34 @@ const AquaAllCategoriesComponent = () => {
       "Aquakart, Water Purifiers, Water Dispensers, Water Softeners, Water Storage Tanks, Water Pumps, Plumbing Accessories, Bath Fittings, Irrigation Solutions, Home Appliances, Water Filtration, Clean Drinking Water, Water Management, Water Treatment, Water Solutions, Safe Drinking Water",
     keyphrases:
       "Water purifier categories, Aquakart product collections, water solutions India, home water management",
-    canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
+    canonical: `${process.env.NEXT_PUBLIC_URL || "https://aquakart.co.in"}${router.asPath}`,
   };
-  const [categories, setCategories] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchCategories = async () => {
-      try {
-        setIsLoading(true);
-        setErrorMessage("");
-        const res = await CategoryServiceOperations.Allcategories();
-        if (!isMounted) return;
-        setCategories(res?.data?.data ?? []);
-      } catch (error) {
-        console.error("Failed to fetch categories", error);
-        if (isMounted) {
-          setErrorMessage(
-            "We couldn’t load the categories right now. Please retry in a moment.",
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchCategories();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
+  const [categories, setCategories] = useState(initialCategories);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(initialError);
   const categoryCount = useMemo(() => categories?.length ?? 0, [categories]);
+
+  const retryCategories = () => {
+    setIsLoading(true);
+    setErrorMessage("");
+    CategoryServiceOperations.Allcategories()
+      .then((res) => {
+        setCategories(res?.data?.data ?? []);
+      })
+      .catch((error) => {
+        console.error("Retry fetch categories error", error);
+        setErrorMessage(
+          "Still having trouble fetching categories. Please try again later.",
+        );
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
 
   return (
     <>
-      <AquaLayout seo={seo}>
+      <AquaLayout seo={seo} managedSeo={managedSeo}>
         <div className="bg-slate-50 py-12 sm:py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <header className="flex flex-col gap-4 border-b border-slate-200 pb-8 sm:flex-row sm:items-end sm:justify-between">
@@ -109,23 +99,7 @@ const AquaAllCategoriesComponent = () => {
                   {errorMessage}
                   <button
                     type="button"
-                    onClick={() => {
-                      setIsLoading(true);
-                      setErrorMessage("");
-                      CategoryServiceOperations.Allcategories()
-                        .then((res) => {
-                          setCategories(res?.data?.data ?? []);
-                        })
-                        .catch((error) => {
-                          console.error("Retry fetch categories error", error);
-                          setErrorMessage(
-                            "Still having trouble fetching categories. Please try again later.",
-                          );
-                        })
-                        .finally(() => {
-                          setIsLoading(false);
-                        });
-                    }}
+                    onClick={retryCategories}
                     className="ml-3 inline-flex items-center justify-center rounded-full border border-transparent bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-500"
                   >
                     Try again
