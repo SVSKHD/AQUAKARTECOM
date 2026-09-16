@@ -46,7 +46,15 @@ const AquaDynamicCategoryComponent = ({
   };
 
   useEffect(() => {
-    if (!id || initialCategory) return;
+    if (initialCategory) {
+      setCategory(initialCategory);
+      setRelated(initialRelated || []);
+      setErrorMessage("");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!id) return;
 
     setIsLoading(true);
     setErrorMessage("");
@@ -62,7 +70,7 @@ const AquaDynamicCategoryComponent = ({
         );
       })
       .finally(() => setIsLoading(false));
-  }, [id, initialCategory]);
+  }, [id, initialCategory, initialRelated]);
 
   return (
     <AquaLayout
