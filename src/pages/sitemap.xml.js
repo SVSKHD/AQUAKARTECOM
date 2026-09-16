@@ -1,6 +1,7 @@
 import CategoryServiceOperations from "@/services/category";
 import SubCategoryServiceOperations from "@/services/subcategory";
 import ProductServiceOperations from "@/services/products";
+import BlogServiceOperations from "@/services/blog";
 
 const BASE_URL = "https://aquakart.co.in";
 
@@ -45,12 +46,13 @@ export async function getServerSideProps({ res }) {
   const urls = [...staticPages];
 
   try {
-    // Fetch all dynamic content in parallel
-    const [categoriesRes, subCategoriesRes, productsRes] =
+    // Fetch all indexable dynamic content in parallel.
+    const [categoriesRes, subCategoriesRes, productsRes, blogsRes] =
       await Promise.allSettled([
         CategoryServiceOperations.Allcategories(),
         SubCategoryServiceOperations.AllSubcategories(),
         ProductServiceOperations.AllProducts(),
+        BlogServiceOperations.AllBlogs(),
       ]);
 
     const categories =
@@ -65,12 +67,14 @@ export async function getServerSideProps({ res }) {
       productsRes.status === "fulfilled"
         ? productsRes.value?.data?.data || []
         : [];
+    const blogs =
+      blogsRes.status === "fulfilled" ? blogsRes.value?.data?.data || [] : [];
 
-    // Add category pages
     categories.forEach((cat) => {
-      if (!cat?.title) return;
+      const identifier = cat?.slug || cat?.title;
+      if (!identifier) return;
       urls.push({
-        loc: `/category/${encodeURIComponent(cat.title)}`,
+        loc: `/category/${encodeURIComponent(identifier)}`,
         lastmod: cat.updatedAt
           ? new Date(cat.updatedAt).toISOString().split("T")[0]
           : undefined,
@@ -79,11 +83,11 @@ export async function getServerSideProps({ res }) {
       });
     });
 
-    // Add subcategory pages
     subcategories.forEach((sub) => {
-      if (!sub?.title) return;
+      const identifier = sub?.slug || sub?.title;
+      if (!identifier) return;
       urls.push({
-        loc: `/subcategory/${encodeURIComponent(sub.title)}`,
+        loc: `/subcategory/${encodeURIComponent(identifier)}`,
         lastmod: sub.updatedAt
           ? new Date(sub.updatedAt).toISOString().split("T")[0]
           : undefined,
@@ -92,7 +96,6 @@ export async function getServerSideProps({ res }) {
       });
     });
 
-    // Add product pages
     products.forEach((product) => {
       const slug = product?.slug || product?._id;
       if (!slug) return;
@@ -105,8 +108,23 @@ export async function getServerSideProps({ res }) {
         priority: "0.8",
       });
     });
+
+    blogs.forEach((blog) => {
+      const slug = blog?.slug || blog?._id;
+      if (!slug) return;
+      urls.push({
+        loc: `/blog/${encodeURIComponent(slug)}`,
+        lastmod: blog.updatedAt
+          ? new Date(blog.updatedAt).toISOString().split("T")[0]
+          : blog.createdAt
+            ? new Date(blog.createdAt).toISOString().split("T")[0]
+            : undefined,
+        changefreq: "monthly",
+        priority: "0.7",
+      });
+    });
   } catch (err) {
-    // If API fails, we still serve static URLs
+    // If an API fails, we still serve the static URLs and any fulfilled data above.
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
