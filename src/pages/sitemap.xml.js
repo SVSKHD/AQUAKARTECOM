@@ -46,7 +46,6 @@ export async function getServerSideProps({ res }) {
   const urls = [...staticPages];
 
   try {
-    // Fetch all indexable dynamic content in parallel.
     const [categoriesRes, subCategoriesRes, productsRes, blogsRes] =
       await Promise.allSettled([
         CategoryServiceOperations.Allcategories(),
@@ -71,10 +70,9 @@ export async function getServerSideProps({ res }) {
       blogsRes.status === "fulfilled" ? blogsRes.value?.data?.data || [] : [];
 
     categories.forEach((cat) => {
-      const identifier = cat?.slug || cat?.title;
-      if (!identifier) return;
+      if (!cat?.title) return;
       urls.push({
-        loc: `/category/${encodeURIComponent(identifier)}`,
+        loc: `/category/${encodeURIComponent(cat.title)}`,
         lastmod: cat.updatedAt
           ? new Date(cat.updatedAt).toISOString().split("T")[0]
           : undefined,
@@ -84,10 +82,9 @@ export async function getServerSideProps({ res }) {
     });
 
     subcategories.forEach((sub) => {
-      const identifier = sub?.slug || sub?.title;
-      if (!identifier) return;
+      if (!sub?.title) return;
       urls.push({
-        loc: `/subcategory/${encodeURIComponent(identifier)}`,
+        loc: `/subcategory/${encodeURIComponent(sub.title)}`,
         lastmod: sub.updatedAt
           ? new Date(sub.updatedAt).toISOString().split("T")[0]
           : undefined,
@@ -124,7 +121,7 @@ export async function getServerSideProps({ res }) {
       });
     });
   } catch (err) {
-    // If an API fails, we still serve the static URLs and any fulfilled data above.
+    // If an API fails, static URLs still remain available to crawlers.
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
