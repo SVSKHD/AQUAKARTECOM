@@ -8,14 +8,11 @@ import {
   ArrowLeftIcon,
   SparklesIcon,
   ShoppingBagIcon,
-  ShareIcon,
 } from "@heroicons/react/24/outline";
 import AquaImage from "@/components/images/AquaImage";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import { Autoplay } from "swiper/modules";
 import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 
 const LoadingState = () => (
   <div className="grid gap-8 lg:grid-cols-2 animate-pulse">
@@ -24,54 +21,61 @@ const LoadingState = () => (
   </div>
 );
 
-const AquaDynamicCategoryComponent = ({ id }) => {
-  const [category, setCategory] = useState({});
-  const [related, setRelated] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+const AquaDynamicCategoryComponent = ({
+  id,
+  initialCategory = null,
+  initialRelated = [],
+  managedSeo = null,
+}) => {
+  const [category, setCategory] = useState(initialCategory || {});
+  const [related, setRelated] = useState(initialRelated);
+  const [isLoading, setIsLoading] = useState(!initialCategory);
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://aquakart.co.in";
 
   const seo = {
     title: `Aquakart | ${category.title || "Category"}`,
     description: `Aquakart - ${category.description || "Explore premium quality products tailored for you."}`,
     image: category?.photos?.[0]?.secure_url || undefined,
-    url: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
+    url: `${baseUrl}${router.asPath}`,
     keywords: category.keywords,
-    canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
+    canonical: `${baseUrl}${router.asPath}`,
     photos: category?.photos?.[0]?.secure_url,
     follow: true,
   };
 
   useEffect(() => {
-    if (id) {
-      setIsLoading(true);
-      setErrorMessage("");
-      CategoryServiceOperations.CategoyByTitle(id)
-        .then((res) => {
-          setCategory(res.data.data);
-          setRelated(res.data.relatedProducts);
-          setIsLoading(false);
-        })
-        .catch((err) => {
-          console.error("Error fetching category:", err);
-          setErrorMessage(
-            "We couldn’t load this category right now. Please try again.",
-          );
-          setIsLoading(false);
-        });
-    }
-  }, [id]);
+    if (!id || initialCategory) return;
+
+    setIsLoading(true);
+    setErrorMessage("");
+    CategoryServiceOperations.CategoyByTitle(id)
+      .then((res) => {
+        setCategory(res.data.data);
+        setRelated(res.data.relatedProducts || []);
+      })
+      .catch((err) => {
+        console.error("Error fetching category:", err);
+        setErrorMessage(
+          "We couldn’t load this category right now. Please try again.",
+        );
+      })
+      .finally(() => setIsLoading(false));
+  }, [id, initialCategory]);
 
   return (
-    <AquaLayout categoryData={seo} productListData={related}>
-      {/* Global Background */}
+    <AquaLayout
+      categoryData={managedSeo || seo}
+      managedSeo={managedSeo}
+      productListData={related}
+    >
       <div className="fixed inset-0 bg-slate-50 z-[-1]">
         <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-emerald-300/20 blur-[100px]" />
         <div className="absolute bottom-[10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-300/20 blur-[100px]" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 pt-16 pb-24 sm:px-6 lg:px-8">
-        {/* Navigation Breadcrumb */}
         <div className="mb-8">
           <Link
             href="/categories"
@@ -91,9 +95,7 @@ const AquaDynamicCategoryComponent = ({ id }) => {
           </div>
         ) : (
           <div className="space-y-16">
-            {/* Hero / About Section */}
             <section className="grid gap-8 lg:grid-cols-2">
-              {/* Left: Text Content */}
               <div className="flex flex-col justify-center rounded-[2rem] border border-white/60 bg-white/60 p-8 shadow-xl backdrop-blur-xl lg:p-12">
                 <div className="mb-6 inline-flex self-start rounded-full bg-emerald-100/50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-700 border border-emerald-200/50">
                   <SparklesIcon className="mr-1.5 h-3.5 w-3.5 inline-block" />{" "}
@@ -111,14 +113,14 @@ const AquaDynamicCategoryComponent = ({ id }) => {
                     onClick={() =>
                       document
                         .getElementById("products-grid")
-                        .scrollIntoView({ behavior: "smooth" })
+                        ?.scrollIntoView({ behavior: "smooth" })
                     }
                     className="rounded-full bg-slate-900 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition-transform hover:scale-105 active:scale-95"
                   >
                     Browse Products
                   </button>
                   <Link
-                    href="/contact"
+                    href="/contact-us"
                     className="rounded-full border border-slate-300 bg-transparent px-6 py-3 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-100"
                   >
                     Contact Expert
@@ -126,15 +128,14 @@ const AquaDynamicCategoryComponent = ({ id }) => {
                 </div>
               </div>
 
-              {/* Right: Hero Image */}
               <div className="relative min-h-[300px] overflow-hidden rounded-[2rem] border border-white/40 shadow-2xl group">
                 {category?.photos?.[0]?.secure_url ? (
                   <AquaImage
                     src={category.photos[0].secure_url}
                     alt={category.title}
                     customClass="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    width={800} // Add explicit width
-                    height={600} // Add explicit height
+                    width={800}
+                    height={600}
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-slate-100">
@@ -147,7 +148,6 @@ const AquaDynamicCategoryComponent = ({ id }) => {
               </div>
             </section>
 
-            {/* Products Grid */}
             <section id="products-grid">
               <div className="flex items-center justify-between mb-8">
                 <div>
@@ -171,14 +171,8 @@ const AquaDynamicCategoryComponent = ({ id }) => {
                     pauseOnMouseEnter: true,
                   }}
                   breakpoints={{
-                    640: {
-                      slidesPerView: 2,
-                      spaceBetween: 24,
-                    },
-                    1024: {
-                      slidesPerView: 3,
-                      spaceBetween: 32,
-                    },
+                    640: { slidesPerView: 2, spaceBetween: 24 },
+                    1024: { slidesPerView: 3, spaceBetween: 32 },
                   }}
                   className="!pb-12"
                 >
