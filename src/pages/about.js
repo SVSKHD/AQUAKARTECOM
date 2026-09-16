@@ -1,4 +1,5 @@
 import AquaAboutComponent from "@/pageComponents/about";
+import { createManagedSeoStaticProps } from "@/services/seo";
 
 const AquaAbout = () => {
   return (
@@ -7,4 +8,7 @@ const AquaAbout = () => {
     </>
   );
 };
+
+export const getStaticProps = createManagedSeoStaticProps("about");
+
 export default AquaAbout;
