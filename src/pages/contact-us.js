@@ -1,4 +1,5 @@
 import AquaContactComponent from "@/pageComponents/contactus";
+import { createManagedSeoStaticProps } from "@/services/seo";
 
 const AquaContact = () => {
   return (
@@ -7,4 +8,7 @@ const AquaContact = () => {
     </>
   );
 };
+
+export const getStaticProps = createManagedSeoStaticProps("contact-us");
+
 export default AquaContact;
