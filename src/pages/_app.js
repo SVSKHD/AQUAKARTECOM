@@ -14,6 +14,7 @@ import Script from "next/script";
 import { Roboto_Mono, Montserrat } from "next/font/google";
 import AquaAppLoader from "@/components/common/AquaAppLoader";
 import { AuthProvider } from "@/context/AuthContext";
+import { ManagedSeoProvider } from "@/context/ManagedSeoContext";
 
 const robotoMono = Roboto_Mono({ subsets: ["latin"], display: "swap", variable: "--font-roboto-mono" });
 const montserrat = Montserrat({ subsets: ["latin"], display: "swap", variable: "--font-montserrat" });
@@ -112,41 +113,43 @@ export default function App({ Component, pageProps }) {
 
   return (
     <Provider store={store}>
-      <style jsx global>{`
-        :root {
-          --font-roboto-mono: ${robotoMono.style.fontFamily};
-          --font-montserrat: ${montserrat.style.fontFamily};
-        }
-      `}</style>
-      <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
-      <Script id="ga-init" strategy="afterInteractive">{`
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        window.gtag = gtag;
-        gtag('js', new Date());
-        gtag('config', '${GA_ID}');
-      `}</Script>
-      <AuthProvider>
-        <div className={`${robotoMono.variable} ${montserrat.variable}`}>
-          {!appReady ? <AquaAppLoader variant="screen" message="Welcome to Aquakart" subtext="Getting the page ready for you." /> : null}
-          {routeLoading ? <AquaAppLoader variant="route" message="Opening Aquakart" subtext="Preparing the next page smoothly." /> : null}
-          <main
-            key={router.pathname.startsWith("/dashboard") ? "dashboard-shell" : router.asPath}
-            className="aqua-page-shell aqua-page-enter"
-            data-route={router.pathname}
-            aria-busy={shouldShowLoader}
-            style={{
-              opacity: routeLoading ? 0 : 1,
-              pointerEvents: shouldShowLoader ? "none" : "auto",
-              transform: "none",
-              transition: routeLoading ? "none" : "opacity 420ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1)",
-            }}
-          >
-            <Component {...pageProps} />
-          </main>
-          <Toaster position="top-right" richColors closeButton />
-        </div>
-      </AuthProvider>
+      <ManagedSeoProvider value={pageProps?.managedSeo || null}>
+        <style jsx global>{`
+          :root {
+            --font-roboto-mono: ${robotoMono.style.fontFamily};
+            --font-montserrat: ${montserrat.style.fontFamily};
+          }
+        `}</style>
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+        <Script id="ga-init" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          window.gtag = gtag;
+          gtag('js', new Date());
+          gtag('config', '${GA_ID}');
+        `}</Script>
+        <AuthProvider>
+          <div className={`${robotoMono.variable} ${montserrat.variable}`}>
+            {!appReady ? <AquaAppLoader variant="screen" message="Welcome to Aquakart" subtext="Getting the page ready for you." /> : null}
+            {routeLoading ? <AquaAppLoader variant="route" message="Opening Aquakart" subtext="Preparing the next page smoothly." /> : null}
+            <main
+              key={router.pathname.startsWith("/dashboard") ? "dashboard-shell" : router.asPath}
+              className="aqua-page-shell aqua-page-enter"
+              data-route={router.pathname}
+              aria-busy={shouldShowLoader}
+              style={{
+                opacity: routeLoading ? 0 : 1,
+                pointerEvents: shouldShowLoader ? "none" : "auto",
+                transform: "none",
+                transition: routeLoading ? "none" : "opacity 420ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1)",
+              }}
+            >
+              <Component {...pageProps} />
+            </main>
+            <Toaster position="top-right" richColors closeButton />
+          </div>
+        </AuthProvider>
+      </ManagedSeoProvider>
     </Provider>
   );
 }
