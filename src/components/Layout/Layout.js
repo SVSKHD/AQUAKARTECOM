@@ -15,8 +15,8 @@ import CategoryServiceOperations from "@/services/category";
 import SubCategoryServiceOperations from "@/services/subcategory";
 import useManagedSeo from "@/hooks/useManagedSeo";
 import { getManagedSeoPageKey } from "@/utils/managedSeo";
+import { useManagedSeoContext } from "@/context/ManagedSeoContext";
 
-// Lazy client-only overlays (don’t hurt SSR/LCP)
 const AquaCartDrawer = dynamic(
   () => import("../common/commonDrawers/cartDrawer"),
   { ssr: false },
@@ -28,7 +28,6 @@ const AquafavDrawer = dynamic(
   },
 );
 
-// Mobile bottom nav: client-only
 const MobileBottomNav = dynamic(() => import("./MobileBottomNav"), {
   ssr: false,
 });
@@ -37,15 +36,14 @@ const AquaLayout = (props) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const allowPageSticky = Boolean(props.allowPageSticky);
+  const contextManagedSeo = useManagedSeoContext();
 
   const { categories, subcategories } = useSelector(
     (state) => state.dynamicData,
   );
 
-  // Mount heavy overlays only after user interaction (reduces LCP + main-thread work)
   const [mountOverlays, setMountOverlays] = useState(false);
 
-  // Build SEO info from route without extra setState rerenders
   const seo = useMemo(() => {
     const pathname = router.pathname || "";
     const formattedPath = (pathname.split("/")[1] || "").trim();
@@ -65,12 +63,12 @@ const AquaLayout = (props) => {
 
     return next;
   }, [router.pathname]);
+
   const managedSeo = useManagedSeo(
     getManagedSeoPageKey(router.pathname),
-    props.managedSeo,
+    props.managedSeo ?? contextManagedSeo,
   );
 
-  // Mount overlays on first interaction OR after a short delay
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -79,7 +77,6 @@ const AquaLayout = (props) => {
     window.addEventListener("pointerdown", enable, { once: true });
     window.addEventListener("keydown", enable, { once: true });
 
-    // Fallback: if user never interacts, still mount after a bit
     const t = window.setTimeout(enable, 2500);
 
     return () => {
@@ -89,14 +86,12 @@ const AquaLayout = (props) => {
     };
   }, []);
 
-  // Defer categories fetch until browser is idle (prevents competing with LCP)
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     let cancelled = false;
 
     const run = async () => {
-      // Don’t refetch if already present
       if (categories?.length && subcategories?.length) return;
 
       try {
@@ -126,7 +121,7 @@ const AquaLayout = (props) => {
           });
         }
       } catch (e) {
-        // optionally log
+        // The page remains usable with its SSR content if navigation data fails.
       }
     };
 
@@ -141,7 +136,6 @@ const AquaLayout = (props) => {
       if (hasRIC && ricId) window.cancelIdleCallback(ricId);
       window.clearTimeout(t);
     };
-    // Intentionally run once on mount to avoid re-fetch loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -210,13 +204,11 @@ const AquaLayout = (props) => {
         blogPage={props?.blogPageData}
       />
 
-      {/* Essential UI */}
       <AquaCartAddressDialog />
       <AquaUserDataDrawer />
       <AquaUserAuthDialog />
       <AquaHeader />
 
-      {/* Heavy overlays later */}
       {mountOverlays && (
         <>
           <AquaCartDrawer />
@@ -239,7 +231,6 @@ const AquaLayout = (props) => {
         <AquaFooter categories={categories} subcategories={subcategories} />
       </div>
 
-      {/* Mobile bottom navigation */}
       <MobileBottomNav />
     </>
   );
