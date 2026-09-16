@@ -9,7 +9,6 @@ import { createStore } from "redux";
 import rootReducer from "@/store";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import { PersistGate } from "redux-persist/integration/react";
 import { useRouter } from "next/router";
 import Script from "next/script";
 import { Roboto_Mono, Montserrat } from "next/font/google";
@@ -43,10 +42,6 @@ const waitForWindowLoad = () =>
 const routePathname = (url = "") => url.split("?")[0].split("#")[0];
 const isDashboardTabChange = (from, to) =>
   from.startsWith("/dashboard") && routePathname(to).startsWith("/dashboard");
-
-const PersistLoader = () => (
-  <AquaAppLoader variant="screen" message="Preparing Aquakart" subtext="Syncing your cart, profile and order experience." />
-);
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();
@@ -131,30 +126,27 @@ export default function App({ Component, pageProps }) {
         gtag('js', new Date());
         gtag('config', '${GA_ID}');
       `}</Script>
-      <PersistGate persistor={persistor} loading={<PersistLoader />}>
-        <AuthProvider>
-          <div className={`${robotoMono.variable} ${montserrat.variable}`}>
-            {!appReady ? <AquaAppLoader variant="screen" message="Welcome to Aquakart" subtext="Getting the page ready for you." /> : null}
-            {routeLoading ? <AquaAppLoader variant="route" message="Opening Aquakart" subtext="Preparing the next page smoothly." /> : null}
-            <main
-              key={router.pathname.startsWith("/dashboard") ? "dashboard-shell" : router.asPath}
-              className="aqua-page-shell aqua-page-enter"
-              data-route={router.pathname}
-              aria-hidden={shouldShowLoader}
-              style={{
-                opacity: shouldShowLoader ? 0 : 1,
-                visibility: shouldShowLoader ? "hidden" : "visible",
-                pointerEvents: shouldShowLoader ? "none" : "auto",
-                transform: "none",
-                transition: shouldShowLoader ? "none" : "opacity 420ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1)",
-              }}
-            >
-              <Component {...pageProps} />
-            </main>
-            <Toaster position="top-right" richColors closeButton />
-          </div>
-        </AuthProvider>
-      </PersistGate>
+      <AuthProvider>
+        <div className={`${robotoMono.variable} ${montserrat.variable}`}>
+          {!appReady ? <AquaAppLoader variant="screen" message="Welcome to Aquakart" subtext="Getting the page ready for you." /> : null}
+          {routeLoading ? <AquaAppLoader variant="route" message="Opening Aquakart" subtext="Preparing the next page smoothly." /> : null}
+          <main
+            key={router.pathname.startsWith("/dashboard") ? "dashboard-shell" : router.asPath}
+            className="aqua-page-shell aqua-page-enter"
+            data-route={router.pathname}
+            aria-busy={shouldShowLoader}
+            style={{
+              opacity: routeLoading ? 0 : 1,
+              pointerEvents: shouldShowLoader ? "none" : "auto",
+              transform: "none",
+              transition: routeLoading ? "none" : "opacity 420ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1)",
+            }}
+          >
+            <Component {...pageProps} />
+          </main>
+          <Toaster position="top-right" richColors closeButton />
+        </div>
+      </AuthProvider>
     </Provider>
   );
 }
