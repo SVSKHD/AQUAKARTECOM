@@ -21,3 +21,11 @@ export const getManagedSeoServerSide = async (pageKey) => {
     return null;
   }
 };
+
+export const createManagedSeoStaticProps = (pageKey, revalidate = 300) =>
+  async () => ({
+    props: {
+      managedSeo: await getManagedSeoServerSide(pageKey),
+    },
+    revalidate,
+  });
