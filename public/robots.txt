@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Private / authenticated pages
-Disallow: /dashboard/
+Disallow: /dashboard
 Disallow: /checkout
 Disallow: /order/
 Disallow: /admin/
@@ -10,11 +10,7 @@ Disallow: /admin/
 # API routes
 Disallow: /api/
 
-# Next.js internals
-Disallow: /_next/
+# Next.js framework assets under /_next/ must remain crawlable so
+# search engines can render the public storefront correctly.
 
-# Crawl-delay (optional, respected by some bots)
-Crawl-delay: 1
-
-# Dynamic sitemap (auto-generated with all products, categories, blogs)
 Sitemap: https://aquakart.co.in/sitemap.xml

@@ -1,6 +1,11 @@
 import AquaProductRevamp from "@/pageComponents/products/AquaProductRevamp";
 import AquaProductSeo from "@/components/Layout/seo/productSeo";
 import ProductServiceOperations from "@/services/products";
+import { getManagedSeoServerSide } from "@/services/seo";
+import {
+  getManagedSeoEntityKey,
+  mergeManagedSeo,
+} from "@/utils/managedSeo";
 
 const FALLBACK_IMAGE =
   "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png";
@@ -36,7 +41,7 @@ const parseStockValue = (stock) => {
   return 0;
 };
 
-function AquaDynamicProduct({ product, related, error }) {
+function AquaDynamicProduct({ product, related, error, managedSeo }) {
   if (error) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 p-6 text-center">
@@ -70,11 +75,12 @@ function AquaDynamicProduct({ product, related, error }) {
     ? product.keywords.join(", ")
     : product?.keywords || "aquakart products, online water purifiers";
   const productUrl = `https://aquakart.co.in/product/${product?.slug || product?._id}`;
-  const seoPayload = {
+  const fallbackSeo = {
     title: product?.metaTitle || product?.title,
     keywords: productKeywords,
     keyphrases: "aquakart, product, ecommerce, online shopping",
     url: productUrl,
+    canonical: productUrl,
     photos:
       Array.isArray(product?.photos) && product.photos.length > 0
         ? product.photos
@@ -94,6 +100,11 @@ function AquaDynamicProduct({ product, related, error }) {
     rating: product?.rating,
   };
 
+  const seoPayload = mergeManagedSeo(fallbackSeo, managedSeo);
+  seoPayload.photos = managedSeo?.photos
+    ? [managedSeo.photos]
+    : fallbackSeo.photos;
+
   return (
     <>
       <AquaProductSeo product={seoPayload} />
@@ -107,12 +118,17 @@ function AquaDynamicProduct({ product, related, error }) {
   );
 }
 
-export const getServerSideProps = async ({ params }) => {
+export const getServerSideProps = async ({ params, res }) => {
   const { id } = params || {};
 
   if (!id) {
     return { notFound: true };
   }
+
+  res.setHeader(
+    "Cache-Control",
+    "public, s-maxage=300, stale-while-revalidate=900",
+  );
 
   try {
     const response = await ProductServiceOperations.ProductsByQuery(id);
@@ -123,10 +139,19 @@ export const getServerSideProps = async ({ params }) => {
       return { notFound: true };
     }
 
+    const pageKey = getManagedSeoEntityKey(
+      "product",
+      product?.slug || product?.title || id,
+    );
+    const managedSeo = pageKey
+      ? await getManagedSeoServerSide(pageKey)
+      : null;
+
     return {
       props: {
         product,
         related,
+        managedSeo,
         error: "",
       },
     };
@@ -140,10 +165,13 @@ export const getServerSideProps = async ({ params }) => {
       return { notFound: true };
     }
 
+    res.statusCode = 503;
+    res.setHeader("Retry-After", "60");
     return {
       props: {
         product: null,
         related: [],
+        managedSeo: null,
         error: "Failed to fetch product data. Please try again later.",
       },
     };

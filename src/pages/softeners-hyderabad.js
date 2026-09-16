@@ -1,6 +1,7 @@
 import AquaSoftenerHyderabadComponent from "@/pageComponents/softenersHyderabad";
 import AquaSoftnerOperations from "@/services/softenersHyderabad";
 import ProductServiceOperations from "@/services/products";
+import { getManagedSeoServerSide } from "@/services/seo";
 
 const AquaSoftenersHyderabad = ({
   initialSections,
@@ -14,11 +15,17 @@ const AquaSoftenersHyderabad = ({
   />
 );
 
-export const getServerSideProps = async () => {
+export const getServerSideProps = async ({ res }) => {
+  res.setHeader(
+    "Cache-Control",
+    "public, s-maxage=300, stale-while-revalidate=900",
+  );
+
   try {
-    const [softenersResponse, productsResponse] = await Promise.all([
+    const [softenersResponse, productsResponse, managedSeo] = await Promise.all([
       AquaSoftnerOperations.getSofteners(),
       ProductServiceOperations.AllProducts(),
+      getManagedSeoServerSide("softeners-hyderabad"),
     ]);
 
     const sections = Array.isArray(softenersResponse?.data)
@@ -33,6 +40,7 @@ export const getServerSideProps = async () => {
         initialSections: sections,
         initialProducts: products,
         initialError: "",
+        managedSeo,
       },
     };
   } catch (error) {
@@ -47,6 +55,7 @@ export const getServerSideProps = async () => {
         initialProducts: [],
         initialError:
           "We couldn’t load the content right now. Please try again in a moment.",
+        managedSeo: await getManagedSeoServerSide("softeners-hyderabad"),
       },
     };
   }

@@ -16,6 +16,42 @@ const STATIC_PAGE_KEYS = {
 export const getManagedSeoPageKey = (pathname = "") =>
   STATIC_PAGE_KEYS[pathname] || null;
 
+const normalizeEntityKeyPart = (value = "") =>
+  String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+
+export const getManagedSeoEntityKey = (type, value) => {
+  const normalizedType = normalizeEntityKeyPart(type);
+  const normalizedValue = normalizeEntityKeyPart(value);
+  if (!normalizedType || !normalizedValue) return null;
+  return `${normalizedType}.${normalizedValue}`;
+};
+
+export const mergeManagedSeo = (fallback = {}, managed = null) => {
+  if (!managed) return fallback;
+
+  const definedManaged = Object.fromEntries(
+    Object.entries(managed).filter(
+      ([, value]) => value !== undefined && value !== null && value !== "",
+    ),
+  );
+
+  const merged = { ...fallback, ...definedManaged };
+  const managedUrl = definedManaged.url || definedManaged.canonical;
+  const fallbackUrl = fallback.url || fallback.canonical;
+
+  if (managedUrl || fallbackUrl) {
+    merged.url = managedUrl || fallbackUrl;
+    merged.canonical = managedUrl || fallback.canonical || fallback.url;
+  }
+
+  return merged;
+};
+
 export const normalizeManagedSeo = (record) => {
   if (!record || record.active === false) return null;
 
