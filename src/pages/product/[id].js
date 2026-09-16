@@ -2,7 +2,10 @@ import AquaProductRevamp from "@/pageComponents/products/AquaProductRevamp";
 import AquaProductSeo from "@/components/Layout/seo/productSeo";
 import ProductServiceOperations from "@/services/products";
 import { getManagedSeoServerSide } from "@/services/seo";
-import { getManagedSeoEntityKey } from "@/utils/managedSeo";
+import {
+  getManagedSeoEntityKey,
+  mergeManagedSeo,
+} from "@/utils/managedSeo";
 
 const FALLBACK_IMAGE =
   "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png";
@@ -77,6 +80,7 @@ function AquaDynamicProduct({ product, related, error, managedSeo }) {
     keywords: productKeywords,
     keyphrases: "aquakart, product, ecommerce, online shopping",
     url: productUrl,
+    canonical: productUrl,
     photos:
       Array.isArray(product?.photos) && product.photos.length > 0
         ? product.photos
@@ -96,22 +100,10 @@ function AquaDynamicProduct({ product, related, error, managedSeo }) {
     rating: product?.rating,
   };
 
-  const seoPayload = managedSeo
-    ? {
-        ...fallbackSeo,
-        ...managedSeo,
-        url: managedSeo.url || productUrl,
-        photos: managedSeo.photos
-          ? [managedSeo.photos]
-          : fallbackSeo.photos,
-        price: fallbackSeo.price,
-        priceCurrency: fallbackSeo.priceCurrency,
-        brand: fallbackSeo.brand,
-        sku: fallbackSeo.sku,
-        stock: fallbackSeo.stock,
-        rating: fallbackSeo.rating,
-      }
-    : fallbackSeo;
+  const seoPayload = mergeManagedSeo(fallbackSeo, managedSeo);
+  seoPayload.photos = managedSeo?.photos
+    ? [managedSeo.photos]
+    : fallbackSeo.photos;
 
   return (
     <>
@@ -173,6 +165,8 @@ export const getServerSideProps = async ({ params, res }) => {
       return { notFound: true };
     }
 
+    res.statusCode = 503;
+    res.setHeader("Retry-After", "60");
     return {
       props: {
         product: null,
