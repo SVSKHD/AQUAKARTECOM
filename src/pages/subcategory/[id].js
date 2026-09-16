@@ -1,7 +1,12 @@
 import AquaDynamicSubCategoryComponent from "@/pageComponents/subcategories/dynamicSubCategory";
 import SubCategoryServiceOperations from "@/services/subcategory";
 import { getManagedSeoServerSide } from "@/services/seo";
-import { getManagedSeoEntityKey } from "@/utils/managedSeo";
+import {
+  getManagedSeoEntityKey,
+  mergeManagedSeo,
+} from "@/utils/managedSeo";
+
+const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://aquakart.co.in";
 
 const DynamicAquaSubCategory = ({ id, subcategory, related, managedSeo }) => (
   <AquaDynamicSubCategoryComponent
@@ -26,13 +31,27 @@ export async function getServerSideProps({ params, res }) {
     const subcategory = response?.data?.data || null;
     if (!subcategory) return { notFound: true };
 
+    const entityUrl = `${SITE_URL}/subcategory/${encodeURIComponent(id)}`;
+    const fallbackSeo = {
+      title: `Aquakart | ${subcategory.title || id}`,
+      description: `Aquakart - ${
+        subcategory.description || "Browse our specialized water collection."
+      }`,
+      keywords: subcategory.keywords || "",
+      url: entityUrl,
+      canonical: entityUrl,
+      photos: subcategory?.photos?.[0]?.secure_url || "",
+      follow: true,
+    };
+
     const pageKey = getManagedSeoEntityKey(
       "subcategory",
       subcategory.title || id,
     );
-    const managedSeo = pageKey
+    const managedRecord = pageKey
       ? await getManagedSeoServerSide(pageKey)
       : null;
+    const managedSeo = mergeManagedSeo(fallbackSeo, managedRecord);
 
     return {
       props: {
@@ -48,7 +67,17 @@ export async function getServerSideProps({ params, res }) {
       error?.message || error,
     );
     if (error?.response?.status === 404) return { notFound: true };
-    return { notFound: true };
+
+    res.statusCode = 503;
+    res.setHeader("Retry-After", "60");
+    return {
+      props: {
+        id,
+        subcategory: null,
+        related: [],
+        managedSeo: null,
+      },
+    };
   }
 }
 
