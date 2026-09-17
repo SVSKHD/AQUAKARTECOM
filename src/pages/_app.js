@@ -15,6 +15,7 @@ import { Roboto_Mono, Montserrat } from "next/font/google";
 import AquaAppLoader from "@/components/common/AquaAppLoader";
 import { AuthProvider } from "@/context/AuthContext";
 import { ManagedSeoProvider } from "@/context/ManagedSeoContext";
+import { startAnalyticsVisit } from "@/services/analyticsTracker";
 
 const robotoMono = Roboto_Mono({ subsets: ["latin"], display: "swap", variable: "--font-roboto-mono" });
 const montserrat = Montserrat({ subsets: ["latin"], display: "swap", variable: "--font-montserrat" });
@@ -52,6 +53,22 @@ export default function App({ Component, pageProps }) {
   const loaderStartedAtRef = useRef(0);
   const routeHideTimerRef = useRef(null);
   const skipRouteLoaderRef = useRef(false);
+  const analyticsStopRef = useRef(null);
+
+  useEffect(() => {
+    const beginVisit = (url) => {
+      analyticsStopRef.current?.();
+      analyticsStopRef.current = startAnalyticsVisit(url);
+    };
+
+    beginVisit(router.asPath);
+    router.events.on("routeChangeComplete", beginVisit);
+    return () => {
+      router.events.off("routeChangeComplete", beginVisit);
+      analyticsStopRef.current?.();
+      analyticsStopRef.current = null;
+    };
+  }, [router.events]);
 
   useEffect(() => {
     const handleRouteChange = (url) => window.gtag?.("config", GA_ID, { page_path: url });
