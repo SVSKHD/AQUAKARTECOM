@@ -12,6 +12,12 @@ const AquaCompareComponent = () => {
 
   const tabs = [
     {
+      name: "Compare",
+      href: "#",
+      current: activeTab === "Compare",
+      icon: GitCompare,
+    },
+    {
       name: "Favourites",
       href: "#",
       current: activeTab === "Favourites",
@@ -22,12 +28,6 @@ const AquaCompareComponent = () => {
       href: "#",
       current: activeTab === "Cart",
       icon: ShoppingCart,
-    },
-    {
-      name: "Compare",
-      href: "#",
-      current: activeTab === "Compare",
-      icon: GitCompare,
     },
   ];
 
@@ -67,9 +67,9 @@ const AquaCompareComponent = () => {
           <div className="absolute bottom-[-10%] left-[20%] w-[60vw] h-[60vw] bg-emerald-100/40 rounded-full mix-blend-multiply filter blur-[120px] animate-pulse delay-2000" />
         </div>
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col items-center justify-center space-y-8">
-            <div className="text-center space-y-4">
+        <div className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          <div className="flex flex-col items-center justify-center gap-5">
+            <div className="space-y-2 text-center">
               <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl drop-shadow-sm">
                 Hub
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
@@ -141,7 +141,7 @@ const AquaCompareComponent = () => {
             </div>
           </div>
 
-          <div className="mt-12 transition-all duration-500">
+          <div className="mt-6 transition-all duration-500 sm:mt-8">
             {renderContent()}
           </div>
         </div>
