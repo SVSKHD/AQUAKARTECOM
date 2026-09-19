@@ -42,6 +42,7 @@ const AquaProductSeo = ({ product }) => {
     image: primaryImage ? [primaryImage] : undefined,
     description,
     sku,
+    gtin8: gtin && /^\d{8}$/.test(String(gtin)) ? String(gtin) : undefined,
     gtin13: gtin && /^\d{13}$/.test(String(gtin)) ? String(gtin) : undefined,
     gtin12: gtin && /^\d{12}$/.test(String(gtin)) ? String(gtin) : undefined,
     gtin14: gtin && /^\d{14}$/.test(String(gtin)) ? String(gtin) : undefined,
