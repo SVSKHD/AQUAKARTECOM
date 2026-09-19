@@ -27,11 +27,12 @@ ENV NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}
 ENV NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}
 ENV NEXT_PUBLIC_FIREBASE_APP_ID=${NEXT_PUBLIC_FIREBASE_APP_ID}
 
-COPY package*.json npm-shrinkwrap.json* ./
+COPY package*.json ./
 
 RUN npm install -g pm2
 
-RUN npm install
+# Avoid npm Arborist peer-dependency tree crashes seen in Jenkins
+RUN npm install --legacy-peer-deps --no-audit --no-fund
 
 COPY . .
 
