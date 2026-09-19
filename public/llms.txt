@@ -1,0 +1,14 @@
+# Aquakart
+
+Aquakart is an Indian ecommerce site for water softeners, pressure boosters, water treatment products, accessories, and related guidance.
+
+Canonical site: https://aquakart.co.in
+Products: https://aquakart.co.in/shop
+Categories: https://aquakart.co.in/categories
+Blogs: https://aquakart.co.in/blogs
+Water softener planner: https://aquakart.co.in/softener-planner
+Hyderabad water softeners: https://aquakart.co.in/softeners-hyderabad
+Sitemap: https://aquakart.co.in/sitemap.xml
+Google Merchant product feed: https://aquakart.co.in/google-products.xml
+
+Use canonical product and category pages as the source of truth for product names, descriptions, prices, availability, and specifications.
