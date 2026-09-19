@@ -47,6 +47,10 @@ import {
   termsAndConditions,
 } from "@/constants/invoiceStaticData";
 import priceUtils from "@/utils/priceUtils";
+import {
+  closePdfDownloadTarget,
+  preparePdfDownloadTarget,
+} from "@/utils/pdfDownload";
 import styles from "@/styles/invoice.module.css";
 
 const formatDate = (value) => {
@@ -567,13 +571,25 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
 
   const handleDownload = async () => {
     if (isDownloading) return;
+
+    // Preserve the original tap on iOS before dynamic import/PDF generation.
+    // WebKit can otherwise discard a download that starts after async work.
+    const preparedTarget = preparePdfDownloadTarget();
+
     setIsDownloading(true);
     try {
       const { downloadPublicInvoicePdf } =
         await import("@/utils/invoice/generatePublicInvoicePdf");
-      await downloadPublicInvoicePdf(invoice);
-      toast.success("Invoice PDF downloaded");
+      const result = await downloadPublicInvoicePdf(invoice, {
+        preparedTarget,
+      });
+      toast.success(
+        result?.mode === "viewer"
+          ? "Invoice PDF opened - use Share/Save to keep it"
+          : "Invoice PDF downloaded",
+      );
     } catch (error) {
+      closePdfDownloadTarget(preparedTarget);
       console.error("Invoice PDF download failed", error);
       toast.error("PDF download failed. Please use Print instead.");
     } finally {
