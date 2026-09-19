@@ -1,16 +1,34 @@
 User-agent: *
 Allow: /
 
+# Major search crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# AI/search discovery crawlers
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
 # Private / authenticated pages
 Disallow: /dashboard
 Disallow: /checkout
 Disallow: /order/
 Disallow: /admin/
-
-# API routes
 Disallow: /api/
-
-# Next.js framework assets under /_next/ must remain crawlable so
-# search engines can render the public storefront correctly.
+Disallow: /invoice/
+Disallow: /invoices/
+Disallow: /find-invoice
 
 Sitemap: https://aquakart.co.in/sitemap.xml
