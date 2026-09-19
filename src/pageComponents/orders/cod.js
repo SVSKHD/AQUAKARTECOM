@@ -45,7 +45,7 @@ const AquaCodOrderPageComponent = () => {
     try {
       const response = await orderServiceOperations.getOrdersByTransactionId(
         id,
-        userData.token,
+        userData?.token,
       );
       setOrder(response.data);
       dispatch({ type: "EMPTY_CART" });
@@ -60,13 +60,13 @@ const AquaCodOrderPageComponent = () => {
   };
 
   useEffect(() => {
-    if (!router.isReady || !userData.token) return;
+    if (!router.isReady || !userData?.token) return;
     const { id } = router.query;
     if (id) {
       setLoading(true);
       fetchCodOrder(id);
     }
-  }, [router.isReady, router.query.id, userData.token]);
+  }, [router.isReady, router.query.id, userData?.token]);
 
   useEffect(() => {
     loadJsPDF().then((ready) => {
