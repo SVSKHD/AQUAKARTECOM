@@ -1,3 +1,9 @@
+import {
+  closePdfDownloadTarget,
+  preparePdfDownloadTarget,
+  savePdfDocument,
+} from "@/utils/pdfDownload";
+
 const AQUAKART_LOGO_URL =
   "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png";
 const GST_RATE = 0.18;
@@ -114,6 +120,10 @@ export const generateInvoicePDF = async (order) => {
   const jsPDFConstructor = window.jspdf?.jsPDF;
   if (!jsPDFConstructor) throw new Error("Invoice generator not loaded yet");
 
+  // Capture the iOS user gesture before logo loading or other async work.
+  const preparedTarget = preparePdfDownloadTarget();
+
+  try {
   const doc = new jsPDFConstructor({ unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
@@ -490,9 +500,15 @@ export const generateInvoicePDF = async (order) => {
   doc.setTextColor(...BRAND);
   doc.text("Thank you for your order!", W - M, H - 42, { align: "right" });
 
-  doc.save(
+  return savePdfDocument(
+    doc,
     `Aquakart-Invoice-${order?.orderId || order?.transactionId || "order"}.pdf`,
+    preparedTarget,
   );
+  } catch (error) {
+    closePdfDownloadTarget(preparedTarget);
+    throw error;
+  }
 };
 
 /**

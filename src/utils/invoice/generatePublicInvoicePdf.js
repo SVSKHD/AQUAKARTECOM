@@ -4,6 +4,7 @@ import {
   termsAndConditions,
 } from "@/constants/invoiceStaticData";
 import priceUtils from "@/utils/priceUtils";
+import { savePdfDocument } from "@/utils/pdfDownload";
 import logo from "@/assests/logo.png";
 
 const BRAND = [4, 120, 87];
@@ -856,7 +857,7 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
 };
 
 /** Download the server-normalized public invoice as a searchable A4 PDF. */
-export const downloadPublicInvoicePdf = async (invoice) => {
+export const downloadPublicInvoicePdf = async (invoice, options = {}) => {
   const { jsPDF: JsPdf } = await import("jspdf");
 
   const logoSource = typeof logo === "string" ? logo : logo?.src;
@@ -865,7 +866,9 @@ export const downloadPublicInvoicePdf = async (invoice) => {
     ...invoice,
     _pdfLogoDataUrl: logoDataUrl,
   });
-  doc.save(
+  return savePdfDocument(
+    doc,
     `Aquakart-Invoice-${safeFilePart(getPublicInvoiceReference(invoice))}.pdf`,
+    options.preparedTarget,
   );
 };
