@@ -28,8 +28,10 @@ const normalizePdfFileName = (fileName) => {
 export const preparePdfDownloadTarget = () => {
   if (typeof window === "undefined" || !isIosBrowser()) return null;
 
+  let target = null;
+
   try {
-    const target = window.open("", "_blank");
+    target = window.open("", "_blank");
     if (!target) return null;
 
     target.document.title = "Preparing Aquakart invoice";
@@ -38,6 +40,7 @@ export const preparePdfDownloadTarget = () => {
 
     return target;
   } catch {
+    closePdfDownloadTarget(target);
     return null;
   }
 };
