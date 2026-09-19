@@ -92,7 +92,15 @@ function AquaDynamicProduct({ product, related, error, managedSeo }) {
       : product?.price,
     priceCurrency: product?.currency || "INR",
     brand: product?.brand,
-    sku: product?.sku,
+    sku: product?.sku || product?.code || product?._id,
+    gtin: product?.gtin,
+    mpn: product?.mpn,
+    itemCondition:
+      product?.condition === "used"
+        ? "https://schema.org/UsedCondition"
+        : product?.condition === "refurbished"
+          ? "https://schema.org/RefurbishedCondition"
+          : "https://schema.org/NewCondition",
     stock:
       stockCount > 0
         ? "https://schema.org/InStock"

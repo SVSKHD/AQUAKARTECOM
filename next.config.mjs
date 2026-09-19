@@ -12,7 +12,6 @@ const nextConfig = {
       {
         source: "/:path*",
         headers: [
-          { key: "X-Robots-Tag", value: "index, follow, noai, noimageai" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "X-XSS-Protection", value: "1; mode=block" },
@@ -127,6 +126,10 @@ const nextConfig = {
       {
         source: "/invoice-gateway/:path*",
         destination: "/api/invoice-access/:path*",
+      },
+      {
+        source: "/google-products.xml",
+        destination: "https://api.aquakart.co.in/v1/merchant/google-products.xml",
       },
       {
         source: "/api/:path*",

@@ -1,16 +1,59 @@
 User-agent: *
 Allow: /
-
-# Private / authenticated pages
 Disallow: /dashboard
 Disallow: /checkout
 Disallow: /order/
 Disallow: /admin/
-
-# API routes
 Disallow: /api/
+Disallow: /invoice/
+Disallow: /invoices/
+Disallow: /find-invoice
 
-# Next.js framework assets under /_next/ must remain crawlable so
-# search engines can render the public storefront correctly.
+# ChatGPT Search crawler: public catalog allowed, private routes blocked.
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /dashboard
+Disallow: /checkout
+Disallow: /order/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /invoice/
+Disallow: /invoices/
+Disallow: /find-invoice
+
+# User-initiated ChatGPT fetches.
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /dashboard
+Disallow: /checkout
+Disallow: /order/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /invoice/
+Disallow: /invoices/
+Disallow: /find-invoice
+
+# Other AI answer/search crawlers.
+User-agent: PerplexityBot
+Allow: /
+Disallow: /dashboard
+Disallow: /checkout
+Disallow: /order/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /invoice/
+Disallow: /invoices/
+Disallow: /find-invoice
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /dashboard
+Disallow: /checkout
+Disallow: /order/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /invoice/
+Disallow: /invoices/
+Disallow: /find-invoice
 
 Sitemap: https://aquakart.co.in/sitemap.xml
