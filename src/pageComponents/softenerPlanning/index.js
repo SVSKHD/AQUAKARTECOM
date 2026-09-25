@@ -4,17 +4,17 @@ import {
   FaArrowLeft,
   FaArrowRight,
   FaCheck,
-  FaGoogle,
   FaHome,
-  FaLock,
   FaMapMarkerAlt,
   FaTint,
   FaUsers,
   FaWater,
+  FaWhatsapp,
 } from "react-icons/fa";
 import AquaLayout from "@/components/Layout/Layout";
 import AquaAppLoader from "@/components/common/AquaAppLoader";
 import ReusableProductCard from "@/components/cards/ProductCardTwo";
+import AquaEnquireForm from "@/components/common/commonDialogs/enquireForm";
 import { useAuth } from "@/context/AuthContext";
 import ProductServiceOperations from "@/services/products";
 import AquaSoftnerOperations from "@/services/softenersHyderabad";
@@ -147,65 +147,6 @@ const Choice = ({ option, selected, onSelect }) => (
   </button>
 );
 
-const LoginGate = ({ loading, onLogin }) => (
-  <section className="mx-auto grid min-h-[calc(100vh-92px)] max-w-6xl place-items-center px-4 py-10">
-    <div className="grid w-full overflow-hidden rounded-[2rem] border border-white/80 bg-white/88 shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur-xl lg:grid-cols-[1.05fr_0.95fr]">
-      <div className="relative overflow-hidden bg-slate-950 p-8 text-white sm:p-12">
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-400/20 blur-3xl" />
-        <div className="relative">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em]">
-            <FaWater /> Softener Planner
-          </span>
-          <h1 className="mt-6 max-w-xl text-4xl font-black tracking-[-0.06em] sm:text-6xl">
-            The right softener in three answers.
-          </h1>
-          <p className="mt-5 max-w-lg text-sm leading-7 text-slate-300 sm:text-base">
-            Tell us about your home and water. We’ll shortlist live Aquakart
-            products that match your expected capacity.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-2 text-xs font-bold text-slate-200">
-            {["3 quick choices", "Live products", "No technical form"].map(
-              (item) => (
-                <span
-                  key={item}
-                  className="rounded-full border border-white/10 bg-white/5 px-3 py-2"
-                >
-                  {item}
-                </span>
-              ),
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col justify-center p-8 sm:p-12">
-        <span className="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-600">
-          <FaLock />
-        </span>
-        <h2 className="mt-6 text-2xl font-black tracking-[-0.04em] text-slate-950">
-          Sign in before planning
-        </h2>
-        <p className="mt-3 text-sm leading-6 text-slate-500">
-          Google sign-in protects your recommendations and lets you return
-          without starting again.
-        </p>
-        <button
-          type="button"
-          onClick={onLogin}
-          disabled={loading}
-          className="mt-7 inline-flex min-h-[52px] items-center justify-center gap-3 rounded-2xl bg-slate-950 px-5 py-4 text-sm font-black text-white shadow-[0_14px_35px_rgba(15,23,42,0.22)] transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
-        >
-          <FaGoogle />
-          {loading ? "Connecting…" : "Continue with Google"}
-        </button>
-        <p className="mt-4 text-center text-[11px] leading-5 text-slate-400">
-          You’ll return to this planner automatically after sign-in.
-        </p>
-      </div>
-    </div>
-  </section>
-);
-
 const InstallationGallery = ({ sections = [], loading = false }) => {
   const images = useMemo(
     () =>
@@ -310,9 +251,8 @@ const InstallationGallery = ({ sections = [], loading = false }) => {
 };
 
 const AquaSoftenerPlannerComponent = () => {
-  const { authenticated, signInWithGoogle, user } = useAuth();
+  const { user } = useAuth();
   const [step, setStep] = useState(0);
-  const [loginPending, setLoginPending] = useState(false);
   const [answers, setAnswers] = useState({
     residents: "",
     coverage: "",
@@ -324,6 +264,7 @@ const AquaSoftenerPlannerComponent = () => {
   const [installationSections, setInstallationSections] = useState([]);
   const [installationsLoading, setInstallationsLoading] = useState(false);
   const [complete, setComplete] = useState(false);
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -347,7 +288,6 @@ const AquaSoftenerPlannerComponent = () => {
   }, [answers, step]);
 
   useEffect(() => {
-    if (!authenticated) return;
     let active = true;
     setCatalogueLoading(true);
     setInstallationsLoading(true);
@@ -379,7 +319,7 @@ const AquaSoftenerPlannerComponent = () => {
     return () => {
       active = false;
     };
-  }, [authenticated]);
+  }, []);
 
   const question = questions[step];
   const QuestionIcon = question.icon;
@@ -389,7 +329,16 @@ const AquaSoftenerPlannerComponent = () => {
     [answers, products],
   );
   const progress = complete ? 100 : ((step + 1) / questions.length) * 100;
-  const displayName = getUserDisplayName(user, "there");
+  const displayName = user ? getUserDisplayName(user, "there") : "";
+  const plannerCapacity = useMemo(() => requiredCapacity(answers), [answers]);
+  const plannerData = useMemo(
+    () => ({
+      answers,
+      required_capacity_liters: plannerCapacity,
+      recommendations,
+    }),
+    [answers, plannerCapacity, recommendations],
+  );
 
   const choose = (value) => {
     setAnswers((current) => ({ ...current, [question.key]: value }));
@@ -412,29 +361,17 @@ const AquaSoftenerPlannerComponent = () => {
     setStep((current) => Math.max(current - 1, 0));
   };
 
-  const handleLogin = async () => {
-    if (loginPending) return;
-    setLoginPending(true);
-    try {
-      await signInWithGoogle();
-    } catch {
-      // AuthContext already shows the actionable sign-in error toast.
-    } finally {
-      setLoginPending(false);
-    }
-  };
-
   const restart = () => {
     setAnswers({ residents: "", coverage: "", hardness: "" });
     setStep(0);
     setComplete(false);
+    setEnquiryOpen(false);
     if (typeof window !== "undefined") {
       window.sessionStorage.removeItem(DRAFT_KEY);
     }
   };
 
-  if (!authenticated) {
-    return (
+  return (
       <AquaLayout path="softenerPlanning">
 <LoginGate loading={loginPending} onLogin={handleLogin} />
       </AquaLayout>
@@ -451,7 +388,11 @@ const AquaSoftenerPlannerComponent = () => {
                 Aquakart Softener Planner
               </span>
               <h1 className="mt-2 text-3xl font-black tracking-[-0.055em] text-slate-950 sm:text-5xl">
-                {complete ? "Your best-fit softeners" : `Let’s size it, ${displayName}.`}
+                {complete
+                  ? "Your best-fit softeners"
+                  : displayName
+                    ? `Let’s size it, ${displayName}.`
+                    : "Let’s size your softener."}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
                 {complete
@@ -464,7 +405,7 @@ const AquaSoftenerPlannerComponent = () => {
                 {complete ? "Complete" : `${step + 1} of ${questions.length}`}
               </span>
               <span className="mx-2 text-slate-300">•</span>
-              Signed in
+              No sign-in required
             </div>
           </header>
 
@@ -500,9 +441,21 @@ const AquaSoftenerPlannerComponent = () => {
                       </div>
                     ))}
                   </div>
-                  <div className="mt-6 rounded-3xl border border-emerald-100 bg-white p-5 text-sm leading-6 text-slate-600 shadow-sm">
-                    <strong className="text-slate-950">Final installation check:</strong>{" "}
-                    Aquakart can confirm inlet hardness and plumbing before installation.
+                  <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm">
+                    <div className="text-sm leading-6 text-slate-600">
+                      <strong className="text-slate-950">Final installation check:</strong>{" "}
+                      Aquakart can confirm inlet hardness and plumbing before installation.
+                      <p className="mt-2 text-xs font-bold text-emerald-700">
+                        Planner target: about {plannerCapacity} L
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEnquiryOpen(true)}
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-black text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700"
+                    >
+                      <FaWhatsapp /> Send my recommendation
+                    </button>
                   </div>
                 </>
               ) : (
@@ -514,6 +467,13 @@ const AquaSoftenerPlannerComponent = () => {
                   <p className="mt-2 text-sm text-slate-500">
                     No suitable live catalogue item matched this capacity yet.
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => setEnquiryOpen(true)}
+                    className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-black text-white transition hover:bg-emerald-700"
+                  >
+                    <FaWhatsapp /> Ask an Aquakart expert
+                  </button>
                 </div>
               )}
 
@@ -619,6 +579,17 @@ const AquaSoftenerPlannerComponent = () => {
               </div>
             </section>
           )}
+
+          <AquaEnquireForm
+            open={enquiryOpen}
+            close={() => setEnquiryOpen(false)}
+            mode="planner"
+            source="softener_planner"
+            title="Send my softener recommendation"
+            product={recommendations[0] || null}
+            plannerData={plannerData}
+            defaultMessage="Please confirm the right water softener and installation fit for my home."
+          />
 
           <InstallationGallery
             sections={installationSections}
