@@ -1,16 +1,17 @@
+import { useState } from "react";
 import AquaLayout from "@/components/Layout/Layout";
 import { useRouter } from "next/router";
 import {
   EnvelopeIcon,
   PhoneIcon,
-  MapPinIcon,
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
-import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa"; // Keep brand icons
+import AquaEnquireForm from "@/components/common/commonDialogs/enquireForm";
 
 const AquaContactComponent = () => {
   const router = useRouter();
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
 
   const seo = {
     title: "Aquakart | Contact Us",
@@ -62,6 +63,12 @@ const AquaContactComponent = () => {
 
   return (
     <AquaLayout seo={seo}>
+      <AquaEnquireForm
+        open={enquiryOpen}
+        close={() => setEnquiryOpen(false)}
+        source="contact_page"
+        title="Tell us about your water"
+      />
       {/* Global Background */}
       <div className="fixed inset-0 bg-slate-50 z-[-1]">
         <div className="absolute top-[20%] left-[10%] w-[60%] h-[60%] rounded-full bg-indigo-100/40 blur-[120px]" />
@@ -82,6 +89,13 @@ const AquaContactComponent = () => {
               Have questions about water softeners or need support? Our team is
               ready to assist you.
             </p>
+            <button
+              type="button"
+              onClick={() => setEnquiryOpen(true)}
+              className="mt-7 inline-flex min-h-12 items-center justify-center rounded-2xl bg-slate-950 px-6 text-sm font-black text-white shadow-lg transition hover:bg-emerald-700"
+            >
+              Tell us your water problem
+            </button>
           </div>
 
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-2 lg:gap-12">
