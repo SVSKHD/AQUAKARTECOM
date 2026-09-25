@@ -372,13 +372,6 @@ const AquaSoftenerPlannerComponent = () => {
   };
 
   return (
-      <AquaLayout path="softenerPlanning">
-<LoginGate loading={loginPending} onLogin={handleLogin} />
-      </AquaLayout>
-    );
-  }
-
-  return (
     <AquaLayout path="softenerPlanning">
       <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(167,243,208,0.28),transparent_34%),#f7faf9] px-4 py-8 sm:px-6 lg:py-12">
         <div className="mx-auto max-w-6xl">
