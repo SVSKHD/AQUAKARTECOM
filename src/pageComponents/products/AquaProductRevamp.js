@@ -41,6 +41,7 @@ import { createPortal } from "react-dom";
 import AquaLayout from "@/components/Layout/Layout";
 import LazyImage from "@/components/image/LazyImage";
 import AquaPreloader from "@/components/reusables/preloader";
+import AquaEnquireForm from "@/components/common/commonDialogs/enquireForm";
 import ProductReviews from "@/components/reviews/ProductReviews";
 import ProductServiceOperations from "@/services/products";
 import useProduct from "@/utils/product";
@@ -918,6 +919,7 @@ function AquaProductRevamp({
   const [isLoading, setIsLoading] = useState(true);
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
   const storyRef = useRef(null);
   const visualStageRef = useRef(null);
   const router = useRouter();
@@ -1239,7 +1241,14 @@ function AquaProductRevamp({
                   </div>
                 )}
 
-                <div className="mt-7 flex items-center gap-2">
+                <div className="mt-7 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEnquiryOpen(true)}
+                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-emerald-600 px-5 text-sm font-black text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700"
+                  >
+                    <PhoneCall size={17} /> Is this right for my water?
+                  </button>
                   <button
                     type="button"
                     onClick={handleShare}
@@ -1498,6 +1507,16 @@ function AquaProductRevamp({
           image={images[0]?.url || fallbackImage}
           title={product?.title}
           price={price}
+        />
+
+        <AquaEnquireForm
+          open={enquiryOpen}
+          close={() => setEnquiryOpen(false)}
+          mode="product"
+          source="product_page"
+          title="Check if this product fits your water"
+          product={product}
+          defaultMessage={`I want to confirm whether ${product?.title || "this product"} is right for my water and installation.`}
         />
 
         <StickyPurchaseBar
