@@ -41,8 +41,8 @@ import { createPortal } from "react-dom";
 import AquaLayout from "@/components/Layout/Layout";
 import LazyImage from "@/components/image/LazyImage";
 import AquaPreloader from "@/components/reusables/preloader";
-import AquaEnquireForm from "@/components/common/commonDialogs/enquireForm";
 import ProductReviews from "@/components/reviews/ProductReviews";
+import AquaEnquireForm from "@/components/common/commonDialogs/enquireForm";
 import ProductServiceOperations from "@/services/products";
 import useProduct from "@/utils/product";
 
@@ -919,7 +919,7 @@ function AquaProductRevamp({
   const [isLoading, setIsLoading] = useState(true);
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
-  const [enquiryOpen, setEnquiryOpen] = useState(false);
+  const [consultationOpen, setConsultationOpen] = useState(false);
   const storyRef = useRef(null);
   const visualStageRef = useRef(null);
   const router = useRouter();
@@ -1186,6 +1186,26 @@ function AquaProductRevamp({
                   )}
                 </div>
 
+                <div className="mt-5 rounded-[1.5rem] border border-emerald-100 bg-emerald-50/70 p-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
+                  <div>
+                    <p className="text-sm font-black text-slate-950">
+                      Not sure this is right for your water?
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">
+                      Send this exact product to Aquakart with your water problem.
+                      It will reach our CRM with the product attached.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setConsultationOpen(true)}
+                    className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 text-xs font-black text-white transition hover:bg-emerald-700 sm:mt-0 sm:w-auto"
+                  >
+                    <PhoneCall size={16} />
+                    Check suitability
+                  </button>
+                </div>
+
                 <div className="relative mt-6 overflow-hidden rounded-[1.6rem] bg-[linear-gradient(135deg,#020617_0%,#0f172a_62%,#064e3b_145%)] p-5 text-white shadow-[0_22px_60px_rgba(15,23,42,0.2)] sm:p-6">
                   <div className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-emerald-400/20 blur-3xl" />
                   <div className="relative flex items-end justify-between gap-4">
@@ -1241,14 +1261,7 @@ function AquaProductRevamp({
                   </div>
                 )}
 
-                <div className="mt-7 flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEnquiryOpen(true)}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-emerald-600 px-5 text-sm font-black text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700"
-                  >
-                    <PhoneCall size={17} /> Is this right for my water?
-                  </button>
+                <div className="mt-7 flex items-center gap-2">
                   <button
                     type="button"
                     onClick={handleShare}
@@ -1510,12 +1523,12 @@ function AquaProductRevamp({
         />
 
         <AquaEnquireForm
-          open={enquiryOpen}
-          close={() => setEnquiryOpen(false)}
+          open={consultationOpen}
+          close={() => setConsultationOpen(false)}
           mode="product"
-          source="product_page"
-          title="Check if this product fits your water"
           product={product}
+          source="product_page"
+          title="Check product suitability"
           defaultMessage={`I want to confirm whether ${product?.title || "this product"} is right for my water and installation.`}
         />
 

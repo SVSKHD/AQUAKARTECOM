@@ -1,6 +1,5 @@
 import { useState } from "react";
 import AquaLayout from "@/components/Layout/Layout";
-import AquaEnquireForm from "@/components/common/commonDialogs/enquireForm";
 import { useRouter } from "next/router";
 import {
   EnvelopeIcon,
@@ -8,6 +7,7 @@ import {
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa"; // Keep brand icons
+import AquaEnquireForm from "@/components/common/commonDialogs/enquireForm";
 
 const AquaContactComponent = () => {
   const router = useRouter();
@@ -63,6 +63,12 @@ const AquaContactComponent = () => {
 
   return (
     <AquaLayout seo={seo}>
+      <AquaEnquireForm
+        open={enquiryOpen}
+        close={() => setEnquiryOpen(false)}
+        source="contact_page"
+        title="Tell us about your water"
+      />
       {/* Global Background */}
       <div className="fixed inset-0 bg-slate-50 z-[-1]">
         <div className="absolute top-[20%] left-[10%] w-[60%] h-[60%] rounded-full bg-indigo-100/40 blur-[120px]" />
@@ -86,10 +92,9 @@ const AquaContactComponent = () => {
             <button
               type="button"
               onClick={() => setEnquiryOpen(true)}
-              className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-slate-950 px-6 text-sm font-black text-white shadow-lg transition hover:bg-emerald-700"
+              className="mt-7 inline-flex min-h-12 items-center justify-center rounded-2xl bg-slate-950 px-6 text-sm font-black text-white shadow-lg transition hover:bg-emerald-700"
             >
-              <ChatBubbleLeftRightIcon className="h-5 w-5" />
-              Request a callback
+              Tell us your water problem
             </button>
           </div>
 
@@ -170,14 +175,6 @@ const AquaContactComponent = () => {
           </div>
         </div>
       </div>
-      <AquaEnquireForm
-        open={enquiryOpen}
-        close={() => setEnquiryOpen(false)}
-        mode="enquiry"
-        source="contact_page"
-        title="Tell us what you need"
-        defaultMessage="I need help choosing an Aquakart water solution."
-      />
     </AquaLayout>
   );
 };
