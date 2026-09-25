@@ -1525,9 +1525,11 @@ function AquaProductRevamp({
         <AquaEnquireForm
           open={consultationOpen}
           close={() => setConsultationOpen(false)}
+          mode="product"
           product={product}
-          source="product_consultation"
+          source="product_page"
           title="Check product suitability"
+          defaultMessage={`I want to confirm whether ${product?.title || "this product"} is right for my water and installation.`}
         />
 
         <StickyPurchaseBar

@@ -9,15 +9,16 @@ import {
   FaTint,
   FaUsers,
   FaWater,
+  FaWhatsapp,
 } from "react-icons/fa";
 import AquaLayout from "@/components/Layout/Layout";
 import AquaAppLoader from "@/components/common/AquaAppLoader";
 import ReusableProductCard from "@/components/cards/ProductCardTwo";
+import AquaEnquireForm from "@/components/common/commonDialogs/enquireForm";
 import { useAuth } from "@/context/AuthContext";
 import ProductServiceOperations from "@/services/products";
 import AquaSoftnerOperations from "@/services/softenersHyderabad";
 import { getUserDisplayName } from "@/utils/user";
-import LeadIntakeService from "@/services/leadIntake";
 
 const DRAFT_KEY = "aquakart_softener_planner_draft";
 
@@ -263,15 +264,7 @@ const AquaSoftenerPlannerComponent = () => {
   const [installationSections, setInstallationSections] = useState([]);
   const [installationsLoading, setInstallationsLoading] = useState(false);
   const [complete, setComplete] = useState(false);
-  const [leadForm, setLeadForm] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    locality: "",
-    pincode: "",
-  });
-  const [leadSubmitting, setLeadSubmitting] = useState(false);
-  const [leadState, setLeadState] = useState({ type: "", message: "" });
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -336,7 +329,16 @@ const AquaSoftenerPlannerComponent = () => {
     [answers, products],
   );
   const progress = complete ? 100 : ((step + 1) / questions.length) * 100;
-  const displayName = getUserDisplayName(user, "there");
+  const displayName = user ? getUserDisplayName(user, "there") : "";
+  const plannerCapacity = useMemo(() => requiredCapacity(answers), [answers]);
+  const plannerData = useMemo(
+    () => ({
+      answers,
+      required_capacity_liters: plannerCapacity,
+      recommendations,
+    }),
+    [answers, plannerCapacity, recommendations],
+  );
 
   const choose = (value) => {
     setAnswers((current) => ({ ...current, [question.key]: value }));
@@ -363,69 +365,11 @@ const AquaSoftenerPlannerComponent = () => {
     setAnswers({ residents: "", coverage: "", hardness: "" });
     setStep(0);
     setComplete(false);
+    setEnquiryOpen(false);
     if (typeof window !== "undefined") {
       window.sessionStorage.removeItem(DRAFT_KEY);
     }
   };
-
-  const submitPlannerLead = async (event) => {
-    event.preventDefault();
-    setLeadState({ type: "", message: "" });
-
-    if (!leadForm.name.trim() || !leadForm.phone.trim()) {
-      setLeadState({
-        type: "error",
-        message: "Please enter your name and phone number.",
-      });
-      return;
-    }
-
-    setLeadSubmitting(true);
-    try {
-      const required = requiredCapacity(answers);
-      const recommendationPayload = recommendations.map((product) => ({
-        product_id: product?._id,
-        slug: product?.slug || product?.seoSlug,
-        url:
-          typeof window === "undefined"
-            ? ""
-            : `${window.location.origin}/product/${product?.slug || product?._id || ""}`,
-      }));
-
-      await LeadIntakeService.submitPlanner({
-        ...leadForm,
-        answers,
-        required_capacity_liters: required,
-        recommendations: recommendationPayload,
-        source: "planner",
-        page_url: typeof window === "undefined" ? "" : window.location.href,
-        page_path: "/softener-planner",
-        referrer:
-          typeof document === "undefined" ? "" : document.referrer || "",
-        planner_version: "anonymous-v2",
-      });
-
-      setLeadState({
-        type: "success",
-        message:
-          "Recommendation saved. Aquakart can now follow up with the exact planner details.",
-      });
-      if (typeof window !== "undefined") {
-        window.sessionStorage.removeItem(DRAFT_KEY);
-      }
-    } catch (error) {
-      setLeadState({
-        type: "error",
-        message:
-          error?.response?.data?.message ||
-          error?.message ||
-          "We could not save your recommendation. Please try again.",
-      });
-    } finally {
-      setLeadSubmitting(false);
-    }
-  };
-
 
   return (
     <AquaLayout path="softenerPlanning">
@@ -437,7 +381,11 @@ const AquaSoftenerPlannerComponent = () => {
                 Aquakart Softener Planner
               </span>
               <h1 className="mt-2 text-3xl font-black tracking-[-0.055em] text-slate-950 sm:text-5xl">
-                {complete ? "Your best-fit softeners" : `Let’s size it, ${displayName}.`}
+                {complete
+                  ? "Your best-fit softeners"
+                  : displayName
+                    ? `Let’s size it, ${displayName}.`
+                    : "Let’s size your softener."}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
                 {complete
@@ -486,9 +434,21 @@ const AquaSoftenerPlannerComponent = () => {
                       </div>
                     ))}
                   </div>
-                  <div className="mt-6 rounded-3xl border border-emerald-100 bg-white p-5 text-sm leading-6 text-slate-600 shadow-sm">
-                    <strong className="text-slate-950">Final installation check:</strong>{" "}
-                    Aquakart can confirm inlet hardness and plumbing before installation.
+                  <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm">
+                    <div className="text-sm leading-6 text-slate-600">
+                      <strong className="text-slate-950">Final installation check:</strong>{" "}
+                      Aquakart can confirm inlet hardness and plumbing before installation.
+                      <p className="mt-2 text-xs font-bold text-emerald-700">
+                        Planner target: about {plannerCapacity} L
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEnquiryOpen(true)}
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-black text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700"
+                    >
+                      <FaWhatsapp /> Send my recommendation
+                    </button>
                   </div>
                 </>
               ) : (
@@ -500,73 +460,15 @@ const AquaSoftenerPlannerComponent = () => {
                   <p className="mt-2 text-sm text-slate-500">
                     No suitable live catalogue item matched this capacity yet.
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => setEnquiryOpen(true)}
+                    className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-black text-white transition hover:bg-emerald-700"
+                  >
+                    <FaWhatsapp /> Ask an Aquakart expert
+                  </button>
                 </div>
               )}
-
-              <form
-                onSubmit={submitPlannerLead}
-                className="mt-6 rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6"
-              >
-                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">
-                  Save your result
-                </span>
-                <h2 className="mt-2 text-xl font-black tracking-[-0.03em] text-slate-950">
-                  Send this recommendation to Aquakart
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-slate-500">
-                  We’ll save your planner answers and matched products so you
-                  don’t need to explain everything again.
-                </p>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  {[
-                    ["name", "Name"],
-                    ["phone", "Phone"],
-                    ["email", "Email (optional)"],
-                    ["locality", "Locality"],
-                    ["pincode", "PIN code"],
-                  ].map(([key, placeholder], index) => (
-                    <input
-                      key={key}
-                      type={key === "email" ? "email" : "text"}
-                      inputMode={key === "phone" ? "tel" : undefined}
-                      value={leadForm[key]}
-                      onChange={(event) =>
-                        setLeadForm((current) => ({
-                          ...current,
-                          [key]: event.target.value,
-                        }))
-                      }
-                      placeholder={placeholder}
-                      required={key === "name" || key === "phone"}
-                      className={[
-                        "rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-2 focus:ring-emerald-100",
-                        index === 4 ? "sm:col-span-2" : "",
-                      ].join(" ")}
-                    />
-                  ))}
-                </div>
-                {leadState.message && (
-                  <div
-                    className={[
-                      "mt-4 rounded-2xl px-4 py-3 text-sm font-semibold",
-                      leadState.type === "success"
-                        ? "bg-emerald-50 text-emerald-800"
-                        : "bg-rose-50 text-rose-700",
-                    ].join(" ")}
-                  >
-                    {leadState.message}
-                  </div>
-                )}
-                <button
-                  type="submit"
-                  disabled={leadSubmitting}
-                  className="mt-4 min-h-12 w-full rounded-2xl bg-slate-950 px-5 text-sm font-black text-white transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
-                >
-                  {leadSubmitting
-                    ? "Saving recommendation…"
-                    : "Save & request expert follow-up"}
-                </button>
-              </form>
 
               <button
                 type="button"
@@ -670,6 +572,17 @@ const AquaSoftenerPlannerComponent = () => {
               </div>
             </section>
           )}
+
+          <AquaEnquireForm
+            open={enquiryOpen}
+            close={() => setEnquiryOpen(false)}
+            mode="planner"
+            source="softener_planner"
+            title="Send my softener recommendation"
+            product={recommendations[0] || null}
+            plannerData={plannerData}
+            defaultMessage="Please confirm the right water softener and installation fit for my home."
+          />
 
           <InstallationGallery
             sections={installationSections}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import AquaLayout from "@/components/Layout/Layout";
+import AquaEnquireForm from "@/components/common/commonDialogs/enquireForm";
 import ArtGallery from "@/components/reusables/artGalery";
 import AquaSoftnerOperations from "@/services/softenersHyderabad";
 import ProductGrid from "../shop/productGrid";
@@ -77,6 +78,7 @@ const AquaSoftenerHyderabadComponent = ({
   const [imageData, setImageData] = useState(initialSections);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(initialError ?? "");
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
 
   useEffect(() => {
     setImageData(initialSections);
@@ -233,12 +235,13 @@ const AquaSoftenerHyderabadComponent = ({
                       Our elite technicians provide comprehensive water hardness
                       assessment.
                     </p>
-                    <Link
-                      href="/contact"
+                    <button
+                      type="button"
+                      onClick={() => setEnquiryOpen(true)}
                       className="mt-8 inline-flex items-center justify-center w-full rounded-2xl bg-white text-indigo-900 px-6 py-4 text-sm font-bold transition-transform active:scale-95 hover:bg-indigo-50 relative z-10 shadow-lg"
                     >
                       Book Consultation
-                    </Link>
+                    </button>
                   </div>
                 </section>
 
@@ -339,6 +342,14 @@ const AquaSoftenerHyderabadComponent = ({
           </section>
         </div>
       </div>
+      <AquaEnquireForm
+        open={enquiryOpen}
+        close={() => setEnquiryOpen(false)}
+        mode="enquiry"
+        source="softeners_hyderabad"
+        title="Request a water assessment"
+        defaultMessage="I would like a water hardness assessment and softener recommendation."
+      />
     </AquaLayout>
   );
 };
