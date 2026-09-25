@@ -4,10 +4,8 @@ import { useRouter } from "next/router";
 import {
   EnvelopeIcon,
   PhoneIcon,
-  MapPinIcon,
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
-import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa"; // Keep brand icons
 import AquaEnquireForm from "@/components/common/commonDialogs/enquireForm";
 
