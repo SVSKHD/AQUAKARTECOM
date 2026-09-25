@@ -1,4 +1,6 @@
+import { useState } from "react";
 import AquaLayout from "@/components/Layout/Layout";
+import AquaEnquireForm from "@/components/common/commonDialogs/enquireForm";
 import { useRouter } from "next/router";
 import {
   EnvelopeIcon,
@@ -11,6 +13,7 @@ import { FaInstagram, FaWhatsapp } from "react-icons/fa"; // Keep brand icons
 
 const AquaContactComponent = () => {
   const router = useRouter();
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
 
   const seo = {
     title: "Aquakart | Contact Us",
@@ -82,6 +85,14 @@ const AquaContactComponent = () => {
               Have questions about water softeners or need support? Our team is
               ready to assist you.
             </p>
+            <button
+              type="button"
+              onClick={() => setEnquiryOpen(true)}
+              className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-slate-950 px-6 text-sm font-black text-white shadow-lg transition hover:bg-emerald-700"
+            >
+              <ChatBubbleLeftRightIcon className="h-5 w-5" />
+              Request a callback
+            </button>
           </div>
 
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-2 lg:gap-12">
@@ -161,6 +172,14 @@ const AquaContactComponent = () => {
           </div>
         </div>
       </div>
+      <AquaEnquireForm
+        open={enquiryOpen}
+        close={() => setEnquiryOpen(false)}
+        mode="enquiry"
+        source="contact_page"
+        title="Tell us what you need"
+        defaultMessage="I need help choosing an Aquakart water solution."
+      />
     </AquaLayout>
   );
 };
