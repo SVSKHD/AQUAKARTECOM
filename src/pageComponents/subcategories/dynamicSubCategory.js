@@ -26,7 +26,6 @@ const AquaDynamicSubCategoryComponent = ({
   id,
   initialCategory = null,
   initialRelated = [],
-  managedSeo = null,
 }) => {
   const [category, setCategory] = useState(initialCategory || {});
   const [related, setRelated] = useState(initialRelated);
@@ -75,8 +74,7 @@ const AquaDynamicSubCategoryComponent = ({
 
   return (
     <AquaLayout
-      subcategoryData={managedSeo || seo}
-      managedSeo={managedSeo}
+      subcategoryData={seo}
       productListData={related}
     >
       <div className="fixed inset-0 bg-slate-50 z-[-1]">

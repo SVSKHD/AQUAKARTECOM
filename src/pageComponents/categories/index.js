@@ -23,7 +23,6 @@ const CategoriesSkeleton = () => (
 const AquaAllCategoriesComponent = ({
   initialCategories = [],
   initialError = "",
-  managedSeo = null,
 }) => {
   const router = useRouter();
   const seo = {
@@ -61,7 +60,7 @@ const AquaAllCategoriesComponent = ({
 
   return (
     <>
-      <AquaLayout seo={seo} managedSeo={managedSeo}>
+      <AquaLayout seo={seo}>
         <div className="bg-slate-50 py-12 sm:py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <header className="flex flex-col gap-4 border-b border-slate-200 pb-8 sm:flex-row sm:items-end sm:justify-between">
