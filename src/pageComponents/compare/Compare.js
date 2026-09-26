@@ -718,7 +718,7 @@ const AquaCompareTabContent = () => {
             </div>
 
             {visibleRows.length ? (
-              visibleRows.map((row, rowIndex) => (
+              visibleRows.map((row) => (
                 <div
                   key={row.key}
                   className={[
