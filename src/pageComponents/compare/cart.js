@@ -1,6 +1,6 @@
 import useCurrency from "@/utils/currency";
 import { useDispatch, useSelector } from "react-redux";
-import React, { useEffect } from "react";
+import React from "react";
 import AquaToast from "@/components/reusables/react-toastify";
 import { ShoppingCart } from "lucide-react";
 
