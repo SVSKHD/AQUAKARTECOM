@@ -1,6 +1,20 @@
 import AquaDynamicBlogComponent from "@/pageComponents/blogs/dynamicBlog";
 import BlogServiceOperations from "@/services/blog";
 
+const OBJECT_ID_PATTERN = /^[a-f\d]{24}$/i;
+
+const resolveBlogRoute = async (id) => {
+  try {
+    const bySlug = await BlogServiceOperations.blogBySlug(id);
+    if (bySlug?.data?.data) return bySlug;
+  } catch (error) {
+    if (error?.response?.status !== 404) throw error;
+  }
+
+  if (!OBJECT_ID_PATTERN.test(String(id))) return null;
+  return BlogServiceOperations.blogById(id);
+};
+
 const AquaBlogIndex = ({ initialBlog, initialRelated, initialError }) => (
   <AquaDynamicBlogComponent
     initialBlog={initialBlog}
@@ -22,7 +36,7 @@ export const getServerSideProps = async ({ params, res }) => {
   );
 
   try {
-    const response = await BlogServiceOperations.blogBySlug(id);
+    const response = await resolveBlogRoute(id);
     const blog = response?.data?.data;
 
     if (!blog) {
