@@ -1,4 +1,3 @@
-import { useState } from "react";
 import AquaLayout from "@/components/Layout/Layout";
 import {
   SparklesIcon,
@@ -29,13 +28,6 @@ const timeline = [
     date: "2023",
     dateTime: "2023",
   },
-  {
-    name: "250k+ Happy Customers",
-    description:
-      "Reached a milestone of serving over a quarter million households with cleaner, softer water.",
-    date: "2024",
-    dateTime: "2024",
-  },
 ];
 
 const values = [
@@ -65,7 +57,17 @@ const values = [
   },
 ];
 
-const AquaAbout = () => {
+const formatMetric = (value) => {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0
+    ? new Intl.NumberFormat("en-IN").format(number)
+    : "Growing";
+};
+
+const AquaAbout = ({ storefrontStats = null }) => {
+  const totalInvoices = formatMetric(storefrontStats?.totalInvoices);
+  const customersServed = formatMetric(storefrontStats?.customersServed);
+
   const seo = {
     title: "Aquakart | About Us",
     description:
@@ -137,35 +139,42 @@ const AquaAbout = () => {
                 Measured in purity.
               </h2>
               <p className="mt-6 text-lg leading-8 text-indigo-200">
-                We measure our success not just in sales, but in the millions of
-                liters of water we've purified and the smiles of satisfied
-                families across the region.
+                We keep these numbers grounded in our actual invoice records,
+                so the milestones you see here grow with the customers we serve.
               </p>
             </div>
 
             <div className="relative mt-16 h-80 lg:mt-0">
               <div className="absolute left-0 top-0 h-full w-[500px] max-w-none rounded-2xl bg-white/10 ring-1 ring-white/20 backdrop-blur-md p-8 grid grid-cols-2 gap-8">
                 <div className="flex flex-col justify-center text-center">
-                  <p className="text-4xl font-bold text-white">250k+</p>
-                  <p className="text-indigo-200 text-sm mt-1">Happy Homes</p>
-                </div>
-                <div className="flex flex-col justify-center text-center">
-                  <p className="text-4xl font-bold text-emerald-400">99%</p>
-                  <p className="text-indigo-200 text-sm mt-1">
-                    Satisfaction Rate
+                  <p className="text-4xl font-bold text-white">
+                    {totalInvoices}
                   </p>
-                </div>
-                <div className="flex flex-col justify-center text-center">
-                  <p className="text-4xl font-bold text-white">24/7</p>
                   <p className="text-indigo-200 text-sm mt-1">
-                    Support Availability
+                    Invoices Issued
                   </p>
                 </div>
                 <div className="flex flex-col justify-center text-center">
                   <p className="text-4xl font-bold text-emerald-400">
-                    2 States
+                    {customersServed}
                   </p>
-                  <p className="text-indigo-200 text-sm mt-1">Full Coverage</p>
+                  <p className="text-indigo-200 text-sm mt-1">
+                    Customers Served
+                  </p>
+                </div>
+                <div className="flex flex-col justify-center text-center">
+                  <p className="text-4xl font-bold text-white">2021</p>
+                  <p className="text-indigo-200 text-sm mt-1">
+                    Serving Since
+                  </p>
+                </div>
+                <div className="flex flex-col justify-center text-center">
+                  <p className="text-2xl font-bold text-emerald-400">
+                    Live
+                  </p>
+                  <p className="text-indigo-200 text-sm mt-1">
+                    Invoice-backed Metrics
+                  </p>
                 </div>
               </div>
             </div>
