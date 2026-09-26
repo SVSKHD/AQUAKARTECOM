@@ -1,30 +1,24 @@
 import AquaBlogComponnet from "@/pageComponents/blogs";
 import BlogServiceOperations from "@/services/blog";
-import { getManagedSeoServerSide } from "@/services/seo";
 
-const AquaBlogIndex = ({ initialBlogs, initialError, managedSeo }) => {
+const AquaBlogIndex = ({ initialBlogs, initialError }) => {
   return (
     <AquaBlogComponnet
       initialBlogs={initialBlogs}
       initialError={initialError}
-      managedSeo={managedSeo}
     />
   );
 };
 
 export const getServerSideProps = async () => {
   try {
-    const [response, managedSeo] = await Promise.all([
-      BlogServiceOperations.AllBlogs(),
-      getManagedSeoServerSide("blogs"),
-    ]);
+    const response = await BlogServiceOperations.AllBlogs();
     const blogs = Array.isArray(response?.data?.data) ? response.data.data : [];
 
     return {
       props: {
         initialBlogs: blogs,
         initialError: "",
-        managedSeo,
       },
     };
   } catch (error) {
@@ -34,7 +28,6 @@ export const getServerSideProps = async () => {
       props: {
         initialBlogs: [],
         initialError: "Unable to load blogs at the moment. Please try again.",
-        managedSeo: await getManagedSeoServerSide("blogs"),
       },
     };
   }

@@ -2,14 +2,12 @@ import AquaShopComponent from "@/pageComponents/shop";
 import ProductServiceOperations from "@/services/products";
 import CategoryServiceOperations from "@/services/category";
 import SubCategoryServiceOperations from "@/services/subcategory";
-import { getManagedSeoServerSide } from "@/services/seo";
 
 const AquaShop = ({
   products = [],
   error = "",
   categories = [],
   subcategories = [],
-  managedSeo = null,
 }) => {
   return (
     <AquaShopComponent
@@ -17,7 +15,6 @@ const AquaShop = ({
       initialError={error}
       initialCategories={categories}
       initialSubcategories={subcategories}
-      managedSeo={managedSeo}
     />
   );
 };
@@ -31,7 +28,6 @@ export const getServerSideProps = async () => {
           products: [],
           categories: [],
           subcategories: [],
-          managedSeo: await getManagedSeoServerSide("shop"),
           error:
             "Shop catalogue is temporarily unavailable. Please try again soon.",
         },
@@ -42,12 +38,10 @@ export const getServerSideProps = async () => {
       productsResponse,
       categoriesResponse,
       subcategoriesResponse,
-      managedSeo,
     ] = await Promise.all([
       ProductServiceOperations.AllProducts(),
       CategoryServiceOperations.Allcategories().catch(() => null),
       SubCategoryServiceOperations.AllSubcategories().catch(() => null),
-      getManagedSeoServerSide("shop"),
     ]);
 
     const products = Array.isArray(productsResponse?.data?.data)
@@ -65,7 +59,6 @@ export const getServerSideProps = async () => {
         products,
         categories,
         subcategories,
-        managedSeo,
         error:
           products.length === 0 ? "No products available at the moment." : "",
       },
@@ -77,7 +70,6 @@ export const getServerSideProps = async () => {
         products: [],
         categories: [],
         subcategories: [],
-        managedSeo: await getManagedSeoServerSide("shop"),
         error:
           "We couldn’t load the catalogue. Please refresh the page or visit later.",
       },
