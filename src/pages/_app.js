@@ -14,7 +14,6 @@ import Script from "next/script";
 import { Roboto_Mono, Montserrat } from "next/font/google";
 import AquaAppLoader from "@/components/common/AquaAppLoader";
 import { AuthProvider } from "@/context/AuthContext";
-import { ManagedSeoProvider } from "@/context/ManagedSeoContext";
 import { startAnalyticsVisit } from "@/services/analyticsTracker";
 
 const robotoMono = Roboto_Mono({ subsets: ["latin"], display: "swap", variable: "--font-roboto-mono" });
@@ -130,8 +129,7 @@ export default function App({ Component, pageProps }) {
 
   return (
     <Provider store={store}>
-      <ManagedSeoProvider value={pageProps?.managedSeo || null}>
-        <style jsx global>{`
+      <style jsx global>{`
           :root {
             --font-roboto-mono: ${robotoMono.style.fontFamily};
             --font-montserrat: ${montserrat.style.fontFamily};
@@ -166,7 +164,6 @@ export default function App({ Component, pageProps }) {
             <Toaster position="top-right" richColors closeButton />
           </div>
         </AuthProvider>
-      </ManagedSeoProvider>
     </Provider>
   );
 }

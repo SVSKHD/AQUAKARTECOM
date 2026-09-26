@@ -6,16 +6,23 @@ import { useSelector, useDispatch } from "react-redux";
 import AquaFooter from "./Footer";
 import AquaHeader from "./Header";
 import AquaSeoRevamp from "./seo/RefactoredSeo";
-import AquaUserDataDrawer from "../common/commonDrawers/userDataDrawer";
-import AquaUserAuthDialog from "../common/commonDialogs/authDialog";
-import AquaCartAddressDialog from "../common/commonDialogs/cartAddress";
 import useNetworkStatus from "@/utils/connectivity";
 
 import CategoryServiceOperations from "@/services/category";
 import SubCategoryServiceOperations from "@/services/subcategory";
-import useManagedSeo from "@/hooks/useManagedSeo";
-import { getManagedSeoPageKey } from "@/utils/managedSeo";
-import { useManagedSeoContext } from "@/context/ManagedSeoContext";
+
+const AquaCartAddressDialog = dynamic(
+  () => import("../common/commonDialogs/cartAddress"),
+  { ssr: false },
+);
+const AquaUserDataDrawer = dynamic(
+  () => import("../common/commonDrawers/userDataDrawer"),
+  { ssr: false },
+);
+const AquaUserAuthDialog = dynamic(
+  () => import("../common/commonDialogs/authDialog"),
+  { ssr: false },
+);
 
 const AquaCartDrawer = dynamic(
   () => import("../common/commonDrawers/cartDrawer"),
@@ -36,7 +43,6 @@ const AquaLayout = (props) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const allowPageSticky = Boolean(props.allowPageSticky);
-  const contextManagedSeo = useManagedSeoContext();
 
   const { categories, subcategories } = useSelector(
     (state) => state.dynamicData,
@@ -63,11 +69,6 @@ const AquaLayout = (props) => {
 
     return next;
   }, [router.pathname]);
-
-  const managedSeo = useManagedSeo(
-    getManagedSeoPageKey(router.pathname),
-    props.managedSeo ?? contextManagedSeo,
-  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -191,7 +192,7 @@ const AquaLayout = (props) => {
   return (
     <>
       <AquaSeoRevamp
-        data={managedSeo || props.seo}
+        data={props.seo}
         path={seo.path}
         category={seo.category}
         categoryData={props?.categoryData}
@@ -204,13 +205,13 @@ const AquaLayout = (props) => {
         blogPage={props?.blogPageData}
       />
 
-      <AquaCartAddressDialog />
-      <AquaUserDataDrawer />
-      <AquaUserAuthDialog />
       <AquaHeader />
 
       {mountOverlays && (
         <>
+          <AquaCartAddressDialog />
+          <AquaUserDataDrawer />
+          <AquaUserAuthDialog />
           <AquaCartDrawer />
           <AquafavDrawer />
         </>
