@@ -1,6 +1,6 @@
 import useCurrency from "@/utils/currency";
 import { useDispatch, useSelector } from "react-redux";
-import React, { useEffect } from "react";
+import React from "react";
 import AquaToast from "@/components/reusables/react-toastify";
 import { ShoppingCart } from "lucide-react";
 
@@ -9,16 +9,21 @@ const AquaCartTabContent = () => {
   const { formatCurrencyINRWithK } = useCurrency;
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    console.log("Compare List Updated:", compare);
-  }, [compare]);
-
   const AddToCompare = (product) => {
+    if (compare?.some((item) => item?._id === product?._id)) return;
+    if ((compare?.length || 0) >= 4) {
+      AquaToast({
+        message: "Compare up to 4 products at a time",
+        type: "warning",
+      });
+      return;
+    }
+
     dispatch({
       type: "ADD_TO_COMPARE",
       payload: product,
     });
-    AquaToast({ message: "Added to Compare", type: "success" });
+    AquaToast({ message: "Added to compare", type: "success" });
   };
 
   return (
