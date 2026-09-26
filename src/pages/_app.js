@@ -21,25 +21,12 @@ const montserrat = Montserrat({ subsets: ["latin"], display: "swap", variable: "
 const Toaster = dynamic(() => import("sonner").then((mod) => mod.Toaster), { ssr: false });
 
 const GA_ID = "G-FS41RRVRD4";
-const APP_BOOT_MIN_MS = 0;
-const APP_BOOT_MAX_MS = 1200;
 const ROUTE_LOADER_DELAY_MS = 120;
 const ROUTE_LOADER_MIN_MS = 180;
 const persistConfig = { key: "root", storage };
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 const store = createStore(persistedReducer);
 const persistor = persistStore(store);
-const wait = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
-
-const waitForWindowLoad = () =>
-  new Promise((resolve) => {
-    if (typeof window === "undefined" || document.readyState === "complete") {
-      resolve();
-      return;
-    }
-    window.addEventListener("load", resolve, { once: true });
-  });
-
 const routePathname = (url = "") => url.split("?")[0].split("#")[0];
 const isDashboardTabChange = (from, to) =>
   from.startsWith("/dashboard") && routePathname(to).startsWith("/dashboard");
@@ -76,13 +63,8 @@ export default function App({ Component, pageProps }) {
   }, [router.events]);
 
   useEffect(() => {
-    let isMounted = true;
-    const prepareFirstPaint = async () => {
-      await Promise.race([Promise.all([wait(APP_BOOT_MIN_MS), waitForWindowLoad()]), wait(APP_BOOT_MAX_MS)]);
-      if (isMounted) setAppReady(true);
-    };
-    prepareFirstPaint();
-    return () => { isMounted = false; };
+    const frame = window.requestAnimationFrame(() => setAppReady(true));
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {
@@ -148,7 +130,6 @@ export default function App({ Component, pageProps }) {
             {!appReady ? <AquaAppLoader variant="screen" message="Welcome to Aquakart" subtext="Getting the page ready for you." /> : null}
             {routeLoading ? <AquaAppLoader variant="route" message="Opening Aquakart" subtext="Preparing the next page smoothly." /> : null}
             <main
-              key={router.pathname.startsWith("/dashboard") ? "dashboard-shell" : router.asPath}
               className="aqua-page-shell aqua-page-enter"
               data-route={router.pathname}
               aria-busy={shouldShowLoader}
@@ -156,7 +137,7 @@ export default function App({ Component, pageProps }) {
                 opacity: routeLoading ? 0 : 1,
                 pointerEvents: shouldShowLoader ? "none" : "auto",
                 transform: "none",
-                transition: routeLoading ? "none" : "opacity 420ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1)",
+                transition: routeLoading ? "none" : "opacity 180ms ease",
               }}
             >
               <Component {...pageProps} />
