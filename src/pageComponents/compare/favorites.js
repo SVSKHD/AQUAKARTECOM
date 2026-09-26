@@ -2,6 +2,7 @@ import useCurrency from "@/utils/currency";
 import { useSelector, useDispatch } from "react-redux";
 import React from "react";
 import { Heart } from "lucide-react";
+import AquaToast from "@/components/reusables/react-toastify";
 
 const AquaFavoritesTabContent = () => {
   const dispatch = useDispatch();
@@ -9,16 +10,20 @@ const AquaFavoritesTabContent = () => {
   const { formatCurrencyINRWithK } = useCurrency;
 
   const AddToCompare = (product) => {
-    console.log("compare", product, compare);
-    if (!compare?.find((item) => item._id === product._id)) {
-      dispatch({
-        type: "ADD_TO_COMPARE",
-        payload: product,
+    if (compare?.some((item) => item?._id === product?._id)) return;
+    if ((compare?.length || 0) >= 4) {
+      AquaToast({
+        message: "Compare up to 4 products at a time",
+        type: "warning",
       });
-      console.log("Added to Compare:", product);
-    } else {
-      console.log("Product already in Compare list:", product);
+      return;
     }
+
+    dispatch({
+      type: "ADD_TO_COMPARE",
+      payload: product,
+    });
+    AquaToast({ message: "Added to compare", type: "success" });
   };
 
   return (
