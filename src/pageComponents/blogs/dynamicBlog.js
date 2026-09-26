@@ -186,13 +186,6 @@ const AquaDynamicBlogComponent = ({
     }
   };
 
-  const seoData = {
-    title: `${blog?.title || "Blog"} | Aquakart`,
-    canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
-    image: blog?.titleImages?.[0]?.secure_url || "",
-    keywords: `Aquakart Product | ${blog?.title || "Blog"}`,
-  };
-
   const formatTopicLabel = (value, fallback = "Aquakart") => {
     if (!value || typeof value !== "string") return fallback;
     const cleaned = value.replace(/[._-]+/g, " ").trim();
@@ -228,7 +221,7 @@ const AquaDynamicBlogComponent = ({
   const schemaBlog = blog || initialBlog || null;
 
   return (
-    <AquaLayout seo={seoData} blogPageData={schemaBlog}>
+    <AquaLayout blogPageData={schemaBlog}>
       {/* Global Background */}
       <div className="fixed inset-0 bg-slate-50 z-[-1]">
         <div className="absolute top-[0%] left-[0%] w-[50%] h-[50%] rounded-full bg-emerald-100/40 blur-[120px]" />

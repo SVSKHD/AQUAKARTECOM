@@ -124,15 +124,19 @@ export async function getServerSideProps({ res }) {
     // If an API fails, static URLs still remain available to crawlers.
   }
 
+  const uniqueUrls = Array.from(
+    new Map(urls.map((entry) => [entry.loc, entry])).values(),
+  );
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(toUrlEntry).join("\n")}
+${uniqueUrls.map(toUrlEntry).join("\n")}
 </urlset>`;
 
   res.setHeader("Content-Type", "application/xml; charset=utf-8");
   res.setHeader(
     "Cache-Control",
-    "public, s-maxage=3600, stale-while-revalidate=86400",
+    "public, s-maxage=300, stale-while-revalidate=3600",
   );
   res.write(xml);
   res.end();
