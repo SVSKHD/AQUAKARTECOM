@@ -67,12 +67,15 @@ export const PUBLIC_ROUTES = Object.freeze([
       "priority": "0.8"
     },
     "seo": {
-      "title": "Aquakart Blogs | Water Softener & RO Purifier Insights",
-      "keywords": "Water Softener Blogs, RO Purifier Guides, Best Water Filtration Tips, Aquakart Blog, Latest Water Purification News, Best Water Solutions and Softeners in Hyderabad, RO Filters Gachibowli, Water Treatment Jubilee Hills, Home Water Filtration Hyderabad",
-      "keyphrases": "Water Softener Advice, RO Purifier Buying Guide, Home Water Solutions Blog, RO Setup Gachibowli, Softener Installation Jubilee Hills, Water Filter Help Hyderabad, Aquakart Blog for Hyderabad",
+      "title": "Water Softener, RO & Hard Water Guides | Aquakart",
+      "keywords": "water softener guide, RO purifier guide, hard water solutions, water filtration guide, water softener maintenance, home water treatment, whole house water filter, pressure booster guide, water quality India, Aquakart guides",
+      "keyphrases": "water softener buying guide, RO purifier buying guide, hard water treatment guide, home water filtration advice, water treatment guides India",
       "url": "https://aquakart.co.in/blogs",
       "photos": "https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg",
-      "description": "Stay informed with Aquakart Blogs. Learn about water softeners, RO purifiers, and the latest advancements in water filtration technology.",
+      "description": "Expert guides on water softeners, RO purifiers, hard water, filtration, pumps and home water treatment. Learn, compare and choose the right solution.",
+      "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",
+      "ogTitle": "Water Treatment Guides & Expert Advice | Aquakart",
+      "ogDescription": "Practical guides for water softeners, RO purifiers, hard water treatment, filters, pumps and better home water decisions.",
       "follow": true
     }
   },
