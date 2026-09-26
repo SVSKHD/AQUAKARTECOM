@@ -79,7 +79,6 @@ const needCards = [
 const AquaHomeComponent = ({
   initialCategories = [],
   initialProducts = [],
-  managedSeo = null,
 }) => {
   const router = useRouter();
   const seoData = {
@@ -96,7 +95,7 @@ const AquaHomeComponent = ({
   };
 
   return (
-    <AquaLayout seo={seoData} managedSeo={managedSeo}>
+    <AquaLayout seo={seoData}>
       <div className={styles.page}>
         <div className={styles.shell}>
           <AquaHomeHero data={initialCategories} />
