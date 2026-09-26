@@ -1,7 +1,5 @@
 import AquaDynamicBlogComponent from "@/pageComponents/blogs/dynamicBlog";
 import BlogServiceOperations from "@/services/blog";
-import { getManagedSeoServerSide } from "@/services/seo";
-import { getManagedSeoEntityKey } from "@/utils/managedSeo";
 
 const AquaBlogIndex = ({ initialBlog, initialRelated, initialError }) => (
   <AquaDynamicBlogComponent
@@ -31,20 +29,11 @@ export const getServerSideProps = async ({ params, res }) => {
       return { notFound: true };
     }
 
-    const pageKey = getManagedSeoEntityKey(
-      "blog",
-      blog?.slug || blog?.title || id,
-    );
-    const managedSeo = pageKey
-      ? await getManagedSeoServerSide(pageKey)
-      : null;
-
     return {
       props: {
         initialBlog: blog,
         initialRelated: response?.data?.relatedProduct || [],
         initialError: "",
-        managedSeo,
       },
     };
   } catch (error) {
@@ -63,7 +52,6 @@ export const getServerSideProps = async ({ params, res }) => {
         initialRelated: [],
         initialError:
           "We couldn't load this story. Please refresh and try again.",
-        managedSeo: null,
       },
     };
   }

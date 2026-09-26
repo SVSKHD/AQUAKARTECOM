@@ -1,11 +1,6 @@
 import AquaProductRevamp from "@/pageComponents/products/AquaProductRevamp";
 import AquaProductSeo from "@/components/Layout/seo/productSeo";
 import ProductServiceOperations from "@/services/products";
-import { getManagedSeoServerSide } from "@/services/seo";
-import {
-  getManagedSeoEntityKey,
-  mergeManagedSeo,
-} from "@/utils/managedSeo";
 
 const FALLBACK_IMAGE =
   "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png";
@@ -41,7 +36,7 @@ const parseStockValue = (stock) => {
   return 0;
 };
 
-function AquaDynamicProduct({ product, related, error, managedSeo }) {
+function AquaDynamicProduct({ product, related, error }) {
   if (error) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 p-6 text-center">
@@ -108,10 +103,7 @@ function AquaDynamicProduct({ product, related, error, managedSeo }) {
     rating: product?.rating,
   };
 
-  const seoPayload = mergeManagedSeo(fallbackSeo, managedSeo);
-  seoPayload.photos = managedSeo?.photos
-    ? [managedSeo.photos]
-    : fallbackSeo.photos;
+  const seoPayload = fallbackSeo;
 
   return (
     <>
@@ -147,19 +139,10 @@ export const getServerSideProps = async ({ params, res }) => {
       return { notFound: true };
     }
 
-    const pageKey = getManagedSeoEntityKey(
-      "product",
-      product?.slug || product?.title || id,
-    );
-    const managedSeo = pageKey
-      ? await getManagedSeoServerSide(pageKey)
-      : null;
-
     return {
       props: {
         product,
         related,
-        managedSeo,
         error: "",
       },
     };
@@ -179,7 +162,6 @@ export const getServerSideProps = async ({ params, res }) => {
       props: {
         product: null,
         related: [],
-        managedSeo: null,
         error: "Failed to fetch product data. Please try again later.",
       },
     };
