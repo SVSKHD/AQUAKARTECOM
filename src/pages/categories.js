@@ -1,12 +1,10 @@
 import AquaAllCategoriesComponent from "@/pageComponents/categories";
 import CategoryServiceOperations from "@/services/category";
-import { getManagedSeoServerSide } from "@/services/seo";
 
-const AquaCategories = ({ categories, error, managedSeo }) => (
+const AquaCategories = ({ categories, error }) => (
   <AquaAllCategoriesComponent
     initialCategories={categories}
     initialError={error}
-    managedSeo={managedSeo}
   />
 );
 
@@ -17,9 +15,8 @@ export async function getServerSideProps({ res }) {
   );
 
   try {
-    const [categoriesResponse, managedSeo] = await Promise.all([
+    const [categoriesResponse] = await Promise.all([
       CategoryServiceOperations.Allcategories(),
-      getManagedSeoServerSide("categories"),
     ]);
 
     return {
@@ -28,7 +25,6 @@ export async function getServerSideProps({ res }) {
           ? categoriesResponse.data.data
           : [],
         error: "",
-        managedSeo,
       },
     };
   } catch (error) {
@@ -37,7 +33,6 @@ export async function getServerSideProps({ res }) {
       props: {
         categories: [],
         error: "We couldn’t load the categories right now. Please retry in a moment.",
-        managedSeo: await getManagedSeoServerSide("categories"),
       },
     };
   }
