@@ -74,7 +74,7 @@ const AquaSeoRevamp = ({
       DEFAULT_LOGO;
 
     metaData = {
-      title: `${blogPage?.title || "Aquakart Blog"}`,
+      title: `${blogPage?.title || "Aquakart Blog"} | Aquakart`,
       description:
         stripHtml(
           blogPage?.shortDescription || blogPage?.description || "",
