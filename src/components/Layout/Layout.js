@@ -13,9 +13,6 @@ import useNetworkStatus from "@/utils/connectivity";
 
 import CategoryServiceOperations from "@/services/category";
 import SubCategoryServiceOperations from "@/services/subcategory";
-import useManagedSeo from "@/hooks/useManagedSeo";
-import { getManagedSeoPageKey } from "@/utils/managedSeo";
-import { useManagedSeoContext } from "@/context/ManagedSeoContext";
 
 const AquaCartDrawer = dynamic(
   () => import("../common/commonDrawers/cartDrawer"),
@@ -36,7 +33,6 @@ const AquaLayout = (props) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const allowPageSticky = Boolean(props.allowPageSticky);
-  const contextManagedSeo = useManagedSeoContext();
 
   const { categories, subcategories } = useSelector(
     (state) => state.dynamicData,
@@ -63,11 +59,6 @@ const AquaLayout = (props) => {
 
     return next;
   }, [router.pathname]);
-
-  const managedSeo = useManagedSeo(
-    getManagedSeoPageKey(router.pathname),
-    props.managedSeo ?? contextManagedSeo,
-  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -191,7 +182,7 @@ const AquaLayout = (props) => {
   return (
     <>
       <AquaSeoRevamp
-        data={managedSeo || props.seo}
+        data={props.seo}
         path={seo.path}
         category={seo.category}
         categoryData={props?.categoryData}
