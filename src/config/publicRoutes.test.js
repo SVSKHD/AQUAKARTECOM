@@ -34,6 +34,17 @@ describe("public route registry", () => {
     });
   });
 
+  it("keeps fallback canonical URLs aligned with registered paths", () => {
+    PUBLIC_ROUTES.forEach((route) => {
+      const expectedUrl =
+        route.path === "/"
+          ? "https://aquakart.co.in"
+          : `https://aquakart.co.in${route.path}`;
+
+      expect(route.seo?.url).toBe(expectedUrl);
+    });
+  });
+
   it("derives static sitemap entries from the same registry", () => {
     const sitemapEntries = getStaticSitemapEntries();
 
