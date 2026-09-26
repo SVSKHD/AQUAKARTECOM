@@ -144,8 +144,8 @@ const AquaAbout = ({ storefrontStats = null }) => {
               </p>
             </div>
 
-            <div className="relative mt-16 h-80 lg:mt-0">
-              <div className="absolute left-0 top-0 h-full w-[500px] max-w-none rounded-2xl bg-white/10 ring-1 ring-white/20 backdrop-blur-md p-8 grid grid-cols-2 gap-8">
+            <div className="relative mt-16 w-full lg:mt-0 lg:w-[500px]">
+              <div className="grid min-h-80 w-full grid-cols-2 gap-6 rounded-2xl bg-white/10 p-6 ring-1 ring-white/20 backdrop-blur-md sm:gap-8 sm:p-8">
                 <div className="flex flex-col justify-center text-center">
                   <p className="text-4xl font-bold text-white">
                     {totalInvoices}
