@@ -2,23 +2,9 @@ import CategoryServiceOperations from "@/services/category";
 import SubCategoryServiceOperations from "@/services/subcategory";
 import ProductServiceOperations from "@/services/products";
 import BlogServiceOperations from "@/services/blog";
+import { getStaticSitemapEntries } from "@/config/publicRoutes";
 
 const BASE_URL = "https://aquakart.co.in";
-
-const staticPages = [
-  { loc: "/", changefreq: "daily", priority: "1.0" },
-  { loc: "/shop", changefreq: "daily", priority: "0.9" },
-  { loc: "/categories", changefreq: "weekly", priority: "0.8" },
-  { loc: "/blogs", changefreq: "weekly", priority: "0.8" },
-  { loc: "/compare", changefreq: "weekly", priority: "0.6" },
-  { loc: "/softener-planner", changefreq: "monthly", priority: "0.7" },
-  { loc: "/softeners-hyderabad", changefreq: "weekly", priority: "0.7" },
-  { loc: "/about", changefreq: "monthly", priority: "0.5" },
-  { loc: "/contact-us", changefreq: "monthly", priority: "0.5" },
-  { loc: "/privacy-policy", changefreq: "yearly", priority: "0.2" },
-  { loc: "/shipping-policy", changefreq: "yearly", priority: "0.2" },
-  { loc: "/terms-and-conditions", changefreq: "yearly", priority: "0.2" },
-];
 
 function escapeXml(str) {
   return String(str || "")
@@ -43,7 +29,7 @@ function SitemapPage() {
 }
 
 export async function getServerSideProps({ res }) {
-  const urls = [...staticPages];
+  const urls = getStaticSitemapEntries();
 
   try {
     const [categoriesRes, subCategoriesRes, productsRes, blogsRes] =

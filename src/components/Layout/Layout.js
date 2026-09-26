@@ -13,6 +13,7 @@ import useNetworkStatus from "@/utils/connectivity";
 
 import CategoryServiceOperations from "@/services/category";
 import SubCategoryServiceOperations from "@/services/subcategory";
+import { getPublicSeoKey } from "@/config/publicRoutes";
 
 const AquaCartDrawer = dynamic(
   () => import("../common/commonDrawers/cartDrawer"),
@@ -51,11 +52,10 @@ const AquaLayout = (props) => {
       subCategory: "",
     };
 
-    if (pathname === "/") next.path = "home";
-    else if (formattedPath === "product") next.product = "product";
+    if (formattedPath === "product") next.product = "product";
     else if (formattedPath === "category") next.category = "category";
     else if (formattedPath === "subcategory") next.subCategory = "subcategory";
-    else if (formattedPath) next.path = formattedPath;
+    else next.path = getPublicSeoKey(pathname) || "";
 
     return next;
   }, [router.pathname]);
