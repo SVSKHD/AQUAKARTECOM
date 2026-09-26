@@ -152,7 +152,12 @@ const getProductHref = (product) => {
 
 const buildProductSpecs = (product, formatCurrencyINR) => {
   const entries = [
-    ["Price", formatCurrencyINR(getProductPrice(product))],
+    [
+      "Price",
+      getProductPrice(product) > 0
+        ? formatCurrencyINR(getProductPrice(product))
+        : "",
+    ],
     ["Brand", resolveDisplayText(product?.brand || product?.manufacturer)],
     ["Model", resolveDisplayText(product?.model)],
     ["Category", resolveDisplayText(product?.category)],
@@ -273,7 +278,7 @@ const ProductHeaderCard = ({
             Listed price
           </p>
           <p className="mt-1 text-2xl font-black tracking-[-0.035em] text-slate-950">
-            {formatCurrencyINR(price)}
+            {price > 0 ? formatCurrencyINR(price) : "Not listed"}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {product?.capacity ? (
