@@ -367,6 +367,18 @@ const AquaSeoRevamp = ({
     }
   }
 
+  // Blog listing page
+  if (path === "blogs") {
+    graphNodes.push({
+      "@type": "Blog",
+      "@id": `${baseUrl}/blogs#blog`,
+      url: `${baseUrl}/blogs`,
+      name: title,
+      description,
+      publisher: { "@id": `${baseUrl}#organization` },
+    });
+  }
+
   // Blog list (blogs page)
   const blogListItems = [];
   if (Array.isArray(blogList) && blogList.length) {
@@ -389,7 +401,6 @@ const AquaSeoRevamp = ({
         description:
           stripHtml(blogRecord?.shortDescription || blogRecord?.description) ||
           undefined,
-        articleBody: stripHtml(blogRecord?.description),
         keywords: Array.isArray(blogRecord?.keywords)
           ? blogRecord.keywords.join(", ")
           : blogRecord?.keywords,
@@ -406,7 +417,9 @@ const AquaSeoRevamp = ({
         author: {
           "@type": "Organization",
           name: "Aquakart",
+          url: `${baseUrl}/about`,
         },
+        isPartOf: { "@id": `${baseUrl}/blogs#blog` },
         publisher: { "@id": `${baseUrl}#organization` },
       };
 
@@ -475,7 +488,9 @@ const AquaSeoRevamp = ({
         author: {
           "@type": "Organization",
           name: blogPage?.author || "Aquakart",
+          url: `${baseUrl}/about`,
         },
+        isPartOf: { "@id": `${baseUrl}/blogs#blog` },
         publisher: { "@id": `${baseUrl}#organization` },
       };
 
