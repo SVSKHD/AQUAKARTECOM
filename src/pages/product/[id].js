@@ -5,6 +5,32 @@ import ProductServiceOperations from "@/services/products";
 const FALLBACK_IMAGE =
   "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png";
 
+const OBJECT_ID_PATTERN = /^[a-f\d]{24}$/i;
+
+const resolveProductRoute = async (id) => {
+  try {
+    const bySlug = await ProductServiceOperations.ProductsByQuery(id);
+    if (bySlug?.data?.data) {
+      return {
+        product: bySlug.data.data,
+        related: bySlug.data.related || [],
+      };
+    }
+  } catch (error) {
+    if (error?.response?.status !== 404) throw error;
+  }
+
+  if (!OBJECT_ID_PATTERN.test(String(id))) {
+    return { product: null, related: [] };
+  }
+
+  const byId = await ProductServiceOperations.ProductById(id);
+  return {
+    product: byId?.data?.data || null,
+    related: byId?.data?.related || [],
+  };
+};
+
 const stripHtml = (value) => {
   if (!value) return "";
   return value
@@ -131,9 +157,7 @@ export const getServerSideProps = async ({ params, res }) => {
   );
 
   try {
-    const response = await ProductServiceOperations.ProductsByQuery(id);
-    const product = response?.data?.data ?? null;
-    const related = response?.data?.related ?? [];
+    const { product, related } = await resolveProductRoute(id);
 
     if (!product) {
       return { notFound: true };
