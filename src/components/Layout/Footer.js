@@ -171,7 +171,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
                   : formattedSubCategories.slice(0, 8).map((item) => (
                       <Link
                         key={item.title}
-                        href={`/subcategory/${item.title}`}
+                        href={`/subcategory/${encodeURIComponent(item.title)}`}
                         aria-label={item.title}
                         className="group flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-slate-300 transition-all hover:bg-white/10 hover:text-white hover:scale-[1.02]"
                       >
