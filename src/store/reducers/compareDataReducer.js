@@ -1,31 +1,54 @@
-// Initial state loaded from local storage or set to an empty array
-let initialState = [];
-if (typeof window !== "undefined") {
-  const storedCart = localStorage.getItem("compare");
-  initialState = storedCart ? JSON.parse(storedCart) : [];
-}
+const MAX_COMPARE_ITEMS = 4;
 
-// Reducer function for cart operations
-export const compareDataReducer = (state = initialState, action) => {
-  switch (action.type) {
-    case "ADD_TO_COMPARE":
-      const itemIndex = state.findIndex(
-        (item) => item._id === action.payload._id,
-      );
-      if (itemIndex >= 0) {
-        return state; // Item already exists, no addition
-      } else {
-        const newState = [...state, action.payload];
-        localStorage.setItem("compare", JSON.stringify(newState));
-        return newState;
-      }
+const readStoredCompare = () => {
+  if (typeof window === "undefined") return [];
 
-    case "REMOVE_FROM_COMPARE":
-      const newState = state.filter((item) => item._id !== action.payload);
-      localStorage.setItem("compare", JSON.stringify(newState));
-      return newState;
-
-    default:
-      return state;
+  try {
+    const stored = window.localStorage.getItem("compare");
+    const parsed = stored ? JSON.parse(stored) : [];
+    return Array.isArray(parsed) ? parsed.slice(0, MAX_COMPARE_ITEMS) : [];
+  } catch {
+    window.localStorage.removeItem("compare");
+    return [];
   }
 };
+
+const persistCompare = (items) => {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem("compare", JSON.stringify(items));
+};
+
+const initialState = readStoredCompare();
+
+export const compareDataReducer = (state = initialState, action) => {
+  const currentState = Array.isArray(state) ? state : [];
+
+  switch (action.type) {
+    case "ADD_TO_COMPARE": {
+      const exists = currentState.some(
+        (item) => item?._id === action.payload?._id,
+      );
+
+      if (exists || currentState.length >= MAX_COMPARE_ITEMS) {
+        return currentState;
+      }
+
+      const nextState = [...currentState, action.payload];
+      persistCompare(nextState);
+      return nextState;
+    }
+
+    case "REMOVE_FROM_COMPARE": {
+      const nextState = currentState.filter(
+        (item) => item?._id !== action.payload,
+      );
+      persistCompare(nextState);
+      return nextState;
+    }
+
+    default:
+      return currentState;
+  }
+};
+
+export { MAX_COMPARE_ITEMS };
