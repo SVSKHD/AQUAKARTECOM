@@ -158,9 +158,11 @@ const AquaCompareComponent = () => {
                       className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-black text-slate-950 transition hover:bg-emerald-300 disabled:cursor-wait disabled:opacity-60"
                     >
                       <LogIn className="h-4 w-4" />
-                      {signingIn || authLoading
-                        ? "Connecting…"
-                        : "Sign in when ready"}
+                      {signingIn
+                        ? "Signing in…"
+                        : authLoading
+                          ? "Checking account…"
+                          : "Sign in when ready"}
                     </button>
                   </>
                 )}
