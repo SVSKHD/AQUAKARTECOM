@@ -5,6 +5,7 @@ import {
 } from "@/constants/invoiceStaticData";
 import priceUtils from "@/utils/priceUtils";
 import { savePdfDocument } from "@/utils/pdfDownload";
+import { getInvoicePdfFileName } from "@/utils/invoice/invoiceFileName";
 import logo from "@/assests/logo.png";
 
 const BRAND = [4, 120, 87];
@@ -60,8 +61,12 @@ const getProductUrl = (product = {}) => {
 
 const imageUrlToDataUrl = async (source) => {
   if (!source || typeof window === "undefined") return "";
+
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 5000);
+
   try {
-    const response = await fetch(source);
+    const response = await fetch(source, { signal: controller.signal });
     if (!response.ok) return "";
     const blob = await response.blob();
     return await new Promise((resolve) => {
@@ -72,14 +77,10 @@ const imageUrlToDataUrl = async (source) => {
     });
   } catch {
     return "";
+  } finally {
+    window.clearTimeout(timeout);
   }
 };
-
-const safeFilePart = (value) =>
-  String(value || "invoice")
-    .trim()
-    .replace(/[^a-z0-9_-]/gi, "-")
-    .replace(/-+/g, "-");
 
 const formatPdfAmount = (value) => {
   const amount = Number(value) || 0;
@@ -868,7 +869,11 @@ export const downloadPublicInvoicePdf = async (invoice, options = {}) => {
   });
   return savePdfDocument(
     doc,
-    `Aquakart-Invoice-${safeFilePart(getPublicInvoiceReference(invoice))}.pdf`,
+    getInvoicePdfFileName(
+      getPublicInvoiceReference(invoice) === "Invoice"
+        ? ""
+        : getPublicInvoiceReference(invoice),
+    ),
     options.preparedTarget,
   );
 };
