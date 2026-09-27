@@ -1,5 +1,4 @@
 import AquaLayout from "@/components/Layout/Layout";
-import { useRouter } from "next/router";
 import {
   ShieldCheckIcon,
   FingerPrintIcon,
@@ -10,19 +9,6 @@ import {
 } from "@heroicons/react/24/outline";
 
 export default function AquaPrivacyPolicyComponent() {
-  const router = useRouter();
-  const seo = {
-    title: "Aquakart | Privacy Policy",
-    description:
-      "Explore Aquakart's Privacy Policy. Understand our data protection, secure practices, and commitment to your privacy.",
-    keywords:
-      "privacy policy, data protection, secure shopping, aquakart privacy, user data",
-    keyphrases: "privacy-policy, secure-data",
-    image:
-      "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
-    canonical: `${process.env.NEXT_PUBLIC_URL}${router.pathname}`,
-  };
-
   const PrivacyPolicy = [
     {
       title: "Introduction",
@@ -74,7 +60,7 @@ export default function AquaPrivacyPolicyComponent() {
   ];
 
   return (
-    <AquaLayout seo={seo}>
+    <AquaLayout>
       {/* Global Background */}
       <div className="fixed inset-0 bg-slate-50 z-[-1]">
         <div className="absolute top-[10%] right-[10%] w-[50%] h-[50%] rounded-full bg-emerald-100/40 blur-[120px]" />
