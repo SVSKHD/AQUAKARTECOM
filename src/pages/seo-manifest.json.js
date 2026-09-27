@@ -100,7 +100,18 @@ const toRecommendation = (page) => {
   };
 };
 
-export async function getServerSideProps({ res }) {
+const ALLOWED_REVIEW_ORIGINS = new Set([
+  "https://admin.aquakart.co.in",
+  "http://localhost:5173",
+  "http://localhost:3000",
+]);
+
+export async function getServerSideProps({ req, res }) {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_REVIEW_ORIGINS.has(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  }
   const data = PUBLIC_SEO_PAGES.map(toRecommendation);
 
   res.setHeader("Content-Type", "application/json; charset=utf-8");
