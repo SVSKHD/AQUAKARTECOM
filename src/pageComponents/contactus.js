@@ -1,6 +1,5 @@
 import { useState } from "react";
 import AquaLayout from "@/components/Layout/Layout";
-import { useRouter } from "next/router";
 import {
   EnvelopeIcon,
   PhoneIcon,
@@ -10,18 +9,7 @@ import { FaInstagram, FaWhatsapp } from "react-icons/fa"; // Keep brand icons
 import AquaEnquireForm from "@/components/common/commonDialogs/enquireForm";
 
 const AquaContactComponent = () => {
-  const router = useRouter();
   const [enquiryOpen, setEnquiryOpen] = useState(false);
-
-  const seo = {
-    title: "Aquakart | Contact Us",
-    description:
-      "Get in touch with Aquakart. dedicated support for all your water solution needs.",
-    keywords:
-      "contact Aquakart, customer support, water softener support hyderabad",
-    keyphrases: "contact-us, support",
-    canonical: `${process.env.NEXT_PUBLIC_URL}${router.pathname}`,
-  };
 
   const contactMethods = [
     {
@@ -62,7 +50,7 @@ const AquaContactComponent = () => {
   ];
 
   return (
-    <AquaLayout seo={seo}>
+    <AquaLayout>
       <AquaEnquireForm
         open={enquiryOpen}
         close={() => setEnquiryOpen(false)}
