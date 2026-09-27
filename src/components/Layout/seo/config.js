@@ -213,7 +213,7 @@ const config = {
       "Aquakart Softener Planning, Water Softener Calculator, RO Purifier Calculator, Best Water Filters, Hyderabad RO Offers, Water Filter Coupons Jubilee Hills",
     keyphrases:
       "Water Softener Discounts, RO Purifier Coupons, Aquakart Special Offers, Local Water Filter Deals Hyderabad",
-    url: "https://aquakart.co.in/softener-planning",
+    url: "https://aquakart.co.in/softener-planner",
     photos:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg",
     description:
@@ -227,7 +227,7 @@ const config = {
       "Softeners in Hyderabad, RO purifiers in Hyderabad, Aquakart Softener Planning, Water Softener Calculator, RO Purifier Calculator, Best Water Filters, Hyderabad RO Offers, Water Filter Coupons Jubilee Hills",
     keyphrases:
       "Water Softener Discounts, RO Purifier Coupons, Aquakart Special Offers, Local Water Filter Deals Hyderabad",
-    url: "https://aquakart.co.in/softener-planning",
+    url: "https://aquakart.co.in/softeners-hyderabad",
     photos:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1717355833/Blogs/TitleImages/z5sqkhkvawe0xcaliiei.jpg",
     description:
