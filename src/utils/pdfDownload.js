@@ -10,10 +10,11 @@ const isIosBrowser = () => {
   );
 };
 
-const normalizePdfFileName = (fileName) => {
+export const normalizePdfFileName = (fileName) => {
   const safeName = String(fileName || "Aquakart-Invoice.pdf")
     .trim()
-    .replace(/[\\/:*?"<>|]+/g, "-");
+    .replace(/[\\/:*?"<>|]+/g, "-")
+    .replace(/-+/g, "-");
 
   return safeName.toLowerCase().endsWith(".pdf")
     ? safeName
@@ -72,7 +73,14 @@ export const savePdfDocument = (doc, fileName, preparedTarget = null) => {
 
   const normalizedFileName = normalizePdfFileName(fileName);
   const blob = doc.output("blob");
-  const objectUrl = URL.createObjectURL(blob);
+  const pdfFile =
+    typeof File === "function"
+      ? new File([blob], normalizedFileName, {
+          type: "application/pdf",
+          lastModified: Date.now(),
+        })
+      : blob;
+  const objectUrl = URL.createObjectURL(pdfFile);
 
   const revokeObjectUrl = () => {
     try {
@@ -84,8 +92,45 @@ export const savePdfDocument = (doc, fileName, preparedTarget = null) => {
 
   if (preparedTarget && !preparedTarget.closed) {
     try {
-      preparedTarget.location.replace(objectUrl);
-      window.setTimeout(revokeObjectUrl, 60_000);
+      const targetDocument = preparedTarget.document;
+      targetDocument.title = normalizedFileName;
+      targetDocument.body.innerHTML = "";
+
+      const container = targetDocument.createElement("div");
+      container.style.cssText =
+        "font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;padding:20px;color:#0f172a";
+
+      const heading = targetDocument.createElement("p");
+      heading.textContent = normalizedFileName;
+      heading.style.cssText = "font-weight:700;margin:0 0 12px";
+
+      const saveLink = targetDocument.createElement("a");
+      saveLink.href = objectUrl;
+      saveLink.download = normalizedFileName;
+      saveLink.textContent = "Save PDF";
+      saveLink.style.cssText =
+        "display:inline-block;padding:11px 16px;border-radius:10px;background:#047857;color:white;text-decoration:none;font-weight:700;margin-bottom:14px";
+
+      const preview = targetDocument.createElement("iframe");
+      preview.src = objectUrl;
+      preview.title = normalizedFileName;
+      preview.style.cssText =
+        "display:block;width:100%;height:calc(100vh - 100px);border:0;border-radius:8px";
+
+      container.appendChild(heading);
+      container.appendChild(saveLink);
+      container.appendChild(preview);
+      targetDocument.body.appendChild(container);
+
+      // Prefer a real named download. If iOS ignores the synthetic click,
+      // the prepared tab still shows an explicit Save PDF control and preview.
+      try {
+        saveLink.click();
+      } catch {
+        // The visible link remains available as a reliable manual fallback.
+      }
+
+      window.setTimeout(revokeObjectUrl, 5 * 60_000);
       return { mode: "viewer", fileName: normalizedFileName };
     } catch {
       closePdfDownloadTarget(preparedTarget);
