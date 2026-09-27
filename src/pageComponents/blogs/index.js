@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import {
   ArrowRightIcon,
   BookOpenIcon,
@@ -126,7 +125,6 @@ const AquaBlogComponent = ({
   initialBlogs = [],
   initialError = "",
 }) => {
-  const router = useRouter();
   const [blogs, setBlogs] = useState(initialBlogs);
   const [query, setQuery] = useState("");
   const [topic, setTopic] = useState("All");
@@ -181,19 +179,8 @@ const AquaBlogComponent = ({
     setTopic("All");
   };
 
-  const seoData = {
-    title: "Know More | Aquakart Water Knowledge",
-    description:
-      "Clear, practical guides about hard water, water softeners, RO purifiers, filtration and maintenance from Aquakart.",
-    canonical: `${process.env.NEXT_PUBLIC_URL || "https://aquakart.co.in"}${router.asPath}`,
-    keywords:
-      "water guides, hard water advice, water softener guide, RO purifier maintenance, Aquakart knowledge",
-    image:
-      "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
-  };
-
   return (
-    <AquaLayout seo={seoData} blogListData={blogs}>
+    <AquaLayout blogListData={blogs}>
       <main className={styles.page}>
         <div className={styles.shell}>
           <header className={styles.hero}>

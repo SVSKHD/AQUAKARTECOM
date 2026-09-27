@@ -68,14 +68,8 @@ const AquaAbout = ({ storefrontStats = null }) => {
   const totalInvoices = formatMetric(storefrontStats?.totalInvoices);
   const customersServed = formatMetric(storefrontStats?.customersServed);
 
-  const seo = {
-    title: "Aquakart | About Us",
-    description:
-      "Learn about Aquakart's journey, our mission to provide pure water, and the values that drive us.",
-  };
-
   return (
-    <AquaLayout seo={seo}>
+    <AquaLayout>
       {/* Global Background */}
       <div className="fixed inset-0 bg-slate-50 z-[-1]">
         <div className="absolute top-0 left-[20%] w-[50%] h-[50%] rounded-full bg-emerald-100/40 blur-[120px]" />

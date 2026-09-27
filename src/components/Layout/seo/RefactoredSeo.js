@@ -165,9 +165,24 @@ const AquaSeoRevamp = ({
     ],
     contactPoint: {
       "@type": "ContactPoint",
+      telephone: "+91-90147-74667",
+      email: "customercare@aquakart.co.in",
       contactType: "customer service",
       areaServed: "IN",
       availableLanguage: ["English", "Hindi", "Telugu"],
+      hoursAvailable: {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ],
+        opens: "09:00",
+        closes: "19:00",
+      },
     },
   };
   graphNodes.push(publisherNode);

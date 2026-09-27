@@ -49,15 +49,6 @@ const AquaCompareComponent = () => {
     [cartData.length, compare.length, favData.length],
   );
 
-  const SeoData = {
-    title: "Aquakart | Compare Water Softeners & Water Solutions",
-    description:
-      "Compare Aquakart water softeners and water treatment products side by side by price, capacity, coverage, warranty and technical specifications. No login required.",
-    canonical: `${process.env.NEXT_PUBLIC_URL}${router.asPath}`,
-    image:
-      "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
-  };
-
   const renderContent = () => {
     switch (activeTab) {
       case "Wishlist":
@@ -83,7 +74,7 @@ const AquaCompareComponent = () => {
   };
 
   return (
-    <AquaLayout seo={SeoData}>
+    <AquaLayout>
       <main className="min-h-screen bg-[#f7f9f8] text-slate-950">
         <section className="relative overflow-hidden border-b border-slate-200 bg-slate-950 text-white">
           <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-emerald-400/20 blur-3xl" />
