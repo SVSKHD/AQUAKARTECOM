@@ -3,6 +3,7 @@ import {
   preparePdfDownloadTarget,
   savePdfDocument,
 } from "@/utils/pdfDownload";
+import { getInvoicePdfFileName } from "@/utils/invoice/invoiceFileName";
 
 const AQUAKART_LOGO_URL =
   "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png";
@@ -502,7 +503,9 @@ export const generateInvoicePDF = async (order) => {
 
   return savePdfDocument(
     doc,
-    `Aquakart-Invoice-${order?.orderId || order?.transactionId || "order"}.pdf`,
+    getInvoicePdfFileName(
+      order?.invoiceId || order?.orderId || order?.transactionId,
+    ),
     preparedTarget,
   );
   } catch (error) {
