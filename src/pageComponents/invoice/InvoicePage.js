@@ -293,7 +293,7 @@ const InvoiceError = ({ statusCode, onAccessGranted }) => {
 };
 
 const ProductCard = ({ product, index }) => {
-  const lineTotal = product.productPrice;
+  const lineTotal = product.productPrice * product.productQuantity;
 
   return (
     <article className={styles.productCard}>
@@ -351,9 +351,7 @@ const ProductCard = ({ product, index }) => {
           <div>
             <span>Unit price</span>
             <strong>
-              {priceUtils.formatAmount(
-                product.productPrice / product.productQuantity,
-              )}
+              {priceUtils.formatAmount(product.productPrice)}
             </strong>
             <small>per supplied unit</small>
           </div>

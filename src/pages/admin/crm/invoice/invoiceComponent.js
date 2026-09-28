@@ -103,10 +103,12 @@ const AquaInvoiceClient = ({ data }) => {
     },
   ];
 
-  const totalProductPrice = products.reduce(
-    (acc, product) => acc + (Number(product?.productPrice) || 0),
-    0,
-  );
+  const totalProductPrice = products.reduce((acc, product) => {
+    const unitPrice = Number(product?.productPrice) || 0;
+    const rawQuantity = Number(product?.productQuantity);
+    const quantity = Number.isFinite(rawQuantity) && rawQuantity > 0 ? rawQuantity : 1;
+    return acc + unitPrice * quantity;
+  }, 0);
   const amountPaid =
     data?.amountPaid ??
     data?.paidAmount ??
@@ -256,17 +258,30 @@ const AquaInvoiceClient = ({ data }) => {
                         </td>
                         <td className="border border-gray-300 px-4 py-2 text-center">
                           {IndianCurrencySumbol(
-                            BasePrice(product.productPrice),
+                            BasePrice(
+                              (Number(product?.productPrice) || 0) *
+                                (Number(product?.productQuantity) > 0
+                                  ? Number(product.productQuantity)
+                                  : 1),
+                            ),
                           )}
                         </td>
                         <td className="border border-gray-300 px-4 py-2 text-center">
                           {IndianCurrencySumbol(
-                            gstValueGenerate(product.productPrice),
+                            gstValueGenerate(
+                              (Number(product?.productPrice) || 0) *
+                                (Number(product?.productQuantity) > 0
+                                  ? Number(product.productQuantity)
+                                  : 1),
+                            ),
                           )}
                         </td>
                         <td className="border border-gray-300 px-4 py-2 text-center font-semibold">
                           {IndianCurrencySumbol(
-                            Number(product?.productPrice) || 0,
+                            (Number(product?.productPrice) || 0) *
+                              (Number(product?.productQuantity) > 0
+                                ? Number(product.productQuantity)
+                                : 1),
                           )}
                         </td>
                       </tr>
