@@ -103,9 +103,11 @@ export const mapInvoiceFromApi = (payload) => {
   );
   const suppliedTotal = Number(inv.total_amount ?? inv.total);
   const totalAmount =
-    Number.isFinite(suppliedTotal) && suppliedTotal >= 0
-      ? suppliedTotal
-      : computedTotal;
+    products.length > 0
+      ? computedTotal
+      : Number.isFinite(suppliedTotal) && suppliedTotal >= 0
+        ? suppliedTotal
+        : 0;
   const createdAt = normalizeDate(inv.created_at ?? inv.createdAt);
   const invoiceDate = normalizeDate(
     inv.date ?? inv.issue_date ?? inv.created_at ?? inv.createdAt,
