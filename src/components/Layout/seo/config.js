@@ -282,16 +282,37 @@ const config = {
     follow: true,
   },
   "privacy-policy": {
-    title: "Privacy Policy | Aquakart Water Solutions",
+    title: "Privacy Policy | Aquakart",
     keywords:
-      "Aquakart Privacy Policy, Data Security, Customer Information Protection",
-    keyphrases: "Privacy Policy, Customer Data Protection, Aquakart Privacy",
+      "Aquakart privacy policy, Aquakart data privacy, customer data protection, personal information policy, ecommerce privacy policy, Aquakart customer privacy",
+    keyphrases:
+      "Aquakart privacy policy, how Aquakart uses customer data, Aquakart personal information policy, Aquakart data protection",
     url: "https://aquakart.co.in/privacy-policy",
     photos:
       "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
     description:
-      "Read Aquakart's privacy policy to learn how we protect your data and ensure security for a safe online shopping experience.",
-    follow: false,
+      "Read Aquakart's Privacy Policy to understand how personal information is collected, used, shared and safeguarded when you use our website and services.",
+    robots:
+      "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",
+    ogTitle: "Aquakart Privacy Policy",
+    ogDescription:
+      "Learn how Aquakart handles personal information, customer data, service communications and privacy choices.",
+    twitterTitle: "Aquakart Privacy Policy",
+    twitterDescription:
+      "Learn how Aquakart collects, uses and safeguards personal information when you use our website and services.",
+    schemaJson: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://aquakart.co.in/privacy-policy#webpage",
+      url: "https://aquakart.co.in/privacy-policy",
+      name: "Privacy Policy | Aquakart",
+      description:
+        "Read Aquakart's Privacy Policy to understand how personal information is collected, used, shared and safeguarded when you use our website and services.",
+      isPartOf: { "@id": "https://aquakart.co.in#website" },
+      publisher: { "@id": "https://aquakart.co.in#organization" },
+      breadcrumb: { "@id": "https://aquakart.co.in/privacy-policy#breadcrumb" },
+    },
+    follow: true,
   },
   "terms-and-conditions": {
     title: "Terms & Conditions | Aquakart Water Solutions",
