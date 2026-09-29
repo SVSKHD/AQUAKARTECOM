@@ -325,3 +325,84 @@
     transform: none !important;
   }
 }
+
+
+/* Premium card skeleton shimmer used while ecommerce data is loading. */
+.aqua-skeleton-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.96), rgba(248,250,252,.94));
+  box-shadow:
+    0 18px 50px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.aqua-shimmer-block {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, #eef2f7 0%, #f8fafc 48%, #edf6f3 100%);
+}
+
+.aqua-shimmer-block::after,
+.aqua-skeleton-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-125%);
+  background: linear-gradient(
+    105deg,
+    transparent 18%,
+    rgba(255, 255, 255, 0.32) 34%,
+    rgba(255, 255, 255, 0.92) 49%,
+    rgba(209, 250, 229, 0.5) 56%,
+    transparent 74%
+  );
+  animation: aquaRichShimmer 1.55s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+.aqua-skeleton-card::after {
+  z-index: 10;
+  opacity: 0.46;
+}
+
+.aqua-skeleton-card:nth-child(2n)::after,
+.aqua-skeleton-card:nth-child(2n) .aqua-shimmer-block::after {
+  animation-delay: 0.12s;
+}
+
+.aqua-skeleton-card:nth-child(3n)::after,
+.aqua-skeleton-card:nth-child(3n) .aqua-shimmer-block::after {
+  animation-delay: 0.24s;
+}
+
+.aqua-skeleton-hero {
+  overflow: visible;
+  background: transparent;
+  box-shadow: none;
+}
+
+.aqua-skeleton-hero::after {
+  display: none;
+}
+
+@keyframes aquaRichShimmer {
+  0% {
+    transform: translateX(-125%);
+  }
+  55%,
+  100% {
+    transform: translateX(125%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aqua-shimmer-block::after,
+  .aqua-skeleton-card::after {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}

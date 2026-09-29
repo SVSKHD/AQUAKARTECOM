@@ -14,11 +14,19 @@ import AquaImage from "@/components/images/AquaImage";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
+import { AquaCardSkeleton, AquaSkeletonGrid } from "@/components/loaders/AquaCardSkeleton";
 
 const LoadingState = () => (
-  <div className="grid gap-8 lg:grid-cols-2 animate-pulse">
-    <div className="rounded-3xl bg-white/40 p-8 shadow-sm border border-white/50 h-96" />
-    <div className="rounded-3xl bg-white/40 p-8 shadow-sm border border-white/50 h-96" />
+  <div className="space-y-14" aria-label="Loading subcategory" role="status">
+    <AquaCardSkeleton variant="hero" />
+    <div>
+      <div className="mb-7 space-y-3">
+        <div className="aqua-shimmer-block h-7 w-48 rounded-xl" />
+        <div className="aqua-shimmer-block h-4 w-64 max-w-full rounded-full" />
+      </div>
+      <AquaSkeletonGrid count={3} />
+    </div>
+    <span className="sr-only">Loading subcategory products…</span>
   </div>
 );
 

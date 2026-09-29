@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import AquaLayout from "@/components/Layout/Layout";
 import AquaReuseDrawer from "@/components/reusables/drawer";
-import AquaAppLoader from "@/components/common/AquaAppLoader";
+import { AquaSkeletonGrid } from "@/components/loaders/AquaCardSkeleton";
 import ProductServiceOperations from "@/services/products";
 import { getProductReviewStats } from "@/utils/reviewStats";
 import ProductGrid from "./productGrid";
@@ -452,11 +452,30 @@ const AquaShopPageComponent = ({
       allowPageSticky
     >
       {loading ? (
-        <AquaAppLoader
-          variant="screen"
-          message="Refreshing the water studio"
-          subtext="Matching products, prices and availability for you."
-        />
+        <div className="relative min-h-screen overflow-x-clip px-3 pb-16 pt-6 sm:px-5 lg:px-7">
+          <div className="mx-auto max-w-[1480px]">
+            <div className="mb-7 flex items-end justify-between gap-4">
+              <div className="space-y-3">
+                <div className="aqua-shimmer-block h-3 w-28 rounded-full" />
+                <div className="aqua-shimmer-block h-9 w-72 max-w-[75vw] rounded-2xl" />
+              </div>
+              <div className="aqua-shimmer-block hidden h-10 w-40 rounded-full sm:block" />
+            </div>
+            <div className="grid items-start gap-6 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[310px_minmax(0,1fr)]">
+              <aside className="hidden lg:block">
+                <div className="aqua-skeleton-card rounded-[1.75rem] border border-slate-200 bg-white p-4">
+                  <div className="aqua-shimmer-block h-10 rounded-xl" />
+                  <div className="mt-5 space-y-3">
+                    {Array.from({ length: 7 }).map((_, index) => (
+                      <div key={index} className="aqua-shimmer-block h-9 rounded-xl" />
+                    ))}
+                  </div>
+                </div>
+              </aside>
+              <AquaSkeletonGrid count={8} viewMode={viewMode} />
+            </div>
+          </div>
+        </div>
       ) : error ? (
         <section className="mx-auto my-12 flex min-h-[58vh] w-[calc(100%-2rem)] max-w-3xl flex-col items-center justify-center overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-8 text-center">
           <div className="grid h-16 w-16 place-items-center rounded-2xl bg-rose-50 text-rose-500">
