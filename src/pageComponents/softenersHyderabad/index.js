@@ -6,7 +6,7 @@ import ArtGallery from "@/components/reusables/artGalery";
 import AquaSoftnerOperations from "@/services/softenersHyderabad";
 import ProductGrid from "../shop/productGrid";
 import { PhoneIcon } from "@heroicons/react/24/solid";
-import { FaWhatsapp } from "react-icons/fa";
+import { FaPaw, FaWhatsapp } from "react-icons/fa";
 
 const LoadingState = () => (
   <div className="animate-pulse space-y-12">
@@ -242,6 +242,39 @@ const AquaSoftenerHyderabadComponent = ({
                     >
                       Book Consultation
                     </button>
+                  </div>
+                </section>
+
+                {/* Pet household backlink */}
+                <section className="relative overflow-hidden rounded-[2.5rem] border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-cyan-50 p-8 shadow-sm sm:p-10">
+                  <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-emerald-200/30 blur-3xl" />
+                  <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="max-w-3xl">
+                      <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 shadow-sm ring-1 ring-emerald-100">
+                        <FaPaw className="h-3.5 w-3.5" />
+                        Pet-friendly home water care
+                      </div>
+                      <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                        A softer-water home can also make pet-care routines easier to manage.
+                      </h2>
+                      <p className="mt-3 text-base leading-relaxed text-slate-600">
+                        Aquakart provides household softening solutions for hard-water management in bathing,
+                        grooming, laundry and cleaning. For pet nutrition, hydration and wellness guidance,
+                        visit Paw Sattva.
+                      </p>
+                      <p className="mt-2 text-xs font-medium text-slate-500">
+                        Drinking-water choices for pets should follow veterinary advice and local water-quality guidance.
+                      </p>
+                    </div>
+                    <a
+                      href="https://pawsattva.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-bold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-emerald-700"
+                    >
+                      Visit Paw Sattva
+                      <span aria-hidden="true">↗</span>
+                    </a>
                   </div>
                 </section>
 
