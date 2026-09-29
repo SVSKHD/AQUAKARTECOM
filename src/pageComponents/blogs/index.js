@@ -12,6 +12,7 @@ import AquaLayout from "@/components/Layout/Layout";
 import LazyImage from "@/components/image/LazyImage";
 import BlogServiceOperations from "@/services/blog";
 import styles from "@/styles/knowledge.module.css";
+import { AquaSkeletonGrid } from "@/components/loaders/AquaCardSkeleton";
 
 const stripHtml = (value = "") =>
   typeof value === "string"
@@ -238,10 +239,8 @@ const AquaBlogComponent = ({
           </section>
 
           {loading ? (
-            <div className={styles.loadingGrid} aria-label="Loading guides">
-              {[0, 1, 2, 3].map((item) => (
-                <div key={item} />
-              ))}
+            <div className="mt-8">
+              <AquaSkeletonGrid count={4} variant="article" />
             </div>
           ) : error ? (
             <section className={styles.emptyState}>
