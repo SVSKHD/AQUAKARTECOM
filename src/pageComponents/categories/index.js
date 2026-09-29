@@ -4,20 +4,14 @@ import CategoryServiceOperations from "@/services/category";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
+import { AquaSkeletonGrid } from "@/components/loaders/AquaCardSkeleton";
 
 const CategoriesSkeleton = () => (
-  <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-    {Array.from({ length: 8 }).map((_, index) => (
-      <div
-        key={`skeleton-${index}`}
-        className="animate-pulse rounded-3xl bg-white/80 p-6 shadow-sm ring-1 ring-indigo-100"
-      >
-        <div className="mb-4 h-40 w-full rounded-2xl bg-indigo-100/60" />
-        <div className="h-4 w-3/4 rounded-full bg-indigo-100/80" />
-        <div className="mt-3 h-3 w-1/2 rounded-full bg-indigo-100/60" />
-      </div>
-    ))}
-  </div>
+  <AquaSkeletonGrid
+    count={8}
+    variant="category"
+    className="mt-12"
+  />
 );
 
 const AquaAllCategoriesComponent = ({
