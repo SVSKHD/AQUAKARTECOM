@@ -336,9 +336,13 @@ const AquaCheckoutComponent = () => {
     }
   };
 
-  const paymentAddress = () => ({
-      shippingAddress: selectedAddress,
-  });
+  const productData = (data) =>
+    data.map((item) => ({
+      productId: item._id || item.id,
+      name: item.title,
+      price: item.price,
+      quantity: item.quantity,
+    }));
 
   const handlePhonePayment = async () => {
     if (!totalItems) {
@@ -364,34 +368,67 @@ const AquaCheckoutComponent = () => {
       return;
     }
 
+    const transactionId = `AQTR-PGPP${nanoid(5).toUpperCase()}D${dayjs(
+      new Date(),
+    ).format("DDMMYYYY")}`;
+    const orderId = `AQOD${dayjs(new Date()).format("DDMMYYYY")}${nanoid(2).toUpperCase()}`;
+
+    const newOrder = {
+      user: userData?.user?._id,
+      customerName: userData?.user?.name || userData?.user?.firstName || "",
+      email: userData?.user?.email || "",
+      phone: userData?.user?.phone || "",
+      number: userData?.user?.phone || "",
+      transactionId,
+      orderType: "Payment Method(Phone Pe Gateway)",
+      orderId,
+      items: productData(cartData),
+      totalAmount: payableTotal,
+      discountAmount: discount,
+      paymentMethod: "OTHER THAN CASH ON DELIVERY",
+      paymentStatus: "Pending",
+      currency: "INR",
+      billingAddress: selectedAddress,
+      shippingAddress: selectedAddress,
+      shippingMethod: "Standard",
+      shippingCost: Number(checkoutQuote?.deliveryCharge ?? 50),
+      estimatedDelivery: new Date(
+        Date.now() + 7 * 24 * 60 * 60 * 1000,
+      ).toISOString(),
+      orderStatus: "Processing",
+    };
+
     setButtonStatus((prev) => ({ ...prev, gateway: true }));
     try {
-      const quote = checkoutQuote || (await requestCheckoutQuote());
-      const res = await orderServiceOperations.createCheckoutPayment(
-        {
-          checkoutSessionId: quote.id || quote._id,
-          gateway: "phonepe",
-          ...paymentAddress(),
-        },
+      const res = await orderServiceOperations.createPhonePePayOrder(
+        newOrder,
         userData?.token,
-        `checkout-${nanoid()}`,
       );
-        const redirectUrl = res?.url || res?.data?.url || res?.redirectUrl || res?.data?.redirectUrl;
-        if (redirectUrl) {
-          window.location.href = redirectUrl;
-        } else {
-          console.error("No redirect URL in response:", res);
-          AquaToast({
-            message: "Payment gateway did not return a redirect URL",
-            type: "error",
-          });
-        }
-    } catch (err) {
-        console.error("Payment error:", err);
+      const redirectUrl =
+        res?.url ||
+        res?.data?.url ||
+        res?.redirectUrl ||
+        res?.data?.redirectUrl;
+
+      if (redirectUrl) {
         AquaToast({
-          message: err?.message || "Failed to initiate payment",
+          message: "Redirecting to PhonePe",
+          type: "success",
+        });
+        window.location.href = redirectUrl;
+      } else {
+        console.error("No PhonePe redirect URL in response:", res);
+        AquaToast({
+          message: "PhonePe did not return a payment page",
           type: "error",
         });
+      }
+    } catch (err) {
+      console.error("PhonePe payment error:", err);
+      AquaToast({
+        message: err?.message || "Failed to open PhonePe payment",
+        type: "error",
+      });
     } finally {
       setButtonStatus((prev) => ({ ...prev, gateway: false }));
     }
