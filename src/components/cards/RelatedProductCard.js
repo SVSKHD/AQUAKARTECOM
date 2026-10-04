@@ -13,7 +13,7 @@ const AquaRelatedProductCard = ({ product }) => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
-  const { cartData, favData } = useSelector((state) => ({ ...state }));
+  const { cartData, favData } = useSelector((state) => state);
 
   const displayPhotos =
     Array.isArray(product?.photos) && product.photos.length > 0

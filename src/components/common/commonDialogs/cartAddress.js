@@ -41,9 +41,9 @@ const AquaAddressDialog = ({ editData }) => {
   });
   const [errors, setErrors] = useState({});
   const dispatch = useDispatch();
-  const { addressDialog, addressData, userData } = useSelector((state) => ({
-    ...state,
-  }));
+  const { addressDialog, addressData, userData } = useSelector(
+    (state) => state,
+  );
   useEffect(() => {
     if (addressData) {
       setAddress(addressData);

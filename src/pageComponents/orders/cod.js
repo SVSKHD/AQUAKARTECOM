@@ -37,7 +37,7 @@ const AquaCodOrderPageComponent = () => {
   const [loading, setLoading] = useState(false);
   const [isPdfReady, setIsPdfReady] = useState(false);
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
-  const { userData } = useSelector((state) => ({ ...state }));
+  const { userData } = useSelector((state) => state);
   const { formatCurrencyINR } = useCurrency;
 
   const fetchCodOrder = async (id) => {

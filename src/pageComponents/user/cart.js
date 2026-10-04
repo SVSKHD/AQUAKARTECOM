@@ -5,7 +5,7 @@ import useCart from "@/utils/cart";
 import useProduct from "@/utils/product";
 
 const AquaCartComponent = () => {
-  const { cartData } = useSelector((state) => ({ ...state }));
+  const { cartData } = useSelector((state) => state);
   const { changeItemQuantity, getTotalPrice } = useCart();
   const { removeFromCart } = useProduct();
   const { formatCurrencyINR } = useCurrency;

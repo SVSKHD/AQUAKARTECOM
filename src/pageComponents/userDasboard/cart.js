@@ -8,7 +8,7 @@ import DashboardPagination, {
 } from "@/components/dashboard/DashboardPagination";
 
 const AquaUserCartPageComponent = () => {
-  const { cartData, favData } = useSelector((state) => ({ ...state }));
+  const { cartData, favData } = useSelector((state) => state);
 
   const safeCart = useMemo(
     () => (Array.isArray(cartData) ? cartData : []),

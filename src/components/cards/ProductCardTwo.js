@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import LazyImage from "../image/LazyImage";
 import { useRouter } from "next/router";
 import { getProductReviewStats } from "@/utils/reviewStats";
+import { FALLBACK_IMAGE } from "@/constants/images";
 
 const getPhotoUrl = (photo) =>
   typeof photo === "string"
@@ -32,7 +33,7 @@ const ReusableProductCard = ({
   const { formatCurrencyINR } = useCurrency;
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
 
-  const { cartData, favData } = useSelector((state) => ({ ...state }));
+  const { cartData, favData } = useSelector((state) => state);
   const router = useRouter();
 
   const {
@@ -100,14 +101,12 @@ const ReusableProductCard = ({
     setAddFav(!!isProductInFav);
   }, [cartData, favData, product?._id]);
 
+  // Drop photo entries without a usable URL; show the brand image if none remain.
   const displayPhotos = useMemo(() => {
-    if (Array.isArray(photos) && photos.length > 0) return photos;
-    return [
-      {
-        secure_url:
-          "https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png",
-      },
-    ];
+    const usable = Array.isArray(photos)
+      ? photos.filter((photo) => getPhotoUrl(photo))
+      : [];
+    return usable.length > 0 ? usable : [{ secure_url: FALLBACK_IMAGE }];
   }, [photos]);
 
   useEffect(() => {

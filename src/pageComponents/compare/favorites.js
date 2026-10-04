@@ -6,7 +6,7 @@ import AquaToast from "@/components/reusables/react-toastify";
 
 const AquaFavoritesTabContent = () => {
   const dispatch = useDispatch();
-  const { favData, compare } = useSelector((state) => ({ ...state }));
+  const { favData, compare } = useSelector((state) => state);
   const { formatCurrencyINRWithK } = useCurrency;
 
   const AddToCompare = (product) => {

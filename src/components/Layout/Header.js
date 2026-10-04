@@ -43,9 +43,7 @@ const AquaHeader = () => {
   const { openAuthDialog } = useDialog();
   const { signOut } = useAuth();
 
-  const { userData, cartData, favData } = useSelector((state) => ({
-    ...state,
-  }));
+  const { userData, cartData, favData } = useSelector((state) => state);
 
   const [festival, setFestival] = useState(null);
   const [isVisible, setIsVisible] = useState(true);

@@ -197,7 +197,7 @@ const getTimelineSteps = (orderStatus) => {
 };
 
 const AquaOrdersPageComponent = () => {
-  const { userData } = useSelector((state) => ({ ...state }));
+  const { userData } = useSelector((state) => state);
   const { signOut } = useAuth();
   const router = useRouter();
   const [orders, setOrders] = useState([]);

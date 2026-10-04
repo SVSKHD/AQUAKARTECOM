@@ -13,6 +13,8 @@ import LazyImage from "@/components/image/LazyImage";
 import BlogServiceOperations from "@/services/blog";
 import styles from "@/styles/knowledge.module.css";
 import { AquaSkeletonGrid } from "@/components/loaders/AquaCardSkeleton";
+import { getCategoryName } from "@/utils/blogCategory";
+import KnowledgeFallback from "@/components/images/KnowledgeFallback";
 
 const stripHtml = (value = "") =>
   typeof value === "string"
@@ -42,8 +44,9 @@ const looksLikeId = (value = "") =>
   value.replace(/[^0-9a-f]/gi, "").length >= 16;
 
 const formatTopic = (value, fallback = "Water guide") => {
-  if (!value || typeof value !== "string") return fallback;
-  const cleaned = value.replace(/[._-]+/g, " ").trim();
+  const text = getCategoryName(value);
+  if (!text) return fallback;
+  const cleaned = text.replace(/[._-]+/g, " ").trim();
   if (!cleaned || looksLikeId(cleaned)) return fallback;
   return cleaned
     .toLowerCase()
@@ -69,9 +72,10 @@ const getExcerpt = (post = {}, length = 155) =>
   ).slice(0, length);
 
 const getTopicValues = (post = {}) =>
-  [...(Array.isArray(post.tags) ? post.tags : []), post.category].filter(
-    Boolean,
-  );
+  [
+    ...(Array.isArray(post.tags) ? post.tags : []),
+    getCategoryName(post.category),
+  ].filter((value) => getCategoryName(value));
 
 const ArticleImage = ({ post, priority = false }) => {
   const image = getPostImage(post);
@@ -91,10 +95,10 @@ const ArticleImage = ({ post, priority = false }) => {
       imgClassName={styles.articleImage}
     />
   ) : (
-    <div className={styles.imageFallback}>
-      <BookOpenIcon />
-      <span>Aquakart knowledge</span>
-    </div>
+    <KnowledgeFallback
+      size={priority ? "lg" : "md"}
+      label={formatTopic(post?.category, "")}
+    />
   );
 };
 
@@ -122,10 +126,7 @@ const ArticleCard = ({ post }) => (
   </Link>
 );
 
-const AquaBlogComponent = ({
-  initialBlogs = [],
-  initialError = "",
-}) => {
+const AquaBlogComponent = ({ initialBlogs = [], initialError = "" }) => {
   const [blogs, setBlogs] = useState(initialBlogs);
   const [query, setQuery] = useState("");
   const [topic, setTopic] = useState("All");

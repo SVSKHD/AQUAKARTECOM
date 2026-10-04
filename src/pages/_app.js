@@ -16,17 +16,42 @@ import AquaAppLoader from "@/components/common/AquaAppLoader";
 import { AuthProvider } from "@/context/AuthContext";
 import { startAnalyticsVisit } from "@/services/analyticsTracker";
 
-const robotoMono = Roboto_Mono({ subsets: ["latin"], display: "swap", variable: "--font-roboto-mono" });
-const montserrat = Montserrat({ subsets: ["latin"], display: "swap", variable: "--font-montserrat" });
-const Toaster = dynamic(() => import("sonner").then((mod) => mod.Toaster), { ssr: false });
+const robotoMono = Roboto_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-roboto-mono",
+});
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-montserrat",
+});
+const Toaster = dynamic(() => import("sonner").then((mod) => mod.Toaster), {
+  ssr: false,
+});
 
 const GA_ID = "G-FS41RRVRD4";
 const ROUTE_LOADER_DELAY_MS = 120;
 const ROUTE_LOADER_MIN_MS = 180;
-const persistConfig = { key: "root", storage };
+// Transient UI flags must not survive reloads, or a dialog left open renders
+// on the client but not the server and breaks hydration.
+const persistConfig = {
+  key: "root",
+  storage,
+  blacklist: [
+    "toastNotify",
+    "favDrawer",
+    "cartDrawer",
+    "authDialog",
+    "userDataDrawer",
+    "addressDialog",
+  ],
+};
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 const store = createStore(persistedReducer);
-const persistor = persistStore(store);
+// Rehydrate only after mount (see persistor.persist() effect below) so the first
+// client render matches the server HTML.
+const persistor = persistStore(store, { manualPersist: true });
 const routePathname = (url = "") => url.split("?")[0].split("#")[0];
 const isDashboardTabChange = (from, to) =>
   from.startsWith("/dashboard") && routePathname(to).startsWith("/dashboard");
@@ -57,7 +82,8 @@ export default function App({ Component, pageProps }) {
   }, [router.events]);
 
   useEffect(() => {
-    const handleRouteChange = (url) => window.gtag?.("config", GA_ID, { page_path: url });
+    const handleRouteChange = (url) =>
+      window.gtag?.("config", GA_ID, { page_path: url });
     router.events.on("routeChangeComplete", handleRouteChange);
     return () => router.events.off("routeChangeComplete", handleRouteChange);
   }, [router.events]);
@@ -91,7 +117,10 @@ export default function App({ Component, pageProps }) {
       window.clearTimeout(loaderTimerRef.current);
       const elapsed = Date.now() - loaderStartedAtRef.current;
       const remaining = Math.max(ROUTE_LOADER_MIN_MS - elapsed, 0);
-      routeHideTimerRef.current = window.setTimeout(() => setRouteLoading(false), remaining);
+      routeHideTimerRef.current = window.setTimeout(
+        () => setRouteLoading(false),
+        remaining,
+      );
     };
 
     router.events.on("routeChangeStart", showRouteLoader);
@@ -106,45 +135,62 @@ export default function App({ Component, pageProps }) {
     };
   }, [router.asPath, router.events]);
 
-  useEffect(() => { if (typeof window !== "undefined") persistor.persist(); }, []);
+  useEffect(() => {
+    if (typeof window !== "undefined") persistor.persist();
+  }, []);
   const shouldShowLoader = !appReady || routeLoading;
 
   return (
     <Provider store={store}>
-        <style jsx global>{`
-          :root {
-            --font-roboto-mono: ${robotoMono.style.fontFamily};
-            --font-montserrat: ${montserrat.style.fontFamily};
-          }
-        `}</style>
-        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
-        <Script id="ga-init" strategy="afterInteractive">{`
+      <style jsx global>{`
+        :root {
+          --font-roboto-mono: ${robotoMono.style.fontFamily};
+          --font-montserrat: ${montserrat.style.fontFamily};
+        }
+      `}</style>
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+        strategy="afterInteractive"
+      />
+      <Script id="ga-init" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           window.gtag = gtag;
           gtag('js', new Date());
           gtag('config', '${GA_ID}');
         `}</Script>
-        <AuthProvider>
-          <div className={`${robotoMono.variable} ${montserrat.variable}`}>
-            {!appReady ? <AquaAppLoader variant="screen" message="Welcome to Aquakart" subtext="Getting the page ready for you." /> : null}
-            {routeLoading ? <AquaAppLoader variant="route" message="Opening Aquakart" subtext="Preparing the next page smoothly." /> : null}
-            <main
-              className="aqua-page-shell aqua-page-enter"
-              data-route={router.pathname}
-              aria-busy={shouldShowLoader}
-              style={{
-                opacity: routeLoading ? 0 : 1,
-                pointerEvents: shouldShowLoader ? "none" : "auto",
-                transform: "none",
-                transition: routeLoading ? "none" : "opacity 180ms ease",
-              }}
-            >
-              <Component {...pageProps} />
-            </main>
-            <Toaster position="top-right" richColors closeButton />
-          </div>
-        </AuthProvider>
+      <AuthProvider>
+        <div className={`${robotoMono.variable} ${montserrat.variable}`}>
+          {!appReady ? (
+            <AquaAppLoader
+              variant="screen"
+              message="Welcome to Aquakart"
+              subtext="Getting the page ready for you."
+            />
+          ) : null}
+          {routeLoading ? (
+            <AquaAppLoader
+              variant="route"
+              message="Opening Aquakart"
+              subtext="Preparing the next page smoothly."
+            />
+          ) : null}
+          <main
+            className="aqua-page-shell aqua-page-enter"
+            data-route={router.pathname}
+            aria-busy={shouldShowLoader}
+            style={{
+              opacity: routeLoading ? 0 : 1,
+              pointerEvents: shouldShowLoader ? "none" : "auto",
+              transform: "none",
+              transition: routeLoading ? "none" : "opacity 180ms ease",
+            }}
+          >
+            <Component {...pageProps} />
+          </main>
+          <Toaster position="top-right" richColors closeButton />
+        </div>
+      </AuthProvider>
     </Provider>
   );
 }

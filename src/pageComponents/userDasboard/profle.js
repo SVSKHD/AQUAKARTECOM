@@ -73,7 +73,7 @@ const toDateInputValue = (dob) => {
 };
 
 const AquaUserProfilePageComponent = () => {
-  const { userData } = useSelector((state) => ({ ...state }));
+  const { userData } = useSelector((state) => state);
   const dispatch = useDispatch();
   const user = userData?.user ?? {};
 

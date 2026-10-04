@@ -22,6 +22,7 @@ const AquaUserAuthDialog = () => {
               src={AquaLogo}
               alt="Logo"
               fill
+              sizes="36px"
               className="object-contain"
               priority
             />

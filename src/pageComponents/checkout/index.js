@@ -51,7 +51,7 @@ const AddressHandHint = ({ text }) => (
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { cartData, userData } = useSelector((state) => ({ ...state }));
+  const { cartData, userData } = useSelector((state) => state);
   const { formatCurrencyINR } = useCurrency;
   const { getTotalPrice, changeItemQuantity } = useCart();
   const { closeCartDrawer } = useCartDrawer();
@@ -93,9 +93,7 @@ const AquaCheckoutComponent = () => {
   const hasSingleAddress = savedAddresses.length === 1;
   const hasMultipleAddresses = savedAddresses.length > 1;
   const discount = Number(checkoutQuote?.discount || 0);
-  const payableTotal = Number(
-    checkoutQuote?.payableAmount ?? getTotalPrice(),
-  );
+  const payableTotal = Number(checkoutQuote?.payableAmount ?? getTotalPrice());
   const shouldPromptAddressSelection = hasMultipleAddresses && !selectedAddress;
   const showAddressHandHint = !hasAddresses || shouldPromptAddressSelection;
   const addressHandHintText = !hasAddresses
@@ -330,7 +328,10 @@ const AquaCheckoutComponent = () => {
       router.push(`/order/cod/${order.transactionId}`);
     } catch (err) {
       console.error("order", err);
-      AquaToast({ message: err?.message || "Failed to create COD order", type: "error" });
+      AquaToast({
+        message: err?.message || "Failed to create COD order",
+        type: "error",
+      });
     } finally {
       setButtonStatus((prev) => ({ ...prev, cod: false }));
     }

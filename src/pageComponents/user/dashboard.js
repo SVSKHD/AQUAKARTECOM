@@ -8,7 +8,7 @@ import AquaToast from "@/components/reusables/react-toastify";
 import AquaPromptDialog from "@/components/common/promptDialogs/promtDialog";
 
 const AquaDashboardPageComponent = () => {
-  const { userData } = useSelector((state) => ({ ...state }));
+  const { userData } = useSelector((state) => state);
   const dispatch = useDispatch();
 
   const [details, setDetails] = useState({});

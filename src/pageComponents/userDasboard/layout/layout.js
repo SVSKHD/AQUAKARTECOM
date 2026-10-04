@@ -32,7 +32,7 @@ const ROUTE_COPY = {
 };
 
 const AquaUserDashbordLayout = ({ children, title, subtitle }) => {
-  const { userData } = useSelector((state) => ({ ...state }));
+  const { userData } = useSelector((state) => state);
   const router = useRouter();
   const routeMeta = ROUTE_COPY[router.pathname] || ROUTE_COPY["/dashboard"];
   const resolvedTitle = title || routeMeta.title;

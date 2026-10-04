@@ -3,7 +3,7 @@ import AquaReuseDrawer from "../../reusables/drawer";
 
 const AquaUserDataDrawer = () => {
   const dispatch = useDispatch();
-  const { userDataDrawer } = useSelector((state) => ({ ...state }));
+  const { userDataDrawer } = useSelector((state) => state);
   return (
     <AquaReuseDrawer
       open={userDataDrawer}

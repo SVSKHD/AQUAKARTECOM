@@ -1,5 +1,6 @@
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
+import { FALLBACK_IMAGE } from "@/constants/images";
 
 const shimmer = (w, h) => `
   <svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
@@ -64,10 +65,12 @@ export default function LazyImage({
     return () => io.disconnect();
   }, [priority]);
 
-  const safeSrc =
-    !src || failed
-      ? "/images/placeholder.png" // put a small placeholder in /public/images/placeholder.png
-      : src;
+  // A new src gets a fresh attempt even if the previous one failed.
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  const safeSrc = !src || failed ? FALLBACK_IMAGE : src;
 
   const defaultBlur =
     blurDataURL ||

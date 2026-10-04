@@ -25,7 +25,7 @@ const PAYMENT_METHOD_LABEL = "Online Payment";
 const AquaPaymentOrderPageComponent = () => {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { userData } = useSelector((state) => ({ ...state }));
+  const { userData } = useSelector((state) => state);
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
