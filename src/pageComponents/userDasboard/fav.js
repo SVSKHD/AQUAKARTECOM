@@ -1,7 +1,8 @@
 import { useMemo } from "react";
-import AquaUserDashbordLayout from "./layout/layout";
 import { useSelector } from "react-redux";
-import { Heart, ShoppingCart, PackageCheck, Eye } from "lucide-react";
+import Link from "next/link";
+import { Heart } from "lucide-react";
+import AquaUserDashbordLayout from "./layout/layout";
 import DashboardProductCard from "./layout/cards/cartCard";
 import DashboardPagination, {
   useDashboardPagination,
@@ -9,126 +10,48 @@ import DashboardPagination, {
 
 const AquaUserFavPageComponent = () => {
   const favData = useSelector((state) => state.favData);
-  const cartData = useSelector((state) => state.cartData);
+  const fav = useMemo(() => (Array.isArray(favData) ? favData : []), [favData]);
+  const pagination = useDashboardPagination(fav);
 
-  const safeFav = useMemo(
-    () => (Array.isArray(favData) ? favData : []),
-    [favData],
-  );
-  const safeCart = useMemo(
-    () => (Array.isArray(cartData) ? cartData : []),
-    [cartData],
-  );
-  const favouritesPagination = useDashboardPagination(safeFav);
-
-  const { favouritesCount, inStockCount, inCartCount, viewedCount } =
-    useMemo(() => {
-      const inStock = safeFav.filter((item) =>
-        item?.inStock === false ? false : true,
-      ).length;
-      const inCart = safeFav.filter((fav) =>
-        safeCart.some(
-          (cartItem) => cartItem._id === fav._id || cartItem.id === fav.id,
-        ),
-      ).length;
-      const viewed = safeFav.reduce((acc, item) => {
-        if (typeof item.views === "number") {
-          return acc + item.views;
-        }
-        return acc;
-      }, 0);
-
-      return {
-        favouritesCount: safeFav.length,
-        inStockCount: inStock,
-        inCartCount: inCart,
-        viewedCount: viewed,
-      };
-    }, [safeFav, safeCart]);
-
-  const summaryCards = [
-    {
-      label: "Saved items",
-      value: favouritesCount,
-      icon: Heart,
-      accent: "bg-rose-100 text-rose-700",
-    },
-    {
-      label: "In stock",
-      value: inStockCount,
-      icon: PackageCheck,
-      accent: "bg-emerald-100 text-emerald-700",
-    },
-    {
-      label: "Also in cart",
-      value: inCartCount,
-      icon: ShoppingCart,
-      accent: "bg-indigo-100 text-indigo-700",
-    },
-    {
-      label: "Total views",
-      value: viewedCount,
-      icon: Eye,
-      accent: "bg-amber-100 text-amber-700",
-    },
-  ];
+  if (fav.length === 0) {
+    return (
+      <AquaUserDashbordLayout>
+        <div className="flex flex-col items-center rounded-3xl border border-slate-200 bg-white px-6 py-16 text-center">
+          <span className="grid h-16 w-16 place-items-center rounded-3xl bg-rose-50 text-rose-500">
+            <Heart className="h-7 w-7" aria-hidden="true" />
+          </span>
+          <h2 className="mt-5 text-xl font-black text-slate-950">
+            Nothing saved yet
+          </h2>
+          <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
+            Tap the heart on any product to keep it here while you compare
+            options.
+          </p>
+          <Link
+            href="/shop"
+            className="mt-6 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-700"
+          >
+            Browse products
+          </Link>
+        </div>
+      </AquaUserDashbordLayout>
+    );
+  }
 
   return (
     <AquaUserDashbordLayout>
-      <div className="space-y-8">
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {summaryCards.map(({ label, value, icon: Icon, accent }) => (
-            <div
-              key={label}
-              className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white/70 p-4 shadow-sm"
-            >
-              <span
-                className={`flex h-12 w-12 items-center justify-center rounded-full ${accent}`}
-              >
-                <Icon className="h-6 w-6" aria-hidden="true" />
-              </span>
-              <div>
-                <p className="text-sm text-gray-500">{label}</p>
-                <p className="text-lg font-semibold text-gray-900">{value}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {favouritesCount > 0 ? (
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4 px-1">
-              <h3 className="text-xl font-bold text-slate-900">
-                Saved Items ({favouritesCount})
-              </h3>
-              {/* Nav Buttons will be inside component or managed here if extracted, 
-                   but implementing inline for now with simple buttons */}
-            </div>
-
-            <div className="min-h-[36rem] rounded-3xl border border-slate-100 bg-slate-50/40 p-3 sm:p-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                {favouritesPagination.pageItems.map((item, index) => (
-                  <DashboardProductCard
-                    key={item._id || `${favouritesPagination.page}-${index}`}
-                    product={item}
-                    variant="fav"
-                  />
-                ))}
-              </div>
-            </div>
-            <DashboardPagination {...favouritesPagination} />
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-10 text-center">
-            <h2 className="text-lg font-semibold text-gray-900">
-              No favourites yet
-            </h2>
-            <p className="mt-2 text-sm text-gray-500">
-              Save products you love and they’ll appear here for quick access.
-            </p>
-          </div>
-        )}
+      <p className="mb-3 text-sm font-semibold text-slate-500">
+        {fav.length} saved {fav.length === 1 ? "item" : "items"}
+      </p>
+      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 xl:grid-cols-3">
+        {pagination.pageItems.map((item, index) => (
+          <DashboardProductCard
+            key={item?._id || `${pagination.page}-${index}`}
+            product={item}
+          />
+        ))}
       </div>
+      <DashboardPagination {...pagination} />
     </AquaUserDashbordLayout>
   );
 };

@@ -8,21 +8,28 @@ const readLayoutSource = (fileName) =>
   fs.readFileSync(path.join(currentDirectory, fileName), "utf8");
 
 describe("AquaUserDashbordLayout", () => {
-  it("keeps the dashboard chrome fixed and gives scrolling to content only", () => {
+  it("scrolls with the page and keeps the desktop sidebar pinned", () => {
     const layout = readLayoutSource("layout.js");
     const header = readLayoutSource("header.js");
-    const greeting = readLayoutSource("greet.js");
 
     expect(layout).toContain("data-dashboard-shell");
-    expect(layout).toContain("h-screen overflow-hidden");
-    expect(layout).toContain("data-dashboard-scroll-region");
-    expect(layout).toContain(
-      "min-h-0 flex-1 overflow-y-auto overscroll-contain",
-    );
-    expect(layout).toContain("height: 100dvh");
+    expect(layout).toContain("min-h-screen");
+    expect(layout).not.toContain("h-screen overflow-hidden");
     expect(header).toContain("data-dashboard-sidebar");
-    expect(header).toContain("sticky top-0 hidden h-full");
+    expect(header).toContain("sticky top-4 hidden");
+  });
+
+  it("waits for the persisted session before deciding the user is signed out", () => {
+    const layout = readLayoutSource("layout.js");
+
+    expect(layout).toContain("state._persist?.rehydrated");
+    expect(layout).toContain("SignInPrompt");
+  });
+
+  it("picks the time-based greeting after mount to avoid hydration mismatches", () => {
+    const greeting = readLayoutSource("greet.js");
+
     expect(greeting).toContain("data-dashboard-greeting");
-    expect(greeting).toContain("max-w-5xl shrink-0");
+    expect(greeting).toMatch(/useEffect\(\(\) => \{\s*setGreeting/);
   });
 });

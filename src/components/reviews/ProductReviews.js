@@ -71,6 +71,7 @@ const ReviewCard = ({
   const isOwner = currentUserId && review?.user === currentUserId;
   const date = review?.createdAt
     ? new Date(review.createdAt).toLocaleDateString("en-IN", {
+        timeZone: "Asia/Kolkata",
         day: "numeric",
         month: "short",
         year: "numeric",

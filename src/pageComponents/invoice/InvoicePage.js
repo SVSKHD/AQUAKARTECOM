@@ -59,6 +59,7 @@ const formatDate = (value) => {
   if (Number.isNaN(date.getTime())) return "Not available";
 
   return date.toLocaleDateString("en-IN", {
+    timeZone: "Asia/Kolkata",
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -350,9 +351,7 @@ const ProductCard = ({ product, index }) => {
         <div className={styles.productPriceRow}>
           <div>
             <span>Unit price</span>
-            <strong>
-              {priceUtils.formatAmount(product.productPrice)}
-            </strong>
+            <strong>{priceUtils.formatAmount(product.productPrice)}</strong>
             <small>per supplied unit</small>
           </div>
           <div>
@@ -556,7 +555,11 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
   }
 
   const amounts = priceUtils.getInvoiceAmounts(invoice);
-  const documentType = invoice.quotation ? "quotation" : invoice.po ? "po" : "invoice";
+  const documentType = invoice.quotation
+    ? "quotation"
+    : invoice.po
+      ? "po"
+      : "invoice";
   const documentName =
     documentType === "quotation"
       ? "Quotation"
@@ -620,8 +623,13 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
   return (
     <div className={styles.page}>
       <Head>
-        <title>{documentLabel} | Aquakart {documentName}</title>
-        <meta name="description" content={`Aquakart ${documentName.toLowerCase()} ${documentLabel}`} />
+        <title>
+          {documentLabel} | Aquakart {documentName}
+        </title>
+        <meta
+          name="description"
+          content={`Aquakart ${documentName.toLowerCase()} ${documentLabel}`}
+        />
         <meta name="robots" content="noindex, nofollow, noarchive" />
         <meta name="googlebot" content="noindex, nofollow, noarchive" />
       </Head>
@@ -691,7 +699,15 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
             </div>
             <div>
               <span className={styles.eyebrow}>Premium water solutions</span>
-              <h1>{invoice.quotation ? "Sales Quotation" : invoice.po ? "Purchase Order" : invoice.gst ? "GST Tax Invoice" : "Retail Tax Invoice"}</h1>
+              <h1>
+                {invoice.quotation
+                  ? "Sales Quotation"
+                  : invoice.po
+                    ? "Purchase Order"
+                    : invoice.gst
+                      ? "GST Tax Invoice"
+                      : "Retail Tax Invoice"}
+              </h1>
               <p>GSTIN 36AJOPH6387A1Z2</p>
             </div>
           </div>
@@ -1067,8 +1083,8 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
             <span>support@aquakart.co.in · +91 90147 74667</span>
           </div>
           <p>
-            This is a computer-generated {documentName.toLowerCase()} and does not require a
-            signature.
+            This is a computer-generated {documentName.toLowerCase()} and does
+            not require a signature.
           </p>
         </footer>
       </main>

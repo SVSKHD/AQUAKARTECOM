@@ -132,6 +132,7 @@ const formatShortDate = (value) => {
   if (!value) return "";
   try {
     return new Date(value).toLocaleDateString("en-IN", {
+      timeZone: "Asia/Kolkata",
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -805,6 +806,7 @@ const AquaDynamicBlogComponent = ({
     if (!blog?.createdAt) return "";
     try {
       return new Date(blog.createdAt).toLocaleDateString("en-IN", {
+        timeZone: "Asia/Kolkata",
         year: "numeric",
         month: "long",
         day: "numeric",

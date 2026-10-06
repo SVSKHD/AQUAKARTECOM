@@ -210,10 +210,14 @@ const AquaOrderPage = () => {
       orderId: order.orderId,
       transactionId: order.transactionId,
       orderDate: order.createdAt
-        ? new Date(order.createdAt).toLocaleString("en-IN")
+        ? new Date(order.createdAt).toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
+          })
         : "—",
       deliveryEta: order.estimatedDelivery
-        ? new Date(order.estimatedDelivery).toLocaleDateString("en-IN")
+        ? new Date(order.estimatedDelivery).toLocaleDateString("en-IN", {
+            timeZone: "Asia/Kolkata",
+          })
         : "—",
       orderStatus: order.orderStatus || "Processing",
       paymentStatus: order.paymentStatus || gateway?.code || "Pending",

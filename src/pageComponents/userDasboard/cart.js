@@ -1,124 +1,138 @@
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
-import { ShoppingCart, Heart, PackageCheck, PackageX } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, ShieldCheck, ShoppingCart, Truck } from "lucide-react";
 import AquaUserDashbordLayout from "./layout/layout";
-import DashboardProductCard from "./layout/cards/cartCard";
-import DashboardPagination, {
-  useDashboardPagination,
-} from "@/components/dashboard/DashboardPagination";
+import {
+  CartLineItem,
+  formatINR,
+  getUnitPrice,
+  getUnitSaving,
+} from "./layout/cards/cartCard";
 
 const AquaUserCartPageComponent = () => {
   const cartData = useSelector((state) => state.cartData);
-  const favData = useSelector((state) => state.favData);
-
-  const safeCart = useMemo(
+  const cart = useMemo(
     () => (Array.isArray(cartData) ? cartData : []),
     [cartData],
   );
-  const safeFav = useMemo(
-    () => (Array.isArray(favData) ? favData : []),
-    [favData],
+
+  const summary = useMemo(
+    () =>
+      cart.reduce(
+        (acc, item) => {
+          const qty = item?.quantity || 1;
+          acc.units += qty;
+          acc.mrp += (getUnitPrice(item) + getUnitSaving(item)) * qty;
+          acc.saving += getUnitSaving(item) * qty;
+          acc.total += getUnitPrice(item) * qty;
+          return acc;
+        },
+        { units: 0, mrp: 0, saving: 0, total: 0 },
+      ),
+    [cart],
   );
-  const cartPagination = useDashboardPagination(safeCart);
 
-  const { totalItems, inStockItems, outOfStockItems, favouritesCount } =
-    useMemo(() => {
-      const inStock = safeCart.filter((item) =>
-        item?.inStock === false ? false : true,
-      ).length;
-      const outOfStock = safeCart.length - inStock;
-
-      return {
-        totalItems: safeCart.length,
-        inStockItems: inStock,
-        outOfStockItems: outOfStock,
-        favouritesCount: safeFav.length,
-      };
-    }, [safeCart, safeFav]);
-
-  const summaryCards = [
-    {
-      label: "Items in cart",
-      value: totalItems,
-      icon: ShoppingCart,
-      accent: "bg-indigo-100 text-indigo-700",
-    },
-    {
-      label: "In stock",
-      value: inStockItems,
-      icon: PackageCheck,
-      accent: "bg-emerald-100 text-emerald-700",
-    },
-    {
-      label: "Out of stock",
-      value: outOfStockItems,
-      icon: PackageX,
-      accent: "bg-amber-100 text-amber-700",
-    },
-    {
-      label: "Saved to favourites",
-      value: favouritesCount,
-      icon: Heart,
-      accent: "bg-rose-100 text-rose-700",
-    },
-  ];
-
-  return (
-    <>
+  if (cart.length === 0) {
+    return (
       <AquaUserDashbordLayout>
-        <div className="space-y-8">
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {summaryCards.map(({ label, value, icon: Icon, accent }) => (
-              <div
-                key={label}
-                className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white/70 p-4 shadow-sm"
-              >
-                <span
-                  className={`flex h-12 w-12 items-center justify-center rounded-full ${accent}`}
-                >
-                  <Icon className="h-6 w-6" aria-hidden="true" />
-                </span>
-                <div>
-                  <p className="text-sm text-gray-500">{label}</p>
-                  <p className="text-lg font-semibold text-gray-900">{value}</p>
-                </div>
-              </div>
-            ))}
+        <div className="flex flex-col items-center rounded-3xl border border-slate-200 bg-white px-6 py-16 text-center">
+          <span className="grid h-16 w-16 place-items-center rounded-3xl bg-emerald-50 text-emerald-700">
+            <ShoppingCart className="h-7 w-7" aria-hidden="true" />
+          </span>
+          <h2 className="mt-5 text-xl font-black text-slate-950">
+            Your cart is empty
+          </h2>
+          <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
+            Softeners, purifiers and filters you add will show up here, ready
+            for checkout.
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
+            <Link
+              href="/shop"
+              className="rounded-full bg-slate-950 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-700"
+            >
+              Browse products
+            </Link>
+            <Link
+              href="/dashboard/fav"
+              className="rounded-full border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50"
+            >
+              View saved items
+            </Link>
           </div>
-
-          {totalItems > 0 ? (
-            <div className="relative">
-              <div className="flex items-center justify-between mb-4 px-1">
-                <h3 className="text-xl font-bold text-slate-900">
-                  Cart Items ({totalItems})
-                </h3>
-              </div>
-              <div className="min-h-[36rem] rounded-3xl border border-slate-100 bg-slate-50/40 p-3 sm:p-4">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                  {cartPagination.pageItems.map((item, index) => (
-                    <DashboardProductCard
-                      key={item._id || `${cartPagination.page}-${index}`}
-                      product={item}
-                      variant="cart"
-                    />
-                  ))}
-                </div>
-              </div>
-              <DashboardPagination {...cartPagination} />
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-10 text-center">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Your cart is empty
-              </h2>
-              <p className="mt-2 text-sm text-gray-500">
-                Add products to your cart to see them listed here.
-              </p>
-            </div>
-          )}
         </div>
       </AquaUserDashbordLayout>
-    </>
+    );
+  }
+
+  return (
+    <AquaUserDashbordLayout>
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <section aria-label="Cart items" className="space-y-3">
+          <p className="text-sm font-semibold text-slate-500">
+            {summary.units} {summary.units === 1 ? "item" : "items"}
+          </p>
+          {cart.map((item, index) => (
+            <CartLineItem key={item?._id || index} product={item} />
+          ))}
+        </section>
+
+        <aside className="rounded-3xl border border-slate-200 bg-white p-5 lg:sticky lg:top-4">
+          <h2 className="text-base font-black text-slate-950">Order summary</h2>
+          <dl className="mt-4 space-y-2.5 text-sm">
+            <div className="flex justify-between text-slate-600">
+              <dt>
+                Price ({summary.units} {summary.units === 1 ? "item" : "items"})
+              </dt>
+              <dd>{formatINR(summary.mrp)}</dd>
+            </div>
+            {summary.saving > 0 && (
+              <div className="flex justify-between text-emerald-700">
+                <dt>Discount</dt>
+                <dd>−{formatINR(summary.saving)}</dd>
+              </div>
+            )}
+            <div className="flex justify-between text-slate-600">
+              <dt>Delivery</dt>
+              <dd className="text-slate-500">Calculated at checkout</dd>
+            </div>
+            <div className="flex justify-between border-t border-slate-100 pt-3 text-base font-black text-slate-950">
+              <dt>Total</dt>
+              <dd>{formatINR(summary.total)}</dd>
+            </div>
+          </dl>
+          {summary.saving > 0 && (
+            <p className="mt-3 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800">
+              You save {formatINR(summary.saving)} on this order.
+            </p>
+          )}
+          <Link
+            href="/checkout"
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-700"
+          >
+            Proceed to checkout
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            href="/shop"
+            className="mt-2 inline-flex w-full items-center justify-center rounded-full px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50"
+          >
+            Continue shopping
+          </Link>
+          <ul className="mt-4 space-y-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
+            <li className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-emerald-600" />
+              Secure payment via PhonePe
+            </li>
+            <li className="flex items-center gap-2">
+              <Truck className="h-4 w-4 text-emerald-600" />
+              Delivery and installation support
+            </li>
+          </ul>
+        </aside>
+      </div>
+    </AquaUserDashbordLayout>
   );
 };
 

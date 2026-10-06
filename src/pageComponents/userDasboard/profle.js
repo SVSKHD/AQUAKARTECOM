@@ -49,6 +49,7 @@ const formatDob = (dob) => {
   }
 
   return parsedDate.toLocaleDateString("en-IN", {
+    timeZone: "Asia/Kolkata",
     year: "numeric",
     month: "long",
     day: "numeric",

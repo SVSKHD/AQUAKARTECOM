@@ -72,7 +72,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
         <div className="absolute bottom-0 right-0 -mr-20 h-[30rem] w-[40rem] rounded-full bg-blue-900/10 blur-[80px]" />
 
         {/* Glass Grid Texture */}
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-125"></div>
+        <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-20 brightness-100 contrast-125"></div>
 
         {/* Festival Banner */}
         {festival && (

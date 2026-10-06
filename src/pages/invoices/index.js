@@ -25,6 +25,7 @@ const date = (value) => {
   return Number.isNaN(parsed.getTime())
     ? "Date unavailable"
     : parsed.toLocaleDateString("en-IN", {
+        timeZone: "Asia/Kolkata",
         day: "2-digit",
         month: "long",
         year: "numeric",
