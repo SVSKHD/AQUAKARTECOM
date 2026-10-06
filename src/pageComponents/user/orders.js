@@ -9,7 +9,7 @@ import AquaSpinner from "@/components/common/spinner";
 const AquaOrderComponent = () => {
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
-  const { userData } = useSelector((state) => state);
+  const userData = useSelector((state) => state.userData);
   const { formatCurrencyINR } = useCurrency;
 
   useEffect(() => {

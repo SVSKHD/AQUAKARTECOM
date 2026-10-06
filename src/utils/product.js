@@ -3,7 +3,8 @@ import AquaToast from "@/components/reusables/react-toastify";
 
 const useProduct = () => {
   const dispatch = useDispatch();
-  const { cartData, favData } = useSelector((state) => state);
+  const cartData = useSelector((state) => state.cartData);
+  const favData = useSelector((state) => state.favData);
 
   const AddAndRemoveCart = (productData, setCartAdd) => {
     const isProductInCart = cartData.some(

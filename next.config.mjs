@@ -28,16 +28,9 @@ const nextConfig = {
         ],
       },
 
-      // 2) Next.js build assets (hashed) => cache 1 year
-      {
-        source: "/_next/static/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
-      },
+      // 2) /_next/static is intentionally not listed: Next.js already serves it
+      //    with a 1-year immutable cache in production, and overriding it in
+      //    dev makes the browser keep stale chunks (broken HMR / full reloads).
 
       // 3) Optional: if you serve assets under /assets (versioned) => cache 1 year
       {
@@ -129,7 +122,8 @@ const nextConfig = {
       },
       {
         source: "/google-products.xml",
-        destination: "https://api.aquakart.co.in/v1/merchant/google-products.xml",
+        destination:
+          "https://api.aquakart.co.in/v1/merchant/google-products.xml",
       },
       {
         source: "/api/:path*",

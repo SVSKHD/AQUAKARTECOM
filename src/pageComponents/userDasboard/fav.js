@@ -8,7 +8,8 @@ import DashboardPagination, {
 } from "@/components/dashboard/DashboardPagination";
 
 const AquaUserFavPageComponent = () => {
-  const { favData, cartData } = useSelector((state) => state);
+  const favData = useSelector((state) => state.favData);
+  const cartData = useSelector((state) => state.cartData);
 
   const safeFav = useMemo(
     () => (Array.isArray(favData) ? favData : []),

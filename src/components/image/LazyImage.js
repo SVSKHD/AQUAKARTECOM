@@ -2,31 +2,13 @@ import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import { FALLBACK_IMAGE } from "@/constants/images";
 
-const shimmer = (w, h) => `
-  <svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="g">
-        <stop stop-color="#f3f4f6" offset="20%"/>
-        <stop stop-color="#e5e7eb" offset="50%"/>
-        <stop stop-color="#f3f4f6" offset="70%"/>
-      </linearGradient>
-    </defs>
-    <rect width="${w}" height="${h}" fill="#f3f4f6"/>
-    <rect id="r" width="${w}" height="${h}" fill="url(#g)"/>
-    <animate xlink:href="#r" attributeName="x" from="-${w}" to="${w}" dur="1.2s" repeatCount="indefinite"/>
-  </svg>
-`;
-
-const toBase64 = (str) =>
-  typeof window === "undefined"
-    ? Buffer.from(str).toString("base64")
-    : window.btoa(str);
-
 /**
  * LazyImage
  * - Uses IntersectionObserver to only render Next/Image when near viewport.
  * - Use `fill` OR provide `width` & `height`.
  * - Use `priority` ONLY for the single above-the-fold LCP image.
+ * - Shows a shimmer on the wrapper until the image has loaded, then fades the
+ *   image in. Pass `blurDataURL` to use a blur placeholder instead.
  */
 export default function LazyImage({
   src,
@@ -39,13 +21,13 @@ export default function LazyImage({
   sizes,
   priority = false,
   quality = 75,
-  placeholder = "blur",
   blurDataURL,
   onError,
 }) {
   const wrapperRef = useRef(null);
   const [visible, setVisible] = useState(priority); // priority images render immediately
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (priority) return;
@@ -65,70 +47,51 @@ export default function LazyImage({
     return () => io.disconnect();
   }, [priority]);
 
-  // A new src gets a fresh attempt even if the previous one failed.
+  // A new src gets a fresh attempt (and shimmer) even if the previous one failed.
   useEffect(() => {
     setFailed(false);
+    setLoaded(false);
   }, [src]);
 
   const safeSrc = !src || failed ? FALLBACK_IMAGE : src;
 
-  const defaultBlur =
-    blurDataURL ||
-    `data:image/svg+xml;base64,${toBase64(
-      shimmer(width || 700, height || 475),
-    )}`;
+  const wrapperClassName = [className, loaded ? "" : "aqua-image-shimmer"]
+    .filter(Boolean)
+    .join(" ");
 
-  // Priority images: skip IntersectionObserver overhead, render immediately with fetchPriority
-  if (priority) {
-    return (
-      <div className={className}>
-        <Image
-          src={safeSrc}
-          alt={`Aquakart-${alt}` || "Aquakart products"}
-          fill={fill}
-          width={!fill ? width : undefined}
-          height={!fill ? height : undefined}
-          sizes={sizes}
-          priority
-          fetchPriority="high"
-          quality={quality}
-          placeholder={placeholder}
-          blurDataURL={placeholder === "blur" ? defaultBlur : undefined}
-          className={imgClassName}
-          onError={(e) => {
-            setFailed(true);
-            onError?.(e);
-          }}
-        />
-      </div>
-    );
-  }
+  const image = (
+    <Image
+      src={safeSrc}
+      alt={`Aquakart-${alt}` || "Aquakart products"}
+      fill={fill}
+      width={!fill ? width : undefined}
+      height={!fill ? height : undefined}
+      sizes={sizes}
+      priority={priority}
+      fetchPriority={priority ? "high" : undefined}
+      quality={quality}
+      placeholder={blurDataURL ? "blur" : "empty"}
+      blurDataURL={blurDataURL}
+      className={`${imgClassName} aqua-image-fade${loaded ? " is-loaded" : ""}`}
+      onLoad={() => setLoaded(true)}
+      onError={(e) => {
+        setFailed(true);
+        onError?.(e);
+      }}
+    />
+  );
 
   return (
-    <div ref={wrapperRef} className={className}>
+    <div
+      ref={priority ? undefined : wrapperRef}
+      className={wrapperClassName}
+      aria-busy={!loaded}
+    >
       {visible ? (
-        <Image
-          src={safeSrc}
-          alt={`Aquakart-${alt}` || "Aquakart products"}
-          fill={fill}
-          width={!fill ? width : undefined}
-          height={!fill ? height : undefined}
-          sizes={sizes}
-          quality={quality}
-          placeholder={placeholder}
-          blurDataURL={placeholder === "blur" ? defaultBlur : undefined}
-          className={imgClassName}
-          onError={(e) => {
-            setFailed(true);
-            onError?.(e);
-          }}
-        />
+        image
       ) : (
-        // lightweight placeholder while not visible (no heavy Image decode)
-        <div
-          className="h-full w-full animate-pulse bg-slate-200/60"
-          aria-hidden="true"
-        />
+        // keeps the wrapper sized so the shimmer shows before the image mounts
+        <div className="h-full w-full" aria-hidden="true" />
       )}
     </div>
   );

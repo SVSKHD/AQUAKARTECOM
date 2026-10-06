@@ -33,7 +33,8 @@ const ReusableProductCard = ({
   const { formatCurrencyINR } = useCurrency;
   const { AddAndRemoveCart, AddAndRemoveFav } = useProduct();
 
-  const { cartData, favData } = useSelector((state) => state);
+  const cartData = useSelector((state) => state.cartData);
+  const favData = useSelector((state) => state.favData);
   const router = useRouter();
 
   const {
@@ -327,10 +328,11 @@ const ReusableProductCard = ({
                       sizes="192px"
                       priority={imagePriority && index === 0}
                       quality={68}
+                      className="h-full w-full"
                       imgClassName="h-full w-full object-cover object-center"
                     />
                   ) : (
-                    <div className="h-full w-full bg-slate-100" />
+                    <div className="aqua-image-shimmer h-full w-full" />
                   )}
                 </motion.div>
               ))}
@@ -464,10 +466,11 @@ const ReusableProductCard = ({
                       sizes="(max-width: 639px) calc(100vw - 24px), (max-width: 1023px) 50vw, (max-width: 1535px) 33vw, 25vw"
                       priority={imagePriority && i === 0}
                       quality={68}
+                      className="h-full w-full rounded-3xl"
                       imgClassName="h-full w-full object-cover rounded-3xl p-1"
                     />
                   ) : (
-                    <div className="h-full w-full bg-slate-100" />
+                    <div className="aqua-image-shimmer h-full w-full" />
                   )}
                 </motion.div>
               ))}
@@ -622,10 +625,11 @@ const ReusableProductCard = ({
                         sizes="(max-width: 639px) calc(100vw - 24px), (max-width: 1023px) 50vw, 33vw"
                         priority={imagePriority && index === 0}
                         quality={68}
+                        className="h-full w-full"
                         imgClassName="h-full w-full object-cover object-center"
                       />
                     ) : (
-                      <div className="h-full w-full bg-slate-100" />
+                      <div className="aqua-image-shimmer h-full w-full" />
                     )}
                   </motion.div>
                 ))}

@@ -326,14 +326,16 @@
   }
 }
 
-
 /* Premium card skeleton shimmer used while ecommerce data is loading. */
 .aqua-skeleton-card {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.96), rgba(248,250,252,.94));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96),
+    rgba(248, 250, 252, 0.94)
+  );
   box-shadow:
     0 18px 50px rgba(15, 23, 42, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.96);
@@ -342,8 +344,7 @@
 .aqua-shimmer-block {
   position: relative;
   overflow: hidden;
-  background:
-    linear-gradient(135deg, #eef2f7 0%, #f8fafc 48%, #edf6f3 100%);
+  background: linear-gradient(135deg, #eef2f7 0%, #f8fafc 48%, #edf6f3 100%);
 }
 
 .aqua-shimmer-block::after,
@@ -399,10 +400,64 @@
   }
 }
 
+/* Image loading shimmer: painted on the image wrapper while the image is
+   fetched, so it needs no extra positioned element. The image fades in over it. */
+.aqua-image-shimmer {
+  background-color: #eef2f7;
+  background-image: linear-gradient(
+    105deg,
+    #eef2f7 30%,
+    #f8fafc 44%,
+    #e3f6ee 50%,
+    #f8fafc 56%,
+    #eef2f7 70%
+  );
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  animation: aquaImageShimmer 1.4s ease-in-out infinite;
+}
+
+/* Uses an animation rather than a transition so it never overrides an image's
+   own transition (e.g. hover zoom). */
+.aqua-image-fade {
+  opacity: 0;
+}
+
+.aqua-image-fade.is-loaded {
+  opacity: 1;
+  animation: aquaImageFadeIn 400ms ease;
+}
+
+@keyframes aquaImageFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes aquaImageShimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .aqua-shimmer-block::after,
   .aqua-skeleton-card::after {
     animation: none !important;
     opacity: 0 !important;
+  }
+
+  .aqua-image-shimmer {
+    animation: none !important;
+  }
+
+  .aqua-image-fade.is-loaded {
+    animation: none !important;
   }
 }

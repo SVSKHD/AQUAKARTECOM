@@ -154,6 +154,7 @@ const RelatedBlogCard = ({ post }) => (
           alt={post.title}
           width={640}
           height={360}
+          shimmer
         />
       ) : (
         <KnowledgeFallback size="sm" />
@@ -1641,6 +1642,7 @@ const AquaDynamicBlogComponent = ({
                         alt={blog.title}
                         width={1280}
                         height={720}
+                        shimmer
                       />
                     ) : (
                       <KnowledgeFallback size="lg" label={categoryLabel} />

@@ -4,7 +4,8 @@ import useProduct from "@/utils/product";
 import { useSelector } from "react-redux";
 
 const AquaFavComponent = () => {
-  const { favData, cartData } = useSelector((state) => state);
+  const favData = useSelector((state) => state.favData);
+  const cartData = useSelector((state) => state.cartData);
   const { AddAndRemoveCartFromFavourites } = useProduct();
   const isProductInCart = (productId) => {
     return cartData.some((item) => item._id === productId);

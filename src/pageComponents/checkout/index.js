@@ -51,7 +51,8 @@ const AddressHandHint = ({ text }) => (
 const AquaCheckoutComponent = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { cartData, userData } = useSelector((state) => state);
+  const cartData = useSelector((state) => state.cartData);
+  const userData = useSelector((state) => state.userData);
   const { formatCurrencyINR } = useCurrency;
   const { getTotalPrice, changeItemQuantity } = useCart();
   const { closeCartDrawer } = useCartDrawer();

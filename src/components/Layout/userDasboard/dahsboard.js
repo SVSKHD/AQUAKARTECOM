@@ -38,7 +38,7 @@ const getFirstLettersFromEmail = (email) => {
 };
 
 export default function AquaDashboardComponent(props) {
-  const { userData } = useSelector((state) => state);
+  const userData = useSelector((state) => state.userData);
   const router = useRouter();
 
   const getTitleParts = () => {

@@ -5,7 +5,8 @@ import AquaToast from "@/components/reusables/react-toastify";
 import { ShoppingCart } from "lucide-react";
 
 const AquaCartTabContent = () => {
-  const { cartData, compare } = useSelector((state) => state);
+  const cartData = useSelector((state) => state.cartData);
+  const compare = useSelector((state) => state.compare);
   const { formatCurrencyINRWithK } = useCurrency;
   const dispatch = useDispatch();
 

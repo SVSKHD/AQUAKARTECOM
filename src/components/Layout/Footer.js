@@ -38,7 +38,7 @@ const SkeletonPill = () => (
 );
 
 const AquaFooter = ({ categories = [], subcategories = [] }) => {
-  const { userData } = useSelector((state) => state);
+  const userData = useSelector((state) => state.userData);
   const [email, setEmail] = useState("");
   const [mounted, setMounted] = useState(false);
   const [festival, setFestival] = useState(null);
