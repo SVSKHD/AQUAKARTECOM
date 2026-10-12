@@ -113,9 +113,9 @@ const MobileBottomNav = () => {
                       : "text-slate-500"
                   }`}
                 >
-                  <Icon className="h-[18px] w-[18px]" />
+                  <Icon aria-hidden="true" className="h-[18px] w-[18px]" />
                   {item.badge > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-0.5 text-[9px] font-bold text-white ring-2 ring-white shadow-sm">
+                    <span aria-hidden="true" className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-0.5 text-[9px] font-bold text-white ring-2 ring-white shadow-sm">
                       {item.badge > 9 ? "9+" : item.badge}
                     </span>
                   )}
@@ -135,7 +135,8 @@ const MobileBottomNav = () => {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="flex-1 flex justify-center active:scale-90 transition-transform"
+                  className="flex-1 flex justify-center active:scale-90 transition-transform rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+                  aria-current={active ? "page" : undefined}
                 >
                   {content}
                 </Link>
@@ -147,7 +148,7 @@ const MobileBottomNav = () => {
                 key={item.label}
                 type="button"
                 onClick={item.onClick}
-                className="flex-1 flex justify-center active:scale-90 transition-transform"
+                className="flex-1 flex justify-center active:scale-90 transition-transform rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
                 aria-label={item.label}
               >
                 {content}
