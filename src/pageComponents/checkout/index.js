@@ -22,6 +22,7 @@ import useProduct from "@/utils/product";
 import AquaPromptDialog from "@/components/common/promptDialogs/promtDialog";
 import UserServiceOperations from "@/services/user";
 import AquaSpinner from "@/components/common/spinner";
+import PhonePeLiquidLoader from "@/components/common/PhonePeLiquidLoader";
 import ProfileDetailsDialog from "@/components/common/commonDialogs/profileDetailsDialog";
 
 const addressesMatch = (addressA, addressB) => {
@@ -1113,8 +1114,7 @@ const AquaCheckoutComponent = () => {
                         >
                           {buttonStatus.gateway ? (
                             <span className="flex items-center">
-                              <AquaSpinner color="white" />
-                              <span className="ml-2">Processing…</span>
+                              <span>Connecting to PhonePe…</span>
                             </span>
                           ) : (
                             "Pay now"
@@ -1190,6 +1190,8 @@ const AquaCheckoutComponent = () => {
           </div>
         </div>
       )}
+
+      {buttonStatus.gateway && <PhonePeLiquidLoader />}
 
       <ProfileDetailsDialog
         open={profileDialogOpen}
