@@ -31,8 +31,8 @@ const Toaster = dynamic(() => import("sonner").then((mod) => mod.Toaster), {
 });
 
 const GA_ID = "G-FS41RRVRD4";
-const ROUTE_LOADER_DELAY_MS = 120;
-const ROUTE_LOADER_MIN_MS = 180;
+const ROUTE_LOADER_DELAY_MS = 220;
+const ROUTE_LOADER_MIN_MS = 0;
 // Transient UI flags must not survive reloads, or a dialog left open renders
 // on the client but not the server and breaks hydration.
 const persistConfig = {
@@ -164,15 +164,15 @@ export default function App({ Component, pageProps }) {
           {!appReady ? (
             <AquaAppLoader
               variant="screen"
-              message="Welcome to Aquakart"
-              subtext="Getting the page ready for you."
+              message="AquaKart"
+              subtext=""
             />
           ) : null}
           {routeLoading ? (
             <AquaAppLoader
               variant="route"
-              message="Opening Aquakart"
-              subtext="Preparing the next page smoothly."
+              message="AquaKart"
+              subtext=""
             />
           ) : null}
           <main
