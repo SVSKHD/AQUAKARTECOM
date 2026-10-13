@@ -97,96 +97,87 @@ const AquaAddressDialog = ({ editData }) => {
     return baseCities;
   }, [address.state, address.city]);
 
-  const handleAddressAdd = () => {
-    const userAddress = userData.user.addresses;
+  const [isSaving, setIsSaving] = useState(false);
 
-    // Check if the address already exists in the array
-    const addressExists = userAddress.some(
-      (addr) =>
-        addr.street === address.street &&
-        addr.city === address.city &&
-        addr.state === address.state &&
-        addr.postalCode === address.postalCode,
-    );
-
-    // If the address does not exist, add it to the array
-    if (!addressExists) {
-      userAddress.push(address);
-      console.log("modified-address", userAddress, userData.token);
-
-      // Prepare the payload
-      const payload = {
-        newDetails: {
-          addresses: userAddress,
-        },
-      };
-
-      // Call the API to update the user details
-      UserServiceOperations.UserUpdateDetails(
-        userData.user._id,
-        payload,
-        userData.token,
-      ).then((res) => {
-        // Dispatch the action to update the user details in the store
-        dispatch({
-          type: "UPDATE_USER_ADDRESSES",
-          payload: {
-            addresses: res.data.addresses,
-          },
-        });
-        dispatch({
-          type: "SET_ADDRESS_DIALOG",
-          payload: false,
-        });
-      });
-    } else {
-      AquaToast({ message: "Address already exists.", type: "error" });
+  const saveAddress = async (isEditing) => {
+    if (isSaving) return;
+    const userId = userData?.user?._id;
+    const token = userData?.token;
+    if (!userId || !token) {
+      AquaToast({ message: "Please sign in to save an address", type: "error" });
+      return;
     }
-  };
 
-  const handleAddressEdit = () => {
-    // Create a new array with the updated address
-    const updatedAddresses = userData.user.addresses.map((r) =>
-      r._id === address._id ? address : r,
-    );
-
-    if (updatedAddresses) {
-      const newDetails = { addresses: updatedAddresses };
-      const payload = {
-        newDetails,
-      };
-      UserServiceOperations.UserUpdateDetails(
-        userData.user._id,
-        payload,
-        userData.token,
+    const existingAddresses = Array.isArray(userData?.user?.addresses)
+      ? userData.user.addresses
+      : [];
+    const normalizedAddress = {
+      ...address,
+      street: address.street.trim(),
+      city: address.city.trim(),
+      state: address.state.trim(),
+      postalCode: address.postalCode.trim(),
+    };
+    const addressId = addressData?._id;
+    const sameAddress = (item) =>
+      ["street", "city", "state", "postalCode"].every(
+        (field) =>
+          String(item?.[field] ?? "").trim().toLowerCase() ===
+          normalizedAddress[field].toLowerCase(),
+      );
+    if (
+      existingAddresses.some(
+        (item) =>
+          (!isEditing || String(item._id) !== String(addressId)) &&
+          sameAddress(item),
       )
-        .then((res) => {
-          AquaToast({
-            message: "successfully updated address",
-            type: "success",
-          });
-          dispatch({
-            type: "UPDATE_USER_ADDRESSES",
-            payload: {
-              addresses: res.data.addresses,
-            },
-          });
-          dispatch({
-            type: "SET_ADDRESS_DIALOG",
-            payload: false,
-          });
-        })
-        .catch((err) => {
-          AquaToast({
-            message: "Please try adding new address",
-            type: "error",
-          });
-        });
+    ) {
+      AquaToast({ message: "Address already exists.", type: "error" });
+      return;
     }
 
-    // Update the userData object with the new addresses array
+    if (isEditing && !existingAddresses.some((item) => String(item._id) === String(addressId))) {
+      AquaToast({ message: "Address not found. Please reload and retry.", type: "error" });
+      return;
+    }
 
-    // Call the API to edit the address
+    const addresses = isEditing
+      ? existingAddresses.map((item) =>
+          String(item._id) === String(addressId)
+            ? { ...item, ...normalizedAddress, _id: item._id }
+            : item,
+        )
+      : [...existingAddresses, normalizedAddress];
+
+    setIsSaving(true);
+    try {
+      const response = await UserServiceOperations.UserUpdateDetails(
+        userId,
+        { newDetails: { addresses } },
+        token,
+      );
+      if (!Array.isArray(response?.data?.addresses)) {
+        throw new Error("Address update response did not contain saved addresses");
+      }
+      dispatch({
+        type: "UPDATE_USER_ADDRESSES",
+        payload: { addresses: response.data.addresses },
+      });
+      dispatch({ type: "SET_ADDRESS_DATA", payload: null });
+      dispatch({ type: "SET_ADDRESS_DIALOG", payload: false });
+      AquaToast({
+        message: isEditing ? "Address updated successfully" : "Address saved successfully",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Unable to save checkout address", error);
+      AquaToast({
+        message: error?.response?.data?.message || "Unable to save address. Please try again.",
+        type: "error",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSubmit = () => {
@@ -216,11 +207,7 @@ const AquaAddressDialog = ({ editData }) => {
     }
 
     setErrors({});
-    if (addressData) {
-      handleAddressEdit();
-    } else {
-      handleAddressAdd();
-    }
+    saveAddress(Boolean(addressData));
   };
 
   return (
@@ -384,11 +371,12 @@ const AquaAddressDialog = ({ editData }) => {
           </div>
 
           <button
-            type="submit"
+            type="button"
+            disabled={isSaving}
             className="flex w-full items-center justify-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-emerald-400"
             onClick={handleSubmit}
           >
-            {addressData ? "Save changes" : "Save address"}
+            {isSaving ? "Saving..." : addressData ? "Save changes" : "Save address"}
           </button>
         </div>
       </AquaResponsiveDialog>
