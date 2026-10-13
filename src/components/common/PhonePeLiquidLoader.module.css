@@ -8,8 +8,8 @@
 }
 .logo {
   position: relative;
-  width: 132px;
-  height: 132px;
+  width: 108px;
+  height: 108px;
   overflow: hidden;
 }
 .base, .filled {
@@ -27,7 +27,7 @@
   inset: 0;
   overflow: hidden;
   clip-path: inset(100% 0 0 0);
-  animation: fill 2.6s ease-in-out infinite;
+  animation: fill 1.25s cubic-bezier(.2,.7,.2,1) infinite;
 }
 .filled {
   position: absolute;
