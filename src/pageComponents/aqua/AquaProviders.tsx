@@ -19,6 +19,7 @@ const persistConfig = {
     "authDialog",
     "userDataDrawer",
     "addressDialog",
+    "assistant",
   ],
 };
 

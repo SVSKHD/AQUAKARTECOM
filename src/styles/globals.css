@@ -663,3 +663,28 @@ body {
     transform: scaleY(0.6);
   }
 }
+
+/* AquaKart assistant launcher: keeps clear of the mobile bottom nav, the
+   product page's sticky purchase bar and the blog's back-to-top button. */
+.aq-assist-fab {
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+}
+@media (max-width: 639px) {
+  body:has(nav[aria-label="Mobile navigation"]) .aq-assist-fab {
+    bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+  body:has(aside[aria-label="Purchase this product"]) .aq-assist-fab {
+    bottom: calc(9.75rem + env(safe-area-inset-bottom));
+  }
+}
+@media (min-width: 640px) {
+  .aq-assist-fab {
+    bottom: 1.5rem;
+  }
+  body:has(button[aria-label="Back to top"]) .aq-assist-fab {
+    bottom: 5rem;
+  }
+  body:has(aside[aria-label="Purchase this product"]) .aq-assist-fab {
+    bottom: 7.5rem;
+  }
+}
