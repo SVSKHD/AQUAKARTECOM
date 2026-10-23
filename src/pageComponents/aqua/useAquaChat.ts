@@ -1,12 +1,27 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  AI_HISTORY_MAX,
+  AI_PROMPT_MAX,
+  AiError,
+  getAiStatus,
+  sendAiChat,
+  type AiTurn,
+} from "@/services/ai";
 import { INR } from "./catalogue";
 import { uid } from "./hooks";
 import type { ChatMessage, ChatStatus, Product } from "./types";
 
-// Rule-based Aqua assistant ported from V4. It only produces messages: it never
-// touches the flow machine. Chips that act (e.g. "Buy now") are handled by the UI.
+// Aqua's answers come from the AquaKart backend (POST /v1/ai/chat via
+// services/ai). The hook only produces messages: it never touches the flow
+// machine, and chips that act (e.g. "Buy now") are handled by the UI.
+// Product cards are matched locally from the live catalogue, since the server
+// returns text only and won't quote prices or stock. The rule-based engine
+// below (ported from V4) is the fallback when /ai/status says the AI isn't
+// configured.
+
+export type AiMode = "checking" | "live" | "offline";
 
 type Need = "softener" | "purifier" | "filter" | "commercial";
 type Req = {
@@ -56,6 +71,21 @@ export function useAquaChat({
   const [reasons, setReasons] = useState<Record<string, string>>({});
   const [happy, setHappy] = useState(false);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [aiMode, setAiMode] = useState<AiMode>("checking");
+
+  // Successful turns only (what the server saw), oldest first. Failed turns never enter it.
+  const aiHistory = useRef<AiTurn[]>([]);
+  const abortRef = useRef<AbortController | null>(null);
+  const aiReady = useRef<Promise<boolean> | null>(null);
+  useEffect(() => {
+    let alive = true;
+    aiReady.current = getAiStatus();
+    aiReady.current.then((ok) => alive && setAiMode(ok ? "live" : "offline"));
+    return () => {
+      alive = false;
+      abortRef.current?.abort();
+    };
+  }, []);
 
   const req = useRef<Req>({});
   const lastPicks = useRef<string[]>([]);
@@ -439,7 +469,9 @@ export function useAquaChat({
     );
   };
 
-  const discover = (t: string, sel?: Product) => {
+  // Reads what the customer has told us (need, source, budget, hardness, household)
+  // into req. Used by both the AI path (to rank catalogue cards) and the fallback.
+  const updateReq = (t: string): Req => {
     const r: Req = { ...req.current };
     const aw = r.awaiting;
     if (/soften|hard|scal|apartment|flat/.test(t)) r.need = "softener";
@@ -471,6 +503,11 @@ export function useAquaChat({
     if (ppl) r.people = /\+/.test(t) ? +ppl[1] + 1 : +ppl[1];
     r.awaiting = null;
     req.current = r;
+    return r;
+  };
+
+  const discover = (t: string, sel?: Product) => {
+    const r = updateReq(t);
 
     if (r.need === "commercial") return commercial();
     if (!r.need && r.budget) return budgetList(r);
@@ -537,6 +574,119 @@ export function useAquaChat({
     discover(t, sel);
   };
 
+  // ---------- backend AI ----------
+  // When a product is open, the question is about it. The server owns the system
+  // prompt; this is just context in the user's own message.
+  const contextLine = (p: Product) =>
+    `I'm looking at "${p.title}"${p.capacity ? ` (${p.capacity})` : ""} on AquaKart.`;
+
+  const SHOPPING =
+    /recommend|suggest|which|best|choose|looking for|need (a|an|to)|buy|options?|show me|under|budget|for (my|a) (home|family|house|flat|apartment)/;
+  const NAMED = /soften|purifier|\bro\b|filter|commercial/;
+  const categoryOf = (s: string): Need | null =>
+    /soften|hard ?water|hardness|scal/.test(s)
+      ? "softener"
+      : /purif|\bro\b|drinking|tds/.test(s)
+        ? "purifier"
+        : /commercial|hotel|restaurant|hostel|industr/.test(s)
+          ? "commercial"
+          : /filter/.test(s)
+            ? "filter"
+            : null;
+
+  // Cards for shopping questions, from the live catalogue (the AI won't quote stock).
+  const catalogueMatches = (text: string, reply: string, r: Req): string[] => {
+    const t = text.toLowerCase();
+    if (!SHOPPING.test(t) && !NAMED.test(t)) return [];
+    const need =
+      categoryOf(t) || categoryOf(reply.toLowerCase()) || r.need || null;
+    let pool = productsRef.current.filter(
+      (p) => (need ? p.cat === need : !!r.budget) && p.inStock,
+    );
+    if (r.budget) {
+      const inBudget = pool.filter((p) => p.price <= r.budget!);
+      if (inBudget.length) pool = inBudget;
+    }
+    const picks = pool
+      .slice()
+      .sort((a, b) => fit(a, r) - fit(b, r) || a.price - b.price)
+      .slice(0, 3);
+    if (!picks.length) return [];
+    const rs: Record<string, string> = {};
+    picks.forEach((p) => (rs[p.id] = reasonFor(p, r)));
+    addReasons(rs);
+    lastPicks.current = picks.map((p) => p.id);
+    return lastPicks.current;
+  };
+
+  const settle = () => {
+    statusRef.current = "idle";
+    setStatus("idle");
+  };
+
+  // `tid` is the typing bubble to replace with the answer.
+  const askAi = async (
+    text: string,
+    productId: string | null | undefined,
+    tid: string,
+  ) => {
+    const sel = byId(productId);
+    const r = updateReq(text.toLowerCase());
+    const context = sel ? `${contextLine(sel)} ` : "";
+    const prompt = (context + text).slice(0, AI_PROMPT_MAX);
+    const controller = new AbortController();
+    abortRef.current = controller;
+    try {
+      const reply = await sendAiChat(prompt, aiHistory.current, {
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
+      aiHistory.current = [
+        ...aiHistory.current,
+        { role: "user" as const, text: prompt },
+        { role: "assistant" as const, text: reply },
+      ].slice(-AI_HISTORY_MAX);
+      const picks = sel ? [] : catalogueMatches(text, reply, r);
+      setMessages((ms) => ms.filter((m) => m.id !== tid));
+      say(reply, {
+        products: picks.length ? picks : undefined,
+        chips: sel
+          ? sel.inStock
+            ? ["Capacity", "Maintenance", "Buy now"]
+            : ["Show alternatives"]
+          : picks.length > 1
+            ? ["Compare these"]
+            : undefined,
+        happy: picks.length > 0,
+      });
+    } catch (e) {
+      const err =
+        e instanceof AiError
+          ? e
+          : new AiError("unavailable", "Assistant is unavailable right now.");
+      if (err.kind === "aborted") return;
+      setMessages((ms) => [
+        ...ms.filter((m) => m.id !== tid),
+        {
+          id: uid("a"),
+          role: "aqua",
+          text: err.message,
+          full: err.message,
+          done: true,
+          error: true,
+          // 429 and 5xx can be retried with the same words; 400/422 need a new message.
+          retry:
+            err.retryable || err.kind === "rate_limited"
+              ? { text, productId: productId ?? null }
+              : undefined,
+        },
+      ]);
+      settle();
+    } finally {
+      if (abortRef.current === controller) abortRef.current = null;
+    }
+  };
+
   // ---------- public API ----------
   const pendingRef = useRef<{
     tid: string;
@@ -557,31 +707,68 @@ export function useAquaChat({
     flushRef.current?.();
   };
 
+  // Compare is a UI action on cards already shown, not a question for the model.
+  const isLocalCommand = (t: string) =>
+    /^compare|compare these|compare picks/.test(t.toLowerCase());
+
   const send = useCallback(
     (raw: string, productId?: string | null) => {
       const text = raw.trim();
       if (!text) return false;
+      // One backend request at a time: returning false keeps the draft in the composer.
+      if (abortRef.current) return false;
       settleNow();
       statusRef.current = "thinking";
       const tid = uid("t");
-      pendingRef.current = { tid, text, productId };
       setMessages((ms) => [
         ...ms,
         { id: uid("u"), role: "user", text, productId: productId ?? null },
         { id: tid, role: "aqua", text: "", typing: true },
       ]);
       setStatus("thinking");
-      timers.current.think = setTimeout(
-        () => {
-          pendingRef.current = null;
-          setMessages((ms) => ms.filter((m) => m.id !== tid));
-          route(text, productId);
-        },
-        rmRef.current ? 150 : 900,
-      );
+
+      const local = () => {
+        pendingRef.current = { tid, text, productId };
+        timers.current.think = setTimeout(
+          () => {
+            pendingRef.current = null;
+            setMessages((ms) => ms.filter((m) => m.id !== tid));
+            route(text, productId);
+          },
+          rmRef.current ? 150 : 900,
+        );
+      };
+
+      if (isLocalCommand(text)) local();
+      else
+        (aiReady.current || getAiStatus()).then((live) => {
+          if (statusRef.current !== "thinking") return; // cleared meanwhile
+          if (live) askAi(text, productId, tid);
+          else local();
+        });
       return true;
     },
-    // route/say read refs only, so a stable callback is safe here.
+    // route/say/askAi read refs only, so a stable callback is safe here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  // "Try again" on a failed answer: same words, no second user bubble.
+  const retry = useCallback(
+    (messageId: string) => {
+      const failed = messagesRef.current.find((m) => m.id === messageId);
+      if (!failed?.retry || abortRef.current || statusRef.current !== "idle")
+        return;
+      const { text, productId } = failed.retry;
+      const tid = uid("t");
+      statusRef.current = "thinking";
+      setStatus("thinking");
+      setMessages((ms) => [
+        ...ms.filter((m) => m.id !== messageId),
+        { id: tid, role: "aqua", text: "", typing: true },
+      ]);
+      askAi(text, productId, tid);
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
@@ -617,8 +804,23 @@ export function useAquaChat({
     return { id: uid("s"), title: first.text, messages: done, at: Date.now() };
   };
 
+  // Successful exchanges in a transcript, in the server's history format.
+  const historyFrom = (ms: ChatMessage[]): AiTurn[] =>
+    ms
+      .filter(
+        (m) => !m.typing && !m.error && (m.role === "user" || m.full || m.text),
+      )
+      .map((m) => ({
+        role: m.role === "user" ? ("user" as const) : ("assistant" as const),
+        text: m.full || m.text,
+      }))
+      .slice(-AI_HISTORY_MAX);
+
   const clear = useCallback(() => {
     stopTimers();
+    abortRef.current?.abort();
+    abortRef.current = null;
+    aiHistory.current = [];
     pendingRef.current = null;
     flushRef.current = null;
     const snap = snapshot();
@@ -636,6 +838,9 @@ export function useAquaChat({
       const s = sessions.find((x) => x.id === id);
       if (!s) return;
       stopTimers();
+      abortRef.current?.abort();
+      abortRef.current = null;
+      aiHistory.current = historyFrom(s.messages);
       pendingRef.current = null;
       flushRef.current = null;
       const snap = snapshot();
@@ -659,7 +864,9 @@ export function useAquaChat({
     happy,
     sessions,
     offerCode,
+    aiMode,
     send,
+    retry,
     say,
     post,
     cheer,

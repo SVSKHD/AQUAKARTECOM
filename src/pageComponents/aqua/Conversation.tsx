@@ -5,6 +5,7 @@ import { ArrowDown, X } from "lucide-react";
 import type { Flow } from "@/utils/aquaFlow";
 import logo from "@/assests/logo.png";
 import AquaDroplet from "./AquaDroplet";
+import AquaReply from "./AquaReply";
 import Composer from "./Composer";
 import CompareTable from "./CompareTable";
 import HardnessCard from "./HardnessCard";
@@ -244,6 +245,43 @@ export default function Conversation(p: Props) {
                 Looking through the catalogue
               </span>
             </div>
+          ) : m.error ? (
+            <div
+              role="alert"
+              style={{
+                borderRadius: "6px 20px 20px 20px",
+                padding: "12px 16px",
+                fontSize: 14,
+                lineHeight: 1.5,
+                maxWidth: "100%",
+                background: "#FDECEC",
+                border: "1px solid #F5C2C2",
+                color: "#8A1F1F",
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                alignItems: "flex-start",
+              }}
+            >
+              <span style={{ fontWeight: 600 }}>{m.text}</span>
+              {m.retry && (
+                <button
+                  type="button"
+                  className="aq-btn"
+                  onClick={() => p.chat.retry(m.id)}
+                  disabled={busy}
+                  style={{
+                    height: 34,
+                    padding: "0 14px",
+                    fontSize: 12.5,
+                    background: "#B42318",
+                    color: "#fff",
+                  }}
+                >
+                  Try again
+                </button>
+              )}
+            </div>
           ) : (
             m.text && (
               <div
@@ -255,9 +293,11 @@ export default function Conversation(p: Props) {
                   lineHeight: 1.58,
                   maxWidth: "100%",
                   textWrap: "pretty",
+                  overflowWrap: "anywhere",
                 }}
               >
-                {m.text}
+                {/* Plain text while streaming (no half-parsed markdown), formatted once complete. */}
+                {streaming ? m.text : <AquaReply text={m.full || m.text} />}
                 {streaming && (
                   <span
                     aria-hidden="true"

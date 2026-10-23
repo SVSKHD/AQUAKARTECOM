@@ -45,6 +45,9 @@ export type ChatMessage = {
   chips?: string[];
   note?: string;
   table?: string[];
+  // A failed backend answer; `retry` holds what to resend.
+  error?: boolean;
+  retry?: { text: string; productId: string | null };
 };
 
 export type ChatStatus = "idle" | "thinking" | "streaming";

@@ -512,9 +512,9 @@ export default function AquaWorkspace() {
           ? "Replying…"
           : focused
             ? "Listening…"
-            : catalogue.live
-              ? "Online · live catalogue"
-              : "Online · demo catalogue";
+            : `${chat.aiMode === "offline" ? "AI offline · basic answers" : "Online"} · ${
+                catalogue.live ? "live catalogue" : "demo catalogue"
+              }`;
 
   // Mobile preview strip: Aqua's latest reply after a send while the sheet is open.
   const lastMsg = chat.messages[chat.messages.length - 1];

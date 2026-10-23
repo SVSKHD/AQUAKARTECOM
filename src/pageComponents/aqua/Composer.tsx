@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { ArrowUp, Mic } from "lucide-react";
+import { AI_PROMPT_MAX } from "@/services/ai";
 
 type Props = {
   placeholder: string;
@@ -150,6 +151,7 @@ export default function Composer({
             ref={ta}
             aria-label="Message Aqua"
             rows={1}
+            maxLength={AI_PROMPT_MAX}
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={onKey}
