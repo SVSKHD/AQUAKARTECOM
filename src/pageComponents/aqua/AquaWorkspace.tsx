@@ -21,7 +21,8 @@ import {
   type FlowAction,
 } from "@/utils/aquaFlow";
 import { startPhonePe, type ServerOrder } from "@/utils/aquaCommerce";
-import { aquaConfig } from "./config";
+import { aquaConfig, pickDayTheme } from "./config";
+import { useAquaAuth } from "./useAquaAuth";
 import { DEMO_PRODUCTS, loadCatalogue, toStoreItem } from "./catalogue";
 import { storage, useIsMobile, useReducedMotion } from "./hooks";
 import { useAquaChat } from "./useAquaChat";
@@ -166,6 +167,10 @@ export default function AquaWorkspace() {
   const [theme, setTheme] = useState<"light" | "dark">(() =>
     storage.get("aqua.theme") === "dark" ? "dark" : "light",
   );
+  const [dayTheme] = useState(() => pickDayTheme());
+  const auth = useAquaAuth(token);
+  const userName =
+    (token && (userData?.user?.name || userData?.user?.firstName)) || null;
   useEffect(() => storage.set("aqua.theme", theme), [theme]);
   const [split, setSplit] = useState(() =>
     clampSplit(Number(storage.get("aqua.split")) || aquaConfig.splitDefault),
@@ -568,7 +573,12 @@ export default function AquaWorkspace() {
   ) : null;
 
   return (
-    <div className="aq-root" data-aq-mode={theme} data-flow={flow.state}>
+    <div
+      className="aq-root"
+      data-aq-mode={theme}
+      data-aq-theme={dayTheme}
+      data-flow={flow.state}
+    >
       <ThemeLayer />
       <AquaHeader
         flow={flow}
@@ -593,6 +603,9 @@ export default function AquaWorkspace() {
         onToggleTheme={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
         onOpenShop={(tab) => setShop((s) => (s === tab ? null : tab))}
         onNewChat={newChat}
+        userName={userName}
+        authBusy={auth.busy}
+        onSignIn={auth.signIn}
       />
 
       <main
@@ -623,7 +636,7 @@ export default function AquaWorkspace() {
             products={byId}
             mood={mood}
             dark={theme === "dark"}
-            greeting={greeting}
+            userName={userName}
             isMobile={isMobile}
             panelOpen={open}
             selectedProduct={selectedProduct}
@@ -702,21 +715,26 @@ export default function AquaWorkspace() {
             {panel}
           </aside>
         )}
-
-        <HistoryDock
-          open={dockOpen}
-          locked={locked}
-          sessions={chat.sessions}
-          viewed={viewed
-            .map((id) => byId.get(id))
-            .filter((p): p is Product => !!p)}
-          onClose={() => setDockOpen(false)}
-          onNewChat={newChat}
-          onRestore={restoreChat}
-          onView={view}
-          canView={canDispatch(flow, "VIEW")}
-        />
       </main>
+
+      <HistoryDock
+        open={dockOpen}
+        locked={locked}
+        sessions={chat.sessions}
+        viewed={viewed
+          .map((id) => byId.get(id))
+          .filter((p): p is Product => !!p)}
+        onClose={() => setDockOpen(false)}
+        onNewChat={newChat}
+        onRestore={restoreChat}
+        onView={view}
+        userName={userName}
+        authBusy={auth.busy}
+        authError={auth.error}
+        onSignIn={auth.signIn}
+        onSignOut={auth.signOut}
+        canView={canDispatch(flow, "VIEW")}
+      />
 
       {isMobile && open && (
         <aside

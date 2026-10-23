@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import { MessageCircle, Plus, X } from "lucide-react";
 import { INR } from "./catalogue";
-import { openExpert } from "./AquaHeader";
+import { Avatar, openExpert } from "./AquaHeader";
 import type { ChatSession } from "./useAquaChat";
 import type { Product } from "./types";
 
@@ -16,6 +17,11 @@ type Props = {
   onNewChat: () => void;
   onRestore: (id: string) => void;
   onView: (id: string) => void;
+  userName: string | null;
+  authBusy: boolean;
+  authError: string;
+  onSignIn: () => void;
+  onSignOut: () => void;
 };
 
 const ago = (t: number) => {
@@ -29,6 +35,14 @@ const ago = (t: number) => {
 
 // Overlay dock: earlier chats from this tab and products opened in this conversation.
 export default function HistoryDock(p: Props) {
+  const { open, onClose } = p;
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   return (
     <>
       {p.open && (
@@ -38,8 +52,9 @@ export default function HistoryDock(p: Props) {
           style={{
             position: "absolute",
             inset: 0,
-            background: "rgba(7,26,37,.16)",
-            zIndex: 41,
+            background: "rgba(7,26,37,.24)",
+            zIndex: 70,
+            animation: "aqIn .25s ease both",
           }}
         />
       )}
@@ -49,13 +64,16 @@ export default function HistoryDock(p: Props) {
         inert={!p.open}
         className="aq-glass"
         style={{
+          // Rendered at the root (not inside <main>) so it spans the full page height
+          // and sits above the header and its scrim.
           position: "absolute",
-          top: 0,
-          left: 12,
-          bottom: 12,
-          width: "min(300px, calc(100% - 24px))",
+          top: 8,
+          left: 8,
+          bottom: 8,
+          width: "min(310px, calc(100% - 16px))",
           borderRadius: 26,
-          zIndex: 42,
+          zIndex: 71,
+          background: "rgba(var(--aq-gl),.72)",
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
@@ -105,6 +123,95 @@ export default function HistoryDock(p: Props) {
             gap: 18,
           }}
         >
+          {p.userName ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "10px 12px",
+                borderRadius: 16,
+                background: "rgba(var(--aq-mintrgb),.9)",
+              }}
+            >
+              <Avatar name={p.userName} size={30} />
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {p.userName}
+                </span>
+                <span style={{ fontSize: 11, color: "var(--aq-mintink)" }}>
+                  Cart and favourites saved to your account
+                </span>
+              </div>
+              <button
+                type="button"
+                className="aq-btn aq-btn-ghost"
+                onClick={p.onSignOut}
+                disabled={p.authBusy || p.locked}
+                style={{ height: 32, padding: "0 6px", fontSize: 11.5 }}
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <div
+              style={{
+                borderRadius: 20,
+                padding: 16,
+                background:
+                  "linear-gradient(160deg, rgba(var(--aq-mintrgb),.95) 0%, rgba(var(--aq-gl),.8) 75%)",
+                border: "1px solid var(--aq-mintbd)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+              }}
+            >
+              <span style={{ fontWeight: 700, fontSize: 14 }}>
+                Save your chats and picks
+              </span>
+              <span
+                style={{
+                  fontSize: 12.5,
+                  lineHeight: 1.5,
+                  color: "var(--aq-body)",
+                }}
+              >
+                Sign in to keep your cart and favourites across devices and pay
+                with your saved addresses.
+              </span>
+              <button
+                type="button"
+                className="aq-btn aq-btn-glass"
+                onClick={p.onSignIn}
+                disabled={p.authBusy}
+                style={{ height: 40, fontSize: 13 }}
+              >
+                {p.authBusy ? "Signing in…" : "Sign in with Google"}
+              </button>
+              {p.authError && (
+                <span role="alert" style={{ fontSize: 12, color: "#B42318" }}>
+                  {p.authError}
+                </span>
+              )}
+            </div>
+          )}
+
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <span className="aq-label" style={{ padding: "0 6px 4px" }}>
               Recent chats

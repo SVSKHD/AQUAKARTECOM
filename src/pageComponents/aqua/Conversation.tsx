@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { ArrowDown, X } from "lucide-react";
 import type { Flow } from "@/utils/aquaFlow";
 import logo from "@/assests/logo.png";
@@ -21,7 +21,7 @@ type Props = {
   products: Map<string, Product>;
   mood: Mood;
   dark: boolean;
-  greeting: boolean;
+  userName: string | null;
   isMobile: boolean;
   panelOpen: boolean;
   selectedProduct: Product | null;
@@ -102,40 +102,12 @@ export default function Conversation(p: Props) {
   const stickRef = useRef(true);
   const [showJump, setShowJump] = useState(false);
 
-  // FLIP: the composer is the same element on the welcome screen and in the chat,
-  // so moving it is an animation, not a remount (no layout shift).
-  const compBox = useRef<HTMLDivElement | null>(null);
-  const lastTop = useRef<number | null>(null);
-  const prevWelcome = useRef(isWelcome);
-  useLayoutEffect(() => {
-    const el = compBox.current;
-    if (!el) return;
-    const top = el.getBoundingClientRect().top;
-    if (
-      prevWelcome.current !== isWelcome &&
-      lastTop.current !== null &&
-      !reduced
-    ) {
-      const dy = lastTop.current - top;
-      if (Math.abs(dy) > 2)
-        el.animate(
-          [{ transform: `translateY(${dy}px)` }, { transform: "none" }],
-          { duration: 420, easing: "cubic-bezier(.22,.8,.24,1)" },
-        );
-    }
-    prevWelcome.current = isWelcome;
-    lastTop.current = top;
-  });
+  const firstName = (p.userName || "").trim().split(/\s+/)[0] || "";
 
-  const setCompRef = useCallback(
-    (el: HTMLDivElement | null) => {
-      compBox.current = el;
-      p.composerRef(el);
-    },
-    // composerRef is a stable callback from the workspace
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
+  // The composer sits at the bottom on the welcome screen too, and is the same element
+  // in the chat, so starting a conversation never moves or remounts it (no layout shift);
+  // only its max-width eases out.
+  const setCompRef = p.composerRef;
 
   // Keep the newest message in view unless the reader scrolled up. Instant scrolling on
   // purpose: smooth scrolling emits intermediate scroll events that would unstick it.
@@ -174,7 +146,7 @@ export default function Conversation(p: Props) {
     p.selectedProduct && p.flow.state === "product"
       ? `Ask about ${p.selectedProduct.title}…`
       : isWelcome
-        ? "Ask Aqua about softeners, purifiers or your water…"
+        ? "Ask Aqua anything…"
         : "Message Aqua…";
 
   const parked = p.flow.state === "chatting" && p.flow.parked;
@@ -398,101 +370,183 @@ export default function Conversation(p: Props) {
         }}
       >
         {isWelcome ? (
-          // marginTop:auto (not justify-content:flex-end) keeps an overflowing hero scrollable.
+          // margin:auto (not justify-content:center) keeps an overflowing hero scrollable.
           <div
             style={{
-              marginTop: "auto",
+              margin: "auto 0",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 14,
+              gap: 18,
               textAlign: "center",
-              paddingBottom: 14,
+              padding: "8px 0 16px",
             }}
           >
             <div
-              style={{ height: 46, display: "flex", alignItems: "flex-end" }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 6,
+              }}
             >
-              {p.greeting && (
+              <div
+                style={{ height: 46, display: "flex", alignItems: "flex-end" }}
+              >
                 <div
-                  className="aq-glass"
+                  className="aq-glass aq-bubble-tail"
                   style={{
                     position: "relative",
-                    padding: "9px 16px",
+                    padding: "9px 18px",
                     borderRadius: 18,
                     fontSize: 14,
                     fontWeight: 700,
                     whiteSpace: "nowrap",
+                    overflow: "visible",
                     transformOrigin: "50% 100%",
                     animation:
                       "aqGreetIn .85s cubic-bezier(.2,1.5,.4,1) both, aqGreetFloat 4.5s ease-in-out .85s infinite",
                   }}
                 >
-                  Hi, I&apos;m Aqua 👋
+                  {firstName
+                    ? `Welcome back, ${firstName}! 👋`
+                    : "Hi, I'm Aqua 👋"}
                 </div>
-              )}
-            </div>
-            <div
-              style={{
-                position: "relative",
-                display: "grid",
-                placeItems: "center",
-                width: 240,
-                height: "clamp(120px, 20vh, 200px)",
-              }}
-            >
+              </div>
               <div
-                aria-hidden="true"
                 style={{
-                  position: "absolute",
+                  position: "relative",
+                  display: "grid",
+                  placeItems: "center",
                   width: 240,
-                  height: 240,
-                  borderRadius: "50%",
-                  background:
-                    "radial-gradient(circle, rgba(16,191,164,.26) 0%, rgba(118,206,240,.10) 45%, rgba(16,191,164,0) 70%)",
+                  height: "clamp(120px, 21vh, 190px)",
                 }}
-              />
-              <AquaDroplet
-                mood={p.mood}
-                size={p.isMobile ? 120 : 150}
-                dark={p.dark}
-                label="Aqua, the Aquakart assistant"
-              />
+              >
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    width: 260,
+                    height: 260,
+                    borderRadius: "50%",
+                    background:
+                      "radial-gradient(circle, rgba(16,191,164,.22) 0%, rgba(118,206,240,.08) 45%, rgba(16,191,164,0) 70%)",
+                  }}
+                />
+                <AquaDroplet
+                  mood={p.mood}
+                  size={p.isMobile ? 116 : 150}
+                  dark={p.dark}
+                  label="Aqua, the Aquakart assistant"
+                />
+              </div>
             </div>
             <div
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: 10,
-                maxWidth: 640,
+                gap: 12,
+                maxWidth: 660,
               }}
             >
               <h1
                 className="aq-display"
                 style={{
                   margin: 0,
-                  fontSize: "clamp(28px, 3.8vw, 44px)",
-                  lineHeight: 1.12,
+                  fontSize: "clamp(28px, 3.4vw, 40px)",
+                  lineHeight: 1.15,
                   fontWeight: 700,
                   letterSpacing: "-0.03em",
                   textWrap: "balance",
                 }}
               >
-                Soft, safe water for your home. Tell me about yours.
+                {firstName
+                  ? `Welcome back, ${firstName}. What can I find for you today?`
+                  : "Hi, I'm Aqua. What can I find for you today?"}{" "}
+                <span aria-hidden="true">💧</span>
               </h1>
               <p
                 style={{
-                  margin: 0,
-                  fontSize: "clamp(15px, 1.5vw, 18px)",
-                  lineHeight: 1.55,
+                  margin: "0 auto",
+                  maxWidth: 620,
+                  fontSize: "clamp(15px, 1.4vw, 17px)",
+                  lineHeight: 1.6,
                   color: "var(--aq-body)",
                   textWrap: "pretty",
                 }}
               >
-                I&apos;ll ask a couple of questions, suggest what fits, and you
-                can buy without leaving this chat.
+                {firstName
+                  ? "Your chats, cart and favourites are saved. Pick up where you left off or ask me something new."
+                  : "Tell me about your water and your home. I'll suggest what fits, and you can buy without leaving this chat."}
               </p>
             </div>
+            <HardnessCard onAsk={p.onSend} />
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                gap: 10,
+                maxWidth: 720,
+              }}
+            >
+              {aquaConfig.suggestionChips.map((c, i) => (
+                <button
+                  key={c}
+                  type="button"
+                  className="aq-chip aq-chip-soft"
+                  onClick={() => p.onSend(c)}
+                  style={{
+                    fontSize: 13.5,
+                    padding: "8px 16px",
+                    minHeight: 38,
+                    animation: `aqChipIn .4s cubic-bezier(.2,.8,.2,1) ${0.2 + i * 0.06}s both`,
+                  }}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+            {aquaConfig.showFestive && (
+              <button
+                type="button"
+                className="aq-card"
+                onClick={() => p.onSend("Show offers on water softeners")}
+                style={{
+                  padding: "12px 16px",
+                  cursor: "pointer",
+                  color: "var(--aq-ink)",
+                  textAlign: "left",
+                  maxWidth: 560,
+                  width: "100%",
+                }}
+              >
+                <strong style={{ display: "block", fontSize: 15 }}>
+                  Seasonal offers
+                </strong>
+                <span style={{ fontSize: 12.5, color: "var(--aq-mut)" }}>
+                  Ask Aqua which products qualify. Discounts are confirmed by
+                  the server at checkout.
+                </span>
+              </button>
+            )}
+            {aquaConfig.showTrust && (
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 16,
+                  justifyContent: "center",
+                  fontSize: 12.5,
+                  color: "var(--aq-mut)",
+                  fontWeight: 600,
+                }}
+              >
+                <span>Payments through PhonePe</span>
+                <span>Downloadable invoices</span>
+                <span>Experts on WhatsApp</span>
+              </div>
+            )}
           </div>
         ) : (
           <div
@@ -548,7 +602,8 @@ export default function Conversation(p: Props) {
       >
         <div
           style={{
-            maxWidth: isWelcome ? 720 : 760,
+            maxWidth: isWelcome ? 480 : 760,
+            transition: "max-width .42s cubic-bezier(.22,.8,.24,1)",
             margin: "0 auto",
             display: "flex",
             flexDirection: "column",
@@ -680,94 +735,13 @@ export default function Conversation(p: Props) {
             <Composer
               placeholder={placeholder}
               busy={busy}
-              large={isWelcome}
+              large={false}
               onSend={p.onSend}
               onFocusChange={p.onFocusChange}
             />
           )}
         </div>
       </div>
-
-      {isWelcome && (
-        <div
-          className="aq-noscroll"
-          style={{
-            flex: "0 1 auto",
-            minHeight: 0,
-            overflowY: "auto",
-            padding: "10px 12px 24px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 16,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              gap: 8,
-              maxWidth: 720,
-            }}
-          >
-            {aquaConfig.suggestionChips.map((c, i) => (
-              <button
-                key={c}
-                type="button"
-                className="aq-chip"
-                onClick={() => p.onSend(c)}
-                style={{
-                  animation: `aqChipIn .4s cubic-bezier(.2,.8,.2,1) ${0.1 + i * 0.06}s both`,
-                }}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-          <HardnessCard onAsk={p.onSend} />
-          {aquaConfig.showFestive && (
-            <button
-              type="button"
-              className="aq-card"
-              onClick={() => p.onSend("Show offers on water softeners")}
-              style={{
-                padding: "12px 16px",
-                cursor: "pointer",
-                color: "var(--aq-ink)",
-                textAlign: "left",
-                maxWidth: 520,
-                width: "100%",
-              }}
-            >
-              <strong style={{ display: "block", fontSize: 15 }}>
-                Seasonal offers
-              </strong>
-              <span style={{ fontSize: 12.5, color: "var(--aq-mut)" }}>
-                Ask Aqua which products qualify. Discounts are confirmed by the
-                server at checkout.
-              </span>
-            </button>
-          )}
-          {aquaConfig.showTrust && (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 16,
-                justifyContent: "center",
-                fontSize: 12.5,
-                color: "var(--aq-mut)",
-                fontWeight: 600,
-              }}
-            >
-              <span>Payments through PhonePe</span>
-              <span>Downloadable invoices</span>
-              <span>Experts on WhatsApp</span>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
