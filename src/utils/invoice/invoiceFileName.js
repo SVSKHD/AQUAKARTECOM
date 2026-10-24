@@ -8,11 +8,15 @@ export const sanitizeInvoiceFilePart = (value) =>
     .replace(/-+/g, "-")
     .replace(/^[-._]+|[-._]+$/g, "");
 
-export const getInvoicePdfFileName = (reference) => {
+// `kind` names the document ("Receipt" once paid); defaults to "Invoice".
+export const getInvoicePdfFileName = (reference, kind = "Invoice") => {
   const safeReference = sanitizeInvoiceFilePart(reference);
-  return safeReference
-    ? `Aquakart-Invoice-${safeReference}.pdf`
-    : DEFAULT_INVOICE_PDF_FILENAME;
+  const safeKind = sanitizeInvoiceFilePart(kind) || "Invoice";
+  if (!safeReference)
+    return safeKind === "Invoice"
+      ? DEFAULT_INVOICE_PDF_FILENAME
+      : `Aquakart-${safeKind}.pdf`;
+  return `Aquakart-${safeKind}-${safeReference}.pdf`;
 };
 
 export default getInvoicePdfFileName;

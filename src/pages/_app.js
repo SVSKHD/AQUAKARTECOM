@@ -26,6 +26,12 @@ const montserrat = Montserrat({
   display: "swap",
   variable: "--font-montserrat",
 });
+// Mounted here, not in AquaLayout, so the conversation and any in-flight reply
+// survive client-side navigation between pages.
+const AssistantWidget = dynamic(
+  () => import("@/components/assistant/AssistantWidget"),
+  { ssr: false },
+);
 const Toaster = dynamic(() => import("sonner").then((mod) => mod.Toaster), {
   ssr: false,
 });
@@ -45,6 +51,7 @@ const persistConfig = {
     "authDialog",
     "userDataDrawer",
     "addressDialog",
+    "assistant",
   ],
 };
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -162,18 +169,10 @@ export default function App({ Component, pageProps }) {
       <AuthProvider>
         <div className={`${robotoMono.variable} ${montserrat.variable}`}>
           {!appReady ? (
-            <AquaAppLoader
-              variant="screen"
-              message="AquaKart"
-              subtext=""
-            />
+            <AquaAppLoader variant="screen" message="AquaKart" subtext="" />
           ) : null}
           {routeLoading ? (
-            <AquaAppLoader
-              variant="route"
-              message="AquaKart"
-              subtext=""
-            />
+            <AquaAppLoader variant="route" message="AquaKart" subtext="" />
           ) : null}
           <main
             className="aqua-page-shell aqua-page-enter"
@@ -189,6 +188,7 @@ export default function App({ Component, pageProps }) {
             <Component {...pageProps} />
           </main>
           <Toaster position="top-right" richColors closeButton />
+          {appReady ? <AssistantWidget pathname={router.pathname} /> : null}
         </div>
       </AuthProvider>
     </Provider>

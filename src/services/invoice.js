@@ -100,6 +100,21 @@ const loginInvoiceAccess = async (
   return response.data;
 };
 
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
+
+// The signed-in customer's purchases (invoices linked to their Google account),
+// newest first, as summaries. Unlike the invoice-gateway calls this uses the
+// normal account token; opening one still goes through /invoice/:id.
+export const getMyInvoices = async (token) => {
+  if (!token || !API_URL) return [];
+  const response = await invoiceRequest({
+    method: "get",
+    url: `${API_URL}/invoices/public/mine`,
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return Array.isArray(response.data?.invoices) ? response.data.invoices : [];
+};
+
 const getAccessibleInvoices = async () => {
   const response = await axios.get("/invoice-gateway");
   return response.data;
@@ -169,6 +184,7 @@ const InvoiceServiceOperations = {
   loginDirectInvoiceAccess,
   getInvoiceById,
   getAccessibleInvoices,
+  getMyInvoices,
   emailInvoice,
   claimInvoice,
   updateInvoiceEmail,

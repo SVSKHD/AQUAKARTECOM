@@ -45,6 +45,7 @@ import ProductReviews from "@/components/reviews/ProductReviews";
 import AquaEnquireForm from "@/components/common/commonDialogs/enquireForm";
 import ProductServiceOperations from "@/services/products";
 import useProduct from "@/utils/product";
+import useAssistant, { productAssistantPrompt } from "@/utils/assistant";
 
 const AquaRelatedProductCard = React.lazy(
   () => import("@/components/cards/RelatedProductCard"),
@@ -920,6 +921,7 @@ function AquaProductRevamp({
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [consultationOpen, setConsultationOpen] = useState(false);
+  const { available: assistantAvailable, openAssistant } = useAssistant();
   const storyRef = useRef(null);
   const visualStageRef = useRef(null);
   const router = useRouter();
@@ -1192,18 +1194,32 @@ function AquaProductRevamp({
                       Not sure this is right for your water?
                     </p>
                     <p className="mt-1 text-xs leading-5 text-slate-500">
-                      Send this exact product to Aquakart with your water problem.
-                      It will reach our CRM with the product attached.
+                      Send this exact product to Aquakart with your water
+                      problem. It will reach our CRM with the product attached.
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setConsultationOpen(true)}
-                    className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 text-xs font-black text-white transition hover:bg-emerald-700 sm:mt-0 sm:w-auto"
-                  >
-                    <PhoneCall size={16} />
-                    Check suitability
-                  </button>
+                  <div className="mt-3 flex flex-col gap-2 sm:mt-0 sm:flex-none sm:flex-row">
+                    {assistantAvailable && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openAssistant(productAssistantPrompt(product))
+                        }
+                        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-white px-4 text-xs font-black text-emerald-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 sm:w-auto"
+                      >
+                        <Sparkles size={16} />
+                        Ask about this product
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setConsultationOpen(true)}
+                      className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 text-xs font-black text-white transition hover:bg-emerald-700 sm:w-auto"
+                    >
+                      <PhoneCall size={16} />
+                      Check suitability
+                    </button>
+                  </div>
                 </div>
 
                 <div className="relative mt-6 overflow-hidden rounded-[1.6rem] bg-[linear-gradient(135deg,#020617_0%,#0f172a_62%,#064e3b_145%)] p-5 text-white shadow-[0_22px_60px_rgba(15,23,42,0.2)] sm:p-6">

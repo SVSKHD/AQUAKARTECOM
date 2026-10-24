@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   directInvoiceLoginPath,
+  getMyInvoices,
   INVOICE_REQUEST_TIMEOUT_MS,
   invoiceByIdPath,
   isValidInvoiceEmail,
@@ -46,6 +47,12 @@ describe("direct invoice Google login", () => {
     expect(directInvoiceLoginPath("invoice/with spaces")).toBe(
       "/invoice-gateway/invoice%2Fwith%20spaces/login",
     );
+  });
+});
+
+describe("my purchases", () => {
+  it("asks nothing of the server without an account token", async () => {
+    await expect(getMyInvoices(null)).resolves.toEqual([]);
   });
 });
 
