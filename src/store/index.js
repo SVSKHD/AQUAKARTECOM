@@ -13,6 +13,7 @@ import { addressDialog } from "./reducers/addressDialogReducer";
 import { addressData } from "./reducers/addressDialogData";
 import { compareDataReducer } from "./reducers/compareDataReducer";
 import { dynamicDataReducer } from "./reducers/dynamicReducer";
+import { assistantReducer } from "./reducers/assistantReducer";
 
 const rootReducer = combineReducers({
   toastNotify: toastReducer,
@@ -28,6 +29,7 @@ const rootReducer = combineReducers({
   addressData: addressData,
   compare: compareDataReducer,
   dynamicData: dynamicDataReducer,
+  assistant: assistantReducer,
 });
 
 export default rootReducer;

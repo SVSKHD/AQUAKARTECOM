@@ -48,6 +48,7 @@ const PublicInvoiceRoute = () => {
     invoice: null,
     statusCode: 0,
     loading: true,
+    catalogue: null,
   });
 
   useEffect(() => {
@@ -81,10 +82,12 @@ const PublicInvoiceRoute = () => {
         if (invoice) {
           const catalogue = await fetchProductCatalogue(controller.signal);
           if (!controller.signal.aborted) {
+            // The catalogue also feeds the receipt's "other products".
             setState({
               invoice: enrichInvoiceProducts(invoice, catalogue),
               statusCode: 200,
               loading: false,
+              catalogue,
             });
           }
         }
@@ -107,6 +110,7 @@ const PublicInvoiceRoute = () => {
   return (
     <InvoicePage
       invoice={state.invoice}
+      catalogue={state.catalogue}
       statusCode={state.statusCode}
       onAccessGranted={() => setRefreshKey((current) => current + 1)}
     />
