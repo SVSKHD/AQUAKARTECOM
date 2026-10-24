@@ -2,6 +2,7 @@
 
 import { Check, Heart, ShoppingCart } from "lucide-react";
 import { INR } from "./catalogue";
+import { softenerBadges } from "./softenerSizing";
 import type { Product } from "./types";
 
 type Props = {
@@ -18,6 +19,46 @@ type Props = {
   onToggleCompare: (productId: string) => void;
   onAddToCart: (productId: string) => void;
 };
+
+// "Automatic · Whole home" / "Manual · Per bathroom", so softeners read apart at a glance.
+export function SoftenerBadges({ product }: { product: Product }) {
+  const badges = softenerBadges(product);
+  if (!badges.length) return null;
+  return (
+    <span style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+      {badges.map((b, i) => (
+        <span
+          key={b}
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            padding: "3px 8px",
+            borderRadius: 999,
+            ...(i === 0
+              ? b === "Automatic"
+                ? {
+                    background: "#E6F6FF",
+                    color: "#0B5C8A",
+                    border: "1px solid #BFE3F7",
+                  }
+                : {
+                    background: "#FFF4E5",
+                    color: "#8A5A00",
+                    border: "1px solid #F2DDB8",
+                  }
+              : {
+                  background: "var(--aq-tint)",
+                  color: "var(--aq-body)",
+                  border: "1px solid var(--aq-bd)",
+                }),
+          }}
+        >
+          {b}
+        </span>
+      ))}
+    </span>
+  );
+}
 
 export const stockColors = (p: Product) =>
   p.inStock
@@ -155,6 +196,7 @@ export default function ProductCard({
         <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.3 }}>
           {p.title}
         </span>
+        <SoftenerBadges product={p} />
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
           <span
             className="aq-display"

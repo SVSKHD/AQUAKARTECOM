@@ -9,7 +9,7 @@ const BULLET = /^\s*[-*•]\s+/;
 const NUMBERED = /^\s*\d+[.)]\s+/;
 const HEADING = /^\s*#{1,4}\s+/;
 
-const renderInline = (text, keyPrefix) =>
+export const renderInline = (text, keyPrefix) =>
   text
     .split(/(\*\*[^*\n]+\*\*)/g)
     .filter(Boolean)

@@ -6,6 +6,7 @@ import {
 import priceUtils from "@/utils/priceUtils";
 import { savePdfDocument } from "@/utils/pdfDownload";
 import { getInvoicePdfFileName } from "@/utils/invoice/invoiceFileName";
+import { getDocumentKind, isPaidStatus } from "@/utils/invoice/documentKind";
 import logo from "@/assests/logo.png";
 
 const BRAND = [4, 120, 87];
@@ -110,7 +111,7 @@ const titleCase = (value) =>
 const drawPageHeader = (doc, invoice, continued = false, sectionLabel = "") => {
   const width = doc.internal.pageSize.getWidth();
   const height = doc.internal.pageSize.getHeight();
-  const invoiceTitle = invoice.gst ? "GST TAX INVOICE" : "RETAIL TAX INVOICE";
+  const invoiceTitle = getDocumentKind(invoice).title.toUpperCase();
   const documentTitle = sectionLabel
     ? `${invoiceTitle} / ${sectionLabel}`
     : continued
@@ -602,9 +603,10 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
   drawPageHeader(doc, invoice);
   let y = 116;
 
+  const { name: documentName } = getDocumentKind(invoice);
   const metadata = [
-    ["Invoice number", getPublicInvoiceReference(invoice)],
-    ["Invoice date", formatDate(invoice.date)],
+    [`${documentName} number`, getPublicInvoiceReference(invoice)],
+    [`${documentName} date`, formatDate(invoice.date)],
     ["Payment", titleCase(invoice.payment_type)],
     ["Status", titleCase(invoice.paid_status)],
   ];
@@ -842,7 +844,11 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
   doc.setTextColor(...WHITE);
-  doc.text("INVOICE TOTAL", summaryX + 14, rowY + 9);
+  doc.text(
+    isPaidStatus(invoice.paid_status) ? "AMOUNT PAID" : "AMOUNT DUE",
+    summaryX + 14,
+    rowY + 9,
+  );
   doc.text(
     formatPdfAmount(amounts.grandTotal),
     summaryX + summaryWidth - 14,
@@ -874,6 +880,7 @@ export const downloadPublicInvoicePdf = async (invoice, options = {}) => {
       getPublicInvoiceReference(invoice) === "Invoice"
         ? ""
         : getPublicInvoiceReference(invoice),
+      getDocumentKind(invoice).name,
     ),
     options.preparedTarget,
   );

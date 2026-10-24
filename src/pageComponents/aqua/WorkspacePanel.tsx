@@ -88,6 +88,7 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
 
   return (
     <div
+      className="aq-panel"
       style={{
         position: "absolute",
         inset: 0,
@@ -136,6 +137,7 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
         {!props.isMobile && (
           <ol
             aria-label="Progress"
+            className="aq-steps"
             style={{
               display: "flex",
               gap: 6,

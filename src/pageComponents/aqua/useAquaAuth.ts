@@ -13,6 +13,26 @@ import {
 // talks to the same Google sign-in service directly and writes the same Redux
 // userData slice. Popup first; Firebase falls back to a redirect only when popups
 // are blocked, and that redirect lands back on /aqua.
+// Firebase errors in words a shopper can act on. Closing the popup isn't an error.
+export const signInMessage = (
+  e: { code?: string; message?: string } | null,
+) => {
+  switch (e?.code) {
+    case "auth/popup-closed-by-user":
+    case "auth/cancelled-popup-request":
+    case "auth/user-cancelled":
+      return "";
+    case "auth/unauthorized-domain":
+      return `Google sign-in isn't enabled for ${typeof window !== "undefined" ? window.location.hostname : "this site"} yet. Add it under Firebase → Authentication → Settings → Authorized domains.`;
+    case "auth/network-request-failed":
+      return "Couldn't reach Google. Check your connection and try again.";
+    case "auth/too-many-requests":
+      return "Too many sign-in attempts. Wait a minute and try again.";
+    default:
+      return e?.message || "Couldn't sign you in. Try again.";
+  }
+};
+
 export function useAquaAuth(token: string | null) {
   const dispatch = useDispatch();
   const [busy, setBusy] = useState(false);
@@ -41,7 +61,7 @@ export function useAquaAuth(token: string | null) {
       if (result && !result.redirecting)
         dispatch({ type: "LOGGED_IN_USER", payload: result });
     } catch (e) {
-      setError((e as Error)?.message || "Couldn't sign you in. Try again.");
+      setError(signInMessage(e as { code?: string; message?: string }));
     } finally {
       setBusy(false);
     }

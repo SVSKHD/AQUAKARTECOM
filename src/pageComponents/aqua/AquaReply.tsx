@@ -2,13 +2,12 @@
 
 import { Fragment } from "react";
 import { parseReply } from "@/components/assistant/AssistantReply";
-
-type Block = { kind: "p" | "ul" | "ol" | "h"; lines: string[] };
+import type { ReplyBlock as Block } from "./replyProducts";
 
 // Same markdown subset and parser as the storefront assistant, styled for Aqua
 // (the App Router layout doesn't load Tailwind). Reply text only ever reaches
 // React as string children, so HTML in a reply is shown as text.
-const inline = (text: string, key: string) =>
+export const inline = (text: string, key: string) =>
   text
     .split(/(\*\*[^*\n]+\*\*)/g)
     .filter(Boolean)
@@ -26,7 +25,10 @@ const inline = (text: string, key: string) =>
     );
 
 export default function AquaReply({ text }: { text: string }) {
-  const blocks = parseReply(text) as Block[];
+  return <ReplyBlocks blocks={parseReply(text) as Block[]} />;
+}
+
+export function ReplyBlocks({ blocks }: { blocks: Block[] }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {blocks.map((b, i) => {

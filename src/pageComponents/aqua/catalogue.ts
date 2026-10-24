@@ -1,4 +1,9 @@
 import productService from "@/services/products";
+import {
+  descriptionText,
+  findFact,
+  parseDescription,
+} from "./productDescription";
 import type { Category, Product } from "./types";
 
 export const INR = (n: number | string | undefined | null) =>
@@ -167,19 +172,30 @@ export function mapReal(p: any): Product {
       ? Number(p.discountPrice)
       : Number(p.price);
   const oos = p.stock === 0 || p.inStock === false;
+  const about = parseDescription(p.shortDescription || p.description);
   return {
     id: p._id || p.slug,
-    title: p.title,
+    // Live titles carry the site name for SEO ("Kent Sandfilter | Aquakart").
+    title: String(p.title || "").replace(/\s*\|\s*aquakart\s*$/i, ""),
     brand: p.brand || "Aquakart",
     cat,
     price: sale,
     mrp: p.discountPriceStatus ? Number(p.price) : 0,
     photos,
-    capacity: p.capacity || p.coverage || "",
-    warranty: p.warranty || "",
+    capacity:
+      p.capacity ||
+      p.coverage ||
+      findFact(
+        about,
+        /resin volume|tank capacity|storage capacity|^capacity/i,
+      ) ||
+      "",
+    flow: findFact(about, /flow rate|production rate/i),
+    warranty: p.warranty || findFact(about, /warranty/i) || "",
     inStock: !oos,
     stock: oos ? "Out of stock" : "In stock",
-    desc: strip(p.shortDescription || p.description),
+    desc: descriptionText(about) || strip(p.shortDescription || p.description),
+    about: about.length ? about : undefined,
     slug: p.slug,
     raw: p,
   };

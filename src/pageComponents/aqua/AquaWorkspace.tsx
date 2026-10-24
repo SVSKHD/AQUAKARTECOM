@@ -20,11 +20,19 @@ import {
   panelOpen,
   type FlowAction,
 } from "@/utils/aquaFlow";
-import { startPhonePe, type ServerOrder } from "@/utils/aquaCommerce";
+import {
+  CheckoutPaymentError,
+  findOrder,
+  quote,
+  quoteSessionId,
+  startCheckoutPayment,
+  type ServerOrder,
+} from "@/utils/aquaCommerce";
 import { aquaConfig, pickDayTheme } from "./config";
 import { useAquaAuth } from "./useAquaAuth";
 import { DEMO_PRODUCTS, loadCatalogue, toStoreItem } from "./catalogue";
 import { storage, useIsMobile, useReducedMotion } from "./hooks";
+import { readThinkingPref, writeThinkingPref } from "@/services/ai";
 import { useAquaChat } from "./useAquaChat";
 import {
   emptyPayment,
@@ -44,6 +52,9 @@ import HistoryDock from "./HistoryDock";
 import Conversation from "./Conversation";
 import WorkspacePanel from "./WorkspacePanel";
 import ShopPopover, { type ShopTab } from "./ShopPopover";
+import AquaTour, { TOUR_KEY } from "./AquaTour";
+import type { Purchase } from "./HistoryDock";
+import { getMyInvoices } from "@/services/invoice";
 
 // Redux slices are plain JS; describe just what Aqua reads.
 type StoreItem = {
@@ -88,6 +99,9 @@ const storePhoto = (i: StoreItem) => {
 export default function AquaWorkspace() {
   const reducedMotion = useReducedMotion();
   const isMobile = useIsMobile(aquaConfig.mobileBreakpoint);
+  // Below 1024px (phones, iPads in portrait) a side-by-side split leaves the chat
+  // ~300px wide and squeezes the panel, so the panel opens as a bottom sheet.
+  const sheetLayout = useIsMobile(aquaConfig.splitBreakpoint);
   const store = useDispatch();
   const userData = useSelector((s: RootState) => s.userData);
   const cart = useSelector((s: RootState) => s.cartData) || [];
@@ -150,17 +164,40 @@ export default function AquaWorkspace() {
   }, [compare]);
   const getCompare = useCallback(() => compareRef.current, []);
   const clearCompare = useCallback(() => setCompare([]), []);
-  const toggleCompare = (id: string) =>
+  const toggleCompare = (id: string) => {
+    // Adding to compare counts as looking at it, for the history dock.
+    if (!compare.includes(id) && byId.has(id))
+      setViewed((v) => [id, ...v.filter((x) => x !== id)].slice(0, 12));
     setCompare((c) =>
       c.includes(id) ? c.filter((x) => x !== id) : [...c, id].slice(-3),
     );
+  };
 
   // ---------- chat (lives outside the flow machine) ----------
+  // "Show thinking" (shared with the storefront widget): off sends thinking: false.
+  const [showThinking, setShowThinking] = useState(readThinkingPref);
+  const toggleThinking = () =>
+    setShowThinking((on) => {
+      writeThinkingPref(!on);
+      return !on;
+    });
   const chat = useAquaChat({
     products,
     getCompare,
     clearCompare,
     reducedMotion,
+    thinking: showThinking,
+    token,
+    // The backend rejected the stored token: sign out properly instead of
+    // showing a logged-in customer the guest limits.
+    onSessionExpired: () => {
+      store({ type: "LOGOUT", payload: null });
+      showToast("Your session expired. Please log in again.");
+    },
+    // A saved conversation came back after a refresh: show it, not the welcome screen.
+    onResumed: () => {
+      if (flowRef.current.state === "welcome") dispatch({ type: "SEND" });
+    },
   });
 
   // ---------- UI chrome ----------
@@ -172,6 +209,11 @@ export default function AquaWorkspace() {
   const userName =
     (token && (userData?.user?.name || userData?.user?.firstName)) || null;
   useEffect(() => storage.set("aqua.theme", theme), [theme]);
+  // Sign-in from the header fails out of sight of the dock: say why in a toast too.
+  useEffect(() => {
+    if (auth.error) showToast(auth.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.error]);
   const [split, setSplit] = useState(() =>
     clampSplit(Number(storage.get("aqua.split")) || aquaConfig.splitDefault),
   );
@@ -201,11 +243,102 @@ export default function AquaWorkspace() {
     };
   }, []);
 
-  // Products opened in this conversation (history dock + first-view follow-up).
-  const [viewed, setViewed] = useState<string[]>([]);
+  // Products the customer opened, newest first, for the history dock. Kept per
+  // account across refreshes and new chats; a guest's list lasts for this visit.
+  const viewedKey = token
+    ? `aqua.viewed.${userData?.user?._id || userData?.user?.email || "me"}`
+    : null;
+  // The list and the key it belongs to change together, so a login never writes
+  // one account's list under another's key.
+  const [viewedState, setViewedState] = useState<{
+    key: string | null;
+    ids: string[];
+  }>({ key: null, ids: [] });
+  const viewed = viewedState.ids;
+  const setViewed = (fn: (ids: string[]) => string[]) =>
+    setViewedState((s) => ({ ...s, ids: fn(s.ids) }));
+  useEffect(() => {
+    setViewedState((s) => {
+      if (s.key === viewedKey) return s;
+      if (!viewedKey) return { key: null, ids: [] };
+      let stored: string[] = [];
+      try {
+        const list = JSON.parse(storage.get(viewedKey) || "[]");
+        if (Array.isArray(list))
+          stored = list.filter((x) => typeof x === "string");
+      } catch {
+        // unreadable: start empty
+      }
+      // A guest who logs in keeps what they just browsed.
+      const carried = s.key === null ? s.ids : [];
+      return {
+        key: viewedKey,
+        ids: [...new Set([...carried, ...stored])].slice(0, 12),
+      };
+    });
+  }, [viewedKey]);
+  useEffect(() => {
+    if (viewedState.key && viewedState.key === viewedKey)
+      storage.set(
+        viewedState.key,
+        JSON.stringify(viewedState.ids.slice(0, 12)),
+      );
+  }, [viewedKey, viewedState]);
+  // Opened in this conversation (Aqua follows up the first time only).
+  const seenRef = useRef(new Set<string>());
 
   // ---------- mobile sheet ----------
   const [sheet, setSheet] = useState<"full" | "peek">("full");
+  // Dragging the handle: the sheet follows the finger, then snaps to full or
+  // peek (a flick decides the direction); dragging it near the bottom, or a firm
+  // flick down from peek, closes it. A tap (or Enter/Space) toggles.
+  const sheetRef = useRef<HTMLElement>(null);
+  const dragRef = useRef<{
+    y: number;
+    h: number;
+    t: number;
+    moved: boolean;
+  } | null>(null);
+  const skipClickRef = useRef(false);
+  const [dragH, setDragH] = useState<number | null>(null);
+  const onHandleDown = (e: RPointerEvent<HTMLButtonElement>) => {
+    const el = sheetRef.current;
+    if (!el) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragRef.current = {
+      y: e.clientY,
+      h: el.getBoundingClientRect().height,
+      t: performance.now(),
+      moved: false,
+    };
+  };
+  const onHandleMove = (e: RPointerEvent<HTMLButtonElement>) => {
+    const d = dragRef.current;
+    if (!d) return;
+    const dy = e.clientY - d.y;
+    if (!d.moved && Math.abs(dy) < 6) return;
+    d.moved = true;
+    const fullH =
+      window.innerHeight * 0.88 - (hideComposer ? 0 : composerH + mainPadB);
+    setDragH(Math.min(fullH, Math.max(80, d.h - dy)));
+  };
+  const onHandleUp = (e: RPointerEvent<HTMLButtonElement>) => {
+    const d = dragRef.current;
+    dragRef.current = null;
+    if (!d) return;
+    skipClickRef.current = true;
+    if (!d.moved) return setSheet((s) => (s === "full" ? "peek" : "full"));
+    const dy = e.clientY - d.y;
+    const v = dy / Math.max(1, performance.now() - d.t); // px/ms, positive = down
+    const h = d.h - dy;
+    const vh = window.innerHeight;
+    setDragH(null);
+    if ((h < vh * 0.2 || (v > 0.8 && sheet === "peek")) && !locked)
+      return dispatch({ type: "CLOSE" });
+    if (v > 0.5) return setSheet("peek");
+    if (v < -0.5) return setSheet("full");
+    setSheet(h > vh * 0.55 ? "full" : "peek");
+  };
   const [peekFrom, setPeekFrom] = useState<number | null>(null);
   const [composerH, setComposerH] = useState(0);
   const roRef = useRef<ResizeObserver | null>(null);
@@ -253,12 +386,13 @@ export default function AquaWorkspace() {
     const p = byId.get(id);
     if (!p || !canDispatch(flowRef.current, "VIEW"))
       return dispatch({ type: "VIEW", productId: id });
-    const first = !viewed.includes(id);
+    const first = !seenRef.current.has(id);
     dispatch({ type: "VIEW", productId: id });
     setSheet("full");
     setDockOpen(false);
+    setViewed((v) => [id, ...v.filter((x) => x !== id)].slice(0, 12));
     if (first) {
-      setViewed((v) => [id, ...v]);
+      seenRef.current.add(id);
       if (chat.messages.length)
         setTimeout(() => chat.onFirstView(p), reducedMotion ? 0 : 520);
     }
@@ -340,14 +474,14 @@ export default function AquaWorkspace() {
     const ok = chat.send(text, productId);
     if (!ok) return false;
     if (flowRef.current.state === "welcome") dispatch({ type: "SEND" });
-    if (isMobile && open) setPeekFrom(chat.messages.length);
+    if (sheetLayout && open) setPeekFrom(chat.messages.length);
     return true;
   };
 
   const newChat = () => {
     if (isPaymentLocked(flowRef.current)) return;
     chat.clear();
-    setViewed([]);
+    seenRef.current = new Set();
     setCompare([]);
     setSelections({});
     setPeekFrom(null);
@@ -365,52 +499,35 @@ export default function AquaWorkspace() {
   const restoreChat = (id: string) => {
     if (isPaymentLocked(flowRef.current)) return;
     chat.restore(id);
+    seenRef.current = new Set();
     setDockOpen(false);
     // A restored conversation is a sent conversation: move off the welcome screen.
     if (flowRef.current.state === "welcome") dispatch({ type: "SEND" });
   };
 
-  const buildOrder = (txn: string, orderId: string) => {
-    const d = draft!;
-    const q = quoteState.status === "ready" ? quoteState.data : {};
-    const addr = { ...d.address };
-    return {
-      user: userData?.user?._id,
-      customerName: d.name.trim(),
-      email: d.email.trim(),
-      phone: d.phone,
-      number: d.phone,
-      transactionId: txn,
-      orderType: "Payment Method(Phone Pe Gateway)",
-      orderId,
-      items: d.items.map((i) => ({
-        productId: i.id,
-        name: i.title,
-        price: i.price,
-        quantity: i.qty,
-        ...(i.variantLabel ? { variant: i.variantLabel } : {}),
-      })),
-      totalAmount: Number(q.payableAmount),
-      discountAmount: Number(q.discount ?? 0),
-      paymentMethod: "OTHER THAN CASH ON DELIVERY",
-      paymentStatus: "Pending",
-      currency: "INR",
-      billingAddress: addr,
-      shippingAddress: addr,
-      shippingMethod: "Standard",
-      shippingCost: Number(q.deliveryCharge ?? 50),
-      estimatedDelivery: new Date(
-        Date.now() + 7 * 24 * 60 * 60 * 1000,
-      ).toISOString(),
-      orderStatus: "Processing",
-      installation: { day: d.slotDay, slot: d.slotTime },
-      ...(d.coupon ? { couponCode: d.coupon } : {}),
-      ...(q.id || q._id ? { checkoutSessionId: q.id || q._id } : {}),
-    };
+  const openSavedChat = async (id: string) => {
+    if (isPaymentLocked(flowRef.current)) return;
+    setDockOpen(false);
+    if (!(await chat.openSaved(id)))
+      return showToast("Couldn't open that chat. Try again.");
+    seenRef.current = new Set();
+    setCompare([]);
+    if (flowRef.current.state === "welcome") dispatch({ type: "SEND" });
   };
 
-  // Click handler for Pay / Retry. In the live path PhonePe's popup is opened
-  // synchronously inside startPhonePe, before any await, so it isn't blocked.
+  // Shipping address in the shape POST /payments requires (state is mandatory there).
+  const paymentAddress = (d: CheckoutDraft) => ({
+    name: d.name.trim(),
+    phone: d.phone,
+    street: d.address.street.trim(),
+    city: d.address.city.trim(),
+    state: (d.address.state || "").trim(),
+    postalCode: d.address.postalCode,
+  });
+
+  // Click handler for Pay / Retry. The live path pays the server-side checkout
+  // session from the quote (POST /payments); PhonePe's popup opens synchronously
+  // inside startCheckoutPayment, before any await, so it isn't blocked.
   const pay = (kind: "PAY" | "RETRY") => {
     if (!draft || !canDispatch(flowRef.current, kind)) return;
     if (!commerceLive) {
@@ -419,29 +536,70 @@ export default function AquaWorkspace() {
       return;
     }
     if (quoteState.status !== "ready" || quoteState.demo) return;
-    const day = dayjs().format("DDMMYYYY");
-    const txn = `AQTR-PGPP${nanoid(5).toUpperCase()}D${day}`;
-    const orderId = `AQOD${day}${nanoid(2).toUpperCase()}`;
-    const started = startPhonePe(buildOrder(txn, orderId), token);
+    const d = draft;
+    const address = paymentAddress(d);
+    // A session is consumed once a payment is created, so a retry quotes again.
+    let sessionId = kind === "PAY" ? quoteSessionId(quoteState.data) : null;
+    const key = nanoid();
+    const started = startCheckoutPayment(
+      async () => {
+        if (!sessionId) {
+          const fresh = await quote(d.items, d.coupon, token);
+          setQuoteState({ status: "ready", demo: false, data: fresh });
+          sessionId = quoteSessionId(fresh);
+        }
+        if (!sessionId)
+          throw new CheckoutPaymentError(
+            "Couldn't price this order. Please try again.",
+          );
+        return {
+          checkoutSessionId: sessionId,
+          shippingAddress: address,
+          billingAddress: address,
+        };
+      },
+      token,
+      key,
+    );
     dispatch({ type: kind });
-    setPayment({ ...emptyPayment, live: true, txn, orderId });
+    setPayment({ ...emptyPayment, live: true, key });
     started.then(
-      ({ url, popup }) =>
-        setPayment((p) => (p.txn === txn ? { ...p, url, popup } : p)),
-      (e: Error) => {
+      ({ attemptId, orderId, url, popup }) =>
         setPayment((p) =>
-          p.txn === txn
-            ? { ...p, reason: e?.message || "Couldn't start PhonePe." }
-            : p,
-        );
+          p.key === key ? { ...p, attemptId, orderId, url, popup } : p,
+        ),
+      (e: CheckoutPaymentError) => {
+        const reason = e?.sessionExpired
+          ? "Your checkout timed out, so the price needs to be checked again. Press Retry to continue."
+          : e?.message || "Couldn't start PhonePe.";
+        setPayment((p) => (p.key === key ? { ...p, reason } : p));
         dispatch({ type: "FAILED" });
       },
     );
   };
 
-  // Only called with an order-status response that reported "paid".
-  const onVerified = (order: ServerOrder | null) => {
-    setPayment((p) => ({ ...p, serverOrder: order }));
+  // Only called with a payment-status response that reported "paid".
+  const onVerified = (attempt: ServerOrder | null) => {
+    const ids = { orderId: payment.orderId, userId: userData?.user?._id };
+    setPayment((p) => ({
+      ...p,
+      serverOrder: {
+        ...(attempt || {}),
+        totalAmount: attempt?.amount,
+        shippingAddress: draft ? paymentAddress(draft) : undefined,
+        installation: draft
+          ? { day: draft.slotDay, slot: draft.slotTime }
+          : undefined,
+      },
+    }));
+    // Fetch the created order for its order number and items (best effort).
+    findOrder(ids.orderId, ids.userId, token).then((order) => {
+      if (order)
+        setPayment((p) => ({
+          ...p,
+          serverOrder: { ...p.serverOrder, ...order },
+        }));
+    });
     dispatch({ type: "VERIFIED" });
     draft?.items.forEach((i) =>
       store({ type: "REMOVE_FROM_CART", payload: i.id }),
@@ -485,6 +643,36 @@ export default function AquaWorkspace() {
     storage.set("aqua.split", String(Math.round(split)));
   };
 
+  // ---------- purchases: invoices on the signed-in account, for the history dock ----------
+  // Loaded on sign-in, refreshed whenever the dock opens and after an order is
+  // confirmed (so a new invoice shows up). The list stays on screen while it refreshes.
+  const [purchases, setPurchases] = useState<Purchase[] | null>(null);
+  const orderConfirmed = flow.state === "confirmed";
+  useEffect(() => {
+    if (!token) return void setPurchases(null);
+    let alive = true;
+    getMyInvoices(token)
+      .then((list: Purchase[]) => alive && setPurchases(list))
+      .catch(() => alive && setPurchases((prev) => prev ?? []));
+    return () => {
+      alive = false;
+    };
+  }, [token, dockOpen, orderConfirmed]);
+
+  // ---------- AI tour: once, on a first visit's start screen; replay from the dock ----------
+  const [tourOpen, setTourOpen] = useState(false);
+  const welcomeIdle =
+    flow.state === "welcome" && !chat.messages.length && !chat.resuming;
+  useEffect(() => {
+    if (!welcomeIdle || storage.get(TOUR_KEY)) return;
+    const t = setTimeout(() => setTourOpen(true), 1200);
+    return () => clearTimeout(t);
+  }, [welcomeIdle]);
+  const closeTour = useCallback((finished: boolean) => {
+    setTourOpen(false);
+    storage.set(TOUR_KEY, finished ? "done" : "skipped");
+  }, []);
+
   // ---------- droplet mood: derived, never stored ----------
   const mood: Mood =
     flow.state === "confirmed"
@@ -519,7 +707,7 @@ export default function AquaWorkspace() {
   // Mobile preview strip: Aqua's latest reply after a send while the sheet is open.
   const lastMsg = chat.messages[chat.messages.length - 1];
   const peekText =
-    isMobile &&
+    sheetLayout &&
     open &&
     peekFrom !== null &&
     chat.messages.length > peekFrom + 1 &&
@@ -531,7 +719,7 @@ export default function AquaWorkspace() {
   const selectedProduct = flow.productId
     ? byId.get(flow.productId) || null
     : null;
-  const hideComposer = isMobile && locked;
+  const hideComposer = sheetLayout && locked;
   const mainPadB = isMobile ? 8 : 12;
 
   const panel = open ? (
@@ -596,7 +784,9 @@ export default function AquaWorkspace() {
         locked={locked}
         cartCount={cart.length}
         favCount={favs.length}
-        historyCount={viewed.length + chat.sessions.length}
+        historyCount={
+          viewed.length + chat.sessions.length + chat.savedChats.length
+        }
         dockOpen={dockOpen}
         onToggleDock={() => setDockOpen((v) => !v)}
         onLogo={onLogo}
@@ -606,6 +796,8 @@ export default function AquaWorkspace() {
         userName={userName}
         authBusy={auth.busy}
         onSignIn={auth.signIn}
+        thinking={showThinking}
+        onToggleThinking={chat.aiMode === "live" ? toggleThinking : undefined}
       />
 
       <main
@@ -650,6 +842,9 @@ export default function AquaWorkspace() {
             onAddToCart={(id) => addToCart(id)}
             onBuy={buy}
             onSend={sendMessage}
+            onSignIn={auth.signIn}
+            signingIn={auth.busy}
+            signInError={auth.error}
             onFocusChange={setFocused}
             hideComposer={hideComposer}
             composerRef={composerRef}
@@ -662,7 +857,7 @@ export default function AquaWorkspace() {
           />
         </section>
 
-        {!isMobile && open && (
+        {!sheetLayout && open && (
           <div
             className="aq-divider"
             role="separator"
@@ -695,13 +890,17 @@ export default function AquaWorkspace() {
           </div>
         )}
 
-        {!isMobile && (
+        {!sheetLayout && (
           <aside
             aria-label="Workspace"
             aria-hidden={!open}
             className={open ? "aq-glass" : undefined}
             style={{
-              width: open ? `${100 - split}%` : 0,
+              // Pixel floors on both sides: on an iPad in portrait 40/60 would squeeze
+              // the panel under its 340px content and clip it.
+              width: open
+                ? `clamp(360px, ${100 - split}%, calc(100% - 320px))`
+                : 0,
               opacity: open ? 1 : 0,
               flexShrink: 0,
               overflow: "hidden",
@@ -720,67 +919,110 @@ export default function AquaWorkspace() {
       <HistoryDock
         open={dockOpen}
         locked={locked}
-        sessions={chat.sessions}
+        sessions={chat.sessions.filter(
+          (s) =>
+            !s.sessionId || !chat.savedChats.some((c) => c.id === s.sessionId),
+        )}
+        savedChats={chat.savedChats}
+        onOpenSaved={openSavedChat}
+        purchases={purchases}
         viewed={viewed
           .map((id) => byId.get(id))
           .filter((p): p is Product => !!p)}
         onClose={() => setDockOpen(false)}
         onNewChat={newChat}
         onRestore={restoreChat}
+        onStartTour={() => {
+          setDockOpen(false);
+          setTourOpen(true);
+        }}
+        onDeleteSaved={chat.deleteSaved}
+        onDeleteSession={chat.deleteSession}
         onView={view}
         userName={userName}
         authBusy={auth.busy}
         authError={auth.error}
         onSignIn={auth.signIn}
         onSignOut={auth.signOut}
+        thinking={showThinking}
+        onToggleThinking={chat.aiMode === "live" ? toggleThinking : undefined}
         canView={canDispatch(flow, "VIEW")}
       />
 
-      {isMobile && open && (
-        <aside
-          aria-label="Workspace"
-          className="aq-glass"
+      {/* Dims the chat behind a full sheet; the composer below stays usable.
+          Tapping it tucks the sheet down to peek. */}
+      {sheetLayout && open && sheet === "full" && (
+        <div
+          aria-hidden="true"
+          onClick={() => setSheet("peek")}
           style={{
             position: "absolute",
             left: 0,
             right: 0,
+            top: 0,
             bottom: hideComposer ? 0 : composerH + mainPadB,
+            zIndex: 29,
+            background: "rgba(7,26,37,.28)",
+            animation: "aqIn .25s ease both",
+          }}
+        />
+      )}
+      {sheetLayout && open && (
+        <aside
+          ref={sheetRef}
+          aria-label="Workspace"
+          className="aq-glass aq-sheet"
+          data-dragging={dragH !== null}
+          style={{
+            position: "absolute",
+            // Phones: edge to edge on the composer. Tablets: a centred card no
+            // wider than 760px, floating just above the composer.
+            left: isMobile ? 0 : "max(12px, calc((100% - 760px) / 2))",
+            right: isMobile ? 0 : "max(12px, calc((100% - 760px) / 2))",
+            bottom:
+              (hideComposer ? 0 : composerH + mainPadB) + (isMobile ? 0 : 8),
             height:
-              sheet === "full"
-                ? `calc(88dvh - ${hideComposer ? 0 : composerH + mainPadB}px)`
-                : "34dvh",
-            borderRadius: "24px 24px 0 0",
+              dragH !== null
+                ? dragH
+                : sheet === "full"
+                  ? `calc(88dvh - ${(hideComposer ? 0 : composerH + mainPadB) + (isMobile ? 0 : 8)}px)`
+                  : "34dvh",
+            borderRadius: isMobile ? "24px 24px 0 0" : 24,
             zIndex: 30,
             overflow: "hidden",
             display: "flex",
             flexDirection: "column",
-            transition: "height 320ms ease, bottom 320ms ease",
+            transition:
+              dragH !== null
+                ? "none"
+                : "height 360ms cubic-bezier(.22,.8,.24,1), bottom 320ms ease",
             animation: reducedMotion ? undefined : "aqSheetIn 320ms ease both",
           }}
         >
           <button
             type="button"
-            onClick={() => setSheet((s) => (s === "full" ? "peek" : "full"))}
-            aria-label={sheet === "full" ? "Collapse panel" : "Expand panel"}
-            aria-expanded={sheet === "full"}
-            style={{
-              height: 44,
-              border: 0,
-              background: "transparent",
-              cursor: "pointer",
-              display: "grid",
-              placeItems: "center",
-              flexShrink: 0,
+            className="aq-sheet-handle"
+            onPointerDown={onHandleDown}
+            onPointerMove={onHandleMove}
+            onPointerUp={onHandleUp}
+            onPointerCancel={() => {
+              dragRef.current = null;
+              setDragH(null);
             }}
+            onClick={() => {
+              // Pointer taps are handled on pointer-up; this is for keyboards.
+              if (skipClickRef.current)
+                return void (skipClickRef.current = false);
+              setSheet((s) => (s === "full" ? "peek" : "full"));
+            }}
+            aria-label={
+              sheet === "full"
+                ? "Collapse panel (or drag)"
+                : "Expand panel (or drag)"
+            }
+            aria-expanded={sheet === "full"}
           >
-            <span
-              style={{
-                width: 44,
-                height: 5,
-                borderRadius: 4,
-                background: "rgba(var(--aq-ln),.22)",
-              }}
-            />
+            <span />
           </button>
           <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
             {panel}
@@ -862,6 +1104,8 @@ export default function AquaWorkspace() {
           </div>
         </div>
       )}
+
+      <AquaTour open={tourOpen} onClose={closeTour} />
     </div>
   );
 }

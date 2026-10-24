@@ -17,6 +17,8 @@ export const aquaConfig = {
   splitMin: 30,
   splitMax: 70,
   mobileBreakpoint: 768,
+  // Panel beside the chat from this width; a bottom sheet below it.
+  splitBreakpoint: 1024,
 };
 
 export const pickDayTheme = (hour = new Date().getHours()): DayTheme => {

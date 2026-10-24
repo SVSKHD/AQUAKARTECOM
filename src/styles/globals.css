@@ -688,3 +688,8 @@ body {
     bottom: 7.5rem;
   }
 }
+/* The invoice page opens chat from its own header and mobile bar buttons,
+   so the floating button would only cover the document. */
+body:has([data-invoice-mobile-bar]) .aq-assist-fab {
+  display: none;
+}

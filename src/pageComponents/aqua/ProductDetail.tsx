@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   Check,
   Heart,
+  Info,
   MapPin,
   Minus,
   Plus,
@@ -12,9 +13,10 @@ import {
   Wrench,
 } from "lucide-react";
 import { checkDelivery, type DeliveryCheck } from "@/services/delivery";
-import AquaDroplet from "./AquaDroplet";
+import AquaAvatar from "./AquaAvatar";
 import { INR } from "./catalogue";
 import { stockColors } from "./ProductCard";
+import type { DescBlock } from "./productDescription";
 import type { Product, Selection } from "./types";
 
 type Props = {
@@ -42,6 +44,59 @@ const ASK = [
   "Warranty",
   "Show alternatives",
 ];
+
+const sectionTitle = { margin: 0, fontSize: 16, fontWeight: 700 } as const;
+const bodyText = {
+  margin: 0,
+  fontSize: 14,
+  lineHeight: 1.65,
+  color: "var(--aq-body)",
+  textWrap: "pretty",
+} as const;
+const checkList = {
+  margin: 0,
+  padding: 0,
+  listStyle: "none",
+  display: "flex",
+  flexDirection: "column",
+  gap: 8,
+} as const;
+const checkItem = {
+  display: "flex",
+  gap: 10,
+  alignItems: "flex-start",
+  fontSize: 14,
+  lineHeight: 1.5,
+  color: "var(--aq-body)",
+} as const;
+const checkDot = {
+  flexShrink: 0,
+  marginTop: 2,
+  width: 18,
+  height: 18,
+  borderRadius: "50%",
+  display: "grid",
+  placeItems: "center",
+  background: "var(--aq-mint)",
+  color: "var(--aq-mintink)",
+} as const;
+const noteBox = {
+  display: "flex",
+  gap: 10,
+  alignItems: "flex-start",
+  padding: "12px 14px",
+  borderRadius: 14,
+  fontSize: 13.5,
+  lineHeight: 1.55,
+  background: "rgba(255,248,236,.95)",
+  border: "1px solid #F2E2C2",
+  color: "#5C4413",
+} as const;
+const mintBox = {
+  background: "rgba(var(--aq-mintrgb),.95)",
+  border: "1px solid var(--aq-mintbd)",
+  color: "var(--aq-mintink2)",
+} as const;
 
 export default function ProductDetail({
   product: p,
@@ -88,6 +143,21 @@ export default function ProductDetail({
     ["Regeneration", p.regen],
     ["Warranty", p.warranty],
   ].filter(([, v]) => !!v) as [string, string][];
+  // The description's own spec pairs join the table, minus ones already in it.
+  const about: DescBlock[] =
+    p.about || (p.desc ? [{ kind: "p", text: p.desc }] : []);
+  for (const f of about.flatMap((b) => (b.kind === "facts" ? b.items : []))) {
+    const dup = specs.some(
+      ([k, v]) =>
+        k.toLowerCase() === f.label.toLowerCase() ||
+        v.toLowerCase() === f.value.toLowerCase(),
+    );
+    if (!dup) specs.push([f.label, f.value]);
+  }
+  // Prose for "About this product"; a heading that opens it repeats the title.
+  const story = about
+    .filter((b) => b.kind !== "facts")
+    .filter((b, i) => !(i === 0 && b.kind === "h"));
 
   return (
     <>
@@ -269,7 +339,7 @@ export default function ProductDetail({
                 }}
               >
                 <div style={{ width: 28, flexShrink: 0 }}>
-                  <AquaDroplet mood="idle" size={28} dark={dark} still />
+                  <AquaAvatar size={28} />
                 </div>
                 <div
                   style={{
@@ -471,83 +541,145 @@ export default function ProductDetail({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: 28,
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: isMobile ? 22 : 28,
             marginTop: 30,
+            alignItems: "start",
           }}
         >
-          {specs.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <h3
-                className="aq-display"
-                style={{ margin: 0, fontSize: 16, fontWeight: 700 }}
-              >
-                Key specifications
-              </h3>
-              <div
-                className="aq-card"
-                style={{ borderRadius: 18, overflow: "hidden" }}
-              >
-                {specs.map(([k, v], i) => (
-                  <div
-                    key={k}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: 16,
-                      padding: "12px 16px",
-                      borderTop: i ? "1px solid rgba(var(--aq-ln),.06)" : 0,
-                      fontSize: 14,
-                    }}
-                  >
-                    <span style={{ color: "var(--aq-mut)" }}>{k}</span>
-                    <span style={{ fontWeight: 600, textAlign: "right" }}>
-                      {v}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <h3
-              className="aq-display"
-              style={{ margin: 0, fontSize: 16, fontWeight: 700 }}
-            >
+          <section
+            style={{ display: "flex", flexDirection: "column", gap: 12 }}
+          >
+            <h3 className="aq-display" style={sectionTitle}>
               About this product
             </h3>
-            <p
+            <div
+              className="aq-card"
               style={{
-                margin: 0,
-                fontSize: 14,
-                lineHeight: 1.65,
-                color: "var(--aq-body)",
-                textWrap: "pretty",
+                borderRadius: 18,
+                padding: isMobile ? 16 : 20,
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
               }}
             >
-              {p.desc || "No description listed yet."}
-            </p>
-            {p.maintenance && (
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: 14,
-                  lineHeight: 1.65,
-                  color: "var(--aq-body)",
-                }}
+              {story.length === 0 && (
+                <p style={{ ...bodyText, color: "var(--aq-mut)" }}>
+                  No description listed yet.
+                </p>
+              )}
+              {story.map((b, i) => {
+                if (b.kind === "h")
+                  return (
+                    <h4
+                      key={i}
+                      className="aq-display"
+                      style={{
+                        margin: "4px 0 -4px",
+                        fontSize: 14.5,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {b.text}
+                    </h4>
+                  );
+                if (b.kind === "list")
+                  return (
+                    <ul key={i} style={checkList}>
+                      {b.items.map((it, j) => (
+                        <li key={j} style={checkItem}>
+                          <span aria-hidden="true" style={checkDot}>
+                            <Check size={11} strokeWidth={3} />
+                          </span>
+                          <span>{it}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                if (b.kind === "note")
+                  return (
+                    <div key={i} style={noteBox}>
+                      <Info size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                      <span>
+                        <strong>{b.label} · </strong>
+                        {b.text}
+                      </span>
+                    </div>
+                  );
+                return (
+                  <p
+                    key={i}
+                    style={
+                      i === 0
+                        ? {
+                            ...bodyText,
+                            fontSize: 15,
+                            color: "var(--aq-ink)",
+                          }
+                        : bodyText
+                    }
+                  >
+                    {b.text}
+                  </p>
+                );
+              })}
+              {p.maintenance && (
+                <div style={{ ...noteBox, ...mintBox }}>
+                  <Wrench size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                  <span>
+                    <strong>Maintenance · </strong>
+                    {p.maintenance}
+                  </span>
+                </div>
+              )}
+            </div>
+          </section>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+            {specs.length > 0 && (
+              <section
+                style={{ display: "flex", flexDirection: "column", gap: 12 }}
               >
-                <strong style={{ color: "var(--aq-ink)" }}>
-                  Maintenance ·{" "}
-                </strong>
-                {p.maintenance}
-              </p>
+                <h3 className="aq-display" style={sectionTitle}>
+                  Key specifications
+                </h3>
+                <dl
+                  className="aq-card"
+                  style={{ margin: 0, borderRadius: 18, overflow: "hidden" }}
+                >
+                  {specs.map(([k, v], i) => (
+                    <div
+                      key={k}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "minmax(110px, 40%) 1fr",
+                        gap: 16,
+                        padding: "11px 16px",
+                        borderTop: i ? "1px solid rgba(var(--aq-ln),.06)" : 0,
+                        fontSize: 13.5,
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      <dt style={{ color: "var(--aq-mut)" }}>{k}</dt>
+                      <dd
+                        style={{
+                          margin: 0,
+                          fontWeight: 600,
+                          overflowWrap: "anywhere",
+                        }}
+                      >
+                        {v}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
             )}
             <div
               style={{
                 display: "flex",
                 flexDirection: "column",
                 gap: 10,
-                marginTop: 6,
               }}
             >
               <span style={{ fontSize: 13, fontWeight: 700 }}>
@@ -572,6 +704,23 @@ export default function ProductDetail({
         </div>
       </div>
 
+      {/* Shelf under the action bar: content scrolling past fades out instead of
+          peeking through the gap below and around the bar. */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: isMobile ? 76 : 96,
+          zIndex: 3,
+          pointerEvents: "none",
+          background:
+            "linear-gradient(to top, rgba(var(--aq-gl),.97) 55%, rgba(var(--aq-gl),0))",
+        }}
+      />
+
       {/* action bar */}
       <div
         className="aq-glass"
@@ -586,11 +735,13 @@ export default function ProductDetail({
           gap: isMobile ? 6 : 8,
           padding: isMobile ? 6 : "8px 8px 8px 14px",
           borderRadius: 20,
-          background: "rgba(var(--aq-gl),.82)",
+          // Near-opaque: the page scrolls under this bar and must not show through.
+          background: "rgba(var(--aq-gl),.94)",
         }}
       >
         {!isMobile && (
           <div
+            className="aq-buybar-price"
             style={{ display: "flex", flexDirection: "column", minWidth: 0 }}
           >
             <span

@@ -7,8 +7,9 @@ import {
 import type { ReactNode } from "react";
 import "@/pageComponents/aqua/aqua.css";
 
-// Root layout for App Router routes only (/aqua, /payment-return). Everything
-// else is still served by src/pages with its own _app/_document.
+// Root layout for App Router routes only (/ — the Aqua home — and
+// /payment-return). Everything else is still served by src/pages with its own
+// _app/_document.
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   display: "swap",

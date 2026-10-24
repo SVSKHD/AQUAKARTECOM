@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
 import bundleAnalyzer from "@next/bundle-analyzer";
 
+const mode = process.env.MODE || "prod";
+if (!["dev", "prod"].includes(mode)) {
+  throw new Error('MODE must be "dev" or "prod".');
+}
+const apiBaseUrl =
+  mode === "dev" ? "http://localhost:5300/v1" : "https://api.aquakart.co.in/v1";
+
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 });
@@ -97,7 +104,7 @@ const nextConfig = {
 
   env: {
     NEXT_PUBLIC_URL: "https://aquakart.co.in",
-    NEXT_PUBLIC_API_URL: "https://api.aquakart.co.in/v1",
+    NEXT_PUBLIC_API_URL: apiBaseUrl,
   },
 
   images: {
@@ -112,6 +119,13 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
   },
 
+  async redirects() {
+    return [
+      // Aqua is the home page now; keep old /aqua links and bookmarks working.
+      { source: "/aqua", destination: "/", permanent: true },
+    ];
+  },
+
   async rewrites() {
     return [
       // Keep invoice authentication on the Next.js server. The generic /api
@@ -122,12 +136,11 @@ const nextConfig = {
       },
       {
         source: "/google-products.xml",
-        destination:
-          "https://api.aquakart.co.in/v1/merchant/google-products.xml",
+        destination: `${apiBaseUrl}/merchant/google-products.xml`,
       },
       {
         source: "/api/:path*",
-        destination: "https://api.aquakart.co.in/v1/:path*",
+        destination: `${apiBaseUrl}/:path*`,
       },
     ];
   },

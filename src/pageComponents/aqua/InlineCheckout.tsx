@@ -38,6 +38,8 @@ export function validate(d: CheckoutDraft) {
   if (d.email && !/^\S+@\S+\.\S+$/.test(d.email)) missing.push("a valid email");
   if (!d.address.street.trim() || !d.address.city.trim())
     missing.push("your address");
+  // POST /payments rejects an address without a state.
+  if (!(d.address.state || "").trim()) missing.push("your state");
   if (!/^\d{6}$/.test(d.address.postalCode)) missing.push("a 6-digit PIN code");
   if (!d.slotDay || !d.slotTime) missing.push("an installation slot");
   return missing;
@@ -659,10 +661,26 @@ export default function InlineCheckout({
                   >
                     <span>
                       Discount
-                      {q.data.couponCode ? ` (${q.data.couponCode})` : ""}
+                      {q.data.coupon?.code || q.data.couponCode
+                        ? ` (${q.data.coupon?.code || q.data.couponCode})`
+                        : ""}
                     </span>
                     <span style={{ fontWeight: 600 }}>
                       −{INR(q.data.discount)}
+                    </span>
+                  </div>
+                )}
+                {!!q.data.rewardCredit && (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      color: "var(--aq-mintink)",
+                    }}
+                  >
+                    <span>Reward credit</span>
+                    <span style={{ fontWeight: 600 }}>
+                      −{INR(q.data.rewardCredit)}
                     </span>
                   </div>
                 )}

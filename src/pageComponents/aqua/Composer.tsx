@@ -1,13 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { ArrowUp, Mic } from "lucide-react";
+import { ArrowUp, Mic, Square } from "lucide-react";
 import { AI_PROMPT_MAX } from "@/services/ai";
+import { openExpert } from "./AquaHeader";
+import { stopSpeaking } from "./ReplyActions";
 
 type Props = {
   placeholder: string;
   busy: boolean;
   large: boolean;
+  // Daily question limit reached: no typing, speaking or sending.
+  disabled?: boolean;
+  // "2 of 3 free questions left today"; empty when the quota is unknown.
+  counter?: string;
   onSend: (text: string) => boolean;
   onFocusChange: (focused: boolean) => void;
 };
@@ -28,17 +34,28 @@ type SpeechRec = {
   stop: () => void;
 };
 
+// Shown once the draft gets close to the server's 2,000-character limit.
+const COUNT_FROM = 1600;
+
+// Mic and send are one matched pair: same circle, same icon size and stroke.
+const ACTION = 40;
+const ICON = 18;
+const STROKE = 2.25;
+
 // Always mounted and always enabled. Sending while Aqua is replying completes that reply first.
 export default function Composer({
   placeholder,
   busy,
   large,
+  disabled = false,
+  counter = "",
   onSend,
   onFocusChange,
 }: Props) {
   const [text, setText] = useState("");
   const [hint, setHint] = useState("");
   const [listening, setListening] = useState(false);
+  const [focused, setFocused] = useState(false);
   const ta = useRef<HTMLTextAreaElement>(null);
   const rec = useRef<SpeechRec | null>(null);
 
@@ -46,9 +63,12 @@ export default function Composer({
     const el = ta.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = Math.min(160, el.scrollHeight) + "px";
+    el.style.height = Math.min(168, el.scrollHeight) + "px";
   }, [text, large]);
   useEffect(() => () => rec.current?.stop(), []);
+  useEffect(() => {
+    if (disabled) rec.current?.stop();
+  }, [disabled]);
 
   const submit = (value = text) => {
     if (!value.trim()) return;
@@ -69,6 +89,7 @@ export default function Composer({
     };
     const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (listening) return rec.current?.stop();
+    stopSpeaking();
     if (!SR) {
       setHint("Voice isn't supported in this browser. Type instead.");
       setTimeout(() => setHint(""), 2600);
@@ -93,10 +114,24 @@ export default function Composer({
     r.start();
   };
 
-  const canSend = !!text.trim();
-  const ring =
-    "linear-gradient(90deg, #10BFA4, #8FE8D8, #5CC8F0, #008B68, #10BFA4)";
-  const radius = large ? 28 : 26;
+  const canSend = !!text.trim() && !disabled;
+  const replying = busy && !canSend && !disabled;
+  const active = focused || listening;
+  const showCount = text.length >= COUNT_FROM;
+  const radius = large ? 26 : 24;
+
+  const actionBase = {
+    width: ACTION,
+    height: ACTION,
+    borderRadius: "50%",
+    border: 0,
+    padding: 0,
+    display: "grid",
+    placeItems: "center",
+    flexShrink: 0,
+    cursor: "pointer",
+    transition: "background .2s, color .2s, transform .15s, box-shadow .2s",
+  } as const;
 
   return (
     <div
@@ -105,137 +140,252 @@ export default function Composer({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: 6,
+        gap: 8,
       }}
     >
-      <div style={{ position: "relative", width: "100%" }}>
-        <div
-          aria-hidden="true"
+      <div
+        className="aq-composer"
+        data-tour="composer"
+        data-active={active}
+        data-listening={listening}
+        data-disabled={disabled}
+        style={{ position: "relative", width: "100%", borderRadius: radius }}
+        onClick={(e) => {
+          // Clicking the card's padding focuses the text box.
+          if (e.target === e.currentTarget) ta.current?.focus();
+        }}
+      >
+        <textarea
+          ref={ta}
+          aria-label="Message Aqua"
+          aria-describedby="aq-composer-status"
+          rows={1}
+          maxLength={AI_PROMPT_MAX}
+          disabled={disabled}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={onKey}
+          onFocus={() => {
+            setFocused(true);
+            onFocusChange(true);
+          }}
+          onBlur={() => {
+            setFocused(false);
+            onFocusChange(false);
+          }}
+          placeholder={listening ? "Listening… speak now" : placeholder}
           style={{
-            position: "absolute",
-            inset: -3,
-            borderRadius: radius + 3,
-            background: ring,
-            backgroundSize: "300% 100%",
-            filter: "blur(14px)",
-            opacity: 0.55,
-            animation:
-              "aqGlow 6s linear infinite, aqPulse 3.2s ease-in-out infinite",
-            pointerEvents: "none",
+            display: "block",
+            width: "100%",
+            minHeight: large ? 56 : 44,
+            maxHeight: 168,
+            resize: "none",
+            border: 0,
+            outline: "none",
+            background: "transparent",
+            fontFamily: "inherit",
+            fontSize: large ? 16.5 : 15,
+            fontWeight: 500,
+            lineHeight: 1.55,
+            color: "var(--aq-ink)",
+            padding: large ? "16px 18px 4px" : "13px 16px 2px",
           }}
         />
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            inset: -1.5,
-            borderRadius: radius + 1.5,
-            background: ring,
-            backgroundSize: "300% 100%",
-            animation: "aqGlow 6s linear infinite",
-            pointerEvents: "none",
-          }}
-        />
+
+        {/* toolbar: status on the left, the matched mic + send pair on the right */}
         <div
           style={{
-            position: "relative",
-            background: "var(--aq-surf)",
-            borderRadius: radius,
-            padding: large ? "12px 10px 10px 18px" : "8px 8px 8px 16px",
             display: "flex",
-            alignItems: "flex-end",
-            gap: 6,
+            alignItems: "center",
+            gap: 8,
+            padding: large ? "4px 10px 10px 14px" : "2px 8px 8px 12px",
+            minHeight: ACTION + 10,
           }}
         >
-          <textarea
-            ref={ta}
-            aria-label="Message Aqua"
-            rows={1}
-            maxLength={AI_PROMPT_MAX}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={onKey}
-            onFocus={() => onFocusChange(true)}
-            onBlur={() => onFocusChange(false)}
-            placeholder={placeholder}
+          <div
+            id="aq-composer-status"
             style={{
               flex: 1,
               minWidth: 0,
-              minHeight: large ? 52 : 34,
-              maxHeight: 160,
-              resize: "none",
-              border: 0,
-              outline: "none",
-              background: "transparent",
-              fontFamily: "inherit",
-              fontSize: large ? 17 : 15,
-              fontWeight: 500,
-              lineHeight: 1.5,
-              color: "var(--aq-ink)",
-              padding: "6px 0",
-              transition:
-                "min-height .35s cubic-bezier(.22,.8,.24,1), font-size .25s",
-            }}
-          />
-          <button
-            type="button"
-            className="aq-icon-btn"
-            onClick={mic}
-            aria-label={listening ? "Stop listening" : "Speak to Aqua"}
-            aria-pressed={listening}
-            style={{
-              width: 40,
-              height: 40,
-              border: 0,
-              boxShadow: "none",
-              background: listening ? "var(--aq-mint)" : "transparent",
-              color: listening ? "#008B68" : "var(--aq-mut)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flexWrap: "wrap",
             }}
           >
-            <Mic size={18} />
+            {listening ? (
+              <span
+                role="status"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  color: "#B42318",
+                }}
+              >
+                <span aria-hidden="true" className="aq-voice-bars">
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                </span>
+                Listening…
+              </span>
+            ) : hint ? (
+              <span
+                role="status"
+                style={{ fontSize: 12, color: "var(--aq-mut)" }}
+              >
+                {hint}
+              </span>
+            ) : (
+              <>
+                {counter && (
+                  <span
+                    aria-live="polite"
+                    className="aq-composer-pill"
+                    style={{
+                      color: disabled ? "#B42318" : "var(--aq-mintink)",
+                      background: disabled
+                        ? "#FDECEC"
+                        : "rgba(var(--aq-mintrgb),.85)",
+                    }}
+                  >
+                    {counter}
+                  </span>
+                )}
+                {active && !showCount && !disabled && !counter && (
+                  <span
+                    className="aq-composer-keys"
+                    style={{ fontSize: 11.5, color: "var(--aq-mut2)" }}
+                  >
+                    <kbd>Enter</kbd> to send · <kbd>Shift</kbd> +{" "}
+                    <kbd>Enter</kbd> new line
+                  </span>
+                )}
+              </>
+            )}
+            {showCount && (
+              <span
+                aria-live="polite"
+                style={{
+                  fontSize: 11.5,
+                  fontWeight: 700,
+                  fontVariantNumeric: "tabular-nums",
+                  color:
+                    text.length >= AI_PROMPT_MAX ? "#B42318" : "var(--aq-mut)",
+                }}
+              >
+                {text.length.toLocaleString("en-IN")} /{" "}
+                {AI_PROMPT_MAX.toLocaleString("en-IN")}
+              </span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="aq-icon-btn aq-composer-action"
+            onClick={mic}
+            disabled={disabled}
+            aria-label={listening ? "Stop listening" : "Speak to Aqua"}
+            aria-pressed={listening}
+            title={listening ? "Stop listening" : "Speak"}
+            style={{
+              ...actionBase,
+              background: listening ? "#B42318" : "rgba(var(--aq-ln),.06)",
+              color: listening ? "#fff" : "var(--aq-ink)",
+              boxShadow: listening ? "0 0 0 6px rgba(180,35,24,.14)" : "none",
+              animation: listening
+                ? "aqPulse 1.6s ease-in-out infinite"
+                : "none",
+            }}
+          >
+            {listening ? (
+              <Square
+                size={ICON - 4}
+                strokeWidth={STROKE}
+                fill="currentColor"
+              />
+            ) : (
+              <Mic size={ICON} strokeWidth={STROKE} />
+            )}
           </button>
           <button
             type="button"
-            className="aq-icon-btn"
+            className="aq-icon-btn aq-composer-action"
             onClick={() => submit()}
             disabled={!canSend}
-            aria-label={busy && !canSend ? "Aqua is replying" : "Send"}
+            aria-label={replying ? "Aqua is replying" : "Send"}
+            title={replying ? "Aqua is replying" : "Send"}
             style={{
-              width: 40,
-              height: 40,
-              border: 0,
-              background: canSend ? "#008B68" : "rgba(var(--aq-ln),.18)",
-              color: "#fff",
+              ...actionBase,
+              background: canSend ? "#008B68" : "rgba(var(--aq-ln),.06)",
+              color: canSend ? "#fff" : "var(--aq-mut2)",
+              boxShadow: canSend ? "0 6px 16px rgba(0,139,104,.28)" : "none",
+              cursor: canSend ? "pointer" : "default",
               opacity: 1,
             }}
           >
-            {busy && !canSend ? (
+            {replying ? (
               <span
                 aria-hidden="true"
                 style={{
-                  width: 16,
-                  height: 16,
+                  width: ICON - 2,
+                  height: ICON - 2,
                   borderRadius: "50%",
-                  border: "2px solid rgba(255,255,255,.5)",
-                  borderTopColor: "#fff",
+                  border: `${STROKE}px solid rgba(var(--aq-ln),.18)`,
+                  borderTopColor: "#008B68",
                   animation: "aqSpin .9s linear infinite",
                 }}
               />
             ) : (
-              <ArrowUp size={18} />
+              <ArrowUp size={ICON} strokeWidth={STROKE} />
             )}
           </button>
         </div>
       </div>
-      {hint ? (
-        <span role="status" style={{ fontSize: 11.5, color: "var(--aq-mut)" }}>
-          {hint}
+
+      <p
+        className="aq-composer-note"
+        style={{
+          margin: 0,
+          padding: "0 8px",
+          fontSize: 11.5,
+          lineHeight: 1.45,
+          color: "var(--aq-mut)",
+          textAlign: "center",
+          textWrap: "balance",
+        }}
+      >
+        {/* Phones get the one-line version so the composer stays short. */}
+        <span className="aq-hide-mobile">
+          Aquakart AI helps you pick the best softener. To get it installed or
+          placed where you want it, talk to an{" "}
         </span>
-      ) : large ? (
-        <span style={{ fontSize: 11, color: "var(--aq-mut)" }}>
-          Enter to send · Shift + Enter for a new line
+        <span className="aq-show-mobile">
+          Installation or placement help? Talk to an{" "}
         </span>
-      ) : null}
+        <button
+          type="button"
+          onClick={openExpert}
+          style={{
+            border: 0,
+            padding: 0,
+            background: "transparent",
+            font: "inherit",
+            fontWeight: 700,
+            color: "var(--aq-mintink)",
+            textDecoration: "underline",
+            textUnderlineOffset: 2,
+            cursor: "pointer",
+          }}
+        >
+          Aquakart expert
+        </button>
+        .
+      </p>
     </div>
   );
 }

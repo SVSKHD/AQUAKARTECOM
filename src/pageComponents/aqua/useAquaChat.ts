@@ -5,11 +5,24 @@ import {
   AI_HISTORY_MAX,
   AI_PROMPT_MAX,
   AiError,
+  carryGuestQuota,
+  deleteAiChat,
+  getAiChat,
+  getAiQuota,
   getAiStatus,
-  sendAiChat,
+  limitFromQuota,
+  listAiChats,
+  onTokenRejected,
+  streamAiChat,
+  type AiChatSummary,
+  type AiLimit,
+  type AiQuota,
+  type AiSavedChat,
   type AiTurn,
 } from "@/services/ai";
 import { INR } from "./catalogue";
+import { mentionedProducts } from "./replyProducts";
+import { readHome, sizeSofteners, type Sizing } from "./softenerSizing";
 import { uid } from "./hooks";
 import type { ChatMessage, ChatStatus, Product } from "./types";
 
@@ -26,7 +39,8 @@ export type AiMode = "checking" | "live" | "offline";
 type Need = "softener" | "purifier" | "filter" | "commercial";
 type Req = {
   need?: Need;
-  home?: "apartment";
+  home?: "apartment" | "house";
+  bathrooms?: number;
   source?: "borewell" | "municipal" | "unsure";
   budget?: number;
   ppm?: number | "unknown";
@@ -42,6 +56,8 @@ export type ChatSession = {
   title: string;
   messages: ChatMessage[];
   at: number;
+  // The account chat it was saved to, if any.
+  sessionId?: string | null;
 };
 
 const NEED_LABEL: Record<Need, string> = {
@@ -58,6 +74,14 @@ type Options = {
   getCompare: () => string[];
   clearCompare: () => void;
   reducedMotion: boolean;
+  // "Show thinking": send thinking: true and show the steps. Off = faster replies.
+  thinking?: boolean;
+  // Logged-in customer's token (5 questions a day); null for a guest (3 a day).
+  token?: string | null;
+  // The server rejected `token` (expired / another environment's): end the session.
+  onSessionExpired?: () => void;
+  // A saved conversation was loaded back in (after a refresh or login).
+  onResumed?: () => void;
 };
 
 export function useAquaChat({
@@ -65,7 +89,23 @@ export function useAquaChat({
   getCompare,
   clearCompare,
   reducedMotion,
+  thinking = true,
+  token = null,
+  onSessionExpired,
+  onResumed,
 }: Options) {
+  const authCallbacks = useRef({ onSessionExpired, onResumed });
+  useEffect(() => {
+    authCallbacks.current = { onSessionExpired, onResumed };
+  }, [onSessionExpired, onResumed]);
+  const thinkingRef = useRef(thinking);
+  useEffect(() => {
+    thinkingRef.current = thinking;
+  }, [thinking]);
+  const tokenRef = useRef(token);
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<ChatStatus>("idle");
   const [reasons, setReasons] = useState<Record<string, string>>({});
@@ -86,6 +126,123 @@ export function useAquaChat({
       abortRef.current?.abort();
     };
   }, []);
+
+  // Daily questions. Always the server's latest numbers: nothing is counted locally.
+  const [quota, setQuota] = useState<AiQuota | null>(null);
+  const [limit, setLimit] = useState<AiLimit | null>(null);
+  const limitRef = useRef<AiLimit | null>(null);
+  const applyQuota = useCallback((q: AiQuota | null, hit?: AiLimit) => {
+    if (q) setQuota(q);
+    const next = hit || (q ? limitFromQuota(q) : limitRef.current);
+    limitRef.current = next;
+    setLimit(next);
+  }, []);
+  // ---------- saved conversations (logged-in customers; guests aren't stored) ----------
+  // The customer's saved conversation; null means the next answer starts one.
+  const sessionIdRef = useRef<string | null>(null);
+  // Answers this tab got as a guest (per the server's quota tier). On login they
+  // are carried into the account's daily count and the chat continues.
+  const guestAnswersRef = useRef(0);
+  const prevTokenRef = useRef<string | null>(token);
+  const [resuming, setResuming] = useState(false);
+
+  // The account's saved conversations, most recent first (the history dock lists them).
+  const [savedChats, setSavedChats] = useState<AiChatSummary[]>([]);
+  const refreshSaved = async (tok: string) => {
+    const list = await listAiChats(tok, { limit: 20 });
+    if (tokenRef.current === tok) setSavedChats(list);
+    return list;
+  };
+
+  const showSaved = (chat: AiSavedChat) => {
+    sessionIdRef.current = chat.id;
+    aiHistory.current = chat.messages.slice(-AI_HISTORY_MAX);
+    req.current = {};
+    lastPicks.current = [];
+    setMessages(
+      chat.messages.map((t) =>
+        t.role === "user"
+          ? { id: uid("u"), role: "user", text: t.text }
+          : {
+              id: uid("a"),
+              role: "aqua",
+              text: t.text,
+              full: t.text,
+              done: true,
+              ai: true,
+            },
+      ),
+    );
+  };
+
+  // Refresh (or a login with an empty chat): load the latest saved conversation.
+  const resumeLatest = async (tok: string, signal: AbortSignal) => {
+    setResuming(true);
+    try {
+      const [latest] = await refreshSaved(tok);
+      if (!latest || signal.aborted) return;
+      const chat = await getAiChat(latest.id, tok);
+      const asked = messagesRef.current.some((m) => m.role === "user");
+      if (
+        !chat?.messages.length ||
+        signal.aborted ||
+        asked ||
+        tokenRef.current !== tok
+      )
+        return;
+      showSaved(chat);
+      authCallbacks.current.onResumed?.();
+    } finally {
+      setResuming(false);
+    }
+  };
+
+  // On open and whenever the customer logs in or out (a login lifts the guest limit).
+  useEffect(() => {
+    const ctl = new AbortController();
+    const was = prevTokenRef.current;
+    prevTokenRef.current = token;
+    // Saved chats belong to the account: a logout starts fresh.
+    if (!token) {
+      sessionIdRef.current = null;
+      setSavedChats([]);
+    }
+    (aiReady.current || getAiStatus()).then(async (live) => {
+      if (!live || ctl.signal.aborted) return;
+      // Logged in after chatting as a guest: keep this conversation (the next
+      // answer saves it, earlier turns included) and count those questions.
+      if (token && !was && guestAnswersRef.current > 0) {
+        const carried = await carryGuestQuota(token);
+        if (ctl.signal.aborted) return;
+        guestAnswersRef.current = 0;
+        applyQuota(
+          carried ?? (await getAiQuota(token, { signal: ctl.signal })),
+        );
+        void refreshSaved(token);
+        return;
+      }
+      const q = await getAiQuota(token, { signal: ctl.signal });
+      if (ctl.signal.aborted) return;
+      applyQuota(q);
+      if (!token) return;
+      if (!messagesRef.current.some((m) => m.role === "user"))
+        await resumeLatest(token, ctl.signal);
+      else void refreshSaved(token);
+    });
+    return () => ctl.abort();
+    // resumeLatest reads refs only
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, applyQuota]);
+
+  // The server rejected the current token: the UI ends the session (see onSessionExpired).
+  useEffect(
+    () =>
+      onTokenRejected((rejected) => {
+        if (rejected === tokenRef.current)
+          authCallbacks.current.onSessionExpired?.();
+      }),
+    [],
+  );
 
   const req = useRef<Req>({});
   const lastPicks = useRef<string[]>([]);
@@ -231,8 +388,33 @@ export function useAquaChat({
     return f;
   };
 
+  // Softeners for a sized home: whole-home automatic against per-bathroom units.
+  const sizedSofteners = (r: Req): Sizing | null => {
+    if (r.need !== "softener") return null;
+    const sizing = sizeSofteners(productsRef.current, {
+      bathrooms: r.bathrooms,
+      kind: r.home,
+    });
+    if (!sizing) return null;
+    addReasons(sizing.reasons);
+    lastPicks.current = sizing.picks;
+    return sizing;
+  };
+  const SIZED_CHIPS = [
+    "Compare these",
+    "Automatic or manual?",
+    "Book a site visit",
+  ];
+
   const recommend = (r: Req) => {
     const need = r.need as Need;
+    const sized = sizedSofteners(r);
+    if (sized)
+      return say(sized.summary, {
+        products: sized.picks,
+        chips: SIZED_CHIPS,
+        happy: true,
+      });
     let pool = productsRef.current.filter((p) => p.cat === need);
     let over = false;
     if (r.budget) {
@@ -382,9 +564,20 @@ export function useAquaChat({
       },
     );
 
+  const regenAnswer = () =>
+    say(
+      "An **automatic** softener regenerates by itself on a timer or after a set volume of water; you only top up the salt tank. A **manual** softener needs you to add salt and run the regeneration by hand at regular intervals. Manual units cost less but suit a single bathroom; for a whole home, automatic is far easier to live with.",
+      {
+        chips:
+          lastPicks.current.length > 1
+            ? ["Compare these", "Talk to an expert"]
+            : ["Talk to an expert"],
+      },
+    );
+
   const compareNow = () => {
     const picked = compareRef.current.getCompare();
-    const ids = (picked.length >= 2 ? picked : lastPicks.current).slice(0, 3);
+    const ids = (picked.length >= 2 ? picked : lastPicks.current).slice(0, 4);
     if (ids.length < 2)
       return say(
         "Pick at least two products with Compare and I will line them up.",
@@ -479,7 +672,9 @@ export function useAquaChat({
     else if (/commercial|hotel|office|industr|restaurant|hostel/.test(t))
       r.need = "commercial";
     else if (/filter/.test(t)) r.need = "filter";
-    if (/apartment|flat/.test(t)) r.home = "apartment";
+    const home = readHome(t);
+    if (home.kind) r.home = home.kind;
+    if (home.bathrooms) r.bathrooms = home.bathrooms;
     if (/borewell|bore well|ground ?water/.test(t)) r.source = "borewell";
     else if (/municipal|corporation|metro|tap water/.test(t))
       r.source = "municipal";
@@ -522,6 +717,10 @@ export function useAquaChat({
         ],
       });
     }
+    // Bathrooms are enough to size a softener; the water source and household
+    // size can wait (the summary still asks for a hardness test).
+    if (r.need === "softener" && (r.bathrooms || r.home === "house"))
+      return recommend(r);
     if (!r.source) {
       req.current.awaiting = "source";
       return say(
@@ -561,7 +760,15 @@ export function useAquaChat({
       !/compare/.test(t)
     )
       return offerAnswer(t);
-    if (/expert|human|call me|talk to|someone/.test(t)) return human();
+    if (/expert|human|call me|talk to|someone|site visit/.test(t))
+      return human();
+    if (
+      /automatic or manual|manual or automatic|(automatic|manual) vs|difference/.test(
+        t,
+      ) &&
+      /automatic|manual/.test(t)
+    )
+      return regenAnswer();
     if (/^compare|compare these|compare picks/.test(t)) return compareNow();
     if (sel && /altern|similar|other option/.test(t)) return alternatives(sel);
     if (
@@ -581,7 +788,7 @@ export function useAquaChat({
     `I'm looking at "${p.title}"${p.capacity ? ` (${p.capacity})` : ""} on AquaKart.`;
 
   const SHOPPING =
-    /recommend|suggest|which|best|choose|looking for|need (a|an|to)|buy|options?|show me|under|budget|for (my|a) (home|family|house|flat|apartment)/;
+    /recommend|suggest|which|best|choose|looking for|need (a|an|to)|buy|options?|show me|under|budget|for (my|a) (home|family|house|flat|apartment)|villa|bathroom|washroom|independent house|duplex/;
   const NAMED = /soften|purifier|\bro\b|filter|commercial/;
   const categoryOf = (s: string): Need | null =>
     /soften|hard ?water|hardness|scal/.test(s)
@@ -600,6 +807,10 @@ export function useAquaChat({
     if (!SHOPPING.test(t) && !NAMED.test(t)) return [];
     const need =
       categoryOf(t) || categoryOf(reply.toLowerCase()) || r.need || null;
+    if (need === "softener") {
+      const sized = sizedSofteners({ ...r, need });
+      if (sized) return sized.picks;
+    }
     let pool = productsRef.current.filter(
       (p) => (need ? p.cat === need : !!r.budget) && p.inStock,
     );
@@ -624,66 +835,199 @@ export function useAquaChat({
     setStatus("idle");
   };
 
-  // `tid` is the typing bubble to replace with the answer.
+  // The answer in flight: its bubble and the question it answers.
+  const liveRef = useRef<{ tid: string; userId: string | null } | null>(null);
+
+  const patch = (id: string, fn: (m: ChatMessage) => ChatMessage) =>
+    setMessages((ms) => ms.map((m) => (m.id === id ? fn(m) : m)));
+
+  // Stops the answer in flight (a newer message replaces it). The question stays,
+  // marked as stopped, and is left out of the history.
+  const stopLive = () => {
+    const live = liveRef.current;
+    if (!abortRef.current || !live) return;
+    abortRef.current.abort();
+    abortRef.current = null;
+    liveRef.current = null;
+    setMessages((ms) =>
+      ms
+        .filter((m) => m.id !== live.tid)
+        .map((m) => (m.id === live.userId ? { ...m, stopped: true } : m)),
+    );
+    settle();
+  };
+
+  // Streams the answer from POST /ai/chat/stream into the bubble `tid`:
+  // thought → steps (upserted by index), delta → typed text, done → final reply.
   const askAi = async (
     text: string,
     productId: string | null | undefined,
     tid: string,
+    userId: string | null,
   ) => {
     const sel = byId(productId);
     const r = updateReq(text.toLowerCase());
     const context = sel ? `${contextLine(sel)} ` : "";
     const prompt = (context + text).slice(0, AI_PROMPT_MAX);
+    const thinking = thinkingRef.current;
     const controller = new AbortController();
     abortRef.current = controller;
+    liveRef.current = { tid, userId };
+    const current = () => abortRef.current === controller;
+    let typed = "";
+
+    if (thinking)
+      patch(tid, (m) => ({
+        ...m,
+        typing: false,
+        done: false,
+        text: "",
+        thoughts: [],
+        thinkingLive: true,
+      }));
+
     try {
-      const reply = await sendAiChat(prompt, aiHistory.current, {
+      const answer = await streamAiChat(prompt, aiHistory.current, {
         signal: controller.signal,
+        thinking,
+        token: tokenRef.current,
+        sessionId: sessionIdRef.current,
+        onThought: (index, thought) => {
+          if (!current()) return;
+          patch(tid, (m) => {
+            const thoughts = [...(m.thoughts || [])];
+            thoughts[index] = thought;
+            return { ...m, typing: false, thoughts };
+          });
+        },
+        onDelta: (chunk) => {
+          if (!current()) return;
+          typed += chunk;
+          if (statusRef.current !== "streaming") {
+            statusRef.current = "streaming";
+            setStatus("streaming");
+          }
+          // First answer text collapses the steps into "Thought for N steps".
+          patch(tid, (m) => ({
+            ...m,
+            typing: false,
+            thinkingLive: false,
+            text: typed,
+            done: false,
+          }));
+        },
       });
-      if (controller.signal.aborted) return;
+      if (!current()) return;
+      applyQuota(answer.quota);
+      // Saved to the account (logged in), or counted as a guest answer for a later login.
+      if (answer.sessionId) {
+        const isNew = answer.sessionId !== sessionIdRef.current;
+        sessionIdRef.current = answer.sessionId;
+        const tok = tokenRef.current;
+        if (isNew && tok) void refreshSaved(tok);
+        else
+          // Same chat: move it to the top with its new count, no refetch.
+          setSavedChats((list) => {
+            const row = list.find((s) => s.id === answer.sessionId);
+            if (!row) return list;
+            const next = {
+              ...row,
+              messageCount: row.messageCount + 2,
+              lastMessageAt: new Date().toISOString(),
+            };
+            return [next, ...list.filter((s) => s !== row)];
+          });
+      }
+      if (answer.quota?.tier === "guest") guestAnswersRef.current += 1;
+      // Only { role, text: reply } goes back as history, never the thoughts.
       aiHistory.current = [
         ...aiHistory.current,
         { role: "user" as const, text: prompt },
-        { role: "assistant" as const, text: reply },
+        { role: "assistant" as const, text: answer.reply },
       ].slice(-AI_HISTORY_MAX);
-      const picks = sel ? [] : catalogueMatches(text, reply, r);
-      setMessages((ms) => ms.filter((m) => m.id !== tid));
-      say(reply, {
+      // Products the answer writes about by name come first, so the cards match
+      // the text; otherwise ranked catalogue picks for shopping questions.
+      const named = sel
+        ? []
+        : mentionedProducts(answer.reply, productsRef.current);
+      if (named.length) lastPicks.current = named;
+      // A sized home gets the sized softeners too (after any the answer names), so
+      // whole-home and per-bathroom options are always there to compare.
+      const lt = text.toLowerCase();
+      const sized =
+        sel || !(SHOPPING.test(lt) || NAMED.test(lt))
+          ? null
+          : sizedSofteners({ ...r, need: categoryOf(lt) || r.need });
+      const picks = sel
+        ? []
+        : sized
+          ? [...new Set([...named, ...sized.picks])].slice(0, 4)
+          : named.length
+            ? named
+            : catalogueMatches(text, answer.reply, r);
+      if (sized) lastPicks.current = picks;
+      patch(tid, (m) => ({
+        ...m,
+        typing: false,
+        thinkingLive: false,
+        text: answer.reply,
+        full: answer.reply,
+        done: true,
+        ai: true,
+        thoughts: answer.thoughts.length ? answer.thoughts : undefined,
         products: picks.length ? picks : undefined,
         chips: sel
           ? sel.inStock
             ? ["Capacity", "Maintenance", "Buy now"]
             : ["Show alternatives"]
-          : picks.length > 1
-            ? ["Compare these"]
-            : undefined,
-        happy: picks.length > 0,
-      });
+          : sized
+            ? SIZED_CHIPS
+            : picks.length > 1
+              ? ["Compare these"]
+              : undefined,
+      }));
+      settle();
+      if (picks.length) cheer();
     } catch (e) {
       const err =
         e instanceof AiError
           ? e
           : new AiError("unavailable", "Assistant is unavailable right now.");
-      if (err.kind === "aborted") return;
-      setMessages((ms) => [
-        ...ms.filter((m) => m.id !== tid),
-        {
-          id: uid("a"),
-          role: "aqua",
-          text: err.message,
-          full: err.message,
-          done: true,
-          error: true,
-          // 429 and 5xx can be retried with the same words; 400/422 need a new message.
-          retry:
-            err.retryable || err.kind === "rate_limited"
-              ? { text, productId: productId ?? null }
-              : undefined,
-        },
-      ]);
+      if (err.kind === "aborted" || !current()) return;
+      if (err.kind === "daily_limit") {
+        // Nothing was answered: the question stays on screen, marked, and out of history.
+        setMessages((ms) =>
+          ms
+            .filter((m) => m.id !== tid)
+            .map((m) => (m.id === userId ? { ...m, unanswered: true } : m)),
+        );
+        applyQuota(err.quota ?? null, {
+          message: err.message,
+          loginRequired: !!err.loginRequired,
+        });
+        settle();
+        return;
+      }
+      patch(tid, () => ({
+        id: tid,
+        role: "aqua",
+        text: err.message,
+        full: err.message,
+        done: true,
+        error: true,
+        partial: err.partial || typed || undefined,
+        // 429 and 5xx can be retried with the same words; 400/422 need a new message.
+        retry:
+          err.retryable || err.kind === "rate_limited"
+            ? { text, productId: productId ?? null }
+            : undefined,
+      }));
       settle();
     } finally {
-      if (abortRef.current === controller) abortRef.current = null;
+      if (current()) {
+        abortRef.current = null;
+        liveRef.current = null;
+      }
     }
   };
 
@@ -715,14 +1059,17 @@ export function useAquaChat({
     (raw: string, productId?: string | null) => {
       const text = raw.trim();
       if (!text) return false;
-      // One backend request at a time: returning false keeps the draft in the composer.
-      if (abortRef.current) return false;
+      // Out of questions for today: keep the draft, ask nothing.
+      if (limitRef.current && !isLocalCommand(text)) return false;
+      // A new message stops the answer still streaming.
+      stopLive();
       settleNow();
       statusRef.current = "thinking";
       const tid = uid("t");
+      const userId = uid("u");
       setMessages((ms) => [
         ...ms,
-        { id: uid("u"), role: "user", text, productId: productId ?? null },
+        { id: userId, role: "user", text, productId: productId ?? null },
         { id: tid, role: "aqua", text: "", typing: true },
       ]);
       setStatus("thinking");
@@ -743,7 +1090,7 @@ export function useAquaChat({
       else
         (aiReady.current || getAiStatus()).then((live) => {
           if (statusRef.current !== "thinking") return; // cleared meanwhile
-          if (live) askAi(text, productId, tid);
+          if (live) askAi(text, productId, tid, userId);
           else local();
         });
       return true;
@@ -767,7 +1114,7 @@ export function useAquaChat({
         ...ms.filter((m) => m.id !== messageId),
         { id: tid, role: "aqua", text: "", typing: true },
       ]);
-      askAi(text, productId, tid);
+      askAi(text, productId, tid, null);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -801,14 +1148,25 @@ export function useAquaChat({
     const done = ms
       .filter((m) => !m.typing)
       .map((m) => ({ ...m, text: m.full || m.text, done: true }));
-    return { id: uid("s"), title: first.text, messages: done, at: Date.now() };
+    return {
+      id: uid("s"),
+      title: first.text,
+      messages: done,
+      at: Date.now(),
+      sessionId: sessionIdRef.current,
+    };
   };
 
   // Successful exchanges in a transcript, in the server's history format.
   const historyFrom = (ms: ChatMessage[]): AiTurn[] =>
     ms
       .filter(
-        (m) => !m.typing && !m.error && (m.role === "user" || m.full || m.text),
+        (m) =>
+          !m.typing &&
+          !m.error &&
+          !m.stopped &&
+          !m.unanswered &&
+          (m.role === "user" || m.full || m.text),
       )
       .map((m) => ({
         role: m.role === "user" ? ("user" as const) : ("assistant" as const),
@@ -820,10 +1178,13 @@ export function useAquaChat({
     stopTimers();
     abortRef.current?.abort();
     abortRef.current = null;
+    liveRef.current = null;
     aiHistory.current = [];
+    const snap = snapshot();
+    // New chat: the next answer starts a new saved conversation.
+    sessionIdRef.current = null;
     pendingRef.current = null;
     flushRef.current = null;
-    const snap = snapshot();
     if (snap) setSessions((s) => [snap, ...s].slice(0, 20));
     setMessages([]);
     req.current = {};
@@ -840,10 +1201,13 @@ export function useAquaChat({
       stopTimers();
       abortRef.current?.abort();
       abortRef.current = null;
+      liveRef.current = null;
       aiHistory.current = historyFrom(s.messages);
+      const snap = snapshot();
+      // Keeps saving to the account chat it came from, if any.
+      sessionIdRef.current = s.sessionId ?? null;
       pendingRef.current = null;
       flushRef.current = null;
-      const snap = snapshot();
       setSessions((list) => {
         const rest = list.filter((x) => x.id !== id);
         return snap ? [snap, ...rest] : rest;
@@ -857,6 +1221,51 @@ export function useAquaChat({
     [sessions],
   );
 
+  // Opens a conversation saved to the account. The one on screen goes to this
+  // tab's history unless it's saved too (then it's already in the list).
+  const openSaved = useCallback(
+    async (id: string) => {
+      const tok = tokenRef.current;
+      if (!tok) return false;
+      const saved = await getAiChat(id, tok);
+      if (!saved?.messages.length || tokenRef.current !== tok) return false;
+      stopTimers();
+      abortRef.current?.abort();
+      abortRef.current = null;
+      liveRef.current = null;
+      pendingRef.current = null;
+      flushRef.current = null;
+      const snap = snapshot();
+      if (snap && !snap.sessionId)
+        setSessions((s) => [snap, ...s].slice(0, 20));
+      showSaved(saved);
+      setStatus("idle");
+      statusRef.current = "idle";
+      return true;
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  // Deletes a conversation saved to the account. If it's the one on screen, it
+  // stays on screen and the next answer starts a new saved conversation.
+  const deleteSaved = useCallback(async (id: string) => {
+    const tok = tokenRef.current;
+    if (!tok || !(await deleteAiChat(id, tok)) || tokenRef.current !== tok)
+      return false;
+    if (sessionIdRef.current === id) sessionIdRef.current = null;
+    setSavedChats((list) => list.filter((s) => s.id !== id));
+    // This tab's copies of it would otherwise resurface as "earlier this visit".
+    setSessions((list) => list.filter((s) => s.sessionId !== id));
+    return true;
+  }, []);
+
+  // Drops one of this visit's earlier chats (never saved, nothing to call).
+  const deleteSession = useCallback((id: string) => {
+    setSessions((list) => list.filter((s) => s.id !== id));
+    return true;
+  }, []);
+
   return {
     messages,
     status,
@@ -865,6 +1274,9 @@ export function useAquaChat({
     sessions,
     offerCode,
     aiMode,
+    quota,
+    limit,
+    resuming,
     send,
     retry,
     say,
@@ -873,6 +1285,10 @@ export function useAquaChat({
     onFirstView,
     clear,
     restore,
+    savedChats,
+    openSaved,
+    deleteSaved,
+    deleteSession,
   };
 }
 

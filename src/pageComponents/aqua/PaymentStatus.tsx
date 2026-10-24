@@ -3,7 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 import type { Flow } from "@/utils/aquaFlow";
-import { waitForPayment, type ServerOrder } from "@/utils/aquaCommerce";
+import {
+  PAYMENT_RETURN_MESSAGE,
+  waitForCheckoutPayment,
+  type ServerOrder,
+} from "@/utils/aquaCommerce";
+
+// Where PhonePe sends its window after paying (the storefront).
+const siteOrigin = () => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_URL || "https://aquakart.co.in")
+      .origin;
+  } catch {
+    return "https://aquakart.co.in";
+  }
+};
 import AquaDroplet from "./AquaDroplet";
 import { INR } from "./catalogue";
 import type {
@@ -67,11 +81,11 @@ export default function PaymentStatus({
     cbRef.current = { onVerified, onFailed };
   }, [onVerified, onFailed]);
 
-  // Live path: poll /order/transaction-id/:id until the server says paid / failed.
+  // Live path: poll GET /payments/:id until the server says paid / failed
+  // (the PhonePe webhook updates it).
   useEffect(() => {
-    if (!pending || !payment.live || !payment.txn || !payment.url) return;
-    const txn = payment.txn;
-    const w = waitForPayment(txn, token);
+    if (!pending || !payment.live || !payment.attemptId || !payment.url) return;
+    const w = waitForCheckoutPayment(payment.attemptId, token);
     checkNowRef.current = w.checkNow;
     let active = true;
     w.done.then((r) => {
@@ -84,15 +98,13 @@ export default function PaymentStatus({
         );
     });
 
-    // The /payment-return popup reports back; poll at once. The server stays the source of truth.
+    // PhonePe sends its window back to the storefront's /order/{txn} page, which
+    // tells this tab. That only triggers a check: the server stays the source of truth.
+    const trusted = new Set([window.location.origin, siteOrigin()]);
     const onMessage = (e: MessageEvent) => {
-      if (e.origin !== window.location.origin) return;
-      const d = e.data as { type?: string; transactionId?: string } | null;
-      if (
-        d?.type === "aqua-payment-return" &&
-        (!d.transactionId || d.transactionId === txn)
-      )
-        w.checkNow();
+      if (!trusted.has(e.origin)) return;
+      const d = e.data as { type?: string } | null;
+      if (d?.type === PAYMENT_RETURN_MESSAGE) w.checkNow();
     };
     window.addEventListener("message", onMessage);
 
@@ -112,7 +124,14 @@ export default function PaymentStatus({
       window.removeEventListener("message", onMessage);
       setPopupClosed(false);
     };
-  }, [pending, payment.live, payment.txn, payment.url, payment.popup, token]);
+  }, [
+    pending,
+    payment.live,
+    payment.attemptId,
+    payment.url,
+    payment.popup,
+    token,
+  ]);
 
   const reopen = () => {
     if (!payment.url) return;

@@ -3,7 +3,8 @@
 The Aquakart AI shopping flow on **one mounted page**: chat, product, checkout and
 payment all happen inside `AquaWorkspace` without changing the URL.
 
-- Route: `/aqua` → `src/app/aqua/page.tsx` (App Router). The rest of the site is still the
+- Route: `/` (the home page) → `src/app/page.tsx` (App Router); `/aqua` permanently redirects to `/`
+  (`next.config.mjs`). The old Pages Router home (`src/pages/index.js`) was removed. The rest of the site is still the
   Pages Router (`src/pages`). The two live side by side; `src/app/layout.tsx` only wraps App Router routes.
 - PhonePe return: `/payment-return` → `src/app/payment-return/page.tsx`, opened only inside the PhonePe popup.
 - Reference design: `Aqua Landing v4.dc.html` (tokens, droplet and glass surfaces are ported into `aqua.css`, `AquaDroplet.tsx` and `ThemeLayer.tsx`).

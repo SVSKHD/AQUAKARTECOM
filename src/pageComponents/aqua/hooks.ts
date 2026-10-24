@@ -22,6 +22,8 @@ export const useReducedMotion = () =>
   useMedia("(prefers-reduced-motion: reduce)");
 export const useIsMobile = (breakpoint = 768) =>
   useMedia(`(max-width: ${breakpoint - 1}px)`);
+// Finger rather than mouse (phones, iPads): needs 44px targets whatever the width.
+export const useIsTouch = () => useMedia("(pointer: coarse)");
 
 // localStorage can throw (private mode, blocked storage); never let it break the page.
 export const storage = {

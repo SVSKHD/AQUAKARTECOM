@@ -2,12 +2,15 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
+  ArrowUpRight,
   BadgeCheck,
   CalendarDays,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Copy,
   CreditCard,
   Download,
@@ -19,15 +22,16 @@ import {
   Link2,
   Mail,
   MapPin,
+  MessageCircle,
   Package,
   Phone,
   Printer,
   ReceiptIndianRupee,
   ShieldCheck,
+  ShoppingBag,
   Sparkles,
   Tags,
   Truck,
-  UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assests/logo.png";
@@ -47,6 +51,14 @@ import {
   termsAndConditions,
 } from "@/constants/invoiceStaticData";
 import priceUtils from "@/utils/priceUtils";
+import useAssistant from "@/utils/assistant";
+import { getDocumentKind, isPaidStatus } from "@/utils/invoice/documentKind";
+import {
+  otherProductQuestion,
+  ownedProductQuestions,
+  recommendProducts,
+  shortProductName,
+} from "@/utils/invoice/recommendProducts";
 import {
   closePdfDownloadTarget,
   preparePdfDownloadTarget,
@@ -71,26 +83,8 @@ const titleCase = (value) =>
     .replace(/[_-]+/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
-const DetailLine = ({ icon: Icon, label, value }) => {
-  if (!value) return null;
-
-  return (
-    <div className={styles.detailLine}>
-      <span className={styles.detailIcon} aria-hidden="true">
-        <Icon size={16} strokeWidth={1.8} />
-      </span>
-      <div>
-        <span className={styles.detailLabel}>{label}</span>
-        <span className={styles.detailValue}>{value}</span>
-      </div>
-    </div>
-  );
-};
-
 const StatusPill = ({ status }) => {
-  const isPaid = ["paid", "completed", "success"].includes(
-    String(status).toLowerCase(),
-  );
+  const isPaid = isPaidStatus(status);
 
   return (
     <span
@@ -293,88 +287,6 @@ const InvoiceError = ({ statusCode, onAccessGranted }) => {
   );
 };
 
-const ProductCard = ({ product, index }) => {
-  const lineTotal = product.productPrice * product.productQuantity;
-
-  return (
-    <article className={styles.productCard}>
-      <div className={styles.productShowcase}>
-        <div className={styles.productVisual}>
-          <span className={styles.productNumber}>
-            {String(index + 1).padStart(2, "0")}
-          </span>
-          {product.productImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={product.productImage} alt={product.productName} />
-          ) : (
-            <Package size={44} strokeWidth={1.35} aria-hidden="true" />
-          )}
-        </div>
-
-        <div className={styles.productIdentity}>
-          <span className={styles.productKicker}>Aquakart selection</span>
-          <h3>{product.productName}</h3>
-          {product.productCategory || product.productSubcategory ? (
-            <div className={styles.productTags}>
-              {product.productCategory ? (
-                <span>
-                  <Tags size={11} aria-hidden="true" />
-                  {product.productCategory}
-                </span>
-              ) : null}
-              {product.productSubcategory ? (
-                <span>{product.productSubcategory}</span>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      <div className={styles.productContent}>
-        <div className={styles.productTopline}>
-          <div>
-            <span>Line item</span>
-            <strong>{String(index + 1).padStart(2, "0")}</strong>
-          </div>
-          <span className={styles.quantityPill}>
-            {product.productQuantity}{" "}
-            {product.productQuantity === 1 ? "unit" : "units"}
-          </span>
-        </div>
-
-        {/* {product.productSerialNo ? (
-          <div className={styles.serialNumber}>
-            <Hash size={13} /> Serial {product.productSerialNo}
-          </div>
-        ) : null} */}
-
-        <div className={styles.productPriceRow}>
-          <div>
-            <span>Unit price</span>
-            <strong>{priceUtils.formatAmount(product.productPrice)}</strong>
-            <small>per supplied unit</small>
-          </div>
-          <div>
-            <span>Quantity</span>
-            <strong>× {product.productQuantity}</strong>
-            <small>confirmed quantity</small>
-          </div>
-          <div className={styles.lineTotal}>
-            <span>Line total</span>
-            <strong>{priceUtils.formatAmount(lineTotal)}</strong>
-            <small>invoice contribution</small>
-          </div>
-        </div>
-
-        <div className={styles.productCalculationNote}>
-          <ReceiptIndianRupee size={15} aria-hidden="true" />
-          Unit price × confirmed quantity equals this line total.
-        </div>
-      </div>
-    </article>
-  );
-};
-
 const getProductHref = (product = {}) => {
   const directLink = product.productLink;
   if (directLink?.startsWith("http://") || directLink?.startsWith("https://")) {
@@ -387,69 +299,371 @@ const getProductHref = (product = {}) => {
   return reference ? `/product/${encodeURIComponent(reference)}` : "";
 };
 
-const ProductGallery = ({ products }) => {
-  const copyProductLink = async (product) => {
-    const href = getProductHref(product);
-    if (!href) {
-      toast.error("Product link is not available");
-      return;
-    }
+const copyProductLink = async (href) => {
+  if (!href) {
+    toast.error("Product link is not available");
+    return;
+  }
 
-    const absoluteUrl = href.startsWith("http")
-      ? href
-      : `${window.location.origin}${href}`;
-    try {
-      await navigator.clipboard.writeText(absoluteUrl);
-      toast.success("Product link copied");
-    } catch {
-      toast.error("Could not copy the product link");
-    }
+  const absoluteUrl = href.startsWith("http")
+    ? href
+    : `${window.location.origin}${href}`;
+  try {
+    await navigator.clipboard.writeText(absoluteUrl);
+    toast.success("Product link copied");
+  } catch {
+    toast.error("Could not copy the product link");
+  }
+};
+
+// One compact line item: picture, name, the arithmetic and quick actions.
+const ProductRow = ({ product, index, onAsk }) => {
+  const href = getProductHref(product);
+  const lineTotal = product.productPrice * product.productQuantity;
+  const tags = [product.productCategory, product.productSubcategory].filter(
+    Boolean,
+  );
+
+  return (
+    <article className={styles.lineItem}>
+      <a
+        className={`${styles.lineThumb} ${!href ? styles.lineThumbDisabled : ""}`}
+        href={href || undefined}
+        target={href ? "_blank" : undefined}
+        rel={href ? "noreferrer" : undefined}
+        aria-label={
+          href
+            ? `Open ${product.productName}`
+            : `${product.productName} has no product page`
+        }
+      >
+        <span>{String(index + 1).padStart(2, "0")}</span>
+        {product.productImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={product.productImage} alt="" />
+        ) : (
+          <Package size={26} strokeWidth={1.4} aria-hidden="true" />
+        )}
+      </a>
+
+      <div className={styles.lineBody}>
+        <h3>{product.productName}</h3>
+        {tags.length ? (
+          <p className={styles.lineTags}>
+            <Tags size={11} aria-hidden="true" />
+            {tags.join(" · ")}
+          </p>
+        ) : null}
+        <dl className={styles.lineFigures}>
+          <div>
+            <dt>Unit price</dt>
+            <dd>{priceUtils.formatAmount(product.productPrice)}</dd>
+          </div>
+          <div>
+            <dt>Qty</dt>
+            <dd>× {product.productQuantity}</dd>
+          </div>
+          <div className={styles.lineFigureTotal}>
+            <dt>Line total</dt>
+            <dd>{priceUtils.formatAmount(lineTotal)}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div className={styles.lineActions}>
+        {onAsk ? (
+          <button
+            type="button"
+            className={styles.askButton}
+            onClick={() => onAsk(product)}
+          >
+            <Sparkles size={13} aria-hidden="true" /> Ask AI
+          </button>
+        ) : null}
+        {href ? (
+          <a
+            className={styles.ghostButton}
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <ExternalLink size={13} aria-hidden="true" /> View
+          </a>
+        ) : null}
+        {href ? (
+          <button
+            type="button"
+            className={styles.iconButton}
+            onClick={() => copyProductLink(href)}
+            aria-label={`Copy ${product.productName} link`}
+            title="Copy product link"
+          >
+            <Link2 size={13} />
+          </button>
+        ) : null}
+      </div>
+    </article>
+  );
+};
+
+// A sideways rail with no scrollbar: glowing arrows appear at whichever end
+// has more to show and page through it.
+const ScrollRail = ({ label, count, children }) => {
+  const trackRef = useRef(null);
+  const [edges, setEdges] = useState({ back: false, forward: false });
+
+  const measure = useCallback(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const overflow = track.scrollWidth - track.clientWidth;
+    const back = track.scrollLeft > 2;
+    const forward = track.scrollLeft < overflow - 2;
+    setEdges((current) =>
+      current.back === back && current.forward === forward
+        ? current
+        : { back, forward },
+    );
+  }, []);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return undefined;
+    measure();
+    track.addEventListener("scroll", measure, { passive: true });
+    window.addEventListener("resize", measure);
+    return () => {
+      track.removeEventListener("scroll", measure);
+      window.removeEventListener("resize", measure);
+    };
+  }, [measure, count]);
+
+  const page = (direction) => {
+    const track = trackRef.current;
+    if (!track) return;
+    track.scrollBy({
+      left: direction * track.clientWidth * 0.85,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
+    });
   };
 
   return (
-    <aside className={styles.productGallery} aria-label="Invoice products">
-      <div className={styles.galleryTrack}>
-        {products.map((product, index) => {
-          const href = getProductHref(product);
-          return (
-            <article
-              key={product.id || `${product.productName}-${index}`}
-              className={styles.galleryItem}
-            >
-              <a
-                href={href || undefined}
-                target={href ? "_blank" : undefined}
-                rel={href ? "noreferrer" : undefined}
-                aria-label={
-                  href
-                    ? `Open ${product.productName}`
-                    : `${product.productName} has no product page`
-                }
-                className={!href ? styles.galleryLinkDisabled : ""}
-              >
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                {product.productImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={product.productImage} alt={product.productName} />
-                ) : (
-                  <Package size={25} />
-                )}
-              </a>
-              <button
-                type="button"
-                onClick={() => copyProductLink(product)}
-                aria-label={`Copy ${product.productName} link`}
-              >
-                <Link2 size={12} />
-              </button>
-            </article>
-          );
-        })}
+    <div className={styles.rail}>
+      {edges.back ? (
+        <button
+          type="button"
+          className={`${styles.railArrow} ${styles.railArrowBack}`}
+          onClick={() => page(-1)}
+          aria-label={`Previous ${label.toLowerCase()}`}
+        >
+          <ChevronLeft size={18} />
+        </button>
+      ) : null}
+      {edges.forward ? (
+        <button
+          type="button"
+          className={`${styles.railArrow} ${styles.railArrowForward}`}
+          onClick={() => page(1)}
+          aria-label={`More ${label.toLowerCase()}`}
+        >
+          <ChevronRight size={18} />
+        </button>
+      ) : null}
+      <div
+        ref={trackRef}
+        className={styles.railTrack}
+        role="list"
+        aria-label={label}
+      >
+        {children}
       </div>
-      <span className={styles.galleryHint}>
-        <ExternalLink size={11} /> Open product
-      </span>
-    </aside>
+    </div>
+  );
+};
+
+// Another catalogue product as a poster card: the picture fills the card, with
+// the name and price over a gradient. Hover or keyboard focus lifts the card
+// and fades in a details panel (only transform/opacity animate, so it stays
+// smooth). Touch screens show the name, price and actions directly.
+const RecommendationCard = ({ product, onAsk }) => {
+  const off = product.mrp
+    ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
+    : 0;
+  const facts = [
+    product.capacity && ["Capacity", product.capacity],
+    product.flow && ["Flow", product.flow],
+    product.warranty && ["Warranty", product.warranty],
+  ].filter(Boolean);
+  const price = priceUtils.formatAmount(product.price, { showPaise: false });
+  const mrp =
+    off > 0 ? priceUtils.formatAmount(product.mrp, { showPaise: false }) : "";
+
+  return (
+    <article className={styles.recoCard} role="listitem">
+      <div className={styles.recoPoster} aria-hidden="true">
+        {product.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={product.image} alt="" loading="lazy" />
+        ) : (
+          <Package size={40} strokeWidth={1.2} />
+        )}
+      </div>
+
+      <div className={styles.recoBadges}>
+        {off > 0 ? <span className={styles.recoBadge}>{off}% off</span> : null}
+        {!product.inStock ? (
+          <span className={styles.recoSoldOut}>Sold out</span>
+        ) : null}
+      </div>
+
+      {/* Resting state; the panel below carries the same text for assistive tech. */}
+      <div className={styles.recoSummary} aria-hidden="true">
+        <span className={styles.recoCategory}>
+          {titleCase(product.category)}
+        </span>
+        <strong className={styles.recoTitle}>{product.title}</strong>
+        <span className={styles.recoPrice}>
+          <b>{price}</b>
+          {mrp ? <s>{mrp}</s> : null}
+        </span>
+      </div>
+
+      <div className={styles.recoPanel}>
+        <span className={styles.recoCategory}>
+          {titleCase(product.category)}
+        </span>
+        <h3 className={styles.recoTitle}>{product.title}</h3>
+        <p className={styles.recoPrice}>
+          <b>{price}</b>
+          {mrp ? <s>{mrp}</s> : null}
+        </p>
+        {facts.length ? (
+          <dl className={styles.recoFacts}>
+            {facts.map(([term, value]) => (
+              <div key={term}>
+                <dt>{term}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
+        {product.description ? (
+          <p className={styles.recoDescription}>{product.description}</p>
+        ) : null}
+        <div className={styles.recoActions}>
+          {onAsk ? (
+            <button
+              type="button"
+              className={styles.recoAsk}
+              onClick={() => onAsk(product)}
+            >
+              <Sparkles size={13} aria-hidden="true" /> Ask AI
+            </button>
+          ) : null}
+          <a
+            className={styles.recoView}
+            href={product.href}
+            aria-label={`View ${product.title}`}
+          >
+            View <ArrowUpRight size={13} aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+    </article>
+  );
+};
+
+const initialsOf = (name) =>
+  String(name || "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase() || "AQ";
+
+// Everyone on the bill in one compact card: customer, GST profile, delivery.
+const PartyCard = ({ invoice }) => {
+  const name = invoice.customer_name || invoice.gst_name || "Customer";
+  const gstFacts = invoice.gst
+    ? [
+        ["Business", invoice.gst_name || invoice.customer_name],
+        ["GSTIN", invoice.gst_no || "Not available"],
+        ["GST phone", invoice.gst_phone],
+        ["GST email", invoice.gst_email],
+        ["GST address", invoice.gst_address],
+      ].filter(([, value]) => value)
+    : [];
+
+  return (
+    <section className={styles.partyCard}>
+      <header className={styles.partyHead}>
+        <span className={styles.partyAvatar} aria-hidden="true">
+          {initialsOf(name)}
+        </span>
+        <div>
+          <small>Billed to</small>
+          <h2>{name}</h2>
+        </div>
+        {invoice.gst ? (
+          <span className={styles.partyBadge}>
+            <Landmark size={12} aria-hidden="true" /> GST
+          </span>
+        ) : null}
+      </header>
+
+      {invoice.customer_phone || invoice.customer_email ? (
+        <div className={styles.partyContacts}>
+          {invoice.customer_phone ? (
+            <a href={`tel:${invoice.customer_phone}`}>
+              <Phone size={14} aria-hidden="true" />
+              <span>{invoice.customer_phone}</span>
+            </a>
+          ) : null}
+          {invoice.customer_email ? (
+            <a href={`mailto:${invoice.customer_email}`}>
+              <Mail size={14} aria-hidden="true" />
+              <span>{invoice.customer_email}</span>
+            </a>
+          ) : null}
+        </div>
+      ) : null}
+
+      {invoice.customer_address ? (
+        <p className={styles.partyAddress}>
+          <MapPin size={14} aria-hidden="true" />
+          <span>{invoice.customer_address}</span>
+        </p>
+      ) : null}
+
+      {gstFacts.length ? (
+        <dl className={styles.partyFacts}>
+          {gstFacts.map(([term, value]) => (
+            <div
+              key={term}
+              className={term === "GST address" ? styles.partyFactWide : ""}
+            >
+              <dt>{term}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+
+      {invoice.delivered_by || invoice.delivery_date ? (
+        <p className={styles.partyDelivery}>
+          <Truck size={14} aria-hidden="true" />
+          <span>
+            Delivered
+            {invoice.delivered_by ? ` by ${invoice.delivered_by}` : ""}
+            {invoice.delivery_date
+              ? ` · ${formatDate(invoice.delivery_date)}`
+              : ""}
+          </span>
+        </p>
+      ) : null}
+    </section>
   );
 };
 
@@ -543,29 +757,58 @@ const BankMethodCard = ({ method, copied, onCopy }) => {
   );
 };
 
-const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
+const InvoicePage = ({
+  invoice,
+  catalogue = null,
+  statusCode = 200,
+  onAccessGranted,
+}) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copiedPayment, setCopiedPayment] = useState("");
+  const {
+    available: assistantAvailable,
+    openAssistant,
+    setAssistantContext,
+  } = useAssistant();
+  const hasInvoice = Boolean(invoice) && statusCode === 200;
 
-  if (!invoice || statusCode !== 200) {
+  const recommendations = useMemo(
+    () => (hasInvoice ? recommendProducts(invoice, catalogue) : []),
+    [hasInvoice, invoice, catalogue],
+  );
+
+  // On this page the assistant opens as a drawer that knows the purchase:
+  // questions about the products bought, plus the other products to explore.
+  useEffect(() => {
+    if (!hasInvoice) return undefined;
+    const { name } = getDocumentKind(invoice);
+    const firstName = String(invoice.customer_name || "").split(/\s+/)[0];
+    setAssistantContext({
+      variant: "drawer",
+      subtitle: `Help with your ${name.toLowerCase()}${invoice.invoice_no ? ` ${invoice.invoice_no}` : ""}`,
+      greeting: `Hi${firstName ? ` ${firstName}` : ""}! Ask me anything about the products on this ${name.toLowerCase()}: care, servicing, spares or warranty. I can also tell you what goes well with them.`,
+      suggestions: ownedProductQuestions(invoice),
+      productsIntro:
+        "Picked to go with what you bought. Tap Ask AI to see how any of them fits your home.",
+      products: recommendations.map((product) => ({
+        ...product,
+        question: otherProductQuestion(product, invoice),
+      })),
+    });
+    return () => setAssistantContext(null);
+  }, [hasInvoice, invoice, recommendations, setAssistantContext]);
+
+  if (!hasInvoice) {
     return (
       <InvoiceError statusCode={statusCode} onAccessGranted={onAccessGranted} />
     );
   }
 
   const amounts = priceUtils.getInvoiceAmounts(invoice);
-  const documentType = invoice.quotation
-    ? "quotation"
-    : invoice.po
-      ? "po"
-      : "invoice";
-  const documentName =
-    documentType === "quotation"
-      ? "Quotation"
-      : documentType === "po"
-        ? "Purchase Order"
-        : "Invoice";
+  // Unpaid sales read as an invoice, paid ones as a receipt.
+  const { name: documentName, title: documentTitle } = getDocumentKind(invoice);
+  const isPaid = isPaidStatus(invoice.paid_status);
   const documentLabel = invoice.invoice_no || invoice.id || documentName;
   const customerDisplayName =
     invoice.customer_name || invoice.gst_name || "valued customer";
@@ -586,8 +829,8 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
       });
       toast.success(
         result?.mode === "viewer"
-          ? "Invoice PDF opened - use Share/Save to keep it"
-          : "Invoice PDF downloaded",
+          ? `${documentName} PDF opened - use Share/Save to keep it`
+          : `${documentName} PDF downloaded`,
       );
     } catch (error) {
       closePdfDownloadTarget(preparedTarget);
@@ -598,14 +841,24 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
     }
   };
 
+  // Opens the drawer on its purchase questions; nothing is sent until the
+  // customer taps a question or presses send.
+  const handleAskAssistant = () => openAssistant("");
+  const askAboutPurchased = (product) =>
+    openAssistant(
+      `I have a question about my ${shortProductName(product.productName)}: `,
+    );
+  const askAboutOther = (product) =>
+    openAssistant(otherProductQuestion(product, invoice));
+
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
-      toast.success("Invoice link copied");
+      toast.success(`${documentName} link copied`);
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
-      toast.error("Could not copy the invoice link");
+      toast.error(`Could not copy the ${documentName.toLowerCase()} link`);
     }
   };
 
@@ -649,30 +902,68 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
         </Link>
 
         <div className={styles.commandIdentity}>
-          <BadgeCheck size={17} /> Verified {documentName.toLowerCase()}
-          <span>{documentLabel}</span>
+          <span className={styles.identityBadge}>
+            <BadgeCheck size={15} />
+            <span className={styles.identityBadgeText}>
+              Verified {documentName.toLowerCase()}
+            </span>
+          </span>
+          <span className={styles.identityNumber} title={documentLabel}>
+            <Hash size={12} aria-hidden="true" />
+            {documentLabel}
+          </span>
         </div>
 
         <div className={styles.commandActions}>
-          <Link href="/page/find-invoice" className={styles.secondaryButton}>
-            <Mail size={17} />
-            <span>Email or WhatsApp</span>
-          </Link>
-          <button
-            type="button"
-            onClick={handleCopy}
-            className={styles.secondaryButton}
+          {assistantAvailable ? (
+            <button
+              type="button"
+              onClick={handleAskAssistant}
+              className={styles.chatButton}
+            >
+              <span className={styles.chatIcon} aria-hidden="true">
+                <MessageCircle size={15} />
+                <i />
+              </span>
+              <span className={styles.actionLabel}>Chat with us</span>
+            </button>
+          ) : null}
+
+          <div
+            className={styles.actionGroup}
+            role="group"
+            aria-label={`Share or print this ${documentName.toLowerCase()}`}
           >
-            {copied ? <Check size={17} /> : <Copy size={17} />}
-            <span>{copied ? "Copied" : "Copy link"}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className={styles.secondaryButton}
-          >
-            <Printer size={17} /> <span>Print</span>
-          </button>
+            <Link
+              href="/page/find-invoice"
+              className={styles.groupAction}
+              title="Send by email or WhatsApp"
+            >
+              <Mail size={16} />
+              <span className={styles.actionLabel}>Email or WhatsApp</span>
+            </Link>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className={styles.groupAction}
+              title="Copy link"
+            >
+              {copied ? <Check size={16} /> : <Copy size={16} />}
+              <span className={styles.actionLabel}>
+                {copied ? "Copied" : "Copy link"}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className={styles.groupAction}
+              title="Print"
+            >
+              <Printer size={16} />
+              <span className={styles.actionLabel}>Print</span>
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={handleDownload}
@@ -687,36 +978,55 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
 
       <main className={styles.invoiceShell}>
         <section className={styles.invoiceHero}>
-          <div className={styles.heroBrand}>
-            <div className={styles.heroLogo}>
-              <Image
-                src={logo}
-                alt="Aquakart"
-                width={64}
-                height={64}
-                priority
-              />
+          <div className={styles.heroTop}>
+            <div className={styles.heroBrand}>
+              <div className={styles.heroLogo}>
+                <Image
+                  src={logo}
+                  alt="Aquakart"
+                  width={64}
+                  height={64}
+                  priority
+                />
+              </div>
+              <div>
+                <span className={styles.eyebrow}>Premium water solutions</span>
+                <h1>{documentTitle}</h1>
+                <p>GSTIN 36AJOPH6387A1Z2</p>
+              </div>
             </div>
-            <div>
-              <span className={styles.eyebrow}>Premium water solutions</span>
-              <h1>
-                {invoice.quotation
-                  ? "Sales Quotation"
-                  : invoice.po
-                    ? "Purchase Order"
-                    : invoice.gst
-                      ? "GST Tax Invoice"
-                      : "Retail Tax Invoice"}
-              </h1>
-              <p>GSTIN 36AJOPH6387A1Z2</p>
+
+            <div className={styles.heroInvoice}>
+              <StatusPill status={invoice.paid_status} />
+              <span>{documentName} number</span>
+              <strong>{documentLabel}</strong>
+              <small>Issued {formatDate(invoice.date)}</small>
             </div>
           </div>
 
-          <div className={styles.heroInvoice}>
-            <StatusPill status={invoice.paid_status} />
-            <span>{documentName} number</span>
-            <strong>{documentLabel}</strong>
-            <small>Issued {formatDate(invoice.date)}</small>
+          {/* The greeting lives in the hero so it costs no extra scroll. */}
+          <div className={styles.greetingCard}>
+            <span className={styles.greetingIcon} aria-hidden="true">
+              <Sparkles size={22} strokeWidth={1.7} />
+            </span>
+            <div className={styles.greetingCopy}>
+              <span className={styles.eyebrow}>A note from Aquakart</span>
+              <h2>Thank you, {customerDisplayName}.</h2>
+              <p>
+                {isPaid
+                  ? "Your payment is received and your purchase is documented. Keep this receipt for warranty and service support."
+                  : `Your purchase is documented and payment is pending. Once it is paid, this ${documentName.toLowerCase()} becomes your receipt for warranty and service support.`}
+              </p>
+            </div>
+            <div className={styles.greetingFacts}>
+              <span>
+                <BadgeCheck size={15} /> Verified purchase
+              </span>
+              <span>
+                <Package size={15} /> {invoice.products.length}{" "}
+                {invoice.products.length === 1 ? "product" : "products"}
+              </span>
+            </div>
           </div>
         </section>
 
@@ -745,36 +1055,15 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
           </div>
         </section>
 
-        <section className={styles.greetingCard}>
-          <span className={styles.greetingIcon} aria-hidden="true">
-            <Sparkles size={25} strokeWidth={1.7} />
-          </span>
-          <div className={styles.greetingCopy}>
-            <span className={styles.eyebrow}>A note from Aquakart</span>
-            <h2>Thank you, {customerDisplayName}.</h2>
-            <p>
-              Your purchase is documented, protected and ready whenever you need
-              it. Keep this invoice for warranty and service support.
-            </p>
-          </div>
-          <div className={styles.greetingFacts}>
-            <span>
-              <BadgeCheck size={16} /> Verified purchase
-            </span>
-            <span>
-              <Package size={16} /> {invoice.products.length}{" "}
-              {invoice.products.length === 1 ? "product" : "products"}
-            </span>
-          </div>
-        </section>
-
         <div className={styles.invoiceGrid}>
           <section className={styles.productsColumn}>
             <div className={styles.sectionHeading}>
               <div>
                 <span className={styles.sectionIndex}>01</span>
                 <div>
-                  <span className={styles.eyebrow}>Invoice contents</span>
+                  <span className={styles.eyebrow}>
+                    {documentName} contents
+                  </span>
                   <h2>Products supplied</h2>
                 </div>
               </div>
@@ -784,31 +1073,28 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
               </span>
             </div>
 
-            <div className={styles.productsExperience}>
+            <div className={styles.lineItems}>
               {invoice.products.length ? (
-                <ProductGallery products={invoice.products} />
-              ) : null}
-              <div className={styles.productList}>
-                {invoice.products.length ? (
-                  invoice.products.map((product, index) => (
-                    <ProductCard
-                      key={product.id || `${product.productName}-${index}`}
-                      product={product}
-                      index={index}
-                    />
-                  ))
-                ) : (
-                  <div className={styles.emptyProducts}>
-                    <Package size={28} />
-                    <div>
-                      <strong>No product details available</strong>
-                      <p>
-                        The invoice total and customer record are still shown.
-                      </p>
-                    </div>
+                invoice.products.map((product, index) => (
+                  <ProductRow
+                    key={product.id || `${product.productName}-${index}`}
+                    product={product}
+                    index={index}
+                    onAsk={assistantAvailable ? askAboutPurchased : null}
+                  />
+                ))
+              ) : (
+                <div className={styles.emptyProducts}>
+                  <Package size={28} />
+                  <div>
+                    <strong>No product details available</strong>
+                    <p>
+                      The {documentName.toLowerCase()} total and customer record
+                      are still shown.
+                    </p>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
             <div className={styles.amountWords}>
@@ -818,100 +1104,7 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
           </section>
 
           <aside className={styles.detailsRail}>
-            <section className={styles.detailCard}>
-              <div className={styles.cardHeading}>
-                <span>
-                  <UserRound size={18} />
-                </span>
-                <div>
-                  <small>Bill to</small>
-                  <h2>Customer details</h2>
-                </div>
-              </div>
-              <DetailLine
-                icon={UserRound}
-                label="Customer"
-                value={invoice.customer_name || "Not available"}
-              />
-              <DetailLine
-                icon={Phone}
-                label="Phone"
-                value={invoice.customer_phone}
-              />
-              <DetailLine
-                icon={Mail}
-                label="Email"
-                value={invoice.customer_email}
-              />
-              <DetailLine
-                icon={MapPin}
-                label="Billing address"
-                value={invoice.customer_address}
-              />
-            </section>
-
-            {invoice.gst ? (
-              <section className={`${styles.detailCard} ${styles.gstCard}`}>
-                <div className={styles.cardHeading}>
-                  <span>
-                    <Landmark size={18} />
-                  </span>
-                  <div>
-                    <small>Registered profile</small>
-                    <h2>GST details</h2>
-                  </div>
-                </div>
-                <DetailLine
-                  icon={Landmark}
-                  label="Business name"
-                  value={invoice.gst_name || invoice.customer_name}
-                />
-                <DetailLine
-                  icon={Hash}
-                  label="GSTIN"
-                  value={invoice.gst_no || "Not available"}
-                />
-                <DetailLine
-                  icon={Phone}
-                  label="GST phone"
-                  value={invoice.gst_phone}
-                />
-                <DetailLine
-                  icon={Mail}
-                  label="GST email"
-                  value={invoice.gst_email}
-                />
-                <DetailLine
-                  icon={MapPin}
-                  label="GST address"
-                  value={invoice.gst_address}
-                />
-              </section>
-            ) : null}
-
-            {invoice.delivered_by || invoice.delivery_date ? (
-              <section className={styles.detailCard}>
-                <div className={styles.cardHeading}>
-                  <span>
-                    <Truck size={18} />
-                  </span>
-                  <div>
-                    <small>Fulfilment</small>
-                    <h2>Delivery record</h2>
-                  </div>
-                </div>
-                <DetailLine
-                  icon={Truck}
-                  label="Delivered by"
-                  value={invoice.delivered_by}
-                />
-                <DetailLine
-                  icon={CalendarDays}
-                  label="Delivery date"
-                  value={formatDate(invoice.delivery_date)}
-                />
-              </section>
-            ) : null}
+            <PartyCard invoice={invoice} />
 
             <section className={styles.summaryCard}>
               <div className={styles.summaryTopline}>
@@ -985,6 +1178,48 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
             </section>
           </aside>
         </div>
+
+        {recommendations.length ? (
+          <section
+            className={styles.recoSection}
+            aria-labelledby="invoice-recommendations"
+          >
+            <div className={styles.recoHeading}>
+              <div>
+                <span className={styles.recoIcon} aria-hidden="true">
+                  <ShoppingBag size={18} />
+                </span>
+                <div>
+                  <span className={styles.eyebrow}>Picked for your home</span>
+                  <h2 id="invoice-recommendations">
+                    Goes well with your purchase
+                  </h2>
+                </div>
+              </div>
+              {assistantAvailable ? (
+                <button
+                  type="button"
+                  className={styles.askButton}
+                  onClick={() => openAssistant("", { tab: "products" })}
+                >
+                  <Sparkles size={13} aria-hidden="true" /> Compare with AI
+                </button>
+              ) : null}
+            </div>
+            <ScrollRail
+              label="Recommended products"
+              count={recommendations.length}
+            >
+              {recommendations.map((product) => (
+                <RecommendationCard
+                  key={product.id}
+                  product={product}
+                  onAsk={assistantAvailable ? askAboutOther : null}
+                />
+              ))}
+            </ScrollRail>
+          </section>
+        ) : null}
 
         <section className={styles.legalSection}>
           <div className={styles.legalHeading}>
@@ -1089,18 +1324,35 @@ const InvoicePage = ({ invoice, statusCode = 200, onAccessGranted }) => {
         </footer>
       </main>
 
-      <div className={styles.mobileDownloadBar}>
+      <div className={styles.mobileDownloadBar} data-invoice-mobile-bar>
         <div>
-          <span>Invoice total</span>
+          <span>{isPaid ? "Amount paid" : "Amount due"}</span>
           <strong>
             {priceUtils.formatAmount(amounts.grandTotal, { showPaise: false })}
           </strong>
         </div>
+        {/* Chat lives in this bar on phones instead of a floating button over the page. */}
+        {assistantAvailable ? (
+          <button
+            type="button"
+            onClick={handleAskAssistant}
+            className={styles.mobileChat}
+            aria-label="Chat with us"
+          >
+            <MessageCircle size={18} />
+            <i aria-hidden="true" />
+          </button>
+        ) : null}
         <button type="button" onClick={handleDownload} disabled={isDownloading}>
           <Download size={18} /> {isDownloading ? "Preparing…" : "PDF"}
         </button>
-        <button type="button" onClick={() => window.print()}>
-          <Printer size={18} /> Print
+        <button
+          type="button"
+          onClick={() => window.print()}
+          aria-label="Print"
+          className={styles.mobileIconButton}
+        >
+          <Printer size={18} />
         </button>
       </div>
     </div>

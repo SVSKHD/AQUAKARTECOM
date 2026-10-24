@@ -6,9 +6,10 @@ const useAssistant = () => {
   const available = useSelector((state) => state.assistant?.available);
 
   // `prefill` goes into the composer; it is not sent until the customer presses send.
+  // `tab` ("chat" | "products") picks the drawer tab when a page set a context.
   const openAssistant = useCallback(
-    (prefill = "") => {
-      dispatch({ type: "OPEN_ASSISTANT", payload: { prefill } });
+    (prefill = "", { tab } = {}) => {
+      dispatch({ type: "OPEN_ASSISTANT", payload: { prefill, tab } });
     },
     [dispatch],
   );
@@ -17,7 +18,20 @@ const useAssistant = () => {
     dispatch({ type: "CLOSE_ASSISTANT" });
   }, [dispatch]);
 
-  return { available: Boolean(available), openAssistant, closeAssistant };
+  // A page's own assistant setup; pass null to clear it when the page leaves.
+  const setAssistantContext = useCallback(
+    (context) => {
+      dispatch({ type: "SET_ASSISTANT_CONTEXT", payload: context });
+    },
+    [dispatch],
+  );
+
+  return {
+    available: Boolean(available),
+    openAssistant,
+    closeAssistant,
+    setAssistantContext,
+  };
 };
 
 // "Tell me about <product>. Is it right for <use case>?"

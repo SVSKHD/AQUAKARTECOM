@@ -4,12 +4,21 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { ArrowDown, X } from "lucide-react";
 import type { Flow } from "@/utils/aquaFlow";
 import logo from "@/assests/logo.png";
+import { quotaLabel } from "@/services/ai";
+import AquaAvatar from "./AquaAvatar";
 import AquaDroplet from "./AquaDroplet";
-import AquaReply from "./AquaReply";
+import AquaLimitCard from "./AquaLimitCard";
+import AquaReply, { ReplyBlocks } from "./AquaReply";
+import AquaThinking from "./AquaThinking";
+import AquaSupportNote from "./AquaSupportNote";
+import { suggestFollowUps } from "@/utils/aiFollowUps";
 import Composer from "./Composer";
 import CompareTable from "./CompareTable";
 import HardnessCard from "./HardnessCard";
 import ProductCard from "./ProductCard";
+import ProductInsight from "./ProductInsight";
+import ReplyActions from "./ReplyActions";
+import { splitReply } from "./replyProducts";
 import { aquaConfig } from "./config";
 import { useReducedMotion } from "./hooks";
 import { ACTION_CHIPS, type AquaChat } from "./useAquaChat";
@@ -36,6 +45,10 @@ type Props = {
   onAddToCart: (id: string) => void;
   onBuy: () => void;
   onSend: (text: string) => boolean;
+  // Opens Google sign-in; used by the daily-limit card.
+  onSignIn: () => void;
+  signingIn: boolean;
+  signInError?: string;
   onFocusChange: (focused: boolean) => void;
   hideComposer: boolean;
   composerRef: (el: HTMLDivElement | null) => void;
@@ -153,13 +166,50 @@ export default function Conversation(p: Props) {
   const parked = p.flow.state === "chatting" && p.flow.parked;
   const msgMax = p.panelOpen ? 860 : 760;
 
+  // The "confirm with support" note goes under the most recent AI answer only.
+  const latestAi = (() => {
+    const ms = p.chat.messages;
+    for (let i = ms.length - 1; i >= 0; i -= 1) {
+      if (ms[i].role !== "aqua" || ms[i].typing) continue;
+      if (!ms[i].ai) return null;
+      const asked = ms
+        .slice(0, i)
+        .reverse()
+        .find((x) => x.role === "user");
+      return {
+        id: ms[i].id,
+        question: asked?.text || "",
+        reply: ms[i].full || ms[i].text,
+        chips: ms[i].chips || [],
+      };
+    }
+    return null;
+  })();
+  // Suggested next questions under the latest AI answer: never one already asked,
+  // nor one of the answer's own action chips.
+  const followUps = latestAi
+    ? suggestFollowUps(latestAi.question, latestAi.reply, [
+        ...p.chat.messages.filter((x) => x.role === "user").map((x) => x.text),
+        ...latestAi.chips,
+      ])
+    : [];
+
   const renderMessage = (m: ChatMessage) => {
     if (m.role === "user")
       return (
-        <div key={m.id} style={{ display: "flex", justifyContent: "flex-end" }}>
+        <div
+          key={m.id}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: 4,
+          }}
+        >
           <div
             className="aq-btn-dark"
             style={{
+              opacity: m.stopped ? 0.6 : 1,
               transformOrigin: "100% 100%",
               animation: "aqUserIn .42s cubic-bezier(.2,.8,.2,1) both",
               maxWidth: "80%",
@@ -186,6 +236,28 @@ export default function Conversation(p: Props) {
               </span>
             )}
           </div>
+          {m.stopped && (
+            <span
+              style={{
+                fontSize: 11.5,
+                fontWeight: 600,
+                color: "var(--aq-mut2)",
+              }}
+            >
+              Stopped
+            </span>
+          )}
+          {m.unanswered && (
+            <span
+              style={{
+                fontSize: 11.5,
+                fontWeight: 600,
+                color: "var(--aq-mut2)",
+              }}
+            >
+              Not answered · daily limit reached
+            </span>
+          )}
         </div>
       );
 
@@ -196,6 +268,28 @@ export default function Conversation(p: Props) {
       .map((id) => p.products.get(id))
       .filter((x): x is Product => !!x);
     const streaming = !m.done && !m.typing;
+    // Once complete, each product Aqua writes about gets its write-up on its own
+    // card; the prose before it stays in the bubble and the rest follows in order.
+    const segments =
+      m.done && !m.error && cards.length
+        ? splitReply(m.full || m.text, cards)
+        : null;
+    const lead = segments?.[0]?.kind === "text" ? segments[0].blocks : null;
+    const after = segments ? segments.slice(lead ? 1 : 0) : [];
+    const covered = new Set(
+      after.flatMap((s) => (s.kind === "product" ? [s.product.id] : [])),
+    );
+    const gridCards = cards.filter((c) => !covered.has(c.id));
+    const bubble = {
+      borderRadius: "6px 20px 20px 20px",
+      padding: "13px 18px",
+      fontSize: 15,
+      lineHeight: 1.58,
+      maxWidth: "100%",
+      textWrap: "pretty",
+      overflowWrap: "anywhere",
+    } as const;
+    let insightNo = 0;
     return (
       <div
         key={m.id}
@@ -209,7 +303,7 @@ export default function Conversation(p: Props) {
             animation: "aqChipIn .4s cubic-bezier(.2,.8,.2,1) both",
           }}
         >
-          <AquaDroplet mood="idle" size={28} dark={p.dark} still />
+          <AquaAvatar size={28} />
         </div>
         <div
           style={{
@@ -263,6 +357,13 @@ export default function Conversation(p: Props) {
                 alignItems: "flex-start",
               }}
             >
+              {m.partial && (
+                <span
+                  style={{ whiteSpace: "pre-wrap", color: "var(--aq-mut2)" }}
+                >
+                  {m.partial}
+                </span>
+              )}
               <span style={{ fontWeight: 600 }}>{m.text}</span>
               {m.retry && (
                 <button
@@ -283,22 +384,27 @@ export default function Conversation(p: Props) {
               )}
             </div>
           ) : (
-            m.text && (
+            ((segments ? lead : m.text) || m.thoughts || m.thinkingLive) && (
               <div
                 className="aq-card"
                 style={{
-                  borderRadius: "6px 20px 20px 20px",
-                  padding: "13px 18px",
-                  fontSize: 15,
-                  lineHeight: 1.58,
-                  maxWidth: "100%",
-                  textWrap: "pretty",
-                  overflowWrap: "anywhere",
+                  ...bubble,
+                  width: m.thinkingLive ? "100%" : undefined,
                 }}
               >
+                {(m.thoughts || m.thinkingLive) && (
+                  <AquaThinking steps={m.thoughts} live={!!m.thinkingLive} />
+                )}
                 {/* Plain text while streaming (no half-parsed markdown), formatted once complete. */}
-                {streaming ? m.text : <AquaReply text={m.full || m.text} />}
-                {streaming && (
+                {segments
+                  ? lead && <ReplyBlocks blocks={lead} />
+                  : m.text &&
+                    (streaming ? (
+                      m.text
+                    ) : (
+                      <AquaReply text={m.full || m.text} />
+                    ))}
+                {streaming && m.text && (
                   <span
                     aria-hidden="true"
                     style={{
@@ -333,7 +439,40 @@ export default function Conversation(p: Props) {
               {m.note}
             </div>
           )}
-          {m.done && cards.length > 0 && (
+          {after.map((s, i) =>
+            s.kind === "product" ? (
+              <ProductInsight
+                key={s.product.id}
+                product={s.product}
+                index={++insightNo}
+                summary={s.summary}
+                points={s.points}
+                reason={p.chat.reasons[s.product.id]}
+                delay={i * 0.08}
+                selected={p.panelOpen && p.flow.productId === s.product.id}
+                isFav={p.favIds.includes(s.product.id)}
+                inCart={p.cartIds.includes(s.product.id)}
+                inCompare={p.compare.includes(s.product.id)}
+                onOpen={p.onOpen}
+                onToggleFav={p.onToggleFav}
+                onToggleCompare={p.onToggleCompare}
+                onAddToCart={p.onAddToCart}
+              />
+            ) : (
+              <div
+                key={`t${i}`}
+                className="aq-card"
+                style={{
+                  ...bubble,
+                  borderRadius: 20,
+                  animation: `aqAquaIn .5s cubic-bezier(.2,.8,.2,1) ${i * 0.08}s both`,
+                }}
+              >
+                <ReplyBlocks blocks={s.blocks} />
+              </div>
+            ),
+          )}
+          {m.done && gridCards.length > 0 && (
             <div
               style={{
                 display: "grid",
@@ -342,7 +481,7 @@ export default function Conversation(p: Props) {
                 width: "100%",
               }}
             >
-              {cards.map((c, i) => (
+              {gridCards.map((c, i) => (
                 <ProductCard
                   key={c.id}
                   product={c}
@@ -379,6 +518,43 @@ export default function Conversation(p: Props) {
                 </button>
               ))}
             </div>
+          )}
+          {m.ai &&
+            m.done &&
+            m.id === latestAi?.id &&
+            !p.chat.limit &&
+            followUps.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <span className="aq-label" style={{ fontSize: 10.5 }}>
+                  Ask a follow-up
+                </span>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {followUps.map((f, i) => (
+                    <button
+                      key={f}
+                      type="button"
+                      className="aq-chip aq-chip-soft"
+                      onClick={() => p.onSend(f)}
+                      style={{
+                        // Long questions wrap on narrow phones instead of running off the edge.
+                        whiteSpace: "normal",
+                        textAlign: "left",
+                        maxWidth: "100%",
+                        lineHeight: 1.35,
+                        animation: `aqChipIn .4s cubic-bezier(.2,.8,.2,1) ${0.1 + i * 0.05}s both`,
+                      }}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          {m.done && !m.error && (m.full || m.text) && (
+            <ReplyActions id={m.id} text={m.full || m.text} />
+          )}
+          {m.ai && m.done && m.id === latestAi?.id && (
+            <AquaSupportNote question={latestAi.question} />
           )}
         </div>
       </div>
@@ -493,23 +669,26 @@ export default function Conversation(p: Props) {
                 className="aq-display"
                 style={{
                   margin: 0,
-                  fontSize: "clamp(28px, 3.4vw, 40px)",
-                  lineHeight: 1.15,
+                  fontSize: p.isMobile ? 25 : "clamp(28px, 3.4vw, 40px)",
+                  lineHeight: p.isMobile ? 1.22 : 1.15,
                   fontWeight: 700,
-                  letterSpacing: "-0.03em",
+                  letterSpacing: p.isMobile ? "-0.02em" : "-0.03em",
                   textWrap: "balance",
                 }}
               >
-                {firstName
-                  ? `Welcome back, ${firstName}. What can I find for you today?`
-                  : "Hi, I'm Aqua. What can I find for you today?"}{" "}
+                {/* On phones the bubble above already greets by name. */}
+                {p.isMobile
+                  ? "What can I find for you today?"
+                  : firstName
+                    ? `Welcome back, ${firstName}. What can I find for you today?`
+                    : "Hi, I'm Aqua. What can I find for you today?"}{" "}
                 <span aria-hidden="true">💧</span>
               </h1>
               <p
                 style={{
                   margin: "0 auto",
                   maxWidth: 620,
-                  fontSize: "clamp(15px, 1.4vw, 17px)",
+                  fontSize: p.isMobile ? 14 : "clamp(15px, 1.4vw, 17px)",
                   lineHeight: 1.6,
                   color: "var(--aq-body)",
                   textWrap: "pretty",
@@ -519,9 +698,38 @@ export default function Conversation(p: Props) {
                   ? "Your chats, cart and favourites are saved. Pick up where you left off or ask me something new."
                   : "Tell me about your water and your home. I'll suggest what fits, and you can buy without leaving this chat."}
               </p>
+              {p.chat.resuming && (
+                <p
+                  role="status"
+                  style={{
+                    margin: "4px 0 0",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "var(--aq-mintink)",
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: "50%",
+                      border: "2px solid var(--aq-mintbd)",
+                      borderTopColor: "#10BFA4",
+                      animation: "aqSpin .9s linear infinite",
+                    }}
+                  />
+                  Restoring your last chat…
+                </p>
+              )}
             </div>
-            <HardnessCard onAsk={p.onSend} />
+            <HardnessCard onAsk={p.onSend} compact={p.isMobile} />
             <div
+              data-tour="suggestions"
               style={{
                 display: "flex",
                 flexWrap: "wrap",
@@ -605,32 +813,6 @@ export default function Conversation(p: Props) {
         )}
       </div>
 
-      {showJump && !isWelcome && (
-        <button
-          type="button"
-          className="aq-icon-btn"
-          onClick={() => {
-            stickRef.current = true;
-            listRef.current?.scrollTo({
-              top: listRef.current.scrollHeight,
-              behavior: reduced ? "auto" : "smooth",
-            });
-          }}
-          aria-label="Scroll to latest message"
-          style={{
-            position: "absolute",
-            left: "50%",
-            bottom: 120,
-            transform: "translateX(-50%)",
-            width: 40,
-            height: 40,
-            zIndex: 3,
-          }}
-        >
-          <ArrowDown size={18} />
-        </button>
-      )}
-
       <div
         ref={setCompRef}
         style={{
@@ -640,6 +822,34 @@ export default function Conversation(p: Props) {
           zIndex: 2,
         }}
       >
+        {/* Anchored to the composer's top edge, so it never covers the text
+            box however tall the composer stack gets. */}
+        {showJump && !isWelcome && (
+          <button
+            type="button"
+            className="aq-icon-btn"
+            onClick={() => {
+              stickRef.current = true;
+              listRef.current?.scrollTo({
+                top: listRef.current.scrollHeight,
+                behavior: reduced ? "auto" : "smooth",
+              });
+            }}
+            aria-label="Scroll to latest message"
+            style={{
+              position: "absolute",
+              left: "50%",
+              bottom: "calc(100% + 8px)",
+              transform: "translateX(-50%)",
+              width: 40,
+              height: 40,
+              zIndex: 3,
+              background: "rgba(var(--aq-gl),.92)",
+            }}
+          >
+            <ArrowDown size={18} />
+          </button>
+        )}
         <div
           style={{
             maxWidth: isWelcome ? 480 : 760,
@@ -667,7 +877,7 @@ export default function Conversation(p: Props) {
                 animation: "aqAquaIn .4s cubic-bezier(.2,.8,.2,1) both",
               }}
             >
-              <AquaDroplet mood="speaking" size={22} dark={p.dark} still />
+              <AquaAvatar size={22} />
               <span
                 style={{
                   flex: 1,
@@ -771,11 +981,24 @@ export default function Conversation(p: Props) {
               </button>
             </div>
           )}
+          {p.chat.limit && !p.hideComposer && (
+            <AquaLimitCard
+              limit={p.chat.limit}
+              quota={p.chat.quota}
+              onSignIn={p.onSignIn}
+              signingIn={p.signingIn}
+              signInError={p.signInError}
+            />
+          )}
           {!p.hideComposer && (
             <Composer
-              placeholder={placeholder}
+              placeholder={
+                p.chat.limit ? "No questions left for today" : placeholder
+              }
               busy={busy}
               large={false}
+              disabled={!!p.chat.limit}
+              counter={p.chat.quota ? quotaLabel(p.chat.quota) : ""}
               onSend={p.onSend}
               onFocusChange={p.onFocusChange}
             />

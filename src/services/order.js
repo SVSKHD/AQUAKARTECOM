@@ -38,7 +38,7 @@ const authHeaders = (token, extra = {}) => ({
 
 const createCheckoutQuote = async (data, token) => {
   try {
-    const response = await axios.post(`${BASE}/v1/checkout/quote`, data, {
+    const response = await axios.post(`${BASE}/checkout/quote`, data, {
       headers: authHeaders(token),
     });
     return response.data;
@@ -50,7 +50,7 @@ const createCheckoutQuote = async (data, token) => {
 
 const createCheckoutCodOrder = async (data, token) => {
   try {
-    const response = await axios.post(`${BASE}/v1/checkout/orders/cod`, data, {
+    const response = await axios.post(`${BASE}/checkout/orders/cod`, data, {
       headers: authHeaders(token),
     });
     return response.data;
@@ -62,13 +62,32 @@ const createCheckoutCodOrder = async (data, token) => {
 
 const createCheckoutPayment = async (data, token, idempotencyKey) => {
   try {
-    const response = await axios.post(`${BASE}/v1/payments`, data, {
+    const response = await axios.post(`${BASE}/payments`, data, {
       headers: authHeaders(token, { "Idempotency-Key": idempotencyKey }),
     });
     return response.data;
   } catch (error) {
     if (isAuthFailure(error)) throwAuthError(error);
-    throw new Error(getServerMessage(error) || "Unable to initiate payment");
+    // Keep the status: 409 means the checkout session expired or was used.
+    throw Object.assign(
+      new Error(getServerMessage(error) || "Unable to initiate payment"),
+      { status: error?.response?.status },
+    );
+  }
+};
+
+// Status of a payment attempt created by createCheckoutPayment (GET /payments/:id).
+const getCheckoutPayment = async (id, token, config = {}) => {
+  try {
+    const response = await axios.get(`${BASE}/payments/${id}`, {
+      headers: authHeaders(token),
+      ...config,
+    });
+    return response.data;
+  } catch (error) {
+    if (config?.signal?.aborted) throw error;
+    if (isAuthFailure(error)) throwAuthError(error);
+    throw new Error(getServerMessage(error) || "Unable to check payment");
   }
 };
 
@@ -210,6 +229,7 @@ const orderServiceOperations = {
   createCheckoutQuote,
   createCheckoutCodOrder,
   createCheckoutPayment,
+  getCheckoutPayment,
   createCodOrder,
   createPhonePePayOrder,
   verifyPayment,
