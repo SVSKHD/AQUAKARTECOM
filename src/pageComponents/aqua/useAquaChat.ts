@@ -1226,20 +1226,24 @@ export function useAquaChat({
   );
 
   // Follow-up when a product is opened for the first time in a conversation.
+  // Names the product and carries it (productId), so the bubble shows which
+  // one it's about and its chips answer for that product even after the panel
+  // is closed or another product is opened.
   const onFirstView = useCallback(
     (p: Product) => {
       if (statusRef.current !== "idle") return;
       if (p.inStock)
         say(
-          "This is one of the options we discussed. Would you like me to explain its capacity, maintenance or installation requirements?",
+          `You opened ${p.title} (${INR(p.price)}). Want its capacity, maintenance or installation details?`,
           {
             chips: ["Capacity", "Maintenance", "Installation"],
+            productId: p.id,
           },
         );
       else
         say(
           `${p.title} is ${p.stock.toLowerCase()} at the moment. Want me to find the closest alternatives?`,
-          { chips: ["Show alternatives"] },
+          { chips: ["Show alternatives"], productId: p.id },
         );
     },
     [say],

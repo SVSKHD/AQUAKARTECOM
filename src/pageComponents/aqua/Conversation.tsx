@@ -11,6 +11,7 @@ import AquaDroplet from "./AquaDroplet";
 import AquaLimitCard from "./AquaLimitCard";
 import AquaReply from "./AquaReply";
 import AquaThinking from "./AquaThinking";
+import { INR } from "./catalogue";
 import AquaSupportNote from "./AquaSupportNote";
 import { suggestFollowUps } from "@/utils/aiFollowUps";
 import Composer from "./Composer";
@@ -66,7 +67,8 @@ type Props = {
   onClearCompare: () => void;
   onAddToCart: (id: string) => void;
   onBuy: () => void;
-  onSend: (text: string) => boolean;
+  // productId: the product a question is about (a tagged reply's chips).
+  onSend: (text: string, productId?: string | null) => boolean;
   // Opens Google sign-in; used by the daily-limit card.
   onSignIn: () => void;
   signingIn: boolean;
@@ -173,9 +175,33 @@ export default function Conversation(p: Props) {
     setShowJump(!atBottom);
   };
 
-  const onChip = (label: string) => {
+  const onChip = (label: string, productId?: string | null) => {
     if (ACTION_CHIPS.has(label) && p.flow.state === "product") return p.onBuy();
-    p.onSend(label);
+    p.onSend(label, productId);
+  };
+
+  // The product a message is about, as a tappable pill (opens the product).
+  const productTag = (id: string | null | undefined, onDark = false) => {
+    const prod = id ? p.products.get(id) : undefined;
+    if (!prod) return null;
+    return (
+      <button
+        type="button"
+        className="aq-ptag"
+        data-dark={onDark}
+        onClick={() => p.onOpen(prod.id)}
+        title={`Open ${prod.title}`}
+      >
+        {prod.photos[0] ? (
+          // eslint-disable-next-line @next/next/no-img-element -- catalogue images on Cloudinary
+          <img src={prod.photos[0]} alt="" loading="lazy" />
+        ) : (
+          <span aria-hidden="true" className="aq-ptag-ph" />
+        )}
+        <span className="aq-ptag-title">{prod.title}</span>
+        <span className="aq-ptag-price">{INR(prod.price)}</span>
+      </button>
+    );
   };
 
   const placeholder =
@@ -244,19 +270,12 @@ export default function Conversation(p: Props) {
               overflowWrap: "anywhere",
             }}
           >
-            {m.text}
             {m.productId && p.products.get(m.productId) && (
-              <span
-                style={{
-                  display: "block",
-                  marginTop: 4,
-                  fontSize: 11.5,
-                  color: "#B8C6CC",
-                }}
-              >
-                About {p.products.get(m.productId)!.title}
+              <span className="aq-ptag-about">
+                {productTag(m.productId, true)}
               </span>
             )}
+            {m.text}
           </div>
           {m.stopped && (
             <span
@@ -403,6 +422,11 @@ export default function Conversation(p: Props) {
                   width: m.thinkingLive ? "100%" : undefined,
                 }}
               >
+                {m.productId && (
+                  <div style={{ marginBottom: 8 }}>
+                    {productTag(m.productId)}
+                  </div>
+                )}
                 {(m.thoughts || m.thinkingLive) && (
                   <AquaThinking steps={m.thoughts} live={!!m.thinkingLive} />
                 )}
@@ -477,7 +501,7 @@ export default function Conversation(p: Props) {
                   key={c}
                   type="button"
                   className="aq-chip"
-                  onClick={() => onChip(c)}
+                  onClick={() => onChip(c, m.productId)}
                   style={{
                     animation: `aqChipIn .4s cubic-bezier(.2,.8,.2,1) ${i * 0.05}s both`,
                   }}

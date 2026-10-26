@@ -508,11 +508,14 @@ export default function AquaWorkspace() {
     if (!on) chat.cheer(1100);
   };
 
-  const sendMessage = (text: string) => {
+  // `tagged`: the product a question is about when it comes from a tagged
+  // reply's chip; otherwise the product open in the panel, if any.
+  const sendMessage = (text: string, tagged?: string | null) => {
     const productId =
-      open && flow.productId && flow.state === "product"
+      tagged ||
+      (open && flow.productId && flow.state === "product"
         ? flow.productId
-        : null;
+        : null);
     const ok = chat.send(text, productId);
     if (!ok) return false;
     if (flowRef.current.state === "welcome") dispatch({ type: "SEND" });
