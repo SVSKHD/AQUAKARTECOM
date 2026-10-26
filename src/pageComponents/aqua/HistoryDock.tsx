@@ -16,7 +16,7 @@ import {
   Compass,
   ExternalLink,
   Eye,
-  Receipt,
+  ReceiptIndianRupee,
   LogOut,
   MessageCircle,
   MessageSquare,
@@ -925,7 +925,7 @@ export default function HistoryDock(p: Props) {
             >
               {!p.userName ? (
                 <Empty
-                  icon={<Receipt size={18} />}
+                  icon={<ReceiptIndianRupee size={18} />}
                   title="Your purchases live here"
                   text="Sign in with Google to see your invoices and past orders from Aquakart."
                 />
@@ -978,7 +978,7 @@ export default function HistoryDock(p: Props) {
                               className="aq-dock-row-icon"
                               aria-hidden="true"
                             >
-                              <Receipt size={15} />
+                              <ReceiptIndianRupee size={15} />
                             </span>
                             <span className="aq-dock-row-text">
                               <span className="aq-dock-row-title">
@@ -1014,7 +1014,7 @@ export default function HistoryDock(p: Props) {
                 </div>
               ) : (
                 <Empty
-                  icon={<Receipt size={18} />}
+                  icon={<ReceiptIndianRupee size={18} />}
                   title="No purchases yet"
                   text="Invoices for products you buy from Aquakart, online or in store, show up here."
                 />

@@ -855,6 +855,37 @@ export default function AquaWorkspace() {
   const hideComposer = sheetLayout && (locked || (open && sheet === "full"));
   const mainPadB = isMobile ? 8 : 12;
 
+  // Cart and favourites as list rows, with their actions: shared by the shop
+  // sheet and the profile dialog's Cart / Favourites tabs.
+  const shopShared = {
+    cart: cart.map((c) => ({
+      id: c._id,
+      title: byId.get(c._id)?.title || c.title || "Product",
+      price: byId.get(c._id)?.price ?? storePrice(c),
+      photo: byId.get(c._id)?.photos[0] || storePhoto(c),
+      qty: c.quantity || 1,
+    })),
+    favs: favs.map((f) => ({
+      id: f._id,
+      title: byId.get(f._id)?.title || f.title || "Product",
+      price: byId.get(f._id)?.price ?? storePrice(f),
+      photo: byId.get(f._id)?.photos[0] || storePhoto(f),
+      qty: 1,
+    })),
+    canCheckout: canDispatch(flow, "CHECKOUT_CART"),
+    canView: canDispatch(flow, "VIEW") && !locked,
+    onQty: (id: string, qty: number) =>
+      store({
+        type: "UPDATE_QUANTITY",
+        payload: { productId: id, quantity: Math.max(1, Math.min(10, qty)) },
+      }),
+    onRemoveCart: (id: string) =>
+      store({ type: "REMOVE_FROM_CART", payload: id }),
+    onRemoveFav: (id: string) =>
+      store({ type: "REMOVE_FROM_FAV", payload: id }),
+    onAddToCart: (id: string) => addToCart(id),
+  };
+
   const panel = open ? (
     <WorkspacePanel
       flow={flow}
@@ -1199,36 +1230,7 @@ export default function AquaWorkspace() {
             setShop(null);
             focusComposer();
           }}
-          cart={cart.map((c) => ({
-            id: c._id,
-            title: byId.get(c._id)?.title || c.title || "Product",
-            price: byId.get(c._id)?.price ?? storePrice(c),
-            photo: byId.get(c._id)?.photos[0] || storePhoto(c),
-            qty: c.quantity || 1,
-          }))}
-          favs={favs.map((f) => ({
-            id: f._id,
-            title: byId.get(f._id)?.title || f.title || "Product",
-            price: byId.get(f._id)?.price ?? storePrice(f),
-            photo: byId.get(f._id)?.photos[0] || storePhoto(f),
-            qty: 1,
-          }))}
-          canCheckout={canDispatch(flow, "CHECKOUT_CART")}
-          canView={canDispatch(flow, "VIEW") && !locked}
-          onQty={(id, qty) =>
-            store({
-              type: "UPDATE_QUANTITY",
-              payload: {
-                productId: id,
-                quantity: Math.max(1, Math.min(10, qty)),
-              },
-            })
-          }
-          onRemoveCart={(id) =>
-            store({ type: "REMOVE_FROM_CART", payload: id })
-          }
-          onRemoveFav={(id) => store({ type: "REMOVE_FROM_FAV", payload: id })}
-          onAddToCart={(id) => addToCart(id)}
+          {...shopShared}
           onView={(id) => {
             setShop(null);
             if (byId.has(id)) view(id);
@@ -1284,6 +1286,20 @@ export default function AquaWorkspace() {
           onSignOut={() => {
             setProfileTab(null);
             void auth.signOut();
+          }}
+          {...shopShared}
+          products={products}
+          onView={(id) => {
+            setProfileTab(null);
+            if (byId.has(id)) view(id);
+          }}
+          onCheckout={() => {
+            setProfileTab(null);
+            checkoutCart();
+          }}
+          onChat={() => {
+            setProfileTab(null);
+            focusComposer();
           }}
         />
       )}

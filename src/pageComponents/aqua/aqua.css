@@ -2663,16 +2663,105 @@ textarea::placeholder {
 }
 .aq-pf {
   pointer-events: auto;
-  width: min(560px, 100%);
+  /* Five tabs (Profile ... Favourites) need ~135px each to show in full. */
+  width: min(720px, 100%);
   /* Fixed, not max-height: every tab gets the same box and scrolls inside it. */
   height: min(620px, calc(100dvh - 32px));
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding-bottom: 12px;
   border-radius: 28px;
   background: rgba(var(--aq-gl), 0.92);
   animation: aqPop 0.25s cubic-bezier(0.22, 0.8, 0.24, 1) both;
+  /* The glass footer follows the dialog's rounded bottom corners. */
+  overflow: hidden;
+}
+/* Liquid-glass account footer: frosted, lit from the top edge. */
+.aq-pf-foot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px 14px 18px;
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(255, 255, 255, 0.55);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.55),
+      rgba(var(--aq-mintrgb), 0.35)
+    ),
+    rgba(var(--aq-gl), 0.5);
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 -10px 24px rgba(var(--aq-sh), 0.06);
+}
+.aq-root[data-aq-mode="dark"] .aq-pf-foot {
+  border-top-color: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.12)),
+    rgba(var(--aq-gl), 0.6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.aq-pf-foot-who {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 11.5px;
+  color: var(--aq-mut);
+}
+.aq-pf-foot-who b {
+  font-size: 13px;
+  color: var(--aq-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.aq-pf-signout {
+  flex-shrink: 0;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(180, 35, 24, 0.28);
+  background: linear-gradient(180deg, #fff5f4, #fde6e4);
+  color: #b42318;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 12px rgba(180, 35, 24, 0.12);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    box-shadow 0.15s;
+}
+.aq-pf-signout:hover:not(:disabled) {
+  background: #d92d20;
+  border-color: #d92d20;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(217, 45, 32, 0.3);
+}
+.aq-pf-signout:focus-visible {
+  outline: 2px solid #d92d20;
+  outline-offset: 2px;
+}
+.aq-pf-signout:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.aq-root[data-aq-mode="dark"] .aq-pf-signout {
+  background: rgba(217, 45, 32, 0.14);
+  border-color: rgba(253, 162, 155, 0.35);
+  color: #fda29b;
+  box-shadow: none;
 }
 .aq-pf-head {
   display: flex;
@@ -3940,4 +4029,149 @@ textarea::placeholder {
   border-color: rgba(255, 255, 255, 0.22);
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
+}
+
+/* Shop list inside a host that already scrolls (profile dialog tabs). */
+.aq-shop-list-inline {
+  flex: none;
+  overflow: visible;
+  padding: 2px 0 12px;
+}
+
+/* ---------- profile dialog: five tabs ---------- */
+.aq-pf-tabs .aq-dock-tab {
+  gap: 6px;
+  min-width: 0;
+  padding: 0 6px;
+}
+.aq-pf-tab-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Narrower than the full 720px dialog (tablets, phones): a tab is too narrow
+   for icon + label + count in a row, so the icon sits over a small label and
+   the count becomes a corner badge. Nothing gets cut. */
+@media (max-width: 760px) {
+  .aq-pf-tabs {
+    border-radius: 18px;
+  }
+  .aq-pf-tabs .aq-dock-tab-pill {
+    border-radius: 14px;
+  }
+  .aq-pf-tabs .aq-dock-tab {
+    flex-direction: column;
+    gap: 2px;
+    height: 50px;
+    border-radius: 14px;
+    font-size: 10.5px;
+  }
+  .aq-pf-tabs .aq-dock-count {
+    position: absolute;
+    top: 3px;
+    left: calc(50% + 6px);
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    font-size: 9.5px;
+  }
+}
+
+/* ---------- profile dialog: purchase quick view ---------- */
+.aq-pf-buy-wrap {
+  border-radius: 16px;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+.aq-pf-buy-wrap[data-open="true"] {
+  background: var(--aq-surf);
+  box-shadow:
+    0 0 0 1px var(--aq-mintbd),
+    0 10px 24px rgba(var(--aq-sh), 0.1);
+}
+button.aq-pf-buy {
+  width: 100%;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.aq-pf-buy-wrap[data-open="true"] .aq-pf-buy {
+  border-color: transparent;
+  background: transparent;
+  transform: none;
+}
+.aq-pf-buy:focus-visible {
+  outline: 2px solid var(--aq-mintink);
+  outline-offset: 2px;
+}
+.aq-pf-buy-chev {
+  flex-shrink: 0;
+  color: var(--aq-mut);
+  transition: transform 0.25s;
+}
+.aq-pf-buy-chev[data-open="true"] {
+  transform: rotate(180deg);
+}
+.aq-pf-quick {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 10px;
+  padding: 10px 0 12px;
+  border-top: 1px dashed rgba(var(--aq-ln), 0.12);
+  animation: aqIn 0.25s ease both;
+}
+.aq-pf-quick[hidden] {
+  display: none;
+}
+.aq-pf-quick-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.aq-pf-quick-row img,
+.aq-pf-quick-ph {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  object-fit: contain;
+  background: var(--aq-tint);
+  box-shadow: inset 0 0 0 1px rgba(var(--aq-ln), 0.06);
+}
+.aq-pf-quick-ph {
+  display: grid;
+  place-items: center;
+  color: var(--aq-mut);
+}
+.aq-pf-quick-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 12px;
+  color: var(--aq-mut);
+}
+.aq-pf-quick-text b {
+  font-size: 13px;
+  color: var(--aq-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.aq-pf-quick-more {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--aq-mut);
+  padding-left: 54px;
+}
+.aq-pf-quick-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  min-height: 36px;
 }

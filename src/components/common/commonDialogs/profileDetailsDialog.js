@@ -228,8 +228,7 @@ const ProfileDetailsDialog = ({
               value={formValues.dob}
               onChange={handleChange}
               placeholder="Select your date of birth"
-              max={dayjs().format("YYYY-MM-DD")}
-              yearRange={100}
+              birthday
             />
             {dobSummary && (
               <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-indigo-50/80 px-3 py-2 text-xs text-indigo-700">

@@ -12,22 +12,30 @@ import {
 import {
   Cake,
   Check,
+  ChevronDown,
   ExternalLink,
+  Heart,
   LogOut,
   MapPin,
+  Package,
   Pencil,
   Plus,
-  Receipt,
+  ReceiptIndianRupee,
+  ShoppingCart,
   Star,
   Trash2,
+  UserRound,
   X,
 } from "lucide-react";
+import AquaDatePicker from "@/components/reusables/datePicker";
 import UserServiceOperations from "@/services/user";
 import { INR } from "./catalogue";
 import { Avatar } from "./AquaHeader";
 import ArrowScroller from "./ArrowScroller";
 import type { Purchase } from "./HistoryDock";
-import type { Address } from "./types";
+import { purchaseLines } from "./purchaseItems";
+import { ShopList, type ShopRow } from "./ShopPopover";
+import type { Address, Product } from "./types";
 import {
   addressLine,
   editAddresses,
@@ -41,12 +49,21 @@ import {
   type ProfileUser,
 } from "./profile";
 
-export type ProfileTab = "profile" | "addresses" | "purchases";
-const TABS: ProfileTab[] = ["profile", "addresses", "purchases"];
+export type ProfileTab = "profile" | "addresses" | "purchases" | "cart" | "fav";
+const TABS: ProfileTab[] = ["profile", "addresses", "purchases", "cart", "fav"];
 const LABELS: Record<ProfileTab, string> = {
   profile: "Profile",
   addresses: "Addresses",
   purchases: "Purchases",
+  cart: "Cart",
+  fav: "Favourites",
+};
+const ICONS: Record<ProfileTab, typeof ReceiptIndianRupee> = {
+  profile: UserRound,
+  addresses: MapPin,
+  purchases: ReceiptIndianRupee,
+  cart: ShoppingCart,
+  fav: Heart,
 };
 
 type Props = {
@@ -59,6 +76,21 @@ type Props = {
   // The saved fields, already trimmed to what the dialog edits (for the Redux user).
   onSaved: (patch: Partial<ProfileUser>, message: string) => void;
   onSignOut: () => void;
+  // Cart and Favourites tabs (the same rows and actions as the shop sheet).
+  cart: ShopRow[];
+  favs: ShopRow[];
+  canView: boolean;
+  canCheckout: boolean;
+  onQty: (id: string, qty: number) => void;
+  onRemoveCart: (id: string) => void;
+  onRemoveFav: (id: string) => void;
+  onAddToCart: (id: string) => void;
+  // Opens a product (closes the dialog first).
+  onView: (id: string) => void;
+  onCheckout: () => void;
+  onChat?: () => void;
+  // Catalogue, to match a purchase's items to products in its quick view.
+  products: Product[];
 };
 
 type UpdateService = {
@@ -155,6 +187,8 @@ export default function ProfileDialog(p: Props) {
     profile: null,
     addresses: null,
     purchases: null,
+    cart: null,
+    fav: null,
   });
   const dialogRef = useRef<HTMLDivElement>(null);
   const userId = p.user._id || "";
@@ -307,6 +341,8 @@ export default function ProfileDialog(p: Props) {
     profile: null,
     addresses: addresses.length,
     purchases: p.purchases?.length ?? null,
+    cart: p.cart.length,
+    fav: p.favs.length,
   };
 
   return (
@@ -351,10 +387,10 @@ export default function ProfileDialog(p: Props) {
           <div
             role="tablist"
             aria-label="Profile sections"
-            className="aq-dock-tabs"
+            className="aq-dock-tabs aq-pf-tabs"
             style={
               {
-                "--tabs": 3,
+                "--tabs": TABS.length,
                 "--ti": tabIndex,
                 margin: "0 16px",
               } as CSSProperties
@@ -362,27 +398,31 @@ export default function ProfileDialog(p: Props) {
             onKeyDown={onTabKey}
           >
             <span className="aq-dock-tab-pill" aria-hidden="true" />
-            {TABS.map((t) => (
-              <button
-                key={t}
-                ref={(el) => {
-                  tabRefs.current[t] = el;
-                }}
-                type="button"
-                role="tab"
-                id={`aq-pf-tab-${t}`}
-                aria-controls={`aq-pf-panel-${t}`}
-                aria-selected={tab === t}
-                tabIndex={tab === t ? 0 : -1}
-                className="aq-dock-tab"
-                onClick={() => setTab(t)}
-              >
-                {LABELS[t]}
-                {counts[t] ? (
-                  <span className="aq-dock-count">{counts[t]}</span>
-                ) : null}
-              </button>
-            ))}
+            {TABS.map((t) => {
+              const Icon = ICONS[t];
+              return (
+                <button
+                  key={t}
+                  ref={(el) => {
+                    tabRefs.current[t] = el;
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`aq-pf-tab-${t}`}
+                  aria-controls={`aq-pf-panel-${t}`}
+                  aria-selected={tab === t}
+                  tabIndex={tab === t ? 0 : -1}
+                  className="aq-dock-tab"
+                  onClick={() => setTab(t)}
+                >
+                  <Icon size={15} aria-hidden="true" />
+                  <span className="aq-pf-tab-label">{LABELS[t]}</span>
+                  {counts[t] ? (
+                    <span className="aq-dock-count">{counts[t]}</span>
+                  ) : null}
+                </button>
+              );
+            })}
           </div>
 
           {error && (
@@ -464,17 +504,17 @@ export default function ProfileDialog(p: Props) {
                   bad={!!errors.dob}
                 >
                   {(a) => (
-                    <input
+                    // Same glass picker as the rest of the site: opens on a
+                    // year grid, then month, then day; 1900 → today.
+                    <AquaDatePicker
                       {...a}
-                      className="aq-input"
-                      type="date"
+                      name="dob"
+                      birthday
                       value={form.dob}
-                      max={new Date().toISOString().slice(0, 10)}
-                      min="1900-01-01"
-                      onChange={(e) =>
+                      placeholder="Add your birthday"
+                      onChange={(e: { target: { value: string } }) =>
                         setForm({ ...form, dob: e.target.value })
                       }
-                      autoComplete="bday"
                       aria-invalid={!!errors.dob}
                     />
                   )}
@@ -495,14 +535,6 @@ export default function ProfileDialog(p: Props) {
                   )}
                 </Field>
                 <div className="aq-pf-actions" style={{ gridColumn: "1 / -1" }}>
-                  <button
-                    type="button"
-                    className="aq-btn aq-btn-ghost"
-                    onClick={p.onSignOut}
-                    disabled={p.locked}
-                  >
-                    <LogOut size={15} /> Sign out
-                  </button>
                   <span style={{ flex: 1 }} />
                   <button
                     type="submit"
@@ -727,60 +759,19 @@ export default function ProfileDialog(p: Props) {
                 </div>
               ) : p.purchases.length ? (
                 <div className="aq-pf-list">
-                  {p.purchases.map((inv) => {
-                    const title = inv.items.length
-                      ? `${inv.items[0]}${inv.itemCount > 1 ? ` + ${inv.itemCount - 1} more` : ""}`
-                      : `Invoice ${inv.invoiceNo}`;
-                    const paid = isPaid(inv.paidStatus);
-                    return (
-                      // A new tab keeps this chat where it is; the invoice page
-                      // checks the Google sign-in before showing anything.
-                      <a
-                        key={inv.id}
-                        className="aq-pf-buy"
-                        href={`/invoice/${encodeURIComponent(inv.id)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <span className="aq-pf-buy-icon" aria-hidden="true">
-                          <Receipt size={16} />
-                        </span>
-                        <span className="aq-pf-addr-text">
-                          <span
-                            style={{ fontWeight: 700, color: "var(--aq-ink)" }}
-                          >
-                            {title}
-                          </span>
-                          <span>
-                            Invoice {inv.invoiceNo}
-                            {inv.date ? ` · ${shortDate(inv.date)}` : ""}
-                          </span>
-                        </span>
-                        <span className="aq-pf-buy-side">
-                          <span
-                            style={{ fontWeight: 800, color: "var(--aq-ink)" }}
-                          >
-                            {INR(inv.total_price)}
-                          </span>
-                          {inv.paidStatus &&
-                            inv.paidStatus !== "Not available" && (
-                              <span className="aq-dock-status" data-paid={paid}>
-                                {paid ? "Paid" : inv.paidStatus}
-                              </span>
-                            )}
-                        </span>
-                        <ExternalLink
-                          size={13}
-                          aria-hidden="true"
-                          style={{ color: "var(--aq-mut)" }}
-                        />
-                      </a>
-                    );
-                  })}
+                  {p.purchases.map((inv) => (
+                    <PurchaseRow
+                      key={inv.id}
+                      inv={inv}
+                      products={p.products}
+                      canView={p.canView}
+                      onView={p.onView}
+                    />
+                  ))}
                 </div>
               ) : (
                 <div className="aq-pf-empty">
-                  <Receipt size={20} aria-hidden="true" />
+                  <ReceiptIndianRupee size={20} aria-hidden="true" />
                   <b>No purchases yet</b>
                   <span>
                     Invoices for products you buy from Aquakart, online or in
@@ -789,9 +780,172 @@ export default function ProfileDialog(p: Props) {
                 </div>
               )}
             </div>
+
+            {/* ---------- cart & favourites ---------- */}
+            {(["cart", "fav"] as const).map((k) => (
+              <div
+                key={k}
+                role="tabpanel"
+                id={`aq-pf-panel-${k}`}
+                aria-labelledby={`aq-pf-tab-${k}`}
+                hidden={tab !== k}
+              >
+                <ShopList
+                  kind={k}
+                  inline
+                  rows={k === "cart" ? p.cart : p.favs}
+                  canView={p.canView}
+                  canCheckout={p.canCheckout}
+                  onQty={p.onQty}
+                  onRemove={k === "cart" ? p.onRemoveCart : p.onRemoveFav}
+                  onAddToCart={p.onAddToCart}
+                  onView={p.onView}
+                  onCheckout={p.onCheckout}
+                  onChat={p.onChat}
+                />
+              </div>
+            ))}
           </ArrowScroller>
+
+          {/* Account footer on every tab: who's signed in, and a clearly
+              destructive Sign out kept apart from Save. */}
+          <div className="aq-pf-foot">
+            <span className="aq-pf-foot-who">
+              <span>Signed in as</span>
+              <b>{p.user.email || displayName}</b>
+            </span>
+            <button
+              type="button"
+              className="aq-pf-signout"
+              onClick={p.onSignOut}
+              disabled={p.locked}
+              title={
+                p.locked ? "Finish or wait for the payment first" : undefined
+              }
+            >
+              <LogOut size={15} aria-hidden="true" /> Sign out
+            </button>
+          </div>
         </div>
       </div>
     </>
+  );
+}
+
+// One purchase: the summary row toggles a quick view of what's in it, each item
+// matched to the catalogue (photo, open the product), with the full invoice a
+// tap away. Lists what the API sends (the first few names, or full lines).
+function PurchaseRow({
+  inv,
+  products,
+  canView,
+  onView,
+}: {
+  inv: Purchase;
+  products: Product[];
+  canView: boolean;
+  onView: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const bodyId = useId();
+  const first = inv.items[0]?.replace(/\s*\|\s*aquakart\s*$/i, "");
+  const title = first
+    ? `${first}${inv.itemCount > 1 ? ` + ${inv.itemCount - 1} more` : ""}`
+    : `Invoice ${inv.invoiceNo}`;
+  const paid = isPaid(inv.paidStatus);
+  const { lines, more } = purchaseLines(inv, products);
+  return (
+    <div className="aq-pf-buy-wrap" data-open={open}>
+      <button
+        type="button"
+        className="aq-pf-buy"
+        aria-expanded={open}
+        aria-controls={bodyId}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className="aq-pf-buy-icon" aria-hidden="true">
+          <ReceiptIndianRupee size={16} />
+        </span>
+        <span className="aq-pf-addr-text">
+          <span style={{ fontWeight: 700, color: "var(--aq-ink)" }}>
+            {title}
+          </span>
+          <span>
+            Invoice {inv.invoiceNo}
+            {inv.date ? ` · ${shortDate(inv.date)}` : ""}
+          </span>
+        </span>
+        <span className="aq-pf-buy-side">
+          <span style={{ fontWeight: 800, color: "var(--aq-ink)" }}>
+            {INR(inv.total_price)}
+          </span>
+          {inv.paidStatus && inv.paidStatus !== "Not available" && (
+            <span className="aq-dock-status" data-paid={paid}>
+              {paid ? "Paid" : inv.paidStatus}
+            </span>
+          )}
+        </span>
+        <ChevronDown
+          size={16}
+          aria-hidden="true"
+          className="aq-pf-buy-chev"
+          data-open={open}
+        />
+      </button>
+      <div id={bodyId} className="aq-pf-quick" hidden={!open}>
+        {lines.map((l, i) => {
+          const prod = l.product;
+          const meta = [
+            l.qty ? `Qty ${l.qty}` : null,
+            l.price ? INR(l.price) : null,
+            !l.price && prod ? `Now ${INR(prod.price)}` : null,
+          ].filter(Boolean);
+          return (
+            <div key={`${l.name}-${i}`} className="aq-pf-quick-row">
+              {prod?.photos[0] ? (
+                // eslint-disable-next-line @next/next/no-img-element -- catalogue images on Cloudinary
+                <img src={prod.photos[0]} alt="" loading="lazy" />
+              ) : (
+                <span className="aq-pf-quick-ph" aria-hidden="true">
+                  <Package size={16} />
+                </span>
+              )}
+              <span className="aq-pf-quick-text">
+                <b>{l.name}</b>
+                <span>{meta.join(" · ") || "Service or accessory"}</span>
+              </span>
+              {prod && (
+                <button
+                  type="button"
+                  className="aq-chip aq-chip-soft"
+                  onClick={() => onView(prod.id)}
+                  disabled={!canView}
+                  aria-label={`View ${l.name}`}
+                >
+                  View
+                </button>
+              )}
+            </div>
+          );
+        })}
+        {more > 0 && (
+          <span className="aq-pf-quick-more">
+            + {more} more {more === 1 ? "item" : "items"} on the invoice
+          </span>
+        )}
+        {/* A new tab keeps this chat where it is; the invoice page checks the
+            Google sign-in before showing anything. */}
+        {inv.canView !== false && (
+          <a
+            className="aq-hard-link aq-pf-quick-link"
+            href={`/invoice/${encodeURIComponent(inv.id)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open full invoice <ExternalLink size={12} aria-hidden="true" />
+          </a>
+        )}
+      </div>
+    </div>
   );
 }

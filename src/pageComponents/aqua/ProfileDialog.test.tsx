@@ -10,6 +10,7 @@ const users = (await import("@/services/user")).default as unknown as {
   UserUpdateDetails: ReturnType<typeof vi.fn>;
 };
 const { default: ProfileDialog } = await import("./ProfileDialog");
+type Product = import("./types").Product;
 
 const user = {
   _id: "u1",
@@ -56,6 +57,24 @@ const setup = (over: Partial<Parameters<typeof ProfileDialog>[0]> = {}) => {
       onClose={vi.fn()}
       onSaved={onSaved}
       onSignOut={vi.fn()}
+      cart={[{ id: "p8", title: "Kent Automatic 8L", price: 31500, qty: 2 }]}
+      favs={[]}
+      canView
+      canCheckout
+      onQty={vi.fn()}
+      onRemoveCart={vi.fn()}
+      onRemoveFav={vi.fn()}
+      onAddToCart={vi.fn()}
+      onView={vi.fn()}
+      onCheckout={vi.fn()}
+      products={[
+        {
+          id: "p8",
+          title: "Kent Automatic 8L",
+          price: 31500,
+          photos: [],
+        } as unknown as Product,
+      ]}
       {...over}
     />,
   );
@@ -73,7 +92,8 @@ describe("ProfileDialog", () => {
     expect(screen.getByLabelText("First name")).toHaveValue("Asha");
     expect(screen.getByLabelText("Last name")).toHaveValue("Reddy");
     expect(screen.getByLabelText("Mobile number")).toHaveValue("9876543210");
-    expect(screen.getByLabelText("Birthday")).toHaveValue("1994-08-21");
+    // The glass date picker's trigger shows the date (and the age beside it).
+    expect(screen.getByLabelText("Birthday")).toHaveTextContent("21 Aug 1994");
     expect(screen.getByLabelText("Email")).toBeDisabled();
     // Nothing changed yet, so nothing to save.
     expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled();
@@ -130,13 +150,54 @@ describe("ProfileDialog", () => {
     expect(sent.selectedAddress._id).toBe("a1");
   });
 
-  it("lists purchases with a link to each invoice", async () => {
+  it("lists purchases; each opens a quick view of its products and invoice", async () => {
     const u = userEvent.setup();
-    setup();
+    const onView = vi.fn();
+    setup({ onView });
     await u.click(screen.getByRole("tab", { name: /purchases/i }));
-    const link = screen.getByRole("link", { name: /kent automatic 8l/i });
-    expect(link).toHaveAttribute("href", "/invoice/inv1");
+    const row = screen.getByRole("button", { name: /kent automatic 8l/i });
     expect(screen.getByText("Paid")).toBeInTheDocument();
+    expect(row).toHaveAttribute("aria-expanded", "false");
+
+    await u.click(row);
+    expect(row).toHaveAttribute("aria-expanded", "true");
+    // The item is matched to the catalogue and opens as a product.
+    await u.click(
+      screen.getByRole("button", { name: "View Kent Automatic 8L" }),
+    );
+    expect(onView).toHaveBeenCalledWith("p8");
+    expect(
+      screen.getByRole("link", { name: /open full invoice/i }),
+    ).toHaveAttribute("href", "/invoice/inv1");
+  });
+
+  it("has Cart and Favourites tabs beside Purchases", async () => {
+    const u = userEvent.setup();
+    const onQty = vi.fn();
+    setup({ onQty });
+    const tabs = screen.getAllByRole("tab").map((t) => t.textContent);
+    expect(tabs.join("|")).toMatch(/Purchases.*\|Cart.*\|Favourites/);
+
+    await u.click(screen.getByRole("tab", { name: /cart/i }));
+    await u.click(
+      screen.getByRole("button", {
+        name: "Increase quantity of Kent Automatic 8L",
+      }),
+    );
+    expect(onQty).toHaveBeenCalledWith("p8", 3);
+    expect(screen.getByRole("button", { name: /checkout/i })).toBeEnabled();
+
+    await u.click(screen.getByRole("tab", { name: /favourites/i }));
+    expect(screen.getByText("No favourites yet")).toBeInTheDocument();
+  });
+
+  it("keeps Sign out in the footer on every tab", async () => {
+    const u = userEvent.setup();
+    const onSignOut = vi.fn();
+    setup({ onSignOut });
+    await u.click(screen.getByRole("tab", { name: /addresses/i }));
+    await u.click(screen.getByRole("button", { name: /sign out/i }));
+    expect(onSignOut).toHaveBeenCalled();
   });
 
   it("explains a failed save and keeps the form", async () => {

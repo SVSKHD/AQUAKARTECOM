@@ -12,7 +12,7 @@ import {
   CreditCard,
   MapPin,
   PackageCheck,
-  Receipt,
+  ReceiptIndianRupee,
   Wallet,
   IndianRupee,
 } from "lucide-react";
@@ -527,7 +527,7 @@ const AquaOrderPage = () => {
 
                   <div className="flex h-full flex-col glass-tint-indigo rounded-2xl p-5 transition-all hover:shadow-lg">
                     <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
-                      <Receipt className="h-4 w-4" /> Payment Info
+                      <ReceiptIndianRupee className="h-4 w-4" /> Payment Info
                     </p>
                     {summary?.instrument ? (
                       <div className="mt-4 space-y-3 text-sm text-slate-600">
