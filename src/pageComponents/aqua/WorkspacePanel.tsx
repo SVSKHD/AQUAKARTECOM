@@ -56,6 +56,8 @@ export type WorkspacePanelProps = {
   onFailed: (reason: string) => void;
   onDemoPreview: () => void;
   onNewChat: () => void;
+  // Sheet layouts: close the panel and focus the chat input.
+  onChat?: () => void;
   mood: Mood;
   dark: boolean;
   isMobile: boolean;
@@ -206,6 +208,13 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
           onToggleCompare={props.onToggleCompare}
           onBuy={props.onBuy}
           onAsk={props.onAsk}
+          onChat={
+            props.onChat &&
+            (() => {
+              dispatch({ type: "CLOSE" });
+              props.onChat?.();
+            })
+          }
           dark={props.dark}
           isMobile={props.isMobile}
         />

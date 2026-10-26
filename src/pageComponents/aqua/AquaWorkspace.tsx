@@ -368,7 +368,9 @@ export default function AquaWorkspace() {
   const [peekFrom, setPeekFrom] = useState<number | null>(null);
   const [composerH, setComposerH] = useState(0);
   const roRef = useRef<ResizeObserver | null>(null);
+  const composerEl = useRef<HTMLDivElement | null>(null);
   const composerRef = useCallback((el: HTMLDivElement | null) => {
+    composerEl.current = el;
     roRef.current?.disconnect();
     if (!el) return;
     roRef.current = new ResizeObserver(([e]) =>
@@ -376,6 +378,14 @@ export default function AquaWorkspace() {
     );
     roRef.current.observe(el);
   }, []);
+
+  // After closing a sheet: the composer re-mounts, then takes the cursor so
+  // the visitor can type straight away.
+  const focusComposer = () =>
+    setTimeout(
+      () => composerEl.current?.querySelector("textarea")?.focus(),
+      80,
+    );
 
   // ---------- checkout + payment ----------
   const [draft, setDraft] = useState<CheckoutDraft | null>(null);
@@ -836,7 +846,10 @@ export default function AquaWorkspace() {
   const selectedProduct = flow.productId
     ? byId.get(flow.productId) || null
     : null;
-  const hideComposer = sheetLayout && locked;
+  // Phones/tablets: no chat input while paying, or while a product sheet is
+  // fully open (the visitor is looking at the product, not chatting). Tucking
+  // the sheet down to peek, Back to chat or × brings the composer back.
+  const hideComposer = sheetLayout && (locked || (open && sheet === "full"));
   const mainPadB = isMobile ? 8 : 12;
 
   const panel = open ? (
@@ -855,6 +868,7 @@ export default function AquaWorkspace() {
       onToggleCompare={toggleCompare}
       onBuy={buy}
       onAsk={(text) => sendMessage(text)}
+      onChat={sheetLayout ? focusComposer : undefined}
       draft={draft}
       setDraft={setDraft}
       savedAddresses={userData?.user?.addresses || []}
@@ -1081,6 +1095,7 @@ export default function AquaWorkspace() {
         onOpenProfile={openProfile}
         reads={reads}
         readsDocked={readsDocked}
+        readsInline={isMobile}
         onFloatReads={(readId) => {
           setReadsFocus(readId ?? null);
           dockReads(false);
@@ -1091,8 +1106,8 @@ export default function AquaWorkspace() {
         canView={canDispatch(flow, "VIEW")}
       />
 
-      {/* Dims the chat behind a full sheet; the composer below stays usable.
-          Tapping it tucks the sheet down to peek. */}
+      {/* Dims the chat behind a full sheet (the composer is hidden meanwhile).
+          Tapping it tucks the sheet down to peek and brings the composer back. */}
       {sheetLayout && open && sheet === "full" && (
         <div
           aria-hidden="true"
@@ -1177,6 +1192,10 @@ export default function AquaWorkspace() {
           tab={shop}
           onTab={setShop}
           onClose={() => setShop(null)}
+          onChat={() => {
+            setShop(null);
+            focusComposer();
+          }}
           cart={cart.map((c) => ({
             id: c._id,
             title: byId.get(c._id)?.title || c.title || "Product",
@@ -1267,7 +1286,9 @@ export default function AquaWorkspace() {
       )}
 
       {/* Out of the way while paying, under an open phone panel and during the tour. */}
+      {/* Phones keep the reads in the history sidebar instead (an accordion). */}
       {!readsDocked &&
+        !isMobile &&
         !tourOpen &&
         !profileTab &&
         !(sheetLayout && open) &&

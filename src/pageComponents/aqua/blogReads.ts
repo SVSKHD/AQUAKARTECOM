@@ -77,6 +77,10 @@ export const htmlToParagraphs = (html = ""): string[] =>
 
 const WORDS_PER_MINUTE = 200;
 
+// The chat shows only the newest few; the rest are on the blog page.
+export const READS_LIMIT = 3;
+export const BLOG_URL = "/blogs";
+
 export const toBlogRead = (b: RawBlog): BlogRead | null => {
   const title = clean(b.title || "");
   const paragraphs = htmlToParagraphs(b.description);
@@ -98,7 +102,7 @@ export const toBlogRead = (b: RawBlog): BlogRead | null => {
 };
 
 // GET /all-blogs answers { success, data: Blog[] }, newest first.
-export const toBlogReads = (body: unknown, limit = 6): BlogRead[] => {
+export const toBlogReads = (body: unknown, limit = READS_LIMIT): BlogRead[] => {
   const list = (body as { data?: unknown })?.data;
   if (!Array.isArray(list)) return [];
   return list

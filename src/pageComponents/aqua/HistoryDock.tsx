@@ -32,6 +32,7 @@ import {
 import { createPortal } from "react-dom";
 import { CHAT_TITLE_MAX } from "@/services/ai";
 import type { BlogRead } from "./blogReads";
+import DockReads from "./DockReads";
 import { INR } from "./catalogue";
 import { Avatar, openExpert } from "./AquaHeader";
 import { snapAway } from "./snapDust";
@@ -82,6 +83,8 @@ type Props = {
   readsDocked: boolean;
   // Floats the reads bar again, opened on this read if one is given.
   onFloatReads: (readId?: string) => void;
+  // Phones: no floating bar; the reads are an accordion right here.
+  readsInline?: boolean;
   thinking: boolean;
   onToggleThinking?: () => void;
 };
@@ -1022,42 +1025,47 @@ export default function HistoryDock(p: Props) {
 
         {/* ---------- footer: settings, help, account ---------- */}
         <div className="aq-dock-footer">
-          {p.readsDocked && p.reads.length > 0 && (
-            <section className="aq-dock-reads" aria-label="Water reads">
-              <div className="aq-dock-reads-head">
-                <span className="aq-label">Water reads</span>
-                <button
-                  type="button"
-                  className="aq-hard-link"
-                  onClick={() => p.onFloatReads()}
-                >
-                  Float again
-                </button>
-              </div>
-              {p.reads.slice(0, 4).map((r) => (
-                <button
-                  key={r.id}
-                  type="button"
-                  className="aq-dock-row"
-                  onClick={() => p.onFloatReads(r.id)}
-                >
-                  <span className="aq-dock-row-icon" aria-hidden="true">
-                    <BookOpen size={15} />
-                  </span>
-                  <span className="aq-dock-row-text">
-                    <span className="aq-dock-row-title">{r.title}</span>
-                    <span className="aq-dock-row-meta">
-                      {r.minutes} min read · read or listen
+          {p.readsInline ? (
+            <DockReads reads={p.reads} />
+          ) : (
+            p.readsDocked &&
+            p.reads.length > 0 && (
+              <section className="aq-dock-reads" aria-label="Water reads">
+                <div className="aq-dock-reads-head">
+                  <span className="aq-label">Water reads</span>
+                  <button
+                    type="button"
+                    className="aq-hard-link"
+                    onClick={() => p.onFloatReads()}
+                  >
+                    Float again
+                  </button>
+                </div>
+                {p.reads.slice(0, 4).map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    className="aq-dock-row"
+                    onClick={() => p.onFloatReads(r.id)}
+                  >
+                    <span className="aq-dock-row-icon" aria-hidden="true">
+                      <BookOpen size={15} />
                     </span>
-                  </span>
-                  <ChevronRight
-                    size={15}
-                    className="aq-dock-row-chev"
-                    aria-hidden="true"
-                  />
-                </button>
-              ))}
-            </section>
+                    <span className="aq-dock-row-text">
+                      <span className="aq-dock-row-title">{r.title}</span>
+                      <span className="aq-dock-row-meta">
+                        {r.minutes} min read · read or listen
+                      </span>
+                    </span>
+                    <ChevronRight
+                      size={15}
+                      className="aq-dock-row-chev"
+                      aria-hidden="true"
+                    />
+                  </button>
+                ))}
+              </section>
+            )
           )}
           {p.onToggleThinking && (
             <button

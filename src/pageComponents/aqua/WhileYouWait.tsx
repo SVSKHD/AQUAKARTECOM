@@ -18,7 +18,12 @@ import {
   stopSpeaking,
   useSpeaking,
 } from "./ReplyActions";
-import { podcastScript, toBlogReads, type BlogRead } from "./blogReads";
+import {
+  BLOG_URL,
+  podcastScript,
+  toBlogReads,
+  type BlogRead,
+} from "./blogReads";
 
 // Only offer reads when the answer is genuinely slow, not on every reply.
 const SHOW_AFTER_MS = 3500;
@@ -36,16 +41,36 @@ const loadReads = () =>
       return [];
     }));
 
-function Read({
+// Only the newest reads are in the chat; this leads to the rest. New tab, so
+// the conversation stays where it is.
+export function MoreReads() {
+  return (
+    <a
+      className="aq-hard-link aq-more-reads"
+      href={BLOG_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      More water reads on the Aquakart blog
+      <ExternalLink size={12} aria-hidden="true" />
+    </a>
+  );
+}
+
+// One read as an accordion row. `full` shows the whole article in place (the
+// sidebar); otherwise the opening paragraphs and a link to the article.
+export function Read({
   read,
   open,
   onToggle,
   onListen,
+  full = false,
 }: {
   read: BlogRead;
   open: boolean;
   onToggle: () => void;
-  onListen: () => void;
+  onListen?: () => void;
+  full?: boolean;
 }) {
   const bodyId = useId();
   const podcastId = `blog:${read.id}`;
@@ -94,7 +119,10 @@ function Read({
             ))}
           </ul>
         )}
-        {read.paragraphs.slice(0, PARAGRAPHS_INLINE).map((t, i) => (
+        {(full
+          ? read.paragraphs
+          : read.paragraphs.slice(0, PARAGRAPHS_INLINE)
+        ).map((t, i) => (
           <p key={i}>{t}</p>
         ))}
         <div className="aq-read-actions">
@@ -105,7 +133,7 @@ function Read({
               aria-pressed={playing}
               onClick={() => {
                 if (playing) return stopSpeaking();
-                onListen();
+                onListen?.();
                 speak(podcastId, podcastScript(read));
               }}
             >
@@ -128,14 +156,16 @@ function Read({
             </button>
           )}
           {/* New tab: the chat and its pending answer stay where they are. */}
-          <a
-            className="aq-hard-link aq-read-more"
-            href={read.href}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read full article <ExternalLink size={12} aria-hidden="true" />
-          </a>
+          {!full && (
+            <a
+              className="aq-hard-link aq-read-more"
+              href={read.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Read full article <ExternalLink size={12} aria-hidden="true" />
+            </a>
+          )}
         </div>
       </div>
     </div>
@@ -218,6 +248,7 @@ export default function WhileYouWait({ waiting }: { waiting: boolean }) {
             }}
           />
         ))}
+        <MoreReads />
       </ArrowScroller>
     </section>
   );

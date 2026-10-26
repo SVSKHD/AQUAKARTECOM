@@ -510,8 +510,10 @@ const AquaShopPageComponent = ({
           <div className="relative mx-auto max-w-[1480px]">
             <header className="relative mb-5 mt-3 overflow-hidden rounded-[2rem] border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-5 py-6 sm:px-8 sm:py-8">
               <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-emerald-200/40 blur-3xl" />
-              <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-                <div className="max-w-2xl">
+              {/* Stacked until desktop: on tablets a side-by-side button squeezed
+                  the heading into three lines beside an empty gap. */}
+              <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div className="max-w-3xl">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">
                     Aquakart shop
                   </span>
@@ -526,7 +528,7 @@ const AquaShopPageComponent = ({
                 </div>
                 <a
                   href="/"
-                  className="inline-flex min-h-12 shrink-0 items-center gap-2 self-start rounded-full bg-slate-950 px-5 text-xs font-black text-white transition hover:bg-emerald-700 sm:self-auto"
+                  className="inline-flex min-h-12 shrink-0 items-center gap-2 self-start rounded-full bg-slate-950 px-5 text-xs font-black text-white transition hover:bg-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 lg:self-auto"
                 >
                   <Sparkles size={15} /> Not sure? Ask Aqua
                 </a>

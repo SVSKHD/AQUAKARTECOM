@@ -38,13 +38,16 @@ const ReusableProductCard = ({
   const router = useRouter();
 
   const {
-    title,
+    title: rawTitle,
     photos = [],
     price,
     slug,
     discountPrice,
     discountPriceStatus,
   } = product || {};
+  // Live titles carry the site name for SEO ("Kent Sandfilter | Aquakart");
+  // the card already sits on Aquakart, so it's dropped here.
+  const title = String(rawTitle || "").replace(/\s*\|\s*aquakart\s*$/i, "");
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [activeIndex, setActiveIndex] = useState(0);

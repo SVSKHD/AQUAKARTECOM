@@ -55,6 +55,11 @@ describe("blogReads", () => {
     });
     expect(reads.map((r) => r.id)).toEqual(["b1"]);
     expect(toBlogReads({ data: null })).toEqual([]);
+    // Only the newest few by default; the rest live on the blog page.
+    const many = {
+      data: ["a", "b", "c", "d", "e"].map((id) => ({ ...blog, _id: id })),
+    };
+    expect(toBlogReads(many).map((r) => r.id)).toEqual(["a", "b", "c"]);
     expect(toBlogReads(undefined)).toEqual([]);
   });
 

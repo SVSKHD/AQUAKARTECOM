@@ -6,6 +6,7 @@ import {
   Heart,
   Info,
   MapPin,
+  MessageCircle,
   Minus,
   Plus,
   ShieldCheck,
@@ -33,6 +34,9 @@ type Props = {
   // Replaces AquaProductRevamp's router.push("/checkout").
   onBuy: () => void;
   onAsk: (text: string) => void;
+  // Sheet layouts (phones, tablets): closes the product and puts the cursor in
+  // the chat, from a pill right above the action bar (thumb reach).
+  onChat?: () => void;
   dark: boolean;
   isMobile: boolean;
 };
@@ -111,6 +115,7 @@ export default function ProductDetail({
   onToggleCompare,
   onBuy,
   onAsk,
+  onChat,
   dark,
   isMobile,
 }: Props) {
@@ -167,7 +172,8 @@ export default function ProductDetail({
           position: "absolute",
           inset: 0,
           overflowY: "auto",
-          padding: isMobile ? "72px 14px 110px" : "76px 24px 110px",
+          // Room below for the action bar (and the "ask Aqua" pill above it).
+          padding: `${isMobile ? "72px 14px" : "76px 24px"} ${onChat ? 168 : 110}px`,
         }}
       >
         <div
@@ -713,13 +719,25 @@ export default function ProductDetail({
           left: 0,
           right: 0,
           bottom: 0,
-          height: isMobile ? 76 : 96,
+          height: (isMobile ? 76 : 96) + (onChat ? 60 : 0),
           zIndex: 3,
           pointerEvents: "none",
           background:
             "linear-gradient(to top, rgba(var(--aq-gl),.97) 55%, rgba(var(--aq-gl),0))",
         }}
       />
+
+      {onChat && (
+        <button
+          type="button"
+          className="aq-pd-chat"
+          onClick={onChat}
+          style={{ bottom: (isMobile ? 8 : 12) + 56 + 12 }}
+        >
+          <MessageCircle size={16} aria-hidden="true" />
+          Close &amp; ask Aqua
+        </button>
+      )}
 
       {/* action bar */}
       <div

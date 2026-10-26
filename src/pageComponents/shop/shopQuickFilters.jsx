@@ -37,6 +37,11 @@ const chipClass = (on) =>
       : "border-slate-200 bg-white text-slate-700 hover:border-emerald-300 hover:text-emerald-800"
   }`;
 
+// Phones: one swipeable row, faded at the right edge so it reads as "more this
+// way". Tablets and up have room, so the chips wrap and nothing is cut off.
+const RAIL =
+  "-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [mask-image:linear-gradient(to_right,#000_88%,transparent)] sm:flex-wrap sm:overflow-visible sm:[mask-image:none]";
+
 // One tap per category, with how many products each has.
 export const CategoryRail = ({
   categories,
@@ -45,11 +50,7 @@ export const CategoryRail = ({
   value,
   onChange,
 }) => (
-  <div
-    role="group"
-    aria-label="Categories"
-    className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]"
-  >
+  <div role="group" aria-label="Categories" className={RAIL}>
     {[
       { label: "All", count: total },
       ...categories.map((label) => ({
@@ -84,11 +85,7 @@ export const CategoryRail = ({
 export const QuickFilters = ({ filters, priceMax, onFilterChange }) => {
   const budgets = budgetPresets(priceMax);
   return (
-    <div
-      role="group"
-      aria-label="Quick filters"
-      className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]"
-    >
+    <div role="group" aria-label="Quick filters" className={RAIL}>
       {budgets.map((value) => {
         const on = filters.price === value;
         return (

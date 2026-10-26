@@ -1,8 +1,24 @@
 "use client";
 
-import { useEffect } from "react";
-import { Minus, Plus, Trash, X } from "lucide-react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import {
+  ArrowRight,
+  Heart,
+  MessageCircle,
+  Minus,
+  Plus,
+  ShoppingCart,
+  Trash2,
+  X,
+} from "lucide-react";
+import ArrowScroller from "./ArrowScroller";
 import { INR } from "./catalogue";
+import { useIsMobile, useIsTouch } from "./hooks";
 
 export type ShopTab = "cart" | "fav";
 type Row = {
@@ -21,6 +37,8 @@ type Props = {
   canView: boolean;
   onTab: (t: ShopTab) => void;
   onClose: () => void;
+  // Close and put the cursor in the chat (empty states: "ask Aqua").
+  onChat?: () => void;
   onQty: (id: string, qty: number) => void;
   onRemoveCart: (id: string) => void;
   onRemoveFav: (id: string) => void;
@@ -29,271 +47,248 @@ type Props = {
   onCheckout: () => void;
 };
 
-// Small cart / favourites popover under the header. Reads and writes the shared Redux slices.
+// Pull the sheet down this far (px) to close it.
+const DRAG_CLOSE = 90;
+
+// Cart / favourites. Desktop: a popover under the header. Phones, iPads and
+// other touch screens: a bottom sheet over a dimmed chat, with room to scroll,
+// 44px targets and checkout kept in reach. Reads and writes the shared Redux
+// slices through the props.
 export default function ShopPopover(p: Props) {
+  const narrow = useIsMobile(1100);
+  const touch = useIsTouch();
+  const layout = narrow || touch ? "sheet" : "popover";
+
+  const { onClose } = p;
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && p.onClose();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [p]);
+  }, [onClose]);
 
-  const rows = p.tab === "cart" ? p.cart : p.favs;
+  // Focus moves into the dialog so keyboard and screen-reader users land here.
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
+
+  // Sheet: drag the handle down to close.
+  const drag = useRef<{ y: number; id: number } | null>(null);
+  const [dy, setDy] = useState(0);
+  const onDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    drag.current = { y: e.clientY, id: e.pointerId };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const onMove = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    const d = drag.current;
+    if (d && d.id === e.pointerId) setDy(Math.max(0, e.clientY - d.y));
+  };
+  const onUp = () => {
+    if (!drag.current) return;
+    drag.current = null;
+    if (dy > DRAG_CLOSE) onClose();
+    setDy(0);
+  };
+
+  const isCart = p.tab === "cart";
+  const rows = isCart ? p.cart : p.favs;
+  const units = p.cart.reduce((a, r) => a + r.qty, 0);
   const subtotal = p.cart.reduce((a, r) => a + r.price * r.qty, 0);
 
   return (
     <>
       <div
-        onClick={p.onClose}
+        className="aq-shop-scrim"
+        data-layout={layout}
+        onClick={onClose}
         aria-hidden="true"
-        style={{ position: "absolute", inset: 0, zIndex: 49 }}
       />
       <div
+        ref={ref}
         role="dialog"
-        aria-label={p.tab === "cart" ? "Cart" : "Favourites"}
-        className="aq-glass"
-        style={{
-          position: "absolute",
-          top: 62,
-          right: 12,
-          zIndex: 50,
-          width: "min(360px, calc(100% - 24px))",
-          maxHeight: "min(560px, calc(100dvh - 90px))",
-          display: "flex",
-          flexDirection: "column",
-          borderRadius: 24,
-          background: "rgba(var(--aq-gl),.82)",
-          animation: "aqPop .25s cubic-bezier(.22,.8,.24,1) both",
-        }}
+        aria-modal={layout === "sheet" || undefined}
+        aria-label={isCart ? "Cart" : "Favourites"}
+        tabIndex={-1}
+        className="aq-glass aq-shop"
+        data-layout={layout}
+        data-dragging={dy > 0}
+        style={dy ? { transform: `translateY(${dy}px)` } : undefined}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "12px 12px 8px",
-          }}
-        >
-          <div
-            role="tablist"
-            style={{
-              display: "flex",
-              gap: 4,
-              padding: 4,
-              borderRadius: 999,
-              background: "rgba(var(--aq-ln),.05)",
-              flex: 1,
+        {layout === "sheet" && (
+          <button
+            type="button"
+            className="aq-shop-handle"
+            aria-label="Close (or drag down)"
+            onPointerDown={onDown}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            onPointerCancel={() => {
+              drag.current = null;
+              setDy(0);
             }}
+            onClick={() => dy === 0 && onClose()}
           >
-            {(["cart", "fav"] as const).map((t) => (
-              <button
-                key={t}
-                type="button"
-                role="tab"
-                aria-selected={p.tab === t}
-                onClick={() => p.onTab(t)}
-                style={{
-                  flex: 1,
-                  height: 34,
-                  borderRadius: 999,
-                  border: 0,
-                  cursor: "pointer",
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: "var(--aq-ink)",
-                  background: p.tab === t ? "var(--aq-surf)" : "transparent",
-                  boxShadow:
-                    p.tab === t ? "0 2px 8px rgba(var(--aq-sh),.1)" : "none",
-                }}
-              >
-                {t === "cart"
-                  ? `Cart · ${p.cart.length}`
-                  : `Favourites · ${p.favs.length}`}
-              </button>
-            ))}
+            <span />
+          </button>
+        )}
+
+        <div className="aq-shop-head">
+          <div role="tablist" aria-label="Shop" className="aq-shop-tabs">
+            {(["cart", "fav"] as const).map((t) => {
+              const n = t === "cart" ? p.cart.length : p.favs.length;
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  role="tab"
+                  aria-selected={p.tab === t}
+                  onClick={() => p.onTab(t)}
+                  className="aq-shop-tab"
+                >
+                  {t === "cart" ? (
+                    <ShoppingCart size={15} aria-hidden="true" />
+                  ) : (
+                    <Heart size={15} aria-hidden="true" />
+                  )}
+                  {t === "cart" ? "Cart" : "Favourites"}
+                  {n > 0 && <span className="aq-shop-count">{n}</span>}
+                </button>
+              );
+            })}
           </div>
           <button
             type="button"
             className="aq-icon-btn"
-            onClick={p.onClose}
+            onClick={onClose}
             aria-label="Close"
           >
-            <X size={16} />
+            <X size={17} />
           </button>
         </div>
 
-        <div
-          className="aq-noscroll"
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: "4px 12px 12px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-          }}
-        >
-          {rows.map((r) => (
-            <div
-              key={r.id}
-              className="aq-card"
-              style={{
-                display: "flex",
-                gap: 10,
-                alignItems: "center",
-                padding: 8,
-                borderRadius: 16,
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => p.onView(r.id)}
-                disabled={!p.canView}
-                aria-label={`View ${r.title}`}
-                style={{
-                  width: 52,
-                  height: 52,
-                  flexShrink: 0,
-                  borderRadius: 12,
-                  border: 0,
-                  padding: 0,
-                  cursor: "pointer",
-                  background: r.photo
-                    ? `center / cover no-repeat url("${r.photo}")`
-                    : "repeating-linear-gradient(135deg, var(--aq-mint) 0 6px, var(--aq-tint) 6px 12px)",
-                }}
-              />
-              <div
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 4,
-                }}
-              >
-                <span
-                  style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.3 }}
-                >
-                  {r.title}
-                </span>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  {p.tab === "cart" ? (
-                    <div className="aq-stepper" style={{ height: 32 }}>
+        {rows.length ? (
+          <ArrowScroller
+            wrapClassName="aq-shop-scroll"
+            className="aq-shop-list"
+            label={isCart ? "cart" : "favourites"}
+            resetKey={p.tab}
+          >
+            {rows.map((r) => (
+              <div key={r.id} className="aq-shop-row">
+                <button
+                  type="button"
+                  className="aq-shop-thumb"
+                  onClick={() => p.onView(r.id)}
+                  disabled={!p.canView}
+                  aria-label={`View ${r.title}`}
+                  style={
+                    r.photo
+                      ? { backgroundImage: `url("${r.photo}")` }
+                      : undefined
+                  }
+                />
+                <div className="aq-shop-info">
+                  <span className="aq-shop-title">{r.title}</span>
+                  {/* Favourites: the price. Cart: the unit price, only when it
+                      differs from the line total beside it. */}
+                  {(!isCart || r.qty > 1) && (
+                    <span className="aq-shop-unit">
+                      {INR(r.price)}
+                      {isCart ? " each" : ""}
+                    </span>
+                  )}
+                  <div className="aq-shop-actions">
+                    {isCart ? (
+                      <div className="aq-stepper aq-shop-stepper">
+                        <button
+                          type="button"
+                          aria-label={`Decrease quantity of ${r.title}`}
+                          onClick={() => p.onQty(r.id, r.qty - 1)}
+                          disabled={r.qty <= 1}
+                        >
+                          <Minus size={15} />
+                        </button>
+                        <span aria-live="polite">{r.qty}</span>
+                        <button
+                          type="button"
+                          aria-label={`Increase quantity of ${r.title}`}
+                          onClick={() => p.onQty(r.id, r.qty + 1)}
+                          disabled={r.qty >= 10}
+                        >
+                          <Plus size={15} />
+                        </button>
+                      </div>
+                    ) : (
                       <button
                         type="button"
-                        aria-label="Decrease quantity"
-                        onClick={() => p.onQty(r.id, r.qty - 1)}
-                        style={{ height: 30 }}
+                        className="aq-btn aq-shop-add"
+                        onClick={() => p.onAddToCart(r.id)}
                       >
-                        <Minus size={14} />
+                        <ShoppingCart size={14} aria-hidden="true" />
+                        Add to cart
                       </button>
-                      <span style={{ fontSize: 13 }}>{r.qty}</span>
-                      <button
-                        type="button"
-                        aria-label="Increase quantity"
-                        onClick={() => p.onQty(r.id, r.qty + 1)}
-                        style={{ height: 30 }}
-                      >
-                        <Plus size={14} />
-                      </button>
-                    </div>
-                  ) : (
+                    )}
                     <button
                       type="button"
-                      className="aq-chip"
-                      onClick={() => p.onAddToCart(r.id)}
+                      className="aq-shop-remove"
+                      aria-label={`Remove ${r.title}`}
+                      onClick={() =>
+                        isCart ? p.onRemoveCart(r.id) : p.onRemoveFav(r.id)
+                      }
                     >
-                      Add to cart
+                      <Trash2 size={15} aria-hidden="true" />
                     </button>
-                  )}
-                  <div style={{ flex: 1 }} />
-                  <button
-                    type="button"
-                    className="aq-icon-btn"
-                    aria-label={`Remove ${r.title}`}
-                    onClick={() =>
-                      p.tab === "cart"
-                        ? p.onRemoveCart(r.id)
-                        : p.onRemoveFav(r.id)
-                    }
-                    style={{
-                      border: 0,
-                      background: "transparent",
-                      boxShadow: "none",
-                      color: "var(--aq-mut2)",
-                    }}
-                  >
-                    <Trash size={15} />
-                  </button>
+                  </div>
                 </div>
+                {isCart && (
+                  <span className="aq-shop-total">{INR(r.price * r.qty)}</span>
+                )}
               </div>
-              <span
-                style={{
-                  fontSize: 14,
-                  fontWeight: 800,
-                  whiteSpace: "nowrap",
-                  alignSelf: "flex-start",
-                  paddingTop: 2,
-                }}
+            ))}
+          </ArrowScroller>
+        ) : (
+          <div className="aq-shop-empty">
+            <span className="aq-shop-empty-icon" aria-hidden="true">
+              {isCart ? <ShoppingCart size={22} /> : <Heart size={22} />}
+            </span>
+            <b>{isCart ? "Your cart is empty" : "No favourites yet"}</b>
+            <span>
+              {isCart
+                ? "Tell Aqua about your water and home. It'll pick the right product for you."
+                : "Tap the heart on any product to keep it here for later."}
+            </span>
+            {p.onChat && (
+              <button
+                type="button"
+                className="aq-btn aq-btn-primary aq-shop-ask"
+                onClick={p.onChat}
               >
-                {INR(r.price * r.qty)}
-              </span>
-            </div>
-          ))}
-          {!rows.length && (
-            <div
-              style={{
-                padding: "28px 12px",
-                textAlign: "center",
-                display: "flex",
-                flexDirection: "column",
-                gap: 6,
-              }}
-            >
-              <span style={{ fontSize: 14, fontWeight: 700 }}>
-                {p.tab === "cart" ? "Your cart is empty" : "No favourites yet"}
-              </span>
-              <span style={{ fontSize: 12.5, color: "var(--aq-mut)" }}>
-                Ask Aqua for a recommendation and add it from the product card.
-              </span>
-            </div>
-          )}
-        </div>
+                <MessageCircle size={16} aria-hidden="true" />
+                Ask Aqua for a pick
+              </button>
+            )}
+          </div>
+        )}
 
-        {p.tab === "cart" && p.cart.length > 0 && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              padding: "12px 14px 14px",
-              borderTop: "1px solid rgba(var(--aq-ln),.06)",
-            }}
-          >
-            <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-              <span
-                style={{
-                  fontSize: 12,
-                  color: "var(--aq-mut)",
-                  fontWeight: 600,
-                }}
-              >
-                Subtotal (before server quote)
+        {isCart && p.cart.length > 0 && (
+          <div className="aq-shop-foot">
+            <div className="aq-shop-sum">
+              <span>
+                Subtotal · {units} {units === 1 ? "item" : "items"}
               </span>
-              <span style={{ fontSize: 19, fontWeight: 800 }}>
-                {INR(subtotal)}
-              </span>
+              <b>{INR(subtotal)}</b>
+              <small>Delivery &amp; coupons at checkout</small>
             </div>
             <button
               type="button"
-              className="aq-btn aq-btn-primary"
+              className="aq-btn aq-btn-primary aq-shop-checkout"
               onClick={p.onCheckout}
               disabled={!p.canCheckout}
               title={
                 p.canCheckout ? undefined : "Finish the current step first"
               }
             >
-              Checkout
+              Checkout <ArrowRight size={17} aria-hidden="true" />
             </button>
           </div>
         )}

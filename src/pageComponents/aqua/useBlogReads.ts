@@ -8,7 +8,7 @@ import { toBlogReads, type BlogRead } from "./blogReads";
 let pending: Promise<BlogRead[]> | null = null;
 const load = () =>
   (pending ??= BlogServiceOperations.AllBlogs()
-    .then((res: { data: unknown }) => toBlogReads(res.data, 8))
+    .then((res: { data: unknown }) => toBlogReads(res.data))
     .catch(() => {
       pending = null; // try again next mount
       return [];

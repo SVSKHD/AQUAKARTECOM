@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { storage } from "./hooks";
 import { podcastScript, type BlogRead } from "./blogReads";
+import { MoreReads } from "./WhileYouWait";
 import {
   canSpeak,
   speak,
@@ -309,6 +310,7 @@ export default function BlogBar({
         {read.paragraphs.map((t, n) => (
           <p key={n}>{t}</p>
         ))}
+        <MoreReads />
       </div>
     </aside>
   );

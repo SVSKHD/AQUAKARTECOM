@@ -120,9 +120,10 @@ const AquaHeader = () => {
       {({ open }) => (
         <>
           <div className="aqua-site-header-panel relative rounded-full border border-white/65 backdrop-blur-2xl shadow-[0_8px_32px_rgba(15,23,42,0.07),inset_0_1px_0_rgba(255,255,255,0.75)] transition-all duration-500 hover:border-white/80 hover:shadow-[0_12px_40px_rgba(15,23,42,0.09),inset_0_1px_0_rgba(255,255,255,0.85)]">
-            <div className="relative flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div className="relative flex h-16 items-center justify-between px-4 sm:px-6 md:px-4 lg:px-8">
               {/* Mobile Menu Button */}
-              <div className="absolute inset-y-0 left-0 flex items-center sm:hidden pl-2">
+              {/* Phones and small tablets: a menu button. The full row needs ~720px. */}
+              <div className="absolute inset-y-0 left-0 flex items-center md:hidden pl-2">
                 <DisclosureButton className="group relative inline-flex items-center justify-center rounded-full p-2 text-slate-600 transition hover:bg-white hover:text-indigo-600 focus:outline-none">
                   <span className="absolute -inset-0.5" />
                   <span className="sr-only">Open main menu</span>
@@ -141,7 +142,7 @@ const AquaHeader = () => {
               </div>
 
               {/* Logo & Desktop Nav */}
-              <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+              <div className="flex min-w-0 flex-1 items-center justify-center md:items-stretch md:justify-start">
                 <Link
                   href="/"
                   className="flex flex-shrink-0 items-center gap-3 group"
@@ -173,8 +174,9 @@ const AquaHeader = () => {
                   )}
                 </Link>
 
-                <div className="hidden sm:ml-10 sm:block">
-                  <div className="flex items-center gap-1">
+                {/* Tablets (md): tighter links on one line; desktop (lg) gets the roomy ones. */}
+                <div className="hidden md:ml-4 md:flex md:items-center lg:ml-10">
+                  <div className="flex items-center gap-0.5 lg:gap-1">
                     {navigation.map((item) => {
                       const active = isActiveRoute(item.href);
                       return (
@@ -182,7 +184,7 @@ const AquaHeader = () => {
                           key={item.name}
                           href={item.href}
                           className={classNames(
-                            "relative rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300",
+                            "relative whitespace-nowrap rounded-full px-3 py-2.5 text-[13px] font-bold transition-all duration-300 lg:px-5 lg:text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400",
                             active
                               ? "text-indigo-900 bg-white shadow-md shadow-indigo-100 ring-1 ring-slate-900/5"
                               : "text-slate-500 hover:text-slate-900 hover:bg-white/50",
@@ -198,13 +200,13 @@ const AquaHeader = () => {
               </div>
 
               {/* Icons & User Menu */}
-              <div className="absolute inset-y-0 right-0 flex items-center space-x-3 pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+              <div className="absolute inset-y-0 right-0 flex shrink-0 items-center gap-2 pr-2 md:static md:inset-auto md:ml-4 md:pr-0 lg:ml-6 lg:gap-3">
                 <button
                   onClick={openFavDrawer}
                   type="button"
                   aria-label="Open favourites"
                   name="Open favourites"
-                  className="group relative flex h-10 w-10 items-center justify-center rounded-full bg-white/50 text-slate-500 transition-all duration-300 hover:bg-white hover:text-rose-500 hover:shadow-md hover:scale-105 focus:outline-none"
+                  className="group relative flex h-10 w-10 items-center justify-center rounded-full bg-white/50 text-slate-500 transition-all duration-300 hover:bg-white hover:text-rose-500 hover:shadow-md hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
                 >
                   <span className="sr-only">Open favourites</span>
                   <HeartIcon className="h-6 w-6" aria-hidden="true" />
@@ -220,7 +222,7 @@ const AquaHeader = () => {
                   type="button"
                   aria-label="Open cart"
                   name="Open cart"
-                  className="group relative flex h-10 w-10 items-center justify-center rounded-full bg-white/50 text-slate-500 transition-all duration-300 hover:bg-white hover:text-emerald-600 hover:shadow-md hover:scale-105 focus:outline-none"
+                  className="group relative flex h-10 w-10 items-center justify-center rounded-full bg-white/50 text-slate-500 transition-all duration-300 hover:bg-white hover:text-emerald-600 hover:shadow-md hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
                 >
                   <span className="sr-only">Open cart</span>
                   <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />
@@ -233,7 +235,7 @@ const AquaHeader = () => {
 
                 {/* Profile Dropdown */}
                 {userData ? (
-                  <Menu as="div" className="relative ml-2">
+                  <Menu as="div" className="relative ml-1 lg:ml-2">
                     <MenuButton className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-200 transition-transform duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 active:scale-95">
                       <span className="sr-only">Open user menu</span>
                       <FaUser className="h-4 w-4" />
@@ -304,7 +306,7 @@ const AquaHeader = () => {
                   <button
                     type="button"
                     onClick={openAuthDialog}
-                    className="group relative ml-2 flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg transition-transform duration-300 hover:scale-105 hover:bg-slate-800 focus:outline-none active:scale-95"
+                    className="group relative ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg transition-transform duration-300 hover:scale-105 hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 active:scale-95 lg:ml-2"
                   >
                     <span className="sr-only">Open auth dialog</span>
                     <FaUser className="h-4 w-4" aria-hidden="true" />
@@ -322,7 +324,7 @@ const AquaHeader = () => {
             leaveFrom="transform scale-100 opacity-100 translate-y-0"
             leaveTo="transform scale-95 opacity-0 -translate-y-2"
           >
-            <DisclosurePanel className="sm:hidden mt-2">
+            <DisclosurePanel className="md:hidden mt-2">
               <div className="aqua-site-mobile-menu space-y-2 rounded-[2rem] border border-white/65 p-4 shadow-[0_8px_40px_rgba(15,23,42,0.09)] ring-1 ring-white/70 backdrop-blur-3xl">
                 {navigation.map((item) => (
                   <DisclosureButton
