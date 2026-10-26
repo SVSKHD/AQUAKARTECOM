@@ -10,6 +10,7 @@ import {
 import type { ServerOrder } from "@/utils/aquaCommerce";
 import ProductDetail from "./ProductDetail";
 import InlineCheckout from "./InlineCheckout";
+import type { ActiveCoupon } from "./coupons";
 import PaymentStatus from "./PaymentStatus";
 import type {
   Address,
@@ -40,6 +41,8 @@ export type WorkspacePanelProps = {
   draft: CheckoutDraft | null;
   setDraft: Dispatch<SetStateAction<CheckoutDraft | null>>;
   savedAddresses: Address[];
+  coupons: ActiveCoupon[];
+  categoryOf: (productId: string) => string;
   quoteState: QuoteState;
   setQuoteState: Dispatch<SetStateAction<QuoteState>>;
   commerceLive: boolean;
@@ -226,6 +229,8 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
           draft={draft}
           setDraft={props.setDraft}
           savedAddresses={props.savedAddresses}
+          coupons={props.coupons}
+          categoryOf={props.categoryOf}
           quoteState={props.quoteState}
           setQuoteState={props.setQuoteState}
           commerceLive={props.commerceLive}

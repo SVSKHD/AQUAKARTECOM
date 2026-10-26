@@ -7,12 +7,14 @@ import {
   Moon,
   Plus,
   ShoppingCart,
+  Store,
   Sun,
 } from "lucide-react";
 import type { Flow } from "@/utils/aquaFlow";
 import logo from "@/assests/logo.png";
 import { aquaConfig } from "./config";
 import { useIsMobile, useIsTouch } from "./hooks";
+import { shortTitle } from "./pageTitle";
 import type { Mood } from "./types";
 import type { ShopTab } from "./ShopPopover";
 
@@ -21,6 +23,8 @@ type Props = {
   mood: Mood;
   dark: boolean;
   statusText: string;
+  // The active chat's title (null on a new chat), shown in place of "Aqua".
+  chatTitle: string | null;
   catalogueLabel: string;
   isMobile: boolean;
   locked: boolean;
@@ -31,6 +35,7 @@ type Props = {
   userName: string | null;
   authBusy: boolean;
   onSignIn: () => void;
+  onOpenProfile: () => void;
   onToggleDock: () => void;
   onLogo: () => void;
   onToggleTheme: () => void;
@@ -205,7 +210,16 @@ export default function AquaHeader(p: Props) {
         {isWelcome ? (
           <div style={{ flex: 1, minWidth: compact ? 24 : 0 }} />
         ) : p.isMobile ? (
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0, padding: "0 4px" }}>
+            {p.chatTitle && (
+              <span
+                className="aq-chat-title"
+                title={p.chatTitle}
+                style={{ fontSize: 13.5 }}
+              >
+                {shortTitle(p.chatTitle)}
+              </span>
+            )}
             <span aria-live="polite" className="aq-sr-only">
               {p.statusText}
             </span>
@@ -228,8 +242,12 @@ export default function AquaHeader(p: Props) {
             <div
               style={{ display: "flex", flexDirection: "column", minWidth: 0 }}
             >
-              <span style={{ fontWeight: 700, fontSize: 13, lineHeight: 1.1 }}>
-                Aqua
+              <span
+                className="aq-chat-title"
+                title={p.chatTitle || undefined}
+                style={{ fontSize: 13, lineHeight: 1.15 }}
+              >
+                {p.chatTitle ? shortTitle(p.chatTitle) : "Aqua"}
               </span>
               <span
                 aria-live="polite"
@@ -277,6 +295,29 @@ export default function AquaHeader(p: Props) {
           >
             Talk to an expert
           </button>
+        )}
+        {/* The full catalogue (/shop). Phones reach it from the history dock. */}
+        {!p.isMobile && (
+          <a
+            href="/shop"
+            className="aq-btn aq-btn-ghost"
+            data-tour="shop-page"
+            aria-label="Shop all products"
+            title="Shop all products"
+            style={{
+              height: 32,
+              padding: narrow ? "0 8px" : "0 10px",
+              fontSize: 14,
+              fontWeight: 600,
+              gap: 6,
+              color: "var(--aq-ink)",
+              textDecoration: "none",
+              flexShrink: 0,
+            }}
+          >
+            <Store size={16} aria-hidden="true" />
+            {!narrow && "Shop"}
+          </a>
         )}
         {p.onToggleThinking && !p.isMobile && (
           <button
@@ -372,8 +413,8 @@ export default function AquaHeader(p: Props) {
           {firstName ? (
             <button
               type="button"
-              onClick={p.onToggleDock}
-              aria-label={`Signed in as ${p.userName}. Open history`}
+              onClick={p.onOpenProfile}
+              aria-label={`Signed in as ${p.userName}. Open your profile`}
               title={narrow ? p.userName || undefined : undefined}
               style={{
                 height: touch ? 44 : 34,

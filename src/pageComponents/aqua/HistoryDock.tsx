@@ -9,7 +9,9 @@ import {
   type ReactNode,
 } from "react";
 import {
+  BookOpen,
   Brain,
+  Check,
   ChevronRight,
   Compass,
   ExternalLink,
@@ -18,13 +20,23 @@ import {
   LogOut,
   MessageCircle,
   MessageSquare,
+  MoreHorizontal,
+  Pencil,
+  Pin,
+  PinOff,
   Plus,
+  Store,
   Trash2,
   X,
 } from "lucide-react";
+import { createPortal } from "react-dom";
+import { CHAT_TITLE_MAX } from "@/services/ai";
+import type { BlogRead } from "./blogReads";
 import { INR } from "./catalogue";
 import { Avatar, openExpert } from "./AquaHeader";
 import { snapAway } from "./snapDust";
+import { bestCoupon, type ActiveCoupon } from "./coupons";
+import MiniProductCard from "./MiniProductCard";
 import type { AiChatSummary } from "@/services/ai";
 import type { ChatSession } from "./useAquaChat";
 import type { Product } from "./types";
@@ -37,6 +49,14 @@ type Props = {
   savedChats: AiChatSummary[];
   onOpenSaved: (id: string) => void;
   viewed: Product[];
+  // Lets each viewed product show its favourite / cart state and the coupon
+  // that saves the most on it.
+  favIds: string[];
+  cartIds: string[];
+  coupons: ActiveCoupon[];
+  onToggleFav: (id: string) => void;
+  onAddToCart: (id: string) => void;
+  onUseCoupon: (code: string) => void;
   // Invoices on the signed-in account; null while loading (or signed out).
   purchases: Purchase[] | null;
   canView: boolean;
@@ -46,12 +66,22 @@ type Props = {
   onStartTour: () => void;
   onDeleteSaved: (id: string) => Promise<boolean>;
   onDeleteSession: (id: string) => boolean;
+  onRenameSaved: (id: string, title: string) => Promise<boolean>;
+  onPinSaved: (id: string, pinned: boolean) => Promise<boolean>;
+  onRenameSession: (id: string, title: string) => boolean;
+  onPinSession: (id: string, pinned: boolean) => boolean;
   onView: (id: string) => void;
   userName: string | null;
   authBusy: boolean;
   authError: string;
   onSignIn: () => void;
   onSignOut: () => void;
+  onOpenProfile: (tab?: "profile" | "addresses" | "purchases") => void;
+  // Blog reads; listed here once the floating reads bar is closed (docked).
+  reads: BlogRead[];
+  readsDocked: boolean;
+  // Floats the reads bar again, opened on this read if one is given.
+  onFloatReads: (readId?: string) => void;
   thinking: boolean;
   onToggleThinking?: () => void;
 };
@@ -125,72 +155,305 @@ const stopMarquee = (item: HTMLElement) => {
   if (box) delete box.dataset.marquee;
 };
 
+const LONG_PRESS_MS = 480;
+
+// Where the chat menu opens: under the ⋯ button, or at the pointer for a
+// right-click / long-press.
+type MenuAt = { key: string; x: number; y: number; from: HTMLElement | null };
+
 function ChatRow(p: {
+  rowKey: string;
   title: string;
   meta: string;
+  pinned: boolean;
   index: number;
   disabled: boolean;
   going: boolean;
-  armed: boolean;
+  menuOpen: boolean;
+  renaming: boolean;
   onClick: () => void;
-  onDelete: (row: HTMLElement | null) => void;
+  onMenu: (at: Omit<MenuAt, "key">) => void;
+  onRenameDone: (title: string | null) => void;
 }) {
+  const press = useRef<{
+    t: ReturnType<typeof setTimeout>;
+    x: number;
+    y: number;
+  } | null>(null);
+  const suppressClick = useRef(false);
+  const cancelPress = () => {
+    if (press.current) clearTimeout(press.current.t);
+    press.current = null;
+  };
+  useEffect(() => cancelPress, []);
+
   return (
     <div className="aq-dock-item" data-going={p.going} style={stagger(p.index)}>
       <div
         className="aq-dock-item-inner"
+        data-row-key={p.rowKey}
+        data-menu-open={p.menuOpen}
         onPointerEnter={(e) =>
-          e.pointerType === "mouse" && startMarquee(e.currentTarget)
+          e.pointerType === "mouse" &&
+          !p.renaming &&
+          startMarquee(e.currentTarget)
         }
         onPointerLeave={(e) => stopMarquee(e.currentTarget)}
-        onFocus={(e) => startMarquee(e.currentTarget)}
+        onFocus={(e) => !p.renaming && startMarquee(e.currentTarget)}
         onBlur={(e) => {
           if (!e.currentTarget.contains(e.relatedTarget as Node | null))
             stopMarquee(e.currentTarget);
         }}
+        // Right-click: our menu instead of the browser's.
+        onContextMenu={(e) => {
+          if (p.disabled || p.going || p.renaming) return;
+          e.preventDefault();
+          p.onMenu({ x: e.clientX, y: e.clientY, from: null });
+        }}
+        // Long-press on touch opens the same menu.
+        onPointerDown={(e) => {
+          if (e.pointerType !== "touch" || p.disabled || p.going || p.renaming)
+            return;
+          const { clientX: x, clientY: y } = e;
+          press.current = {
+            x,
+            y,
+            t: setTimeout(() => {
+              press.current = null;
+              suppressClick.current = true;
+              navigator.vibrate?.(10);
+              p.onMenu({ x, y, from: null });
+            }, LONG_PRESS_MS),
+          };
+        }}
+        onPointerMove={(e) => {
+          const s = press.current;
+          if (s && Math.hypot(e.clientX - s.x, e.clientY - s.y) > 8)
+            cancelPress();
+        }}
+        onPointerUp={cancelPress}
+        onPointerCancel={cancelPress}
       >
-        <button
-          type="button"
-          className="aq-dock-row"
-          title={p.title}
-          onClick={p.onClick}
-          disabled={p.disabled || p.going}
-        >
-          <span className="aq-dock-row-icon" aria-hidden="true">
-            <MessageSquare size={15} />
-          </span>
-          <span className="aq-dock-row-text">
-            <span className="aq-dock-row-title">
-              <span className="aq-marquee-text">{p.title}</span>
+        {p.renaming ? (
+          <div className="aq-dock-row aq-dock-row-editing">
+            <span className="aq-dock-row-icon" aria-hidden="true">
+              <Pencil size={14} />
             </span>
-            <span className="aq-dock-row-meta">{p.meta}</span>
-          </span>
-          <ChevronRight
-            size={15}
-            className="aq-dock-row-chev"
-            aria-hidden="true"
-          />
-        </button>
-        <button
-          type="button"
-          className="aq-dock-del"
-          data-armed={p.armed}
-          disabled={p.disabled || p.going}
-          aria-label={
-            p.armed ? `Confirm: delete "${p.title}"` : `Delete "${p.title}"`
-          }
-          title={p.armed ? "Click again to delete" : "Delete chat"}
-          onClick={(e) =>
-            p.onDelete(
-              e.currentTarget.closest<HTMLElement>(".aq-dock-item-inner"),
-            )
-          }
-        >
-          <Trash2 size={14} aria-hidden="true" />
-          {p.armed && <span>Delete</span>}
-        </button>
+            <RenameField title={p.title} onDone={p.onRenameDone} />
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="aq-dock-row"
+            title={p.title}
+            onClick={() => {
+              if (suppressClick.current)
+                return void (suppressClick.current = false);
+              p.onClick();
+            }}
+            disabled={p.disabled || p.going}
+          >
+            <span className="aq-dock-row-icon" aria-hidden="true">
+              <MessageSquare size={15} />
+            </span>
+            <span className="aq-dock-row-text">
+              <span className="aq-dock-row-title">
+                {p.pinned && (
+                  <Pin
+                    size={11}
+                    className="aq-dock-pin-mark"
+                    aria-label="Pinned"
+                  />
+                )}
+                <span className="aq-marquee-text">{p.title}</span>
+              </span>
+              <span className="aq-dock-row-meta">{p.meta}</span>
+            </span>
+            <ChevronRight
+              size={15}
+              className="aq-dock-row-chev"
+              aria-hidden="true"
+            />
+          </button>
+        )}
+        {!p.renaming && (
+          <button
+            type="button"
+            className="aq-dock-more"
+            aria-label={`More for "${p.title}"`}
+            aria-haspopup="menu"
+            aria-expanded={p.menuOpen}
+            disabled={p.disabled || p.going}
+            onClick={(e) => {
+              const r = e.currentTarget.getBoundingClientRect();
+              p.onMenu({ x: r.right, y: r.bottom + 4, from: e.currentTarget });
+            }}
+          >
+            <MoreHorizontal size={16} aria-hidden="true" />
+          </button>
+        )}
       </div>
     </div>
+  );
+}
+
+// Inline rename: Enter or clicking away saves, Esc cancels; empty = no change.
+function RenameField({
+  title,
+  onDone,
+}: {
+  title: string;
+  onDone: (title: string | null) => void;
+}) {
+  const [value, setValue] = useState(title);
+  const done = useRef(false);
+  const finish = (save: boolean) => {
+    if (done.current) return;
+    done.current = true;
+    const clean = value.replace(/\s+/g, " ").trim();
+    onDone(save && clean && clean !== title ? clean : null);
+  };
+  return (
+    <input
+      className="aq-dock-rename"
+      aria-label="Chat name"
+      value={value}
+      maxLength={CHAT_TITLE_MAX}
+      autoFocus
+      onFocus={(e) => e.currentTarget.select()}
+      onChange={(e) => setValue(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          finish(true);
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          e.stopPropagation(); // Esc cancels the rename, not the whole dock
+          finish(false);
+        }
+      }}
+      onBlur={() => finish(true)}
+    />
+  );
+}
+
+type MenuItem = {
+  id: string;
+  label: string;
+  Icon: typeof Pin;
+  danger?: boolean;
+  run: () => void;
+};
+
+// The chat context menu. Arrow keys move, Enter picks, Esc / outside click /
+// scrolling closes; focus goes back to where it came from.
+function ChatMenu({
+  at,
+  items,
+  host,
+  onClose,
+}: {
+  at: MenuAt;
+  items: MenuItem[];
+  host: Element;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ left: at.x, top: at.y, ready: false });
+
+  // Keep it on screen: flip left / up when it would overflow.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    const pad = 8;
+    const left = Math.max(
+      pad,
+      Math.min(at.from ? at.x - w : at.x, innerWidth - w - pad),
+    );
+    const top =
+      at.y + h > innerHeight - pad
+        ? Math.max(
+            pad,
+            (at.from ? at.from.getBoundingClientRect().top - 4 : at.y) - h,
+          )
+        : at.y;
+    setPos({ left, top, ready: true });
+    el.querySelector<HTMLElement>("[role=menuitem]")?.focus();
+  }, [at]);
+
+  useEffect(() => {
+    const close = (e: Event) => {
+      const t = e.target as Node;
+      // Inside the menu, or on the ⋯ that opened it (its click toggles it shut).
+      if (
+        e.type === "pointerdown" &&
+        (ref.current?.contains(t) || at.from?.contains(t))
+      )
+        return;
+      onClose();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+        at.from?.focus();
+      }
+    };
+    window.addEventListener("pointerdown", close, true);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    window.addEventListener("keydown", onKey, true);
+    return () => {
+      window.removeEventListener("pointerdown", close, true);
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+      window.removeEventListener("keydown", onKey, true);
+    };
+  }, [at, onClose]);
+
+  const move = (e: ReactKeyboardEvent) => {
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
+    e.preventDefault();
+    const list = [
+      ...(ref.current?.querySelectorAll<HTMLElement>("[role=menuitem]") || []),
+    ];
+    const i = list.indexOf(document.activeElement as HTMLElement);
+    const next =
+      e.key === "Home"
+        ? 0
+        : e.key === "End"
+          ? list.length - 1
+          : (i + (e.key === "ArrowDown" ? 1 : list.length - 1)) % list.length;
+    list[next]?.focus();
+  };
+
+  return createPortal(
+    <div
+      ref={ref}
+      role="menu"
+      aria-label="Chat options"
+      className="aq-dock-menu"
+      data-ready={pos.ready}
+      style={{ left: pos.left, top: pos.top }}
+      onKeyDown={move}
+    >
+      {items.map(({ id, label, Icon, danger, run }) => (
+        <button
+          key={id}
+          type="button"
+          role="menuitem"
+          className="aq-dock-menu-item"
+          data-danger={danger}
+          onClick={run}
+        >
+          <Icon size={15} aria-hidden="true" />
+          {label}
+        </button>
+      ))}
+    </div>,
+    host,
   );
 }
 
@@ -229,7 +492,7 @@ export default function HistoryDock(p: Props) {
   // ---------- delete (arm, then snap) ----------
   const [armed, setArmed] = useState<string | null>(null);
   const [going, setGoing] = useState<ReadonlySet<string>>(new Set());
-  const [deleteError, setDeleteError] = useState("");
+  const [actionError, setActionError] = useState("");
   const armT = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(armT.current), []);
 
@@ -257,7 +520,7 @@ export default function HistoryDock(p: Props) {
     }
     setArmed(null);
     if (!row) return;
-    setDeleteError("");
+    setActionError("");
     // The row turns to dust first; once its space has closed the delete is
     // applied, so the rows below slide up instead of jumping.
     await new Promise<void>((started) => {
@@ -270,12 +533,150 @@ export default function HistoryDock(p: Props) {
     const ok = await Promise.resolve(run()).catch(() => false);
     if (!ok) {
       row.style.visibility = "";
-      setDeleteError(
+      setActionError(
         "Couldn't delete that chat. Check your connection and try again.",
       );
     }
     mark(key, false);
   };
+
+  // ---------- chat rows: pinned first, then saved, then this visit ----------
+  type Row = {
+    key: string;
+    kind: "saved" | "local";
+    id: string;
+    title: string;
+    meta: string;
+    pinned: boolean;
+  };
+  const savedRows: Row[] = p.savedChats.map((s) => ({
+    key: `s:${s.id}`,
+    kind: "saved",
+    id: s.id,
+    title: s.title,
+    meta: [
+      s.messageCount ? plural(s.messageCount, "message") : "",
+      ago(Date.parse(s.lastMessageAt)),
+    ]
+      .filter(Boolean)
+      .join(" · "),
+    pinned: s.pinned,
+  }));
+  const localRows: Row[] = p.sessions.map((s) => ({
+    key: `l:${s.id}`,
+    kind: "local",
+    id: s.id,
+    title: s.title,
+    meta: `${plural(s.messages.length, "message")} · ${ago(s.at)}`,
+    pinned: !!s.pinned,
+  }));
+  const groups = [
+    {
+      label: "Pinned",
+      rows: [...savedRows, ...localRows].filter((r) => r.pinned),
+    },
+    {
+      label: "Saved to your account",
+      rows: savedRows.filter((r) => !r.pinned),
+    },
+    {
+      label: p.userName ? "Earlier this visit" : "This visit only",
+      rows: localRows.filter((r) => !r.pinned),
+    },
+  ].filter((g) => g.rows.length);
+  const rowByKey = new Map([...savedRows, ...localRows].map((r) => [r.key, r]));
+
+  // ---------- chat menu: pin / rename / delete ----------
+  const asideRef = useRef<HTMLElement>(null);
+  const [menu, setMenu] = useState<MenuAt | null>(null);
+  const [renaming, setRenaming] = useState<string | null>(null);
+  // The menu renders into .aq-root (theme variables) rather than inside the
+  // dock, whose backdrop-filter would re-anchor a fixed-position popup.
+  const [host, setHost] = useState<Element | null>(null);
+  useEffect(() => {
+    setHost(asideRef.current?.closest(".aq-root") ?? document.body);
+  }, []);
+  useEffect(() => {
+    if (open) return;
+    setMenu(null);
+    setRenaming(null);
+  }, [open]);
+  const closeMenu = () => {
+    setMenu(null);
+    setArmed(null);
+  };
+
+  const togglePin = async (r: Row) => {
+    closeMenu();
+    setActionError("");
+    const ok =
+      r.kind === "saved"
+        ? await p.onPinSaved(r.id, !r.pinned)
+        : p.onPinSession(r.id, !r.pinned);
+    if (!ok)
+      setActionError(
+        `Couldn't ${r.pinned ? "unpin" : "pin"} that chat. Try again.`,
+      );
+  };
+  const finishRename = async (r: Row, title: string | null) => {
+    setRenaming(null);
+    // Back to the row, so keyboard users keep their place.
+    requestAnimationFrame(() =>
+      document
+        .querySelector<HTMLElement>(
+          `[data-row-key="${CSS.escape(r.key)}"] .aq-dock-row`,
+        )
+        ?.focus({ preventScroll: true }),
+    );
+    if (!title) return;
+    setActionError("");
+    const ok =
+      r.kind === "saved"
+        ? await p.onRenameSaved(r.id, title)
+        : p.onRenameSession(r.id, title);
+    if (!ok) setActionError("Couldn't rename that chat. Try again.");
+  };
+  // First click arms (the item turns into a confirm); the second snaps it away.
+  const deleteRow = (r: Row) => {
+    const run = () =>
+      r.kind === "saved" ? p.onDeleteSaved(r.id) : p.onDeleteSession(r.id);
+    if (armed !== r.key) return void remove(r.key, null, run);
+    setMenu(null);
+    void remove(
+      r.key,
+      document.querySelector<HTMLElement>(
+        `[data-row-key="${CSS.escape(r.key)}"]`,
+      ),
+      run,
+    );
+  };
+  const menuRow = menu ? rowByKey.get(menu.key) : undefined;
+  const menuItems: MenuItem[] = menuRow
+    ? [
+        {
+          id: "pin",
+          label: menuRow.pinned ? "Unpin" : "Pin to top",
+          Icon: menuRow.pinned ? PinOff : Pin,
+          run: () => void togglePin(menuRow),
+        },
+        {
+          id: "rename",
+          label: "Rename",
+          Icon: Pencil,
+          run: () => {
+            closeMenu();
+            setRenaming(menuRow.key);
+          },
+        },
+        {
+          id: "delete",
+          label: armed === menuRow.key ? "Click again to delete" : "Delete",
+          Icon: Trash2,
+          danger: true,
+          run: () => deleteRow(menuRow),
+        },
+      ]
+    : [];
 
   // ---------- tabs ----------
   const chatCount = p.savedChats.length + p.sessions.length;
@@ -315,6 +716,7 @@ export default function HistoryDock(p: Props) {
         />
       )}
       <aside
+        ref={asideRef}
         aria-label="History"
         aria-hidden={!p.open}
         inert={!p.open}
@@ -416,71 +818,52 @@ export default function HistoryDock(p: Props) {
               data-active={tab === "chats"}
               inert={tab !== "chats"}
             >
-              {deleteError && (
+              {actionError && (
                 <span role="alert" className="aq-dock-error">
-                  {deleteError}
+                  {actionError}
                 </span>
               )}
               {chatCount ? (
-                <>
-                  {!!p.savedChats.length && (
-                    <div className="aq-dock-group">
-                      <span className="aq-label aq-dock-group-label">
-                        Saved to your account
-                      </span>
-                      {p.savedChats.map((s, i) => {
-                        const key = `s:${s.id}`;
-                        return (
-                          <ChatRow
-                            key={key}
-                            index={i}
-                            title={s.title}
-                            meta={[
-                              s.messageCount
-                                ? plural(s.messageCount, "message")
-                                : "",
-                              ago(Date.parse(s.lastMessageAt)),
-                            ]
-                              .filter(Boolean)
-                              .join(" · ")}
-                            disabled={p.locked}
-                            going={going.has(key)}
-                            armed={armed === key}
-                            onClick={() => p.onOpenSaved(s.id)}
-                            onDelete={(row) =>
-                              remove(key, row, () => p.onDeleteSaved(s.id))
-                            }
-                          />
-                        );
-                      })}
-                    </div>
-                  )}
-                  {!!p.sessions.length && (
-                    <div className="aq-dock-group">
-                      <span className="aq-label aq-dock-group-label">
-                        {p.userName ? "Earlier this visit" : "This visit only"}
-                      </span>
-                      {p.sessions.map((s, i) => {
-                        const key = `l:${s.id}`;
-                        return (
-                          <ChatRow
-                            key={key}
-                            index={p.savedChats.length + i}
-                            title={s.title}
-                            meta={`${plural(s.messages.length, "message")} · ${ago(s.at)}`}
-                            disabled={p.locked}
-                            going={going.has(key)}
-                            armed={armed === key}
-                            onClick={() => p.onRestore(s.id)}
-                            onDelete={(row) =>
-                              remove(key, row, () => p.onDeleteSession(s.id))
-                            }
-                          />
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
+                groups.map((g, gi) => (
+                  <div key={g.label} className="aq-dock-group">
+                    <span className="aq-label aq-dock-group-label">
+                      {gi === 0 && g.label === "Pinned" && (
+                        <Pin
+                          size={10}
+                          aria-hidden="true"
+                          style={{ marginRight: 4, verticalAlign: -1 }}
+                        />
+                      )}
+                      {g.label}
+                    </span>
+                    {g.rows.map((r, i) => (
+                      <ChatRow
+                        key={r.key}
+                        rowKey={r.key}
+                        index={i}
+                        title={r.title}
+                        meta={r.meta}
+                        pinned={r.pinned}
+                        disabled={p.locked}
+                        going={going.has(r.key)}
+                        menuOpen={menu?.key === r.key}
+                        renaming={renaming === r.key}
+                        onClick={() =>
+                          r.kind === "saved"
+                            ? p.onOpenSaved(r.id)
+                            : p.onRestore(r.id)
+                        }
+                        onMenu={(at) => {
+                          if (menu?.key === r.key && at.from)
+                            return closeMenu();
+                          setArmed(null);
+                          setMenu({ key: r.key, ...at });
+                        }}
+                        onRenameDone={(title) => void finishRename(r, title)}
+                      />
+                    ))}
+                  </div>
+                ))
               ) : (
                 <Empty
                   icon={<MessageSquare size={18} />}
@@ -505,36 +888,19 @@ export default function HistoryDock(p: Props) {
               {p.viewed.length ? (
                 <div className="aq-dock-grid">
                   {p.viewed.map((v, i) => (
-                    <button
+                    <MiniProductCard
                       key={v.id}
-                      type="button"
-                      className="aq-dock-product"
+                      product={v}
+                      isFav={p.favIds.includes(v.id)}
+                      inCart={p.cartIds.includes(v.id)}
+                      canView={p.canView}
+                      deal={bestCoupon(v, p.coupons)}
                       style={stagger(i)}
-                      disabled={!p.canView}
-                      onClick={() => p.onView(v.id)}
-                    >
-                      <span
-                        aria-hidden="true"
-                        className="aq-dock-product-img"
-                        style={{
-                          background: v.photos[0]
-                            ? `center / contain no-repeat url("${v.photos[0]}"), #fff`
-                            : "repeating-linear-gradient(135deg, var(--aq-mint) 0 6px, var(--aq-tint) 6px 12px)",
-                        }}
-                      />
-                      <span className="aq-dock-product-title">{v.title}</span>
-                      <span style={{ fontSize: 12.5, fontWeight: 700 }}>
-                        {INR(v.price)}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 11,
-                          color: v.inStock ? "var(--aq-mintink)" : "#B42318",
-                        }}
-                      >
-                        {v.stock}
-                      </span>
-                    </button>
+                      onView={p.onView}
+                      onToggleFav={p.onToggleFav}
+                      onAddToCart={p.onAddToCart}
+                      onUseCoupon={p.onUseCoupon}
+                    />
                   ))}
                 </div>
               ) : (
@@ -656,6 +1022,43 @@ export default function HistoryDock(p: Props) {
 
         {/* ---------- footer: settings, help, account ---------- */}
         <div className="aq-dock-footer">
+          {p.readsDocked && p.reads.length > 0 && (
+            <section className="aq-dock-reads" aria-label="Water reads">
+              <div className="aq-dock-reads-head">
+                <span className="aq-label">Water reads</span>
+                <button
+                  type="button"
+                  className="aq-hard-link"
+                  onClick={() => p.onFloatReads()}
+                >
+                  Float again
+                </button>
+              </div>
+              {p.reads.slice(0, 4).map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  className="aq-dock-row"
+                  onClick={() => p.onFloatReads(r.id)}
+                >
+                  <span className="aq-dock-row-icon" aria-hidden="true">
+                    <BookOpen size={15} />
+                  </span>
+                  <span className="aq-dock-row-text">
+                    <span className="aq-dock-row-title">{r.title}</span>
+                    <span className="aq-dock-row-meta">
+                      {r.minutes} min read · read or listen
+                    </span>
+                  </span>
+                  <ChevronRight
+                    size={15}
+                    className="aq-dock-row-chev"
+                    aria-hidden="true"
+                  />
+                </button>
+              ))}
+            </section>
+          )}
           {p.onToggleThinking && (
             <button
               type="button"
@@ -684,6 +1087,23 @@ export default function HistoryDock(p: Props) {
               </span>
             </button>
           )}
+          {/* The full catalogue with filters (a Pages Router route). */}
+          <a className="aq-dock-row" href="/shop">
+            <span className="aq-dock-row-icon" aria-hidden="true">
+              <Store size={15} />
+            </span>
+            <span className="aq-dock-row-text">
+              <span className="aq-dock-row-title">Shop all products</span>
+              <span className="aq-dock-row-meta">
+                Browse and filter the whole catalogue
+              </span>
+            </span>
+            <ChevronRight
+              size={15}
+              className="aq-dock-row-chev"
+              aria-hidden="true"
+            />
+          </a>
           <button type="button" className="aq-dock-row" onClick={openExpert}>
             <span className="aq-dock-row-icon" aria-hidden="true">
               <MessageCircle size={15} />
@@ -719,16 +1139,23 @@ export default function HistoryDock(p: Props) {
 
           {p.userName ? (
             <div className="aq-dock-account">
-              <Avatar name={p.userName} size={32} />
-              <span className="aq-dock-row-text">
-                <span className="aq-dock-row-title">{p.userName}</span>
-                <span
-                  className="aq-dock-row-meta"
-                  style={{ color: "var(--aq-mintink)" }}
-                >
-                  Chats, cart and favourites synced
+              <button
+                type="button"
+                className="aq-dock-account-open"
+                onClick={() => p.onOpenProfile()}
+                aria-label={`${p.userName}: profile, addresses and purchases`}
+              >
+                <Avatar name={p.userName} size={32} />
+                <span className="aq-dock-row-text">
+                  <span className="aq-dock-row-title">{p.userName}</span>
+                  <span
+                    className="aq-dock-row-meta"
+                    style={{ color: "var(--aq-mintink)" }}
+                  >
+                    Profile, addresses and purchases
+                  </span>
                 </span>
-              </span>
+              </button>
               <button
                 type="button"
                 className="aq-icon-btn"
@@ -776,6 +1203,10 @@ export default function HistoryDock(p: Props) {
           )}
         </div>
       </aside>
+
+      {menu && menuRow && host && (
+        <ChatMenu at={menu} items={menuItems} host={host} onClose={closeMenu} />
+      )}
     </>
   );
 }

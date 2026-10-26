@@ -23,6 +23,7 @@ import {
 import {
   CheckoutPaymentError,
   findOrder,
+  placeCodOrder,
   quote,
   quoteSessionId,
   startCheckoutPayment,
@@ -30,7 +31,7 @@ import {
 } from "@/utils/aquaCommerce";
 import { aquaConfig, pickDayTheme } from "./config";
 import { useAquaAuth } from "./useAquaAuth";
-import { DEMO_PRODUCTS, loadCatalogue, toStoreItem } from "./catalogue";
+import { DEMO_PRODUCTS, INR, loadCatalogue, toStoreItem } from "./catalogue";
 import { storage, useIsMobile, useReducedMotion } from "./hooks";
 import { readThinkingPref, writeThinkingPref } from "@/services/ai";
 import { useAquaChat } from "./useAquaChat";
@@ -55,6 +56,12 @@ import ShopPopover, { type ShopTab } from "./ShopPopover";
 import AquaTour, { TOUR_KEY } from "./AquaTour";
 import type { Purchase } from "./HistoryDock";
 import { getMyInvoices } from "@/services/invoice";
+import { categoryId, getActiveCoupons, type ActiveCoupon } from "./coupons";
+import ProfileDialog, { type ProfileTab } from "./ProfileDialog";
+import { tabTitle } from "./pageTitle";
+import BlogBar from "./BlogBar";
+import { useBlogReads } from "./useBlogReads";
+import type { ProfileUser } from "./profile";
 
 // Redux slices are plain JS; describe just what Aqua reads.
 type StoreItem = {
@@ -68,15 +75,7 @@ type StoreItem = {
 };
 type UserData = {
   token?: string;
-  user?: {
-    _id?: string;
-    name?: string;
-    firstName?: string;
-    email?: string;
-    phone?: string;
-    addresses?: Address[];
-    selectedAddress?: Address;
-  };
+  user?: ProfileUser;
 } | null;
 type RootState = {
   userData: UserData;
@@ -188,17 +187,23 @@ export default function AquaWorkspace() {
     reducedMotion,
     thinking: showThinking,
     token,
+    owner: (token && userData?.user?._id) || null,
     // The backend rejected the stored token: sign out properly instead of
     // showing a logged-in customer the guest limits.
     onSessionExpired: () => {
       store({ type: "LOGOUT", payload: null });
       showToast("Your session expired. Please log in again.");
     },
-    // A saved conversation came back after a refresh: show it, not the welcome screen.
+    // The chat on screen before a refresh came back: show it, not the welcome screen.
     onResumed: () => {
       if (flowRef.current.state === "welcome") dispatch({ type: "SEND" });
     },
   });
+
+  // Browser tab: the active chat's title, or the platform on a new chat.
+  useEffect(() => {
+    document.title = tabTitle(chat.title);
+  }, [chat.title]);
 
   // ---------- UI chrome ----------
   const [theme, setTheme] = useState<"light" | "dark">(() =>
@@ -220,6 +225,27 @@ export default function AquaWorkspace() {
   const [dragging, setDragging] = useState(false);
   const [dockOpen, setDockOpen] = useState(false);
   const [shop, setShop] = useState<ShopTab | null>(null);
+  // Blog reads: a floating, movable bar until it's closed, then a dock section.
+  const reads = useBlogReads();
+  const [readsDocked, setReadsDocked] = useState(
+    () => storage.get("aqua.reads.docked") === "1",
+  );
+  const [readsFocus, setReadsFocus] = useState<string | null>(null);
+  const dockReads = (docked: boolean) => {
+    setReadsDocked(docked);
+    storage.set("aqua.reads.docked", docked ? "1" : "0");
+  };
+  // Profile dialog (signed in only), open on one of its tabs.
+  const [profileTab, setProfileTab] = useState<ProfileTab | null>(null);
+  const openProfile = (tab: ProfileTab = "profile") => {
+    if (!token) return void auth.signIn();
+    setDockOpen(false);
+    setShop(null);
+    setProfileTab(tab);
+  };
+  useEffect(() => {
+    if (!token) setProfileTab(null);
+  }, [token]);
   const [toast, setToast] = useState("");
   const toastT = useRef<ReturnType<typeof setTimeout>>(undefined);
   const showToast = (t: string) => {
@@ -367,7 +393,12 @@ export default function AquaWorkspace() {
       source,
       items,
       name: prev?.name || u?.name || u?.firstName || "",
-      phone: prev?.phone || u?.phone || "",
+      // Stored as a number on the account; checkout wants the 10 digits.
+      phone:
+        prev?.phone ||
+        String(u?.phone ?? "")
+          .replace(/\D/g, "")
+          .slice(-10),
       email: prev?.email || u?.email || "",
       address:
         prev?.address ||
@@ -378,6 +409,7 @@ export default function AquaWorkspace() {
       slotDay: prev?.slotDay || "",
       slotTime: prev?.slotTime || "",
       coupon: prev?.coupon || chat.offerCode.current || "",
+      payMethod: prev?.payMethod || "online",
     };
   };
 
@@ -538,6 +570,7 @@ export default function AquaWorkspace() {
     if (quoteState.status !== "ready" || quoteState.demo) return;
     const d = draft;
     const address = paymentAddress(d);
+    if (d.payMethod === "cod") return placeCod(kind, d, address);
     // A session is consumed once a payment is created, so a retry quotes again.
     let sessionId = kind === "PAY" ? quoteSessionId(quoteState.data) : null;
     const key = nanoid();
@@ -573,6 +606,71 @@ export default function AquaWorkspace() {
           ? "Your checkout timed out, so the price needs to be checked again. Press Retry to continue."
           : e?.message || "Couldn't start PhonePe.";
         setPayment((p) => (p.key === key ? { ...p, reason } : p));
+        dispatch({ type: "FAILED" });
+      },
+    );
+  };
+
+  // Cash on delivery: no gateway or popup. The server creates the order from
+  // the quoted checkout session; "confirmed" is reached only once it has.
+  const placeCod = (
+    kind: "PAY" | "RETRY",
+    d: CheckoutDraft,
+    address: ReturnType<typeof paymentAddress>,
+  ) => {
+    if (quoteState.status !== "ready" || quoteState.demo) return;
+    const key = nanoid();
+    const requote = async () => {
+      const fresh = await quote(d.items, d.coupon, token);
+      setQuoteState({ status: "ready", demo: false, data: fresh });
+      return quoteSessionId(fresh);
+    };
+    const quoted = kind === "PAY" ? quoteSessionId(quoteState.data) : null;
+    dispatch({ type: kind });
+    setPayment({ ...emptyPayment, live: true, method: "cod", key });
+    (async () => {
+      const sessionId = quoted || (await requote());
+      if (!sessionId)
+        throw new Error("Couldn't price this order. Please try again.");
+      return placeCodOrder(
+        {
+          checkoutSessionId: sessionId,
+          shippingAddress: address,
+          billingAddress: address,
+        },
+        token,
+        requote,
+      );
+    })().then(
+      (order) => {
+        setPayment((p) =>
+          p.key !== key
+            ? p
+            : {
+                ...p,
+                orderId: order?.orderId ? String(order.orderId) : null,
+                serverOrder: {
+                  ...order,
+                  shippingAddress: order?.shippingAddress || address,
+                  installation: { day: d.slotDay, slot: d.slotTime },
+                },
+              },
+        );
+        dispatch({ type: "VERIFIED" });
+        d.items.forEach((i) =>
+          store({ type: "REMOVE_FROM_CART", payload: i.id }),
+        );
+        const due = Number(order?.totalAmount);
+        chat.post(
+          `Your order is placed${due ? `. Pay ${INR(due)} when it's delivered` : ", to be paid on delivery"}. We'll call to confirm the installation slot. Ask me anything about it meanwhile.`,
+        );
+      },
+      (e: Error) => {
+        setPayment((p) =>
+          p.key === key
+            ? { ...p, reason: e?.message || "Couldn't place the order." }
+            : p,
+        );
         dispatch({ type: "FAILED" });
       },
     );
@@ -643,11 +741,12 @@ export default function AquaWorkspace() {
     storage.set("aqua.split", String(Math.round(split)));
   };
 
-  // ---------- purchases: invoices on the signed-in account, for the history dock ----------
-  // Loaded on sign-in, refreshed whenever the dock opens and after an order is
+  // ---------- purchases: invoices on the signed-in account (history dock, profile) ----------
+  // Loaded on sign-in, refreshed whenever the dock or profile opens and after an order is
   // confirmed (so a new invoice shows up). The list stays on screen while it refreshes.
   const [purchases, setPurchases] = useState<Purchase[] | null>(null);
   const orderConfirmed = flow.state === "confirmed";
+  const profileOpen = profileTab !== null;
   useEffect(() => {
     if (!token) return void setPurchases(null);
     let alive = true;
@@ -657,12 +756,28 @@ export default function AquaWorkspace() {
     return () => {
       alive = false;
     };
-  }, [token, dockOpen, orderConfirmed]);
+  }, [token, dockOpen, orderConfirmed, profileOpen]);
+
+  // ---------- active coupons: the dock points each viewed product at the best one ----------
+  const [coupons, setCoupons] = useState<ActiveCoupon[]>([]);
+  useEffect(() => {
+    const ctl = new AbortController();
+    getActiveCoupons(ctl.signal)
+      .then(setCoupons)
+      .catch(() => {});
+    return () => ctl.abort();
+  }, []);
+  const applyCoupon = (code: string) => {
+    // Pre-fills the next checkout; also copied so it can be pasted elsewhere.
+    chat.offerCode.current = code;
+    setDraft((d) => (d ? { ...d, coupon: code } : d));
+    void navigator.clipboard?.writeText(code).catch(() => {});
+    showToast(`${code} will be applied at checkout`);
+  };
 
   // ---------- AI tour: once, on a first visit's start screen; replay from the dock ----------
   const [tourOpen, setTourOpen] = useState(false);
-  const welcomeIdle =
-    flow.state === "welcome" && !chat.messages.length && !chat.resuming;
+  const welcomeIdle = flow.state === "welcome" && !chat.messages.length;
   useEffect(() => {
     if (!welcomeIdle || storage.get(TOUR_KEY)) return;
     const t = setTimeout(() => setTourOpen(true), 1200);
@@ -693,7 +808,9 @@ export default function AquaWorkspace() {
 
   const statusText =
     flow.state === "payment_pending"
-      ? "Waiting for PhonePe…"
+      ? payment.method === "cod"
+        ? "Placing your order…"
+        : "Waiting for PhonePe…"
       : chat.status === "thinking"
         ? "Looking through the catalogue…"
         : chat.status === "streaming"
@@ -741,6 +858,11 @@ export default function AquaWorkspace() {
       draft={draft}
       setDraft={setDraft}
       savedAddresses={userData?.user?.addresses || []}
+      coupons={coupons}
+      categoryOf={(id) => {
+        const p = byId.get(id);
+        return p ? categoryId(p) : "";
+      }}
       quoteState={quoteState}
       setQuoteState={setQuoteState}
       commerceLive={commerceLive}
@@ -773,6 +895,7 @@ export default function AquaWorkspace() {
         mood={mood}
         dark={theme === "dark"}
         statusText={statusText}
+        chatTitle={chat.title}
         catalogueLabel={
           catalogue.loading
             ? "Loading catalogue…"
@@ -796,6 +919,7 @@ export default function AquaWorkspace() {
         userName={userName}
         authBusy={auth.busy}
         onSignIn={auth.signIn}
+        onOpenProfile={() => openProfile()}
         thinking={showThinking}
         onToggleThinking={chat.aiMode === "live" ? toggleThinking : undefined}
       />
@@ -929,6 +1053,12 @@ export default function AquaWorkspace() {
         viewed={viewed
           .map((id) => byId.get(id))
           .filter((p): p is Product => !!p)}
+        favIds={favs.map((f) => f._id)}
+        cartIds={cart.map((c) => c._id)}
+        coupons={coupons}
+        onToggleFav={toggleFav}
+        onAddToCart={(id) => addToCart(id)}
+        onUseCoupon={applyCoupon}
         onClose={() => setDockOpen(false)}
         onNewChat={newChat}
         onRestore={restoreChat}
@@ -936,6 +1066,10 @@ export default function AquaWorkspace() {
           setDockOpen(false);
           setTourOpen(true);
         }}
+        onRenameSaved={chat.renameSaved}
+        onPinSaved={chat.pinSaved}
+        onRenameSession={chat.renameSession}
+        onPinSession={chat.pinSession}
         onDeleteSaved={chat.deleteSaved}
         onDeleteSession={chat.deleteSession}
         onView={view}
@@ -944,6 +1078,14 @@ export default function AquaWorkspace() {
         authError={auth.error}
         onSignIn={auth.signIn}
         onSignOut={auth.signOut}
+        onOpenProfile={openProfile}
+        reads={reads}
+        readsDocked={readsDocked}
+        onFloatReads={(readId) => {
+          setReadsFocus(readId ?? null);
+          dockReads(false);
+          setDockOpen(false);
+        }}
         thinking={showThinking}
         onToggleThinking={chat.aiMode === "live" ? toggleThinking : undefined}
         canView={canDispatch(flow, "VIEW")}
@@ -1104,6 +1246,45 @@ export default function AquaWorkspace() {
           </div>
         </div>
       )}
+
+      {profileTab && token && userData?.user && (
+        <ProfileDialog
+          user={userData.user}
+          token={token}
+          purchases={purchases}
+          initialTab={profileTab}
+          locked={locked}
+          onClose={() => setProfileTab(null)}
+          onSaved={(patch, message) => {
+            store({ type: "UPDATE_USER_DETAILS", payload: patch });
+            showToast(message);
+          }}
+          onSignOut={() => {
+            setProfileTab(null);
+            void auth.signOut();
+          }}
+        />
+      )}
+
+      {/* Out of the way while paying, under an open phone panel and during the tour. */}
+      {!readsDocked &&
+        !tourOpen &&
+        !profileTab &&
+        !(sheetLayout && open) &&
+        !["checkout", "payment_pending", "payment_failed"].includes(
+          flow.state,
+        ) && (
+          <BlogBar
+            reads={reads}
+            bottomOffset={hideComposer ? 0 : composerH + mainPadB}
+            focusId={readsFocus}
+            onDock={() => {
+              setReadsFocus(null);
+              dockReads(true);
+              showToast("Water reads moved to your history sidebar");
+            }}
+          />
+        )}
 
       <AquaTour open={tourOpen} onClose={closeTour} />
     </div>

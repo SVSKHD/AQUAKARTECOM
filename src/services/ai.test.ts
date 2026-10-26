@@ -6,6 +6,7 @@ vi.mock("axios", async (importOriginal) => {
   const post = vi.fn();
   const get = vi.fn();
   const del = vi.fn();
+  const patch = vi.fn();
   return {
     ...actual,
     default: {
@@ -13,6 +14,7 @@ vi.mock("axios", async (importOriginal) => {
       post,
       get,
       delete: del,
+      patch,
       isAxiosError: actual.isAxiosError,
       isCancel: actual.isCancel,
     },
@@ -648,5 +650,53 @@ describe("deleteAiChat", () => {
   it("does nothing without a token", async () => {
     await expect(deleteAiChat("abc", null)).resolves.toBe(false);
     expect(del).not.toHaveBeenCalled();
+  });
+});
+
+const { updateAiChat } = await import("./ai");
+
+describe("updateAiChat", () => {
+  const patch = axios.patch as unknown as ReturnType<typeof vi.fn>;
+  beforeEach(() => patch.mockReset());
+
+  it("sends the rename/pin and returns the saved summary", async () => {
+    patch.mockResolvedValueOnce({
+      data: {
+        success: true,
+        data: {
+          _id: "c1",
+          title: "Villa softener",
+          messageCount: 4,
+          lastMessageAt: "2026-10-25T05:00:00.000Z",
+          pinned: true,
+        },
+      },
+    });
+    await expect(
+      updateAiChat("c1", { title: "Villa softener", pinned: true }, "tok"),
+    ).resolves.toEqual({
+      id: "c1",
+      title: "Villa softener",
+      messageCount: 4,
+      lastMessageAt: "2026-10-25T05:00:00.000Z",
+      pinned: true,
+    });
+    expect(patch.mock.calls[0][0]).toMatch(/\/ai\/chat\/history\/c1$/);
+    expect(patch.mock.calls[0][1]).toEqual({
+      title: "Villa softener",
+      pinned: true,
+    });
+    expect(patch.mock.calls[0][2].headers.Authorization).toBe("Bearer tok");
+  });
+
+  it("returns null when it can't be saved, and asks nothing without a token", async () => {
+    patch.mockRejectedValueOnce(httpError(500));
+    await expect(
+      updateAiChat("c1", { pinned: true }, "tok"),
+    ).resolves.toBeNull();
+    await expect(
+      updateAiChat("c1", { pinned: true }, null),
+    ).resolves.toBeNull();
+    expect(patch).toHaveBeenCalledTimes(1);
   });
 });

@@ -27,15 +27,20 @@ export default function Document() {
 
         {/* Fonts are loaded via next/font/google in _app.js — self-hosted, zero FOIT */}
 
-        {/* Favicon & PWA */}
+        {/* Favicon & PWA: same set (and ?v=) as src/app/layout.tsx, served from public/ */}
+        <link rel="icon" href="/favicon.ico?v=2" sizes="any" />
         <link
           rel="icon"
-          href="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408028/favicon_b3l7y1.ico"
+          href="/icons/icon-32.png?v=2"
+          type="image/png"
+          sizes="32x32"
         />
         <link
           rel="apple-touch-icon"
-          href="https://res.cloudinary.com/aquakartproducts/image/upload/v1695408027/android-chrome-384x384_ijvo24.png"
+          href="/apple-touch-icon.png?v=2"
+          sizes="180x180"
         />
+        <meta name="apple-mobile-web-app-title" content="Aquakart" />
         <link rel="manifest" href="/manifest.json" />
       </Head>
       <body className="antialiased">

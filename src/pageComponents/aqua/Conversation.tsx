@@ -1,14 +1,15 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowDown, X } from "lucide-react";
 import type { Flow } from "@/utils/aquaFlow";
 import logo from "@/assests/logo.png";
 import { quotaLabel } from "@/services/ai";
 import AquaAvatar from "./AquaAvatar";
+import ArrowScroller from "./ArrowScroller";
 import AquaDroplet from "./AquaDroplet";
 import AquaLimitCard from "./AquaLimitCard";
-import AquaReply, { ReplyBlocks } from "./AquaReply";
+import AquaReply from "./AquaReply";
 import AquaThinking from "./AquaThinking";
 import AquaSupportNote from "./AquaSupportNote";
 import { suggestFollowUps } from "@/utils/aiFollowUps";
@@ -16,13 +17,34 @@ import Composer from "./Composer";
 import CompareTable from "./CompareTable";
 import HardnessCard from "./HardnessCard";
 import ProductCard from "./ProductCard";
-import ProductInsight from "./ProductInsight";
 import ReplyActions from "./ReplyActions";
-import { splitReply } from "./replyProducts";
+import WhileYouWait from "./WhileYouWait";
 import { aquaConfig } from "./config";
 import { useReducedMotion } from "./hooks";
 import { ACTION_CHIPS, type AquaChat } from "./useAquaChat";
 import type { ChatMessage, FlowDispatch, Mood, Product } from "./types";
+
+// A reply's product cards in one horizontal row: arrows instead of a
+// scrollbar, cards snap into place and the next one peeks in at the edge so
+// the row reads as scrollable. Desktop shows ~3, phones ~2.
+function ProductGrid({
+  isMobile,
+  children,
+}: {
+  isMobile: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <ArrowScroller
+      axis="x"
+      wrapClassName="aq-cards-wrap"
+      className={`aq-cards-row${isMobile ? " aq-cards-row-sm" : ""}`}
+      label="products"
+    >
+      {children}
+    </ArrowScroller>
+  );
+}
 
 type Props = {
   flow: Flow;
@@ -268,18 +290,8 @@ export default function Conversation(p: Props) {
       .map((id) => p.products.get(id))
       .filter((x): x is Product => !!x);
     const streaming = !m.done && !m.typing;
-    // Once complete, each product Aqua writes about gets its write-up on its own
-    // card; the prose before it stays in the bubble and the rest follows in order.
-    const segments =
-      m.done && !m.error && cards.length
-        ? splitReply(m.full || m.text, cards)
-        : null;
-    const lead = segments?.[0]?.kind === "text" ? segments[0].blocks : null;
-    const after = segments ? segments.slice(lead ? 1 : 0) : [];
-    const covered = new Set(
-      after.flatMap((s) => (s.kind === "product" ? [s.product.id] : [])),
-    );
-    const gridCards = cards.filter((c) => !covered.has(c.id));
+    // The whole answer stays in its bubble; every product it suggests follows
+    // as a portrait card in a grid that grows downwards.
     const bubble = {
       borderRadius: "6px 20px 20px 20px",
       padding: "13px 18px",
@@ -289,7 +301,6 @@ export default function Conversation(p: Props) {
       textWrap: "pretty",
       overflowWrap: "anywhere",
     } as const;
-    let insightNo = 0;
     return (
       <div
         key={m.id}
@@ -384,7 +395,7 @@ export default function Conversation(p: Props) {
               )}
             </div>
           ) : (
-            ((segments ? lead : m.text) || m.thoughts || m.thinkingLive) && (
+            (m.text || m.thoughts || m.thinkingLive) && (
               <div
                 className="aq-card"
                 style={{
@@ -396,14 +407,8 @@ export default function Conversation(p: Props) {
                   <AquaThinking steps={m.thoughts} live={!!m.thinkingLive} />
                 )}
                 {/* Plain text while streaming (no half-parsed markdown), formatted once complete. */}
-                {segments
-                  ? lead && <ReplyBlocks blocks={lead} />
-                  : m.text &&
-                    (streaming ? (
-                      m.text
-                    ) : (
-                      <AquaReply text={m.full || m.text} />
-                    ))}
+                {m.text &&
+                  (streaming ? m.text : <AquaReply text={m.full || m.text} />)}
                 {streaming && m.text && (
                   <span
                     aria-hidden="true"
@@ -423,6 +428,8 @@ export default function Conversation(p: Props) {
               </div>
             )
           )}
+          {/* Slow answer: blog reads to read or listen to meanwhile. */}
+          <WhileYouWait waiting={!m.done && !m.error && !m.text} />
           {m.done && m.note && (
             <div
               style={{
@@ -439,53 +446,14 @@ export default function Conversation(p: Props) {
               {m.note}
             </div>
           )}
-          {after.map((s, i) =>
-            s.kind === "product" ? (
-              <ProductInsight
-                key={s.product.id}
-                product={s.product}
-                index={++insightNo}
-                summary={s.summary}
-                points={s.points}
-                reason={p.chat.reasons[s.product.id]}
-                delay={i * 0.08}
-                selected={p.panelOpen && p.flow.productId === s.product.id}
-                isFav={p.favIds.includes(s.product.id)}
-                inCart={p.cartIds.includes(s.product.id)}
-                inCompare={p.compare.includes(s.product.id)}
-                onOpen={p.onOpen}
-                onToggleFav={p.onToggleFav}
-                onToggleCompare={p.onToggleCompare}
-                onAddToCart={p.onAddToCart}
-              />
-            ) : (
-              <div
-                key={`t${i}`}
-                className="aq-card"
-                style={{
-                  ...bubble,
-                  borderRadius: 20,
-                  animation: `aqAquaIn .5s cubic-bezier(.2,.8,.2,1) ${i * 0.08}s both`,
-                }}
-              >
-                <ReplyBlocks blocks={s.blocks} />
-              </div>
-            ),
-          )}
-          {m.done && gridCards.length > 0 && (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                gap: 12,
-                width: "100%",
-              }}
-            >
-              {gridCards.map((c, i) => (
+          {m.done && cards.length > 0 && (
+            <ProductGrid isMobile={p.isMobile}>
+              {cards.map((c, i) => (
                 <ProductCard
                   key={c.id}
                   product={c}
                   delay={i * 0.08}
+                  compact={p.isMobile}
                   reason={p.chat.reasons[c.id]}
                   selected={p.panelOpen && p.flow.productId === c.id}
                   isFav={p.favIds.includes(c.id)}
@@ -497,7 +465,7 @@ export default function Conversation(p: Props) {
                   onAddToCart={p.onAddToCart}
                 />
               ))}
-            </div>
+            </ProductGrid>
           )}
           {m.done && table.length > 1 && (
             <CompareTable products={table} onOpen={p.onOpen} />
@@ -695,37 +663,9 @@ export default function Conversation(p: Props) {
                 }}
               >
                 {firstName
-                  ? "Your chats, cart and favourites are saved. Pick up where you left off or ask me something new."
+                  ? "This is a new chat. Your earlier chats are in History: open one to pick up where you left off, or ask me something new."
                   : "Tell me about your water and your home. I'll suggest what fits, and you can buy without leaving this chat."}
               </p>
-              {p.chat.resuming && (
-                <p
-                  role="status"
-                  style={{
-                    margin: "4px 0 0",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 8,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: "var(--aq-mintink)",
-                  }}
-                >
-                  <span
-                    aria-hidden="true"
-                    style={{
-                      width: 14,
-                      height: 14,
-                      borderRadius: "50%",
-                      border: "2px solid var(--aq-mintbd)",
-                      borderTopColor: "#10BFA4",
-                      animation: "aqSpin .9s linear infinite",
-                    }}
-                  />
-                  Restoring your last chat…
-                </p>
-              )}
             </div>
             <HardnessCard onAsk={p.onSend} compact={p.isMobile} />
             <div

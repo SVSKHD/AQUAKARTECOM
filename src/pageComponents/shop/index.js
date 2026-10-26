@@ -13,6 +13,7 @@ import {
   RotateCcw,
   Search,
   SlidersHorizontal,
+  Sparkles,
   X,
 } from "lucide-react";
 import AquaLayout from "@/components/Layout/Layout";
@@ -22,6 +23,7 @@ import ProductServiceOperations from "@/services/products";
 import { getProductReviewStats } from "@/utils/reviewStats";
 import ProductGrid from "./productGrid";
 import ShopFiltersPanel from "./shopFilter";
+import { CategoryRail, CouponStrip, QuickFilters } from "./shopQuickFilters";
 
 const defaultFilters = {
   query: "",
@@ -446,11 +448,7 @@ const AquaShopPageComponent = ({
   );
 
   return (
-    <AquaLayout
-      path="shop"
-      productListData={schemaProducts}
-      allowPageSticky
-    >
+    <AquaLayout path="shop" productListData={schemaProducts} allowPageSticky>
       {loading ? (
         <div className="relative min-h-screen overflow-x-clip px-3 pb-16 pt-6 sm:px-5 lg:px-7">
           <div className="mx-auto max-w-[1480px]">
@@ -467,7 +465,10 @@ const AquaShopPageComponent = ({
                   <div className="aqua-shimmer-block h-10 rounded-xl" />
                   <div className="mt-5 space-y-3">
                     {Array.from({ length: 7 }).map((_, index) => (
-                      <div key={index} className="aqua-shimmer-block h-9 rounded-xl" />
+                      <div
+                        key={index}
+                        className="aqua-shimmer-block h-9 rounded-xl"
+                      />
                     ))}
                   </div>
                 </div>
@@ -507,6 +508,33 @@ const AquaShopPageComponent = ({
           <div className="pointer-events-none absolute right-[-12rem] top-[36rem] h-[30rem] w-[30rem] rounded-full bg-sky-200/20 blur-[120px]" />
 
           <div className="relative mx-auto max-w-[1480px]">
+            <header className="relative mb-5 mt-3 overflow-hidden rounded-[2rem] border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-5 py-6 sm:px-8 sm:py-8">
+              <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-emerald-200/40 blur-3xl" />
+              <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                <div className="max-w-2xl">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">
+                    Aquakart shop
+                  </span>
+                  <h1 className="mt-2 text-3xl font-black tracking-[-0.06em] text-slate-950 sm:text-5xl">
+                    Softeners, purifiers &amp; filters
+                  </h1>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    {products.length} products from {derivedMeta.brands.length}{" "}
+                    brands. Tap a category or a quick filter to narrow it down;
+                    everything updates instantly.
+                  </p>
+                </div>
+                <a
+                  href="/"
+                  className="inline-flex min-h-12 shrink-0 items-center gap-2 self-start rounded-full bg-slate-950 px-5 text-xs font-black text-white transition hover:bg-emerald-700 sm:self-auto"
+                >
+                  <Sparkles size={15} /> Not sure? Ask Aqua
+                </a>
+              </div>
+            </header>
+
+            <CouponStrip />
+
             <section id="shop-products" className="scroll-mt-28">
               <div className="grid items-start gap-6 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[310px_minmax(0,1fr)]">
                 <aside className="hidden lg:block lg:self-stretch">
@@ -516,9 +544,9 @@ const AquaShopPageComponent = ({
                         <span className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-700">
                           Refine products
                         </span>
-                        <h1 className="mt-1 text-xl font-black tracking-[-0.05em] text-slate-950">
+                        <h2 className="mt-1 text-xl font-black tracking-[-0.05em] text-slate-950">
                           Filters
-                        </h1>
+                        </h2>
                       </div>
                       {activeFilterChips.length ? (
                         <button
@@ -659,6 +687,23 @@ const AquaShopPageComponent = ({
                         {filteredAndSortedProducts.length} results
                       </span>
                     </div>
+                  </div>
+
+                  <div className="mb-4 flex flex-col gap-2">
+                    <CategoryRail
+                      categories={derivedMeta.categories}
+                      counts={derivedMeta.categoryCounts}
+                      total={products.length}
+                      value={filters.category}
+                      onChange={(value) =>
+                        handleFilterChange("category", value)
+                      }
+                    />
+                    <QuickFilters
+                      filters={filters}
+                      priceMax={derivedMeta.priceRange.max}
+                      onFilterChange={handleFilterChange}
+                    />
                   </div>
 
                   <AnimatePresence mode="popLayout">

@@ -13,6 +13,8 @@ type Props = {
   inCompare: boolean;
   selected: boolean;
   delay?: number;
+  // Narrow (two to a row on a phone): no reason note, shorter title, actions on two rows.
+  compact?: boolean;
   // Replaces ProductCardTwo's router.push(productHref): opening a product is a flow action.
   onOpen: (productId: string) => void;
   onToggleFav: (productId: string) => void;
@@ -75,6 +77,7 @@ export default function ProductCard({
   inCompare,
   selected,
   delay = 0,
+  compact = false,
   onOpen,
   onToggleFav,
   onToggleCompare,
@@ -193,14 +196,34 @@ export default function ProductCard({
         }}
       >
         <span className="aq-label">{p.brand}</span>
-        <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.3 }}>
+        <span
+          title={compact ? p.title : undefined}
+          style={{
+            fontSize: compact ? 13.5 : 15,
+            fontWeight: 700,
+            lineHeight: 1.3,
+            ...(compact && {
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }),
+          }}
+        >
           {p.title}
         </span>
         <SoftenerBadges product={p} />
-        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "baseline",
+            columnGap: 8,
+          }}
+        >
           <span
             className="aq-display"
-            style={{ fontSize: 18, fontWeight: 700 }}
+            style={{ fontSize: compact ? 16 : 18, fontWeight: 700 }}
           >
             {INR(p.price)}
           </span>
@@ -219,7 +242,7 @@ export default function ProductCard({
         {spec && (
           <span style={{ fontSize: 12, color: "var(--aq-mut)" }}>{spec}</span>
         )}
-        {reason && (
+        {reason && !compact && (
           <div
             style={{
               background: "rgba(var(--aq-mintrgb),.95)",
@@ -235,16 +258,25 @@ export default function ProductCard({
           </div>
         )}
       </div>
-      <div style={{ display: "flex", gap: 6, padding: "0 4px 4px" }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: compact ? "wrap" : undefined,
+          gap: 6,
+          padding: "0 4px 4px",
+          marginTop: compact ? "auto" : undefined,
+        }}
+      >
         <button
           type="button"
           onClick={() => onToggleCompare(p.id)}
           aria-pressed={inCompare}
           className="aq-btn"
           style={{
-            flex: 1,
+            flex: compact ? "1 1 0" : 1,
+            minWidth: 0,
             height: 36,
-            padding: "0 10px",
+            padding: compact ? "0 6px" : "0 10px",
             fontSize: 12.5,
             border: `1px solid ${inCompare ? "#10BFA4" : "var(--aq-bd)"}`,
             background: inCompare ? "var(--aq-mint)" : "var(--aq-surf)",
@@ -275,7 +307,13 @@ export default function ProductCard({
           type="button"
           className="aq-btn aq-btn-dark"
           onClick={() => onOpen(p.id)}
-          style={{ flex: 1.3, height: 36, padding: "0 10px", fontSize: 12.5 }}
+          style={{
+            flex: compact ? "1 0 100%" : 1.3,
+            order: compact ? 3 : undefined,
+            height: 36,
+            padding: "0 10px",
+            fontSize: 12.5,
+          }}
         >
           View
         </button>

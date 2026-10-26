@@ -338,6 +338,7 @@ export type AiChatSummary = {
   title: string;
   messageCount: number;
   lastMessageAt: string;
+  pinned: boolean;
 };
 export type AiSavedChat = { id: string; title: string; messages: AiTurn[] };
 
@@ -356,7 +357,15 @@ async function asCustomer<T>(
   }
 }
 
-// Most recent first.
+const toSummary = (s: Record<string, unknown>): AiChatSummary => ({
+  id: String(s._id),
+  title: typeof s.title === "string" ? s.title : "Chat",
+  messageCount: Number(s.messageCount) || 0,
+  lastMessageAt: typeof s.lastMessageAt === "string" ? s.lastMessageAt : "",
+  pinned: s.pinned === true,
+});
+
+// Pinned first, then most recent.
 export const listAiChats = (
   token: string | null | undefined,
   { limit = 20 }: { limit?: number } = {},
@@ -372,15 +381,32 @@ export const listAiChats = (
       const list = Array.isArray(res.data?.data) ? res.data.data : [];
       return list
         .filter((s: Record<string, unknown>) => s && s._id)
-        .map((s: Record<string, unknown>) => ({
-          id: String(s._id),
-          title: typeof s.title === "string" ? s.title : "Chat",
-          messageCount: Number(s.messageCount) || 0,
-          lastMessageAt:
-            typeof s.lastMessageAt === "string" ? s.lastMessageAt : "",
-        }));
+        .map(toSummary);
     },
     [],
+  );
+
+export const CHAT_TITLE_MAX = 80;
+
+// Renames and/or pins a saved chat. Returns the updated summary, or null if it
+// couldn't be saved (the caller rolls its optimistic change back).
+export const updateAiChat = (
+  id: string,
+  patch: { title?: string; pinned?: boolean },
+  token: string | null | undefined,
+) =>
+  asCustomer<AiChatSummary | null>(
+    token,
+    async (headers) => {
+      const res = await axios.patch(
+        `${BASE}/ai/chat/history/${encodeURIComponent(id)}`,
+        patch,
+        { headers, timeout: 15_000 },
+      );
+      const s = res.data?.data;
+      return s?._id ? toSummary(s) : null;
+    },
+    null,
   );
 
 // One saved chat, as { role: user | assistant, text } turns. null if it can't be read.

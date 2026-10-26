@@ -7,6 +7,7 @@ import {
   AiError,
   carryGuestQuota,
   deleteAiChat,
+  updateAiChat,
   getAiChat,
   getAiQuota,
   getAiStatus,
@@ -58,6 +59,90 @@ export type ChatSession = {
   at: number;
   // The account chat it was saved to, if any.
   sessionId?: string | null;
+  pinned?: boolean;
+};
+
+// Successful exchanges in a transcript, in the server's history format.
+const historyFrom = (ms: ChatMessage[]): AiTurn[] =>
+  ms
+    .filter(
+      (m) =>
+        !m.typing &&
+        !m.error &&
+        !m.stopped &&
+        !m.unanswered &&
+        (m.role === "user" || m.full || m.text),
+    )
+    .map((m) => ({
+      role: m.role === "user" ? ("user" as const) : ("assistant" as const),
+      text: m.full || m.text,
+    }))
+    .slice(-AI_HISTORY_MAX);
+
+// ---------- this tab's chats survive a refresh ----------
+// sessionStorage, not localStorage: a refresh comes back to the chat on screen
+// (and this visit's earlier ones), while a new tab or visit opens on a new chat.
+// `owner` is the account the saved-chat ids belong to, so another login on this
+// tab never continues someone else's conversation.
+export const TAB_CHAT_KEY = "aqua.chat.tab";
+type TabChats = {
+  owner: string | null;
+  active: ChatSession | null;
+  sessions: ChatSession[];
+};
+const MAX_STORED_MESSAGES = 80;
+
+const isMessage = (m: unknown): m is ChatMessage => {
+  const o = m as ChatMessage | null;
+  return (
+    !!o &&
+    typeof o.id === "string" &&
+    (o.role === "user" || o.role === "aqua") &&
+    typeof o.text === "string"
+  );
+};
+const asSession = (v: unknown): ChatSession | null => {
+  const o = v as ChatSession | null;
+  if (!o || typeof o.id !== "string" || !Array.isArray(o.messages)) return null;
+  const messages = o.messages.filter(isMessage);
+  if (!messages.some((m) => m.role === "user")) return null;
+  return {
+    id: o.id,
+    title: typeof o.title === "string" ? o.title : messages[0].text,
+    messages,
+    at: Number(o.at) || Date.now(),
+    sessionId: typeof o.sessionId === "string" ? o.sessionId : null,
+    pinned: o.pinned === true,
+  };
+};
+
+export const readTabChats = (): TabChats => {
+  const empty: TabChats = { owner: null, active: null, sessions: [] };
+  try {
+    const raw = window.sessionStorage.getItem(TAB_CHAT_KEY);
+    if (!raw) return empty;
+    const v = JSON.parse(raw) as Partial<TabChats>;
+    return {
+      owner: typeof v.owner === "string" ? v.owner : null,
+      active: asSession(v.active),
+      sessions: (Array.isArray(v.sessions) ? v.sessions : [])
+        .map(asSession)
+        .filter((x): x is ChatSession => !!x)
+        .slice(0, 20),
+    };
+  } catch {
+    return empty;
+  }
+};
+
+const writeTabChats = (v: TabChats) => {
+  try {
+    if (!v.active && !v.sessions.length)
+      window.sessionStorage.removeItem(TAB_CHAT_KEY);
+    else window.sessionStorage.setItem(TAB_CHAT_KEY, JSON.stringify(v));
+  } catch {
+    // full or blocked storage: the chat just won't survive a refresh
+  }
 };
 
 const NEED_LABEL: Record<Need, string> = {
@@ -80,7 +165,9 @@ type Options = {
   token?: string | null;
   // The server rejected `token` (expired / another environment's): end the session.
   onSessionExpired?: () => void;
-  // A saved conversation was loaded back in (after a refresh or login).
+  // The signed-in customer's id; scopes the chats this tab keeps across a refresh.
+  owner?: string | null;
+  // The chat on screen came back after a refresh.
   onResumed?: () => void;
 };
 
@@ -92,6 +179,7 @@ export function useAquaChat({
   thinking = true,
   token = null,
   onSessionExpired,
+  owner = null,
   onResumed,
 }: Options) {
   const authCallbacks = useRef({ onSessionExpired, onResumed });
@@ -106,15 +194,25 @@ export function useAquaChat({
   useEffect(() => {
     tokenRef.current = token;
   }, [token]);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const ownerRef = useRef(owner);
+  useEffect(() => {
+    ownerRef.current = owner;
+  }, [owner]);
+  // What this tab had on screen before a refresh (read once, on mount).
+  const [boot] = useState(readTabChats);
+  // Account the restored saved-chat ids belong to, until the login is known.
+  const bootOwnerRef = useRef(boot.owner);
+  const [messages, setMessages] = useState<ChatMessage[]>(
+    () => boot.active?.messages || [],
+  );
   const [status, setStatus] = useState<ChatStatus>("idle");
   const [reasons, setReasons] = useState<Record<string, string>>({});
   const [happy, setHappy] = useState(false);
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [sessions, setSessions] = useState<ChatSession[]>(boot.sessions);
   const [aiMode, setAiMode] = useState<AiMode>("checking");
 
   // Successful turns only (what the server saw), oldest first. Failed turns never enter it.
-  const aiHistory = useRef<AiTurn[]>([]);
+  const aiHistory = useRef<AiTurn[]>(historyFrom(boot.active?.messages || []));
   const abortRef = useRef<AbortController | null>(null);
   const aiReady = useRef<Promise<boolean> | null>(null);
   useEffect(() => {
@@ -139,12 +237,11 @@ export function useAquaChat({
   }, []);
   // ---------- saved conversations (logged-in customers; guests aren't stored) ----------
   // The customer's saved conversation; null means the next answer starts one.
-  const sessionIdRef = useRef<string | null>(null);
+  const sessionIdRef = useRef<string | null>(boot.active?.sessionId ?? null);
   // Answers this tab got as a guest (per the server's quota tier). On login they
   // are carried into the account's daily count and the chat continues.
   const guestAnswersRef = useRef(0);
   const prevTokenRef = useRef<string | null>(token);
-  const [resuming, setResuming] = useState(false);
 
   // The account's saved conversations, most recent first (the history dock lists them).
   const [savedChats, setSavedChats] = useState<AiChatSummary[]>([]);
@@ -154,47 +251,46 @@ export function useAquaChat({
     return list;
   };
 
+  // The server keeps only the text of a saved chat, so its product cards are
+  // rebuilt when it opens: the cards this tab already showed for the same reply
+  // (on screen or earlier this visit), else the products the reply names, else
+  // the catalogue picks a live answer to that question would get.
   const showSaved = (chat: AiSavedChat) => {
     sessionIdRef.current = chat.id;
     aiHistory.current = chat.messages.slice(-AI_HISTORY_MAX);
     req.current = {};
     lastPicks.current = [];
+    const shown = new Map<string, string[]>();
+    for (const m of [
+      ...messagesRef.current,
+      ...sessionsRef.current.flatMap((x) => x.messages),
+    ])
+      if (m.role === "aqua" && m.products?.length)
+        shown.set((m.full || m.text).trim(), m.products);
+    let asked = "";
     setMessages(
-      chat.messages.map((t) =>
-        t.role === "user"
-          ? { id: uid("u"), role: "user", text: t.text }
-          : {
-              id: uid("a"),
-              role: "aqua",
-              text: t.text,
-              full: t.text,
-              done: true,
-              ai: true,
-            },
-      ),
+      chat.messages.map((t): ChatMessage => {
+        if (t.role === "user") {
+          asked = t.text;
+          return { id: uid("u"), role: "user", text: t.text };
+        }
+        const named = mentionedProducts(t.text, productsRef.current);
+        const products =
+          shown.get(t.text.trim()) ||
+          (named.length ? named : catalogueMatches(asked, t.text, {}));
+        if (products.length) lastPicks.current = products;
+        return {
+          id: uid("a"),
+          role: "aqua",
+          text: t.text,
+          full: t.text,
+          done: true,
+          ai: true,
+          products: products.length ? products : undefined,
+          chips: products.length > 1 ? ["Compare these"] : undefined,
+        };
+      }),
     );
-  };
-
-  // Refresh (or a login with an empty chat): load the latest saved conversation.
-  const resumeLatest = async (tok: string, signal: AbortSignal) => {
-    setResuming(true);
-    try {
-      const [latest] = await refreshSaved(tok);
-      if (!latest || signal.aborted) return;
-      const chat = await getAiChat(latest.id, tok);
-      const asked = messagesRef.current.some((m) => m.role === "user");
-      if (
-        !chat?.messages.length ||
-        signal.aborted ||
-        asked ||
-        tokenRef.current !== tok
-      )
-        return;
-      showSaved(chat);
-      authCallbacks.current.onResumed?.();
-    } finally {
-      setResuming(false);
-    }
   };
 
   // On open and whenever the customer logs in or out (a login lifts the guest limit).
@@ -202,11 +298,17 @@ export function useAquaChat({
     const ctl = new AbortController();
     const was = prevTokenRef.current;
     prevTokenRef.current = token;
-    // Saved chats belong to the account: a logout starts fresh.
+    // Saved chats belong to the account: a logout starts fresh, and so does
+    // a different account signing in on a refreshed tab.
     if (!token) {
-      sessionIdRef.current = null;
+      if (was) dropAccountChats();
       setSavedChats([]);
-    }
+    } else if (
+      bootOwnerRef.current &&
+      bootOwnerRef.current !== ownerRef.current
+    )
+      dropAccountChats();
+    if (token) bootOwnerRef.current = null;
     (aiReady.current || getAiStatus()).then(async (live) => {
       if (!live || ctl.signal.aborted) return;
       // Logged in after chatting as a guest: keep this conversation (the next
@@ -224,15 +326,18 @@ export function useAquaChat({
       const q = await getAiQuota(token, { signal: ctl.signal });
       if (ctl.signal.aborted) return;
       applyQuota(q);
-      if (!token) return;
-      if (!messagesRef.current.some((m) => m.role === "user"))
-        await resumeLatest(token, ctl.signal);
-      else void refreshSaved(token);
+      // The dock lists them; the chat on screen stays (a new visit opens on a new chat).
+      if (token) void refreshSaved(token);
     });
     return () => ctl.abort();
-    // resumeLatest reads refs only
+    // dropAccountChats / refreshSaved read refs and setters only
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, applyQuota]);
+
+  // The chat on screen came back from before a refresh: tell the UI once.
+  useEffect(() => {
+    if (boot.active) authCallbacks.current.onResumed?.();
+  }, [boot]);
 
   // The server rejected the current token: the UI ends the session (see onSessionExpired).
   useEffect(
@@ -256,7 +361,7 @@ export function useAquaChat({
   const rmRef = useRef(reducedMotion);
   const compareRef = useRef({ getCompare, clearCompare });
   const statusRef = useRef<ChatStatus>("idle");
-  const messagesRef = useRef<ChatMessage[]>([]);
+  const messagesRef = useRef<ChatMessage[]>(messages);
   useEffect(() => {
     productsRef.current = products;
     rmRef.current = reducedMotion;
@@ -1141,6 +1246,12 @@ export function useAquaChat({
   );
 
   // Snapshot of the current conversation for the history dock, or null if it has no user turn.
+  // Name and pin of the this-visit chat on screen (set when one is reopened), so
+  // a renamed or pinned chat keeps both when it goes back into the list.
+  const localMetaRef = useRef<{ title?: string; pinned?: boolean }>({
+    title: boot.active?.title,
+    pinned: boot.active?.pinned,
+  });
   const snapshot = (): ChatSession | null => {
     const ms = messagesRef.current;
     const first = ms.find((m) => m.role === "user");
@@ -1150,29 +1261,51 @@ export function useAquaChat({
       .map((m) => ({ ...m, text: m.full || m.text, done: true }));
     return {
       id: uid("s"),
-      title: first.text,
+      title: localMetaRef.current.title || first.text,
       messages: done,
       at: Date.now(),
       sessionId: sessionIdRef.current,
+      pinned: localMetaRef.current.pinned,
     };
   };
 
-  // Successful exchanges in a transcript, in the server's history format.
-  const historyFrom = (ms: ChatMessage[]): AiTurn[] =>
-    ms
-      .filter(
-        (m) =>
-          !m.typing &&
-          !m.error &&
-          !m.stopped &&
-          !m.unanswered &&
-          (m.role === "user" || m.full || m.text),
-      )
-      .map((m) => ({
-        role: m.role === "user" ? ("user" as const) : ("assistant" as const),
-        text: m.full || m.text,
-      }))
-      .slice(-AI_HISTORY_MAX);
+  // Keeps this tab's chats in sessionStorage whenever an answer settles (not on
+  // every streamed chunk), so a refresh lands back on the same conversation.
+  const sessionsRef = useRef(sessions);
+  const persistTab = () => {
+    const snap = snapshot();
+    const active = snap && {
+      ...snap,
+      messages: snap.messages.slice(-MAX_STORED_MESSAGES),
+    };
+    const list = sessionsRef.current;
+    const hasAccountIds = !!active?.sessionId || list.some((x) => x.sessionId);
+    writeTabChats({
+      owner: hasAccountIds ? ownerRef.current : null,
+      active,
+      sessions: list,
+    });
+  };
+  useEffect(() => {
+    sessionsRef.current = sessions;
+    if (status === "idle") persistTab();
+    // persistTab reads refs only
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, sessions, status]);
+
+  // Signed out (or another account): the chats on screen stay, but stop saving
+  // to the old account; the next answer starts a new saved conversation.
+  const dropAccountChats = () => {
+    sessionIdRef.current = null;
+    bootOwnerRef.current = null;
+    const strip = (list: ChatSession[]) =>
+      list.some((x) => x.sessionId)
+        ? list.map((x) => ({ ...x, sessionId: null }))
+        : list;
+    sessionsRef.current = strip(sessionsRef.current);
+    setSessions(strip);
+    persistTab();
+  };
 
   const clear = useCallback(() => {
     stopTimers();
@@ -1181,6 +1314,7 @@ export function useAquaChat({
     liveRef.current = null;
     aiHistory.current = [];
     const snap = snapshot();
+    localMetaRef.current = {};
     // New chat: the next answer starts a new saved conversation.
     sessionIdRef.current = null;
     pendingRef.current = null;
@@ -1204,6 +1338,7 @@ export function useAquaChat({
       liveRef.current = null;
       aiHistory.current = historyFrom(s.messages);
       const snap = snapshot();
+      localMetaRef.current = { title: s.title, pinned: s.pinned };
       // Keeps saving to the account chat it came from, if any.
       sessionIdRef.current = s.sessionId ?? null;
       pendingRef.current = null;
@@ -1236,6 +1371,7 @@ export function useAquaChat({
       pendingRef.current = null;
       flushRef.current = null;
       const snap = snapshot();
+      localMetaRef.current = {};
       if (snap && !snap.sessionId)
         setSessions((s) => [snap, ...s].slice(0, 20));
       showSaved(saved);
@@ -1266,8 +1402,71 @@ export function useAquaChat({
     return true;
   }, []);
 
+  // Rename / pin a chat saved to the account: shown at once, saved to the
+  // server, and put back if the server refuses. Resolves to whether it stuck.
+  const updateSaved = useCallback(
+    async (id: string, patch: { title?: string; pinned?: boolean }) => {
+      const tok = tokenRef.current;
+      let before: AiChatSummary | undefined;
+      setSavedChats((list) =>
+        list.map((s) => {
+          if (s.id !== id) return s;
+          before = s;
+          return { ...s, ...patch };
+        }),
+      );
+      const saved = await updateAiChat(id, patch, tok);
+      if (tokenRef.current !== tok) return false;
+      setSavedChats((list) =>
+        list.map((s) =>
+          s.id !== id ? s : saved ? { ...s, ...saved } : before || s,
+        ),
+      );
+      return !!saved;
+    },
+    [],
+  );
+  const renameSaved = useCallback(
+    (id: string, title: string) => updateSaved(id, { title }),
+    [updateSaved],
+  );
+  const pinSaved = useCallback(
+    (id: string, pinned: boolean) => updateSaved(id, { pinned }),
+    [updateSaved],
+  );
+
+  // Same for this visit's earlier chats; nothing to save anywhere.
+  const updateSession = useCallback(
+    (id: string, patch: { title?: string; pinned?: boolean }) => {
+      setSessions((list) =>
+        list.map((s) => (s.id === id ? { ...s, ...patch } : s)),
+      );
+      return true;
+    },
+    [],
+  );
+  const renameSession = useCallback(
+    (id: string, title: string) => updateSession(id, { title }),
+    [updateSession],
+  );
+  const pinSession = useCallback(
+    (id: string, pinned: boolean) => updateSession(id, { pinned }),
+    [updateSession],
+  );
+
+  // Title of the chat on screen (null on a new chat): the account's name for it
+  // when saved (so a rename shows straight away), else the name it was reopened
+  // with, else the first question.
+  const firstAsk = messages.find((m) => m.role === "user");
+  const title = firstAsk
+    ? savedChats.find((s) => s.id === sessionIdRef.current)?.title ||
+      localMetaRef.current.title ||
+      firstAsk.text
+    : null;
+
   return {
     messages,
+    title,
     status,
     reasons,
     happy,
@@ -1276,7 +1475,6 @@ export function useAquaChat({
     aiMode,
     quota,
     limit,
-    resuming,
     send,
     retry,
     say,
@@ -1289,6 +1487,10 @@ export function useAquaChat({
     openSaved,
     deleteSaved,
     deleteSession,
+    renameSaved,
+    pinSaved,
+    renameSession,
+    pinSession,
   };
 }
 

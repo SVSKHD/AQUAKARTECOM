@@ -27,10 +27,33 @@ const mono = Roboto_Mono({
   variable: "--font-roboto-mono",
 });
 
+const ICON_V = 2;
+
 export const metadata: Metadata = {
   title: { default: "Aqua · Aquakart AI", template: "%s · Aquakart" },
   description:
     "Chat with Aqua to find the right water softener or purifier and buy it without leaving the conversation.",
+  // Same set as src/pages/_document.js, served from public/. Bump ICON_V when
+  // the icons change: browsers keep a cached favicon otherwise.
+  icons: {
+    icon: [
+      { url: `/favicon.ico?v=${ICON_V}`, sizes: "any" },
+      {
+        url: `/icons/icon-32.png?v=${ICON_V}`,
+        sizes: "32x32",
+        type: "image/png",
+      },
+    ],
+    apple: [
+      {
+        url: `/apple-touch-icon.png?v=${ICON_V}`,
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+  },
+  manifest: "/manifest.json",
+  appleWebApp: { capable: true, title: "Aquakart", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

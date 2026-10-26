@@ -151,6 +151,9 @@ export default function PaymentStatus({
       ? quoteState.data.payableAmount
       : null);
 
+  // Cash on delivery: no gateway window to wait for, and nothing paid yet.
+  const cod = payment.method === "cod";
+
   // ---------- confirmed ----------
   if (flow.state === "confirmed") {
     const demo = !payment.live;
@@ -222,7 +225,9 @@ export default function PaymentStatus({
           >
             {demo
               ? "This is what your confirmation will look like"
-              : "Order confirmed"}
+              : cod
+                ? "Order placed"
+                : "Order confirmed"}
           </h2>
           <p
             style={{
@@ -234,7 +239,9 @@ export default function PaymentStatus({
           >
             {demo
               ? "No payment was taken and no order was placed. On the live site this screen appears only after Aquakart's server verifies your PhonePe payment."
-              : "Aquakart received your payment. We'll call to confirm the installation slot."}
+              : cod
+                ? "Aquakart has your order. Pay when it's delivered; we'll call to confirm the installation slot."
+                : "Aquakart received your payment. We'll call to confirm the installation slot."}
           </p>
           <dl
             className="aq-card"
@@ -262,7 +269,9 @@ export default function PaymentStatus({
             </dd>
             {total != null && !demo && (
               <>
-                <dt style={{ color: "var(--aq-mut)" }}>Paid</dt>
+                <dt style={{ color: "var(--aq-mut)" }}>
+                  {cod ? "Pay on delivery" : "Paid"}
+                </dt>
                 <dd style={{ margin: 0, fontWeight: 800, textAlign: "right" }}>
                   {INR(Number(total))}
                 </dd>
@@ -364,7 +373,7 @@ export default function PaymentStatus({
               className="aq-display"
               style={{ margin: 0, fontSize: 24, fontWeight: 700 }}
             >
-              Payment not completed
+              {cod ? "Order not placed" : "Payment not completed"}
             </h2>
             <p
               role="alert"
@@ -375,7 +384,8 @@ export default function PaymentStatus({
                 color: "var(--aq-body)",
               }}
             >
-              {payment.reason || NOT_COMPLETED}
+              {payment.reason ||
+                (cod ? "Couldn't place the order. Try again." : NOT_COMPLETED)}
             </p>
             <div
               style={{
@@ -390,7 +400,7 @@ export default function PaymentStatus({
                 className="aq-btn aq-btn-primary"
                 onClick={onRetry}
               >
-                Retry payment
+                {cod ? "Try again" : "Retry payment"}
               </button>
               <button
                 type="button"
@@ -407,6 +417,40 @@ export default function PaymentStatus({
                 Close
               </button>
             </div>
+          </>
+        ) : payment.live && cod ? (
+          <>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span
+                aria-hidden="true"
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: "50%",
+                  border: "2.5px solid var(--aq-mintbd)",
+                  borderTopColor: "#008B68",
+                  animation: "aqSpin .9s linear infinite",
+                }}
+              />
+              <h2
+                className="aq-display"
+                role="status"
+                style={{ margin: 0, fontSize: 22, fontWeight: 700 }}
+              >
+                Placing your order…
+              </h2>
+            </div>
+            <p
+              style={{
+                margin: 0,
+                fontSize: 15,
+                lineHeight: 1.6,
+                color: "var(--aq-body)",
+              }}
+            >
+              Confirming it with Aquakart. Nothing is charged now: you pay when
+              it&apos;s delivered.
+            </p>
           </>
         ) : payment.live ? (
           <>

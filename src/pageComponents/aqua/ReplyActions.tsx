@@ -44,7 +44,20 @@ const pickVoice = (s: SpeechSynthesis) => {
   );
 };
 
-const speak = (id: string, text: string) => {
+// Also used by the blog podcast, so a reply and a blog never talk over each other.
+export const useSpeaking = (id: string) =>
+  useSyncExternalStore(
+    subscribe,
+    () => speakingId === id,
+    () => false,
+  );
+
+export const canSpeak = () => !!synth();
+
+// Which reply or blog is being read right now, for cleanups outside render.
+export const speakingNow = () => speakingId;
+
+export const speak = (id: string, text: string) => {
   const s = synth();
   if (!s) return;
   s.cancel();
@@ -93,12 +106,8 @@ export default function ReplyActions({
   text: string;
 }) {
   const [copied, setCopied] = useState(false);
-  const speaking = useSyncExternalStore(
-    subscribe,
-    () => speakingId === id,
-    () => false,
-  );
-  const canSpeak = typeof window !== "undefined" && !!synth();
+  const speaking = useSpeaking(id);
+  const speakable = canSpeak();
 
   // Stop reading a reply that leaves the screen (new chat, history switch).
   useEffect(
@@ -151,7 +160,7 @@ export default function ReplyActions({
         {copied ? <Check size={14} /> : <Copy size={14} />}
         {copied ? "Copied" : "Copy"}
       </button>
-      {canSpeak && (
+      {speakable && (
         <button
           type="button"
           className="aq-btn-ghost"

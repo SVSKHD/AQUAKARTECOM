@@ -104,6 +104,10 @@ export type Address = {
   postalCode: string;
 };
 
+// Online: PhonePe (UPI, cards, net banking, wallets). COD: the order is placed
+// now and paid when it's delivered (POST /checkout/orders/cod).
+export type PayMethod = "online" | "cod";
+
 export type CheckoutDraft = {
   source: CheckoutSource;
   items: CheckoutItem[];
@@ -115,10 +119,12 @@ export type CheckoutDraft = {
   slotDay: string;
   slotTime: string;
   coupon: string;
+  payMethod: PayMethod;
 };
 
 export type PaymentInfo = {
   live: boolean;
+  method: PayMethod;
   // Idempotency key of this attempt (also identifies it locally).
   key: string | null;
   // POST /payments attempt id, polled with GET /payments/:id.
@@ -135,6 +141,7 @@ export type PaymentInfo = {
 
 export const emptyPayment: PaymentInfo = {
   live: false,
+  method: "online",
   key: null,
   attemptId: null,
   txn: null,

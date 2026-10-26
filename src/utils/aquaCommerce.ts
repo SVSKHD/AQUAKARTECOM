@@ -6,6 +6,7 @@
 //   POST /checkout/quote  → checkout session (id, payableAmount, …)
 //   POST /payments        → { id, orderId, redirectUrl }   charges session.payableAmount
 //   GET  /payments/:id    → { status }                     set by the PhonePe webhook
+//   POST /checkout/orders/cod → order                      cash on delivery, no gateway
 // The legacy POST /order/pay path (startPhonePe / waitForPayment) is kept for reference.
 import orderService from "@/services/order";
 
@@ -15,6 +16,10 @@ type OrderService = {
     data: unknown,
     token: string | null | undefined,
     idempotencyKey: string,
+  ) => Promise<any>;
+  createCheckoutCodOrder: (
+    data: unknown,
+    token?: string | null,
   ) => Promise<any>;
   getCheckoutPayment: (
     id: string,
@@ -147,6 +152,29 @@ export function startCheckoutPayment(
       );
     }
   })();
+}
+
+// Cash on delivery: the server turns the quoted checkout session into an order
+// (payment "Pending" until it's collected). A session that timed out is quoted
+// again once, so a slow customer doesn't have to start over.
+export async function placeCodOrder(
+  body: CheckoutPaymentBody,
+  token: string | null | undefined,
+  requote: () => Promise<string | null>,
+): Promise<ServerOrder> {
+  const send = (checkoutSessionId: string) =>
+    orders
+      .createCheckoutCodOrder({ ...body, checkoutSessionId }, token)
+      .then((r) => (r?.data || r) as ServerOrder);
+  try {
+    return await send(body.checkoutSessionId);
+  } catch (e) {
+    const message = (e as Error)?.message || "";
+    if (!/expired|invalid/i.test(message)) throw e;
+    const fresh = await requote();
+    if (!fresh) throw e;
+    return send(fresh);
+  }
 }
 
 export async function checkoutPaymentStatus(

@@ -9,15 +9,33 @@ import {
   type SetStateAction,
 } from "react";
 import dayjs from "dayjs";
-import { Lock, Minus, Plus, Trash } from "lucide-react";
+import {
+  BadgePercent,
+  Banknote,
+  Check,
+  Lock,
+  Minus,
+  Plus,
+  Smartphone,
+  Trash,
+} from "lucide-react";
 import { quote } from "@/utils/aquaCommerce";
 import { INR } from "./catalogue";
-import type { Address, CheckoutDraft, QuoteState } from "./types";
+import {
+  cartCouponOffers,
+  couponTitle,
+  type ActiveCoupon,
+  type CartCouponOffer,
+} from "./coupons";
+import type { Address, CheckoutDraft, PayMethod, QuoteState } from "./types";
 
 type Props = {
   draft: CheckoutDraft;
   setDraft: Dispatch<SetStateAction<CheckoutDraft | null>>;
   savedAddresses: Address[];
+  // Active store coupons (GET /coupons/active), shown as cards to apply.
+  coupons: ActiveCoupon[];
+  categoryOf: (productId: string) => string;
   quoteState: QuoteState;
   setQuoteState: Dispatch<SetStateAction<QuoteState>>;
   commerceLive: boolean;
@@ -28,6 +46,93 @@ type Props = {
 };
 
 const SLOTS = ["9 am – 12 pm", "12 pm – 3 pm", "3 pm – 6 pm"];
+
+const PAY_METHODS: {
+  id: PayMethod;
+  title: string;
+  text: string;
+  Icon: typeof Smartphone;
+  tags: string[];
+}[] = [
+  {
+    id: "online",
+    title: "Pay online",
+    text: "Secure PhonePe checkout. Confirmed as soon as it's paid.",
+    Icon: Smartphone,
+    tags: ["UPI", "Cards", "Net banking", "Wallets"],
+  },
+  {
+    id: "cod",
+    title: "Cash on delivery",
+    text: "Place the order now and pay when it's delivered.",
+    Icon: Banknote,
+    tags: ["Pay at your door"],
+  },
+];
+
+// Cards shown before "Show more".
+const COUPONS_SHOWN = 4;
+
+function CouponCard({
+  offer,
+  applied,
+  onApply,
+}: {
+  offer: CartCouponOffer;
+  applied: boolean;
+  onApply: () => void;
+}) {
+  const c = offer.coupon;
+  const ends = dayjs(c.endsAt);
+  const terms = [
+    c.minimumOrder ? `Min. order ${INR(c.minimumOrder)}` : "",
+    c.firstOrderOnly ? "First order only" : "",
+    ends.isValid() ? `Ends ${ends.format("D MMM")}` : "",
+  ].filter(Boolean);
+  return (
+    <div
+      className="aq-coupon"
+      data-eligible={offer.eligible}
+      data-applied={applied}
+    >
+      <span className="aq-coupon-stub" aria-hidden="true">
+        <BadgePercent size={16} />
+        {offer.save > 0 && (
+          <>
+            <span className="aq-coupon-save-label">Save</span>
+            <span className="aq-coupon-save">{INR(offer.save)}</span>
+          </>
+        )}
+      </span>
+      <span className="aq-coupon-body">
+        <span className="aq-mono aq-coupon-code">{c.code}</span>
+        <span className="aq-coupon-title">{couponTitle(c)}</span>
+        {c.description && c.discountType !== "fixed" && (
+          <span className="aq-coupon-terms">{c.description}</span>
+        )}
+        {terms.length > 0 && (
+          <span className="aq-coupon-terms">{terms.join(" · ")}</span>
+        )}
+      </span>
+      {applied ? (
+        <span className="aq-coupon-applied">
+          <Check size={14} /> Applied
+        </span>
+      ) : offer.eligible ? (
+        <button
+          type="button"
+          className="aq-btn aq-coupon-apply"
+          onClick={onApply}
+          aria-label={`Apply ${c.code}, save ${INR(offer.save)}`}
+        >
+          Apply
+        </button>
+      ) : (
+        <span className="aq-coupon-note">{offer.note}</span>
+      )}
+    </div>
+  );
+}
 const addrKey = (a: Address) =>
   a._id || `${a.street}|${a.city}|${a.postalCode}`;
 
@@ -94,6 +199,8 @@ export default function InlineCheckout({
   draft,
   setDraft,
   savedAddresses,
+  coupons,
+  categoryOf,
   quoteState,
   setQuoteState,
   commerceLive,
@@ -103,6 +210,8 @@ export default function InlineCheckout({
   onPay,
 }: Props) {
   const [couponInput, setCouponInput] = useState(draft.coupon);
+  // A coupon picked elsewhere (the history dock) shows up in the field too.
+  useEffect(() => setCouponInput(draft.coupon), [draft.coupon]);
   const [editingAddress, setEditingAddress] = useState(!draft.savedAddressId);
   const update = (patch: Partial<CheckoutDraft>) =>
     setDraft((d) => (d ? { ...d, ...patch } : d));
@@ -119,6 +228,24 @@ export default function InlineCheckout({
   );
   const missing = validate(draft);
   const subtotal = draft.items.reduce((a, i) => a + i.price * i.qty, 0);
+  const offers = useMemo(
+    () =>
+      cartCouponOffers(
+        coupons,
+        draft.items.map((i) => ({ id: i.id, category: categoryOf(i.id) })),
+        subtotal,
+      ),
+    // categoryOf is rebuilt every render; the items decide the categories.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [coupons, draft.items, subtotal],
+  );
+  const [allCoupons, setAllCoupons] = useState(false);
+  const shownOffers = allCoupons ? offers : offers.slice(0, COUPONS_SHOWN);
+  const applyCode = (code: string) => {
+    setCouponInput(code);
+    update({ coupon: code });
+  };
+  const cod = draft.payMethod === "cod";
 
   // Re-quote on qty / coupon change, debounced 400ms. Only the server's numbers are shown.
   const quoteKey = JSON.stringify([
@@ -537,7 +664,47 @@ export default function InlineCheckout({
           </span>
         </Section>
 
-        <Section n={4} title="Coupon">
+        <Section
+          n={4}
+          title="Offers & coupons"
+          aside={
+            offers.some((o) => o.eligible) ? (
+              <span
+                style={{
+                  fontSize: 12,
+                  color: "var(--aq-mintink)",
+                  fontWeight: 700,
+                }}
+              >
+                {offers.filter((o) => o.eligible).length} available
+              </span>
+            ) : null
+          }
+        >
+          {shownOffers.length > 0 && (
+            <div className="aq-coupons">
+              {shownOffers.map((o) => (
+                <CouponCard
+                  key={o.coupon.code}
+                  offer={o}
+                  applied={draft.coupon === o.coupon.code}
+                  onApply={() => applyCode(o.coupon.code)}
+                />
+              ))}
+            </div>
+          )}
+          {offers.length > COUPONS_SHOWN && (
+            <button
+              type="button"
+              className="aq-hard-link"
+              onClick={() => setAllCoupons((v) => !v)}
+              style={{ alignSelf: "flex-start" }}
+            >
+              {allCoupons
+                ? "Show fewer offers"
+                : `Show ${offers.length - COUPONS_SHOWN} more offers`}
+            </button>
+          )}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -586,7 +753,52 @@ export default function InlineCheckout({
           )}
         </Section>
 
-        <Section n={5} title="Order total">
+        <Section n={5} title="Payment method">
+          <div
+            role="radiogroup"
+            aria-label="Payment method"
+            className="aq-paymethods"
+          >
+            {PAY_METHODS.map(({ id, title, text, Icon, tags }) => (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={draft.payMethod === id}
+                className="aq-option aq-paymethod"
+                onClick={() => update({ payMethod: id })}
+              >
+                <span className="aq-paymethod-head">
+                  <span className="aq-paymethod-icon" aria-hidden="true">
+                    <Icon size={18} />
+                  </span>
+                  <span style={{ fontSize: 14.5, fontWeight: 700, flex: 1 }}>
+                    {title}
+                  </span>
+                  <span className="aq-paymethod-radio" aria-hidden="true" />
+                </span>
+                <span
+                  style={{
+                    fontSize: 12.5,
+                    color: "var(--aq-mut)",
+                    lineHeight: 1.45,
+                  }}
+                >
+                  {text}
+                </span>
+                <span className="aq-paymethod-tags">
+                  {tags.map((t) => (
+                    <span key={t} className="aq-paymethod-tag">
+                      {t}
+                    </span>
+                  ))}
+                </span>
+              </button>
+            ))}
+          </div>
+        </Section>
+
+        <Section n={6} title="Order total">
           {quoteState.status === "loading" || quoteState.status === "idle" ? (
             <span
               role="status"
@@ -730,8 +942,12 @@ export default function InlineCheckout({
           disabled={!canPay}
           style={{ height: 48, fontSize: 15 }}
         >
-          <Lock size={16} />{" "}
-          {commerceLive ? "Pay securely with PhonePe" : "Continue (preview)"}
+          {cod ? <Banknote size={16} /> : <Lock size={16} />}{" "}
+          {!commerceLive
+            ? "Continue (preview)"
+            : cod
+              ? `Place order · pay${q && !q.demo && q.data.payableAmount != null ? ` ${INR(q.data.payableAmount)}` : ""} on delivery`
+              : `Pay${q && !q.demo && q.data.payableAmount != null ? ` ${INR(q.data.payableAmount)}` : ""} securely with PhonePe`}
         </button>
         {missing.length > 0 ? (
           <span
@@ -752,8 +968,9 @@ export default function InlineCheckout({
               lineHeight: 1.5,
             }}
           >
-            Card and UPI details are entered only in PhonePe&apos;s secure
-            window, never on this page.
+            {cod
+              ? "Nothing is charged now. Pay the amount above when your order is delivered."
+              : "Card and UPI details are entered only in PhonePe's secure window, never on this page."}
           </span>
         )}
       </div>

@@ -26,6 +26,12 @@ dev-only console warning is logged.
 | `confirmed`       | confirmation           | `VIEW`, `CLOSE`, `RESET`                                        |
 
 Chat history, cart and favourites live outside the machine and are never reset by it.
+
+A new visit opens on a new chat; earlier chats are listed in the history dock. The chat on
+screen (and this visit's earlier ones) is kept in `sessionStorage` (`aqua.chat.tab`), so a
+refresh lands back on it, including one reopened from the dock. New chat clears it. The
+saved-chat ids it holds are tagged with the account, so signing out or another login on the
+tab keeps the text but starts a new saved conversation.
 Cart and favourites use the existing Redux `cartData` / `favData` slices (same persist key
 as `pages/_app.js`), so the rest of the site stays in sync.
 
@@ -44,6 +50,7 @@ AquaApp                  Redux provider + client-only mount
    │  ├─ InlineCheckout
    │  └─ PaymentStatus   pending / failed / confirmed
    ├─ ShopPopover        cart + favourites
+   ├─ ProfileDialog      details + birthday, address book, purchases (tabs)
    └─ AquaDroplet        mood derived from chat status + flow.state
 ```
 
@@ -52,6 +59,10 @@ AquaApp                  Redux provider + client-only mount
 - **Live** (live catalogue + signed-in token): `/v1/checkout/quote` → `/order/pay` →
   PhonePe in a popup (opened synchronously in the click handler) → poll
   `/order/transaction-id/:id`. `confirmed` is reached only when that returns paid.
+- **Cash on delivery** (live only): `/v1/checkout/quote` → `/checkout/orders/cod` with the
+  quote's session (re-quoted once if it expired). `confirmed` is reached only when the server
+  returns the created order; nothing is charged.
+- Checkout shows the active coupons (`GET /coupons/active`) as cards; the quote still decides.
 - **Demo** (no token or demo catalogue): the panel says no gateway is connected;
   "Preview confirmation" shows a screen labelled "Demo order preview · not a real order".
 - Nothing ever renders "verified" from client state alone.
@@ -60,5 +71,5 @@ AquaApp                  Redux provider + client-only mount
 
 - PIN serviceability endpoint (replaces `src/services/delivery.ts`).
 - Offers endpoint for festive codes (coupons are validated by the quote endpoint today).
-- Hardness data by city or PIN (replaces the estimates in `HardnessCard.tsx`).
+- Hardness data by city or PIN (replaces the estimates in `hardnessData.ts`; areas are listed hardest first).
 - PhonePe redirect URL → `https://aquakart.co.in/payment-return?transactionId=<id>`.

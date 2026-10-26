@@ -17,14 +17,19 @@ import {
   Sparkles,
   Waves,
 } from "lucide-react";
+import ArrowScroller from "./ArrowScroller";
 import { storage, useReducedMotion } from "./hooks";
 import {
+  areasInRange,
   CITIES,
   cityPpm,
+  FILTER_STEP,
   findPlace,
+  GAUGE_MAX,
   gaugePct,
   harderThan,
   level,
+  LEVEL_RANGES,
   nearest,
   searchPlaces,
   type Area,
@@ -233,6 +238,123 @@ function Legend() {
   );
 }
 
+type Range = [number, number];
+const FULL_RANGE: Range = [0, GAUGE_MAX];
+
+// Two thumbs on one hardness bar, plus a chip per level that jumps to its band.
+function RangeFilter({
+  range,
+  onChange,
+}: {
+  range: Range;
+  onChange: (r: Range) => void;
+}) {
+  const [lo, hi] = range;
+  // Folded by default so the area list stays close; the arrow opens it.
+  const [open, setOpen] = useState(false);
+  const bodyId = useId();
+  const pct = (v: number) => (v / GAUGE_MAX) * 100;
+  const fmt = (v: number) => (v >= GAUGE_MAX ? `${GAUGE_MAX}+` : `${v}`);
+  const active = lo !== FULL_RANGE[0] || hi !== FULL_RANGE[1];
+  return (
+    <div className="aq-hard-filter">
+      <button
+        type="button"
+        className="aq-hard-toggle"
+        aria-expanded={open}
+        aria-controls={bodyId}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span
+          className="aq-label"
+          style={{ fontSize: 10.5, flex: 1, textAlign: "left" }}
+        >
+          Filter by hardness
+        </span>
+        {active && (
+          <span className="aq-hard-filter-val">
+            {fmt(lo)}–{fmt(hi)} ppm
+          </span>
+        )}
+        <ChevronDown
+          size={15}
+          aria-hidden="true"
+          style={{
+            transition: "transform .25s",
+            transform: open ? "rotate(180deg)" : "none",
+          }}
+        />
+      </button>
+      <div id={bodyId} className="aq-hard-filter-body" hidden={!open}>
+        <div
+          className="aq-hard-range"
+          style={{
+            ["--lo" as string]: `${pct(lo)}%`,
+            ["--hi" as string]: `${pct(hi)}%`,
+          }}
+        >
+          <span className="aq-hard-range-track" aria-hidden="true" />
+          <input
+            type="range"
+            min={0}
+            max={GAUGE_MAX}
+            step={FILTER_STEP}
+            value={lo}
+            aria-label="Minimum hardness"
+            aria-valuetext={`${lo} ppm, ${level(lo).label}`}
+            onChange={(e) =>
+              onChange([Math.min(Number(e.target.value), hi), hi])
+            }
+          />
+          <input
+            type="range"
+            min={0}
+            max={GAUGE_MAX}
+            step={FILTER_STEP}
+            value={hi}
+            aria-label="Maximum hardness"
+            aria-valuetext={`${fmt(hi)} ppm, ${level(hi).label}`}
+            onChange={(e) =>
+              onChange([lo, Math.max(Number(e.target.value), lo)])
+            }
+          />
+        </div>
+        <div className="aq-hard-filter-chips">
+          {LEVEL_RANGES.map((r) => {
+            const on = lo === r.min && hi === r.max;
+            const lv = level(r.min);
+            return (
+              <button
+                key={r.label}
+                type="button"
+                className="aq-chip aq-chip-soft aq-hard-level-chip"
+                aria-pressed={on}
+                onClick={() => onChange(on ? FULL_RANGE : [r.min, r.max])}
+                style={
+                  on
+                    ? {
+                        background: lv.tint,
+                        color: lv.ink,
+                        borderColor: lv.ink,
+                      }
+                    : undefined
+                }
+              >
+                <span
+                  className="aq-hard-dot"
+                  style={{ background: lv.ink }}
+                  aria-hidden="true"
+                />
+                {r.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // `compact` (phones): the report folds its "at home" details so the composer
 // and suggestions stay close.
 export default function HardnessCard({
@@ -243,6 +365,8 @@ export default function HardnessCard({
   compact?: boolean;
 }) {
   const [view, setView] = useState<View>({ step: "pick", failed: false });
+  // Kept across cities so "show me very hard areas" carries over when comparing.
+  const [range, setRange] = useState<Range>(FULL_RANGE);
   const reduced = useReducedMotion();
 
   const show = (place: Place, source: Source) => {
@@ -413,6 +537,9 @@ export default function HardnessCard({
   if (view.step === "area") {
     const { city } = view;
     const avg = cityPpm(city);
+    const all = city.areas || [];
+    const areas = areasInRange(all, range[0], range[1]);
+    const filtered = areas.length !== all.length;
     return (
       <div
         className="aq-glass aq-hard-card"
@@ -456,7 +583,8 @@ export default function HardnessCard({
                 fontWeight: 500,
               }}
             >
-              Borewell areas usually run much harder than municipal supply.
+              Hardest first. Borewell areas usually run much harder than
+              municipal supply.
             </span>
           </span>
         </div>
@@ -467,8 +595,29 @@ export default function HardnessCard({
             onPick={(p) => show(p, "picked")}
           />
         </div>
-        <div className="aq-hard-areas">
-          {(city.areas || []).map((x, i) => {
+        <RangeFilter range={range} onChange={setRange} />
+        <div className="aq-hard-filter-count" role="status">
+          {filtered
+            ? `${areas.length} of ${all.length} areas`
+            : `All ${all.length} areas`}
+          {filtered && (
+            <button
+              type="button"
+              className="aq-hard-link"
+              onClick={() => setRange(FULL_RANGE)}
+            >
+              Show all
+            </button>
+          )}
+        </div>
+        {!areas.length && (
+          <p className="aq-hard-filter-empty">
+            No {city.name} areas in this range. Widen the slider or pick another
+            level.
+          </p>
+        )}
+        <ArrowScroller className="aq-hard-areas" label="areas">
+          {areas.map((x, i) => {
             const lv = level(x.ppm);
             return (
               <button
@@ -492,7 +641,7 @@ export default function HardnessCard({
               </button>
             );
           })}
-        </div>
+        </ArrowScroller>
         <div style={{ padding: "4px 16px 14px" }}>
           <button
             type="button"

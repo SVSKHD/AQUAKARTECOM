@@ -48,6 +48,8 @@ const setup = () =>
 const lastAqua = (msgs: ChatMessage[]) =>
   [...msgs].reverse().find((m) => m.role === "aqua" && !m.typing);
 
+beforeEach(() => window.sessionStorage.clear());
+
 describe("useAquaChat with the backend AI", () => {
   beforeEach(() => {
     getAiStatus.mockReset().mockResolvedValue(true);
@@ -490,19 +492,32 @@ describe("saved chats", () => {
     typeof vi.fn
   >;
   const resetsAt = "2026-10-23T18:30:00.000Z";
-  const hook = (token: string | null, onResumed = () => {}) =>
+  const hook = (
+    token: string | null,
+    onResumed = () => {},
+    owner: string | null = token ? "u1" : null,
+  ) =>
     renderHook(
-      ({ token }) =>
+      ({ token, owner }) =>
         useAquaChat({
           products: DEMO_PRODUCTS,
           getCompare: () => [],
           clearCompare: () => {},
           reducedMotion: true,
           token,
+          owner,
           onResumed,
         }),
-      { initialProps: { token } },
+      { initialProps: { token, owner } },
     );
+  const tds = {
+    id: "s1",
+    title: "TDS",
+    messages: [
+      { role: "user", text: "What TDS is safe?" },
+      { role: "assistant", text: "Below 500 ppm." },
+    ],
+  };
   beforeEach(() => {
     getAiStatus.mockReset().mockResolvedValue(true);
     getAiQuota.mockReset().mockResolvedValue(null);
@@ -513,21 +528,38 @@ describe("saved chats", () => {
     carryGuestQuota.mockReset().mockResolvedValue(null);
   });
 
-  it("a logged-in customer lands back in their latest chat and continues it", async () => {
-    listAiChats.mockResolvedValueOnce([{ id: "s1", title: "TDS" }]);
-    getAiChat.mockResolvedValueOnce({
-      id: "s1",
-      messages: [
-        { role: "user", text: "What TDS is safe?" },
-        { role: "assistant", text: "Below 500 ppm." },
-      ],
-    });
+  it("a new visit opens on a new chat; earlier ones wait in the list", async () => {
+    listAiChats.mockResolvedValue([
+      { id: "s1", title: "TDS", messageCount: 2, lastMessageAt: resetsAt },
+    ]);
     const onResumed = vi.fn();
     const { result } = hook("tok", onResumed);
+    await waitFor(() => expect(result.current.savedChats).toHaveLength(1));
+    expect(result.current.messages).toEqual([]);
+    expect(getAiChat).not.toHaveBeenCalled();
+    expect(onResumed).not.toHaveBeenCalled();
+  });
+
+  it("a refresh lands back on the chat that was opened and keeps saving to it", async () => {
+    getAiChat.mockResolvedValueOnce(tds);
+    const first = hook("tok");
+    await waitFor(() => expect(first.result.current.aiMode).toBe("live"));
+    await act(async () => {
+      await first.result.current.openSaved("s1");
+    });
+    first.unmount();
+
+    // Refresh: Redux hands the token back a moment after mount.
+    const onResumed = vi.fn();
+    const { result, rerender } = hook(null, onResumed, null);
+    expect(lastAqua(result.current.messages)?.text).toBe("Below 500 ppm.");
+    expect(onResumed).toHaveBeenCalledTimes(1);
+    rerender({ token: "tok", owner: "u1" });
     await waitFor(() =>
-      expect(lastAqua(result.current.messages)?.text).toBe("Below 500 ppm."),
+      expect(listAiChats).toHaveBeenCalledWith("tok", { limit: 20 }),
     );
-    expect(onResumed).toHaveBeenCalled();
+    expect(getAiChat).toHaveBeenCalledTimes(1); // only the click, not the refresh
+
     sendAiChat.mockResolvedValueOnce("Yes.");
     act(() => void result.current.send("Is 300 fine?"));
     await waitFor(() => expect(sendAiChat).toHaveBeenCalled());
@@ -541,6 +573,82 @@ describe("saved chats", () => {
     });
   });
 
+  it("after New chat, a refresh stays on a new chat", async () => {
+    getAiChat.mockResolvedValueOnce(tds);
+    const first = hook("tok");
+    await waitFor(() => expect(first.result.current.aiMode).toBe("live"));
+    await act(async () => {
+      await first.result.current.openSaved("s1");
+    });
+    act(() => first.result.current.clear());
+    first.unmount();
+    const { result } = hook("tok");
+    expect(result.current.messages).toEqual([]);
+  });
+
+  it("a guest's chat survives a refresh too", async () => {
+    sendAiChat.mockResolvedValueOnce("Below 500 ppm.");
+    const first = hook(null);
+    await waitFor(() => expect(first.result.current.aiMode).toBe("live"));
+    act(() => void first.result.current.send("What TDS is safe?"));
+    await waitFor(() =>
+      expect(lastAqua(first.result.current.messages)?.text).toBe(
+        "Below 500 ppm.",
+      ),
+    );
+    first.unmount();
+    const { result } = hook(null);
+    expect(result.current.messages.map((m) => m.text)).toEqual([
+      "What TDS is safe?",
+      "Below 500 ppm.",
+    ]);
+  });
+
+  it("a refreshed tab signed in as someone else keeps the text but not the session", async () => {
+    getAiChat.mockResolvedValueOnce(tds);
+    const first = hook("tok");
+    await waitFor(() => expect(first.result.current.aiMode).toBe("live"));
+    await act(async () => {
+      await first.result.current.openSaved("s1");
+    });
+    first.unmount();
+
+    const { result, rerender } = hook(null, () => {}, null);
+    rerender({ token: "tok2", owner: "u2" });
+    await waitFor(() =>
+      expect(listAiChats).toHaveBeenCalledWith("tok2", { limit: 20 }),
+    );
+    sendAiChat.mockResolvedValueOnce("Yes.");
+    act(() => void result.current.send("Is 300 fine?"));
+    await waitFor(() => expect(sendAiChat).toHaveBeenCalled());
+    expect(sendAiChat.mock.calls[0][2]).toMatchObject({
+      token: "tok2",
+      sessionId: null,
+    });
+  });
+
+  it("a saved chat opens with its product cards back", async () => {
+    getAiChat.mockResolvedValueOnce({
+      id: "s3",
+      title: "Softener for 4",
+      messages: [
+        { role: "user", text: "Which softener for a family of 4?" },
+        {
+          role: "assistant",
+          text: "**Home Water Softener 20 L Auto** suits four people on borewell water.\n\n**Compact Water Softener 10 L** is enough for two.",
+        },
+      ],
+    });
+    const { result } = hook("tok");
+    await waitFor(() => expect(result.current.aiMode).toBe("live"));
+    await act(async () => {
+      await result.current.openSaved("s3");
+    });
+    const reply = lastAqua(result.current.messages);
+    expect(reply?.products).toEqual(["d2", "d1"]);
+    expect(reply?.chips).toEqual(["Compare these"]);
+  });
+
   it("lists the account's chats and opens one, continuing that session", async () => {
     listAiChats.mockResolvedValue([
       {
@@ -551,7 +659,6 @@ describe("saved chats", () => {
       },
       { id: "s1", title: "TDS", messageCount: 2, lastMessageAt: resetsAt },
     ]);
-    getAiChat.mockResolvedValueOnce(null); // resume on open: nothing to show
     const { result } = hook("tok");
     await waitFor(() =>
       expect(result.current.savedChats.map((s) => s.id)).toEqual(["s2", "s1"]),
@@ -603,7 +710,7 @@ describe("saved chats", () => {
       remaining: 4,
       resetsAt,
     });
-    rerender({ token: "tok" });
+    rerender({ token: "tok", owner: "u1" });
     await waitFor(() =>
       expect(result.current.quota).toMatchObject({
         tier: "user",

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  areasInRange,
   CITIES,
+  LEVEL_RANGES,
   cityPpm,
   findPlace,
   gaugePct,
@@ -44,6 +46,23 @@ describe("hardnessData", () => {
       expect(c.areas?.length).toBeGreaterThan(3);
   });
 
+  it("lists every city's areas hardest first", () => {
+    for (const c of CITIES.filter((x) => x.areas?.length)) {
+      const ppm = c.areas!.map((x) => x.ppm);
+      expect(ppm).toEqual([...ppm].sort((x, y) => y - x));
+    }
+  });
+
+  it("covers Hyderabad's outer belt as well as the core, with unique names", () => {
+    const names = hyd.areas!.map((x) => x.name);
+    expect(names.length).toBeGreaterThan(100);
+    expect(new Set(names).size).toBe(names.length);
+    for (const n of ["Narsingi", "Kokapet", "Tellapur", "Bachupally", "Abids"])
+      expect(names).toContain(n);
+    expect(names[0]).toBe("Kokapet");
+    expect(names.at(-1)).toBe("Banjara Hills");
+  });
+
   it("finds the closest area to coordinates", () => {
     const hit = nearest({ lat: 17.441, lon: 78.349 });
     expect(hit.city.name).toBe("Hyderabad");
@@ -53,7 +72,7 @@ describe("hardnessData", () => {
 
   it("ranks an area against the rest of its city", () => {
     const softest = hyd.areas!.find((a) => a.name === "Banjara Hills")!;
-    const hardest = hyd.areas!.find((a) => a.name === "Manikonda")!;
+    const hardest = hyd.areas!.find((a) => a.name === "Kokapet")!;
     expect(harderThan(hyd, softest)).toBe(0);
     expect(harderThan(hyd, hardest)).toBe(100);
   });
@@ -74,6 +93,28 @@ describe("hardnessData", () => {
     expect(findPlace("Hyderabad", "Kondapur")?.area?.ppm).toBe(580);
     expect(findPlace("Hyderabad", null)?.area).toBeNull();
     expect(findPlace("Atlantis")).toBeNull();
+  });
+
+  it("filters areas by a ppm range, open at the top of the scale", () => {
+    const xs = [
+      { ...hyd.areas![0], name: "a", ppm: 70 },
+      { ...hyd.areas![0], name: "b", ppm: 150 },
+      { ...hyd.areas![0], name: "c", ppm: 300 },
+      { ...hyd.areas![0], name: "d", ppm: 900 },
+    ];
+    const names = (min: number, max: number) =>
+      areasInRange(xs, min, max).map((x) => x.name);
+    expect(names(0, 800)).toEqual(["a", "b", "c", "d"]);
+    expect(names(150, 300)).toEqual(["b", "c"]);
+    expect(names(310, 790)).toEqual([]);
+    expect(names(300, 800)).toEqual(["c", "d"]);
+  });
+
+  it("level presets match the level bands exactly", () => {
+    for (const r of LEVEL_RANGES) {
+      expect(level(r.min).label).toBe(r.label);
+      expect(level(r.max).label).toBe(r.label);
+    }
   });
 
   it("keeps the gauge marker on the bar", () => {
