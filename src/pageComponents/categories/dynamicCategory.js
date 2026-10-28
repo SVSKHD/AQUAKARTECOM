@@ -10,10 +10,14 @@ import {
   ShoppingBagIcon,
 } from "@heroicons/react/24/outline";
 import AquaImage from "@/components/images/AquaImage";
+import RecentlyBought from "@/components/demand/RecentlyBought";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
-import { AquaCardSkeleton, AquaSkeletonGrid } from "@/components/loaders/AquaCardSkeleton";
+import {
+  AquaCardSkeleton,
+  AquaSkeletonGrid,
+} from "@/components/loaders/AquaCardSkeleton";
 
 const LoadingState = () => (
   <div className="space-y-14" aria-label="Loading category" role="status">
@@ -80,10 +84,7 @@ const AquaDynamicCategoryComponent = ({
   }, [id, initialCategory, initialRelated]);
 
   return (
-    <AquaLayout
-      categoryData={seo}
-      productListData={related}
-    >
+    <AquaLayout categoryData={seo} productListData={related}>
       <div className="fixed inset-0 bg-slate-50 z-[-1]">
         <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-emerald-300/20 blur-[100px]" />
         <div className="absolute bottom-[10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-300/20 blur-[100px]" />
@@ -161,6 +162,8 @@ const AquaDynamicCategoryComponent = ({
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
               </div>
             </section>
+
+            <RecentlyBought products={related} className="" />
 
             <section id="products-grid">
               <div className="flex items-center justify-between mb-8">

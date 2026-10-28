@@ -58,6 +58,7 @@ export type PaymentResult = {
   status: "paid" | "failed" | "timeout";
   order: ServerOrder | null;
 };
+export type PaymentCheck = Check;
 type Check = {
   status: "paid" | "failed" | "pending";
   order: ServerOrder | null;
@@ -115,13 +116,15 @@ export class CheckoutPaymentError extends Error {
 // Call synchronously from the click handler: the popup opens before any await,
 // so popup blockers allow it. `prepare` runs after that (e.g. a fresh quote for a
 // retry, since a session is consumed once a payment is created).
+// The returned promise also carries `popup` at once (null when blocked), so the
+// screen can notice the window being closed while PhonePe is still opening.
 export function startCheckoutPayment(
   prepare: () => Promise<CheckoutPaymentBody> | CheckoutPaymentBody,
   token: string | null | undefined,
   idempotencyKey: string,
 ) {
   const popup = window.open("", "aquakart-phonepe", "width=480,height=760");
-  return (async () => {
+  const started = (async () => {
     try {
       const body = await prepare();
       const res = await orders.createCheckoutPayment(
@@ -152,6 +155,7 @@ export function startCheckoutPayment(
       );
     }
   })();
+  return Object.assign(started, { popup });
 }
 
 // Cash on delivery: the server turns the quoted checkout session into an order
@@ -213,9 +217,16 @@ export async function findOrder(
 
 // Polls `check` until paid/failed or timeout. `checkNow()` polls at once (used
 // when the PhonePe window reports back). The server stays the source of truth.
+export type PollOptions = {
+  intervalMs?: number;
+  timeoutMs?: number;
+  // Every answer from the server, pending ones included (for the status card).
+  onCheck?: (r: Check) => void;
+};
+
 function pollUntilSettled(
   check: (signal: AbortSignal) => Promise<Check>,
-  { intervalMs = 3000, timeoutMs = 15 * 60000 } = {},
+  { intervalMs = 3000, timeoutMs = 15 * 60000, onCheck }: PollOptions = {},
 ) {
   const ctl = new AbortController();
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -231,6 +242,7 @@ function pollUntilSettled(
     inFlight = true;
     try {
       const r = await check(ctl.signal);
+      if (!ctl.signal.aborted) onCheck?.(r);
       if (r.status !== "pending")
         return settle({ status: r.status, order: r.order });
     } catch {
@@ -263,7 +275,7 @@ function pollUntilSettled(
 export const waitForCheckoutPayment = (
   attemptId: string,
   token?: string | null,
-  opts?: { intervalMs?: number; timeoutMs?: number },
+  opts?: PollOptions,
 ) =>
   pollUntilSettled(
     (signal) => checkoutPaymentStatus(attemptId, token, signal),
@@ -310,7 +322,7 @@ export async function paymentStatus(
 export const waitForPayment = (
   transactionId: string,
   token?: string | null,
-  opts?: { intervalMs?: number; timeoutMs?: number },
+  opts?: PollOptions,
 ) =>
   pollUntilSettled(
     (signal) => paymentStatus(transactionId, token, signal),

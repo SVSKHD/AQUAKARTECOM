@@ -60,14 +60,23 @@ const createCheckoutCodOrder = async (data, token) => {
   }
 };
 
+// Opening PhonePe must never hang the checkout: give up after this long.
+const PAYMENT_START_TIMEOUT_MS = 30000;
+const PAYMENT_STATUS_TIMEOUT_MS = 15000;
+
 const createCheckoutPayment = async (data, token, idempotencyKey) => {
   try {
     const response = await axios.post(`${BASE}/payments`, data, {
       headers: authHeaders(token, { "Idempotency-Key": idempotencyKey }),
+      timeout: PAYMENT_START_TIMEOUT_MS,
     });
     return response.data;
   } catch (error) {
     if (isAuthFailure(error)) throwAuthError(error);
+    if (error?.code === "ECONNABORTED")
+      throw new Error(
+        "PhonePe took too long to open. Nothing was charged. Please try again.",
+      );
     // Keep the status: 409 means the checkout session expired or was used.
     throw Object.assign(
       new Error(getServerMessage(error) || "Unable to initiate payment"),
@@ -81,6 +90,7 @@ const getCheckoutPayment = async (id, token, config = {}) => {
   try {
     const response = await axios.get(`${BASE}/payments/${id}`, {
       headers: authHeaders(token),
+      timeout: PAYMENT_STATUS_TIMEOUT_MS,
       ...config,
     });
     return response.data;

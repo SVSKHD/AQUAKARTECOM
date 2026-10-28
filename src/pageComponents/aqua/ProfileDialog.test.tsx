@@ -6,6 +6,50 @@ vi.mock("@/services/user", () => ({
   default: { UserUpdateDetails: vi.fn() },
 }));
 
+vi.mock("@/services/order", () => ({
+  default: {
+    getOrdersByUserId: vi.fn(async () => ({
+      success: true,
+      data: [
+        {
+          _id: "o1",
+          orderId: "AQOD-1",
+          createdAt: "2026-10-01T10:00:00.000Z",
+          items: [
+            {
+              productId: "p1",
+              name: "Kent Automatic 8L",
+              quantity: 1,
+              price: 31500,
+            },
+          ],
+          totalAmount: 31500,
+          paymentMethod: "Gateway",
+          paymentStatus: "Failed",
+          orderStatus: "Processing",
+          shippingAddress: {
+            street: "Plot 12",
+            city: "Hyderabad",
+            postalCode: "500075",
+          },
+        },
+        {
+          _id: "o2",
+          orderId: "AQOD-2",
+          createdAt: "2026-10-20T10:00:00.000Z",
+          items: [
+            { name: "Kent Bathroom Softener", quantity: 1, price: 14500 },
+          ],
+          totalAmount: 14500,
+          paymentMethod: "Cash On Delivery",
+          paymentStatus: "Pending",
+          orderStatus: "Processing",
+        },
+      ],
+    })),
+  },
+}));
+
 const users = (await import("@/services/user")).default as unknown as {
   UserUpdateDetails: ReturnType<typeof vi.fn>;
 };
@@ -214,5 +258,26 @@ describe("ProfileDialog", () => {
     );
     expect(onSaved).not.toHaveBeenCalled();
     expect(screen.getByLabelText("Mobile number")).toHaveValue("9123456789");
+  });
+
+  it("lists checkout orders with their payment status in the Orders tab", async () => {
+    const u = userEvent.setup();
+    setup();
+    await u.click(screen.getByRole("tab", { name: /orders/i }));
+    const cod = await screen.findByRole("button", {
+      name: /Kent Bathroom Softener/,
+    });
+    expect(cod).toHaveTextContent("AQOD-2");
+    expect(cod).toHaveTextContent("Pay on delivery");
+    const failed = screen.getByRole("button", { name: /Kent Automatic 8L/ });
+    expect(failed).toHaveTextContent("Payment failed");
+    // Newest first.
+    const rows = screen.getAllByRole("button", { name: /AQOD-/ });
+    expect(rows[0]).toHaveTextContent("AQOD-2");
+    await u.click(failed);
+    expect(failed).toHaveAttribute("aria-expanded", "true");
+    expect(
+      screen.getByRole("link", { name: /get help on whatsapp/i }),
+    ).toHaveAttribute("href", expect.stringContaining("AQOD-1"));
   });
 });

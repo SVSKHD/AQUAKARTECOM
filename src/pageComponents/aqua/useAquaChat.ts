@@ -169,6 +169,8 @@ type Options = {
   owner?: string | null;
   // The chat on screen came back after a refresh.
   onResumed?: () => void;
+  // A comparison reply was just posted (opens it in the panel).
+  onCompared?: (messageId: string, ids: string[]) => void;
 };
 
 export function useAquaChat({
@@ -181,6 +183,7 @@ export function useAquaChat({
   onSessionExpired,
   owner = null,
   onResumed,
+  onCompared,
 }: Options) {
   const authCallbacks = useRef({ onSessionExpired, onResumed });
   useEffect(() => {
@@ -359,14 +362,14 @@ export function useAquaChat({
   }>({});
   const productsRef = useRef(products);
   const rmRef = useRef(reducedMotion);
-  const compareRef = useRef({ getCompare, clearCompare });
+  const compareRef = useRef({ getCompare, clearCompare, onCompared });
   const statusRef = useRef<ChatStatus>("idle");
   const messagesRef = useRef<ChatMessage[]>(messages);
   useEffect(() => {
     productsRef.current = products;
     rmRef.current = reducedMotion;
-    compareRef.current = { getCompare, clearCompare };
-  }, [products, reducedMotion, getCompare, clearCompare]);
+    compareRef.current = { getCompare, clearCompare, onCompared };
+  }, [products, reducedMotion, getCompare, clearCompare, onCompared]);
   useEffect(() => {
     statusRef.current = status;
   }, [status]);
@@ -421,7 +424,10 @@ export function useAquaChat({
       ]);
       statusRef.current = "streaming";
       setStatus("streaming");
-      if (rmRef.current) return done();
+      if (rmRef.current) {
+        done();
+        return id;
+      }
       const words = full.split(" ");
       let i = 0;
       clearInterval(timers.current.stream);
@@ -433,6 +439,7 @@ export function useAquaChat({
           ms.map((m) => (m.id === id ? { ...m, text: t } : m)),
         );
       }, 45);
+      return id;
     },
     [cheer],
   );
@@ -688,7 +695,11 @@ export function useAquaChat({
         "Pick at least two products with Compare and I will line them up.",
       );
     compareRef.current.clearCompare();
-    say("Here they are side by side.", { table: ids });
+    const id = say(
+      "Here they are side by side. Open the comparison to view or buy any of them.",
+      { table: ids },
+    );
+    compareRef.current.onCompared?.(id, ids);
   };
 
   const alternatives = (sel: Product) => {

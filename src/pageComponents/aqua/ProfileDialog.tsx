@@ -28,11 +28,19 @@ import {
   X,
 } from "lucide-react";
 import AquaDatePicker from "@/components/reusables/datePicker";
+import orderService from "@/services/order";
 import UserServiceOperations from "@/services/user";
 import { INR } from "./catalogue";
 import { Avatar } from "./AquaHeader";
 import ArrowScroller from "./ArrowScroller";
 import type { Purchase } from "./HistoryDock";
+import {
+  normalizeOrders,
+  orderTitle,
+  paymentView,
+  type OrderRowData,
+} from "./orders";
+import { supportLink, TONES } from "./PaymentParts";
 import { purchaseLines } from "./purchaseItems";
 import { ShopList, type ShopRow } from "./ShopPopover";
 import type { Address, Product } from "./types";
@@ -49,11 +57,20 @@ import {
   type ProfileUser,
 } from "./profile";
 
-export type ProfileTab = "profile" | "addresses" | "purchases" | "cart" | "fav";
-const TABS: ProfileTab[] = ["profile", "addresses", "purchases", "cart", "fav"];
+export type ProfileTab =
+  "profile" | "addresses" | "orders" | "purchases" | "cart" | "fav";
+const TABS: ProfileTab[] = [
+  "profile",
+  "addresses",
+  "orders",
+  "purchases",
+  "cart",
+  "fav",
+];
 const LABELS: Record<ProfileTab, string> = {
   profile: "Profile",
   addresses: "Addresses",
+  orders: "Orders",
   purchases: "Purchases",
   cart: "Cart",
   fav: "Favourites",
@@ -61,6 +78,7 @@ const LABELS: Record<ProfileTab, string> = {
 const ICONS: Record<ProfileTab, typeof ReceiptIndianRupee> = {
   profile: UserRound,
   addresses: MapPin,
+  orders: Package,
   purchases: ReceiptIndianRupee,
   cart: ShoppingCart,
   fav: Heart,
@@ -101,6 +119,9 @@ type UpdateService = {
   ) => Promise<{ data?: Record<string, unknown> }>;
 };
 const users = UserServiceOperations as unknown as UpdateService;
+const orders = orderService as unknown as {
+  getOrdersByUserId: (id: string, token: string) => Promise<unknown>;
+};
 
 // The server answers with the whole user document; keep only what this dialog owns.
 const pickSaved = (
@@ -186,6 +207,7 @@ export default function ProfileDialog(p: Props) {
   const tabRefs = useRef<Record<ProfileTab, HTMLButtonElement | null>>({
     profile: null,
     addresses: null,
+    orders: null,
     purchases: null,
     cart: null,
     fav: null,
@@ -288,6 +310,28 @@ export default function ProfileDialog(p: Props) {
     if (ok) setEditing(null);
   };
 
+  // ---------- orders: loaded when the tab first opens ----------
+  const [orderList, setOrderList] = useState<OrderRowData[] | null | "error">(
+    null,
+  );
+  const [ordersTry, setOrdersTry] = useState(0);
+  const ordersWanted = tab === "orders";
+  const ordersLoaded = Array.isArray(orderList);
+  useEffect(() => {
+    if (!ordersWanted || ordersLoaded || !userId) return;
+    let alive = true;
+    setOrderList(null);
+    orders
+      .getOrdersByUserId(userId, p.token)
+      .then((res) => alive && setOrderList(normalizeOrders(res)))
+      .catch(() => alive && setOrderList("error"));
+    return () => {
+      alive = false;
+    };
+    // p.token changes only with the account, which remounts the dialog.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ordersWanted, ordersLoaded, userId, ordersTry]);
+
   // ---------- keyboard: Escape closes, Tab stays inside, arrows move tabs ----------
   useEffect(() => {
     const el = dialogRef.current;
@@ -340,6 +384,7 @@ export default function ProfileDialog(p: Props) {
   const counts: Record<ProfileTab, number | null> = {
     profile: null,
     addresses: addresses.length,
+    orders: Array.isArray(orderList) ? orderList.length : null,
     purchases: p.purchases?.length ?? null,
     cart: p.cart.length,
     fav: p.favs.length,
@@ -740,6 +785,63 @@ export default function ProfileDialog(p: Props) {
               </div>
             </div>
 
+            {/* ---------- orders ---------- */}
+            <div
+              role="tabpanel"
+              id="aq-pf-panel-orders"
+              aria-labelledby="aq-pf-tab-orders"
+              hidden={tab !== "orders"}
+            >
+              {orderList === null ? (
+                <div
+                  className="aq-pf-list"
+                  role="status"
+                  aria-label="Loading your orders"
+                >
+                  {[0, 1, 2].map((n) => (
+                    <span key={n} className="aq-dock-skeleton" />
+                  ))}
+                </div>
+              ) : orderList === "error" ? (
+                <div className="aq-pf-empty" role="alert">
+                  <Package size={20} aria-hidden="true" />
+                  <b>Couldn&apos;t load your orders</b>
+                  <span>Check your connection and try again.</span>
+                  <button
+                    type="button"
+                    className="aq-btn aq-btn-glass"
+                    onClick={() => {
+                      setOrderList(null);
+                      setOrdersTry((n) => n + 1);
+                    }}
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : orderList.length ? (
+                <div className="aq-pf-list">
+                  {orderList.map((o) => (
+                    <OrderRow
+                      key={o.id}
+                      order={o}
+                      products={p.products}
+                      canView={p.canView}
+                      onView={p.onView}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="aq-pf-empty">
+                  <Package size={20} aria-hidden="true" />
+                  <b>No orders yet</b>
+                  <span>
+                    Orders you place here, paid online or cash on delivery, show
+                    up with their payment status.
+                  </span>
+                </div>
+              )}
+            </div>
+
             {/* ---------- purchases ---------- */}
             <div
               role="tabpanel"
@@ -943,6 +1045,143 @@ function PurchaseRow({
             rel="noopener noreferrer"
           >
             Open full invoice <ExternalLink size={12} aria-hidden="true" />
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// One order from checkout: the summary row (first item, number and date,
+// total, payment status) toggles its items, delivery address and order status.
+function OrderRow({
+  order,
+  products,
+  canView,
+  onView,
+}: {
+  order: OrderRowData;
+  products: Product[];
+  canView: boolean;
+  onView: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const bodyId = useId();
+  const pay = paymentView(order);
+  const byId = new Map(products.map((x) => [x.id, x]));
+  const address = order.address
+    ? addressLine(order.address as unknown as Address)
+    : "";
+  const help = supportLink(
+    `Hi Aquakart, about my order ${order.number}${
+      order.total != null ? ` (${INR(order.total)})` : ""
+    }: ${pay.label.toLowerCase()}. Can you help?`,
+  );
+  return (
+    <div className="aq-pf-buy-wrap" data-open={open}>
+      <button
+        type="button"
+        className="aq-pf-buy"
+        aria-expanded={open}
+        aria-controls={bodyId}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className="aq-pf-buy-icon" aria-hidden="true">
+          <Package size={16} />
+        </span>
+        <span className="aq-pf-addr-text">
+          <span style={{ fontWeight: 700, color: "var(--aq-ink)" }}>
+            {orderTitle(order)}
+          </span>
+          <span>
+            {order.number}
+            {order.date ? ` · ${shortDate(order.date)}` : ""}
+            {order.cod ? " · Cash on delivery" : " · PhonePe"}
+          </span>
+        </span>
+        <span className="aq-pf-buy-side">
+          {order.total != null && (
+            <span style={{ fontWeight: 800, color: "var(--aq-ink)" }}>
+              {INR(order.total)}
+            </span>
+          )}
+          <span
+            className="aq-pf-orderpay"
+            style={{
+              background: TONES[pay.tone].bg,
+              color: TONES[pay.tone].fg,
+            }}
+          >
+            {pay.label}
+          </span>
+        </span>
+        <ChevronDown
+          size={16}
+          aria-hidden="true"
+          className="aq-pf-buy-chev"
+          data-open={open}
+        />
+      </button>
+      <div id={bodyId} className="aq-pf-quick" hidden={!open}>
+        {order.lines.map((l, i) => {
+          const prod = l.productId ? byId.get(l.productId) : undefined;
+          const meta = [
+            `Qty ${l.qty}`,
+            l.price != null ? INR(l.price) : null,
+          ].filter(Boolean);
+          return (
+            <div key={`${l.name}-${i}`} className="aq-pf-quick-row">
+              {prod?.photos[0] ? (
+                // eslint-disable-next-line @next/next/no-img-element -- catalogue images on Cloudinary
+                <img src={prod.photos[0]} alt="" loading="lazy" />
+              ) : (
+                <span className="aq-pf-quick-ph" aria-hidden="true">
+                  <Package size={16} />
+                </span>
+              )}
+              <span className="aq-pf-quick-text">
+                <b>{l.name}</b>
+                <span>{meta.join(" · ")}</span>
+              </span>
+              {prod && (
+                <button
+                  type="button"
+                  className="aq-chip aq-chip-soft"
+                  onClick={() => onView(prod.id)}
+                  disabled={!canView}
+                  aria-label={`View ${l.name}`}
+                >
+                  View
+                </button>
+              )}
+            </div>
+          );
+        })}
+        <dl className="aq-pf-orderinfo">
+          {order.orderStatus && (
+            <>
+              <dt>Order status</dt>
+              <dd>{order.orderStatus}</dd>
+            </>
+          )}
+          {address && (
+            <>
+              <dt>Deliver to</dt>
+              <dd>{address}</dd>
+            </>
+          )}
+        </dl>
+        {pay.tone !== "ok" && (
+          <a
+            className="aq-hard-link aq-pf-quick-link"
+            href={help}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {pay.tone === "bad"
+              ? "Payment didn't go through? Get help on WhatsApp"
+              : "Questions about this order? Ask us on WhatsApp"}{" "}
+            <ExternalLink size={12} aria-hidden="true" />
           </a>
         )}
       </div>

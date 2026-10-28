@@ -4175,3 +4175,1496 @@ button.aq-pf-buy {
   align-self: flex-start;
   min-height: 36px;
 }
+
+/* Comparison table column headers: same height, actions on one line */
+.aq-compare-head {
+  padding: 14px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.aq-compare-thumb {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 1px solid var(--aq-bd);
+}
+.aq-compare-title {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  color: var(--aq-ink);
+  font: inherit;
+  font-weight: 700;
+  font-size: 13.5px;
+  line-height: 1.3;
+  text-align: left;
+  min-height: calc(2 * 1.3em);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.aq-compare-actions {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.aq-compare-actions .aq-chip {
+  font-size: 12px;
+  padding: 4px 12px;
+  min-height: 30px;
+}
+.aq-compare-actions .aq-compare-buy {
+  background: var(--aq-mint);
+  color: var(--aq-mintink);
+  border-color: transparent;
+}
+.aq-compare-actions .aq-compare-buy:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Comparison artifact card in the chat */
+.aq-artifact {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--aq-ink);
+  font: inherit;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+.aq-artifact:hover {
+  box-shadow: 0 10px 24px rgba(var(--aq-sh), 0.1);
+}
+.aq-artifact:active {
+  transform: scale(0.99);
+}
+.aq-artifact[aria-current="true"] {
+  border-color: var(--aq-mintink);
+}
+.aq-artifact-thumbs {
+  display: flex;
+  flex-shrink: 0;
+}
+.aq-artifact-thumbs span {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 2px solid rgba(var(--aq-gl), 1);
+  background-color: var(--aq-surf);
+}
+.aq-artifact-thumbs span + span {
+  margin-left: -12px;
+}
+.aq-artifact-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.aq-artifact-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--aq-mut);
+}
+.aq-artifact-names {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.aq-artifact-open {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--aq-mintink);
+}
+
+/* Floating "Recently bought / Popular" card (demand feed) */
+.aq-demand-float {
+  position: absolute;
+  z-index: 34;
+  width: min(320px, calc(100% - 32px));
+  padding: 8px 10px 10px;
+  border-radius: 20px;
+  background: rgba(var(--aq-gl), 0.86);
+  border: 1px solid rgba(16, 191, 164, 0.35);
+  box-shadow:
+    0 0 0 1px rgba(16, 191, 164, 0.18),
+    0 0 26px rgba(16, 191, 164, 0.28),
+    0 14px 34px rgba(var(--aq-sh), 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  animation: aqPop 0.3s cubic-bezier(0.22, 0.8, 0.24, 1) both;
+  transition:
+    transform 0.25s cubic-bezier(0.22, 0.8, 0.24, 1),
+    opacity 0.25s ease;
+}
+/* Vertical scrolling stays with the page; sideways moves are the swipe. */
+.aq-demand-float[data-touch="true"] {
+  touch-action: pan-y;
+}
+.aq-demand-float[data-swiping="true"] {
+  transition: none;
+}
+.aq-demand-float[data-dragging="true"] {
+  cursor: grabbing;
+  box-shadow:
+    0 0 0 1px rgba(16, 191, 164, 0.3),
+    0 0 34px rgba(16, 191, 164, 0.4),
+    0 22px 48px rgba(var(--aq-sh), 0.26);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .aq-demand-float:not([data-dragging="true"]) {
+    animation:
+      aqPop 0.3s cubic-bezier(0.22, 0.8, 0.24, 1) both,
+      aqDemandGlow 3.2s ease-in-out 0.3s infinite;
+  }
+}
+@keyframes aqDemandGlow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(16, 191, 164, 0.18),
+      0 0 22px rgba(16, 191, 164, 0.22),
+      0 14px 34px rgba(var(--aq-sh), 0.16);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(16, 191, 164, 0.42),
+      0 0 38px rgba(16, 191, 164, 0.42),
+      0 14px 34px rgba(var(--aq-sh), 0.16);
+  }
+}
+.aq-demand-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.aq-demand-grip {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--aq-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: grab;
+  touch-action: none;
+}
+.aq-demand-float[data-touch="true"] .aq-demand-grip {
+  cursor: default;
+  touch-action: pan-y;
+}
+.aq-demand-grip:focus-visible,
+.aq-demand-btn:focus-visible,
+.aq-demand-row:focus-visible,
+.aq-demand-line:focus-visible,
+.aq-demand-tab:focus-visible {
+  outline: 2px solid var(--aq-mintink);
+  outline-offset: 2px;
+}
+.aq-demand-live {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #10bfa4;
+}
+.aq-demand-btn {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(var(--aq-gl), 0.6);
+  color: var(--aq-mut);
+  cursor: pointer;
+}
+.aq-demand-float[data-touch="true"] .aq-demand-btn {
+  width: 44px;
+  height: 44px;
+  margin: -7px -7px -7px 0;
+}
+.aq-demand-btn:hover {
+  color: var(--aq-ink);
+}
+.aq-demand-recent,
+.aq-demand-trending {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.aq-demand-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--aq-mut);
+}
+.aq-demand-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  min-height: 2.8em;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--aq-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+.aq-demand-line:disabled,
+.aq-demand-row:disabled {
+  cursor: default;
+}
+.aq-demand-line:not(:disabled):hover .aq-demand-text {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.aq-demand-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.aq-demand-dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #10bfa4;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .aq-demand-line {
+    animation: aqChipIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .aq-demand-dot,
+  .aq-demand-live {
+    animation: aqDemandPulse 2s ease-in-out infinite;
+  }
+}
+@keyframes aqDemandPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 191, 164, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(16, 191, 164, 0);
+  }
+}
+.aq-demand-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.aq-demand-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--aq-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.aq-demand-float[data-touch="true"] .aq-demand-row {
+  min-height: 44px;
+}
+.aq-demand-row:not(:disabled):hover {
+  background: rgba(var(--aq-gl), 0.75);
+}
+.aq-demand-thumb {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1px solid var(--aq-bd);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--aq-mint) 0 6px,
+    var(--aq-tint) 6px 12px
+  );
+}
+.aq-demand-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.aq-demand-row-name {
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.aq-demand-row-meta {
+  font-size: 11.5px;
+  color: var(--aq-mut);
+}
+.aq-demand-row-price {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--aq-mintink);
+}
+.aq-demand-hint {
+  font-size: 11px;
+  color: var(--aq-mut2);
+  text-align: center;
+}
+
+/* Tucked away: a glowing tab on the left edge */
+.aq-demand-tab {
+  position: absolute;
+  left: 0;
+  z-index: 34;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px 0 12px;
+  border: 1px solid rgba(16, 191, 164, 0.4);
+  border-left: 0;
+  border-radius: 0 999px 999px 0;
+  background: rgba(var(--aq-gl), 0.9);
+  color: #e8590c;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  /* The bubble is dragged with the finger, so the page mustn't scroll under it. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    left 0.28s cubic-bezier(0.22, 0.8, 0.24, 1),
+    right 0.28s cubic-bezier(0.22, 0.8, 0.24, 1),
+    top 0.28s cubic-bezier(0.22, 0.8, 0.24, 1),
+    border-radius 0.2s ease;
+  box-shadow:
+    0 0 20px rgba(16, 191, 164, 0.3),
+    0 8px 20px rgba(var(--aq-sh), 0.14);
+  animation: aqDemandTabIn 0.3s cubic-bezier(0.22, 0.8, 0.24, 1) both;
+}
+.aq-demand-tab-text {
+  color: var(--aq-ink);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .aq-demand-tab {
+    animation:
+      aqDemandTabIn 0.3s cubic-bezier(0.22, 0.8, 0.24, 1) both,
+      aqDemandGlow 3.2s ease-in-out 0.3s infinite;
+  }
+}
+@keyframes aqDemandTabIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* Snapped to the right edge: the mirror image of the left one. */
+.aq-demand-tab[data-side="right"] {
+  left: auto;
+  border-left: 1px solid rgba(16, 191, 164, 0.4);
+  border-right: 0;
+  border-radius: 999px 0 0 999px;
+  padding: 0 12px 0 14px;
+  animation-name: aqDemandTabInRight;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .aq-demand-tab[data-side="right"] {
+    animation-name: aqDemandTabInRight, aqDemandGlow;
+  }
+}
+@keyframes aqDemandTabInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+/* Held and moving: a free-floating round bubble that follows the finger. */
+.aq-demand-tab[data-dragging="true"] {
+  right: auto;
+  border: 1px solid rgba(16, 191, 164, 0.55);
+  border-radius: 999px;
+  cursor: grabbing;
+  transition: border-radius 0.2s ease;
+  transform: scale(1.06);
+  box-shadow:
+    0 0 30px rgba(16, 191, 164, 0.45),
+    0 16px 34px rgba(var(--aq-sh), 0.24);
+  animation: none;
+}
+
+/* Water hardness: folded summary card (opens to the full card) */
+.aq-hard-mini {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  color: var(--aq-ink);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+.aq-hard-mini:hover {
+  box-shadow: 0 14px 30px rgba(var(--aq-sh), 0.14);
+}
+.aq-hard-mini:active {
+  transform: scale(0.99);
+}
+.aq-hard-mini:focus-visible,
+.aq-hard-collapse:focus-visible {
+  outline: 2px solid var(--aq-mintink);
+  outline-offset: 2px;
+}
+.aq-hard-mini .aq-hard-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+}
+.aq-hard-mini .aq-hard-pin {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+}
+.aq-hard-mini-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.aq-hard-mini-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.aq-hard-mini-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--aq-mut);
+}
+.aq-hard-mini-place {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--aq-mut);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.aq-hard-mini-reading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+.aq-hard-mini-reading strong {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.aq-hard-mini-unit {
+  font-size: 12px;
+  color: var(--aq-mut);
+  margin-right: 2px;
+}
+.aq-hard-mini-reading .aq-hard-pill {
+  font-size: 11px;
+  padding: 2px 8px;
+}
+.aq-hard-mini-verdict {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 8px;
+  border: 1px solid;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.aq-hard-mini-gauge {
+  display: block;
+  height: 6px;
+  margin: 4px 0 2px;
+}
+.aq-hard-mini-gauge .aq-hard-marker {
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-width: 2.5px;
+  transition: none;
+}
+.aq-hard-mini-chev {
+  flex-shrink: 0;
+  color: var(--aq-mut);
+}
+
+/* Open: the full card with a fold button in its corner */
+.aq-hard-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+}
+/* Room for the fold button beside the card's first row (inline padding there). */
+.aq-hard-wrap > .aq-hard-card > :first-child {
+  padding-right: 56px !important;
+}
+.aq-hard-collapse {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(var(--aq-gl), 0.85);
+  border-radius: 50%;
+  background: rgba(var(--aq-gl), 0.7);
+  color: var(--aq-mut);
+  cursor: pointer;
+}
+.aq-hard-collapse:hover {
+  color: var(--aq-ink);
+}
+@media (pointer: coarse) {
+  .aq-hard-collapse {
+    width: 44px;
+    height: 44px;
+    top: 6px;
+    right: 6px;
+  }
+}
+
+/* Payment status screen: layout */
+.aq-paystatus {
+  max-width: 460px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+.aq-paystatus-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+.aq-paystatus-note {
+  font-size: 12.5px;
+  color: var(--aq-mut);
+}
+.aq-spin {
+  animation: aqSpin 0.9s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aq-spin {
+    animation: none;
+  }
+}
+
+/* Payment progress timeline */
+.aq-paytl {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+}
+.aq-paytl-step {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+/* Connector to the previous step. */
+.aq-paytl-step + .aq-paytl-step::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  right: calc(50% + 16px);
+  left: calc(-50% + 16px);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--aq-bd);
+}
+.aq-paytl-step[data-state="done"]::before,
+.aq-paytl-step[data-state="active"]::before,
+.aq-paytl-step[data-state="warn"]::before,
+.aq-paytl-step[data-state="failed"]::before {
+  background: #10bfa4;
+}
+.aq-paytl-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 11.5px;
+  font-weight: 800;
+  background: rgba(var(--aq-gl), 0.9);
+  border: 2px solid var(--aq-bd);
+  color: var(--aq-mut);
+}
+.aq-paytl-step[data-state="done"] .aq-paytl-dot {
+  background: #10bfa4;
+  border-color: #10bfa4;
+  color: #fff;
+}
+.aq-paytl-step[data-state="active"] .aq-paytl-dot {
+  border-color: #10bfa4;
+  color: #008b68;
+  box-shadow: 0 0 0 4px rgba(16, 191, 164, 0.18);
+}
+.aq-paytl-step[data-state="warn"] .aq-paytl-dot {
+  background: #fef3c7;
+  border-color: #d97706;
+  color: #8a5a00;
+}
+.aq-paytl-step[data-state="failed"] .aq-paytl-dot {
+  background: #b42318;
+  border-color: #b42318;
+  color: #fff;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .aq-paytl-step[data-state="active"] .aq-paytl-dot {
+    animation: aqDemandPulse 1.8s ease-in-out infinite;
+  }
+  .aq-paytl-step[data-state="failed"] .aq-paytl-dot {
+    animation: aqPayShake 0.45s ease both;
+  }
+}
+@keyframes aqPayShake {
+  0%,
+  100% {
+    transform: none;
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+.aq-paytl-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--aq-mut);
+  line-height: 1.25;
+}
+.aq-paytl-step[data-state="done"] .aq-paytl-label,
+.aq-paytl-step[data-state="active"] .aq-paytl-label {
+  color: var(--aq-ink);
+}
+.aq-paytl-step[data-state="failed"] .aq-paytl-label {
+  color: #b42318;
+}
+.aq-paytl-step[data-state="warn"] .aq-paytl-label {
+  color: #8a5a00;
+}
+
+/* Order + payment status card */
+.aq-paycard {
+  width: 100%;
+  padding: 14px 16px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.aq-paycard-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  font-size: 14px;
+}
+.aq-paycard-grid dt {
+  color: var(--aq-mut);
+}
+.aq-paycard-grid dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+  min-width: 0;
+}
+.aq-paycard-order {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  font-weight: 700 !important;
+  overflow-wrap: anywhere;
+}
+.aq-paycard-amount {
+  font-weight: 800 !important;
+}
+.aq-paycard-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.aq-paycard-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.aq-paycard-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--aq-bd);
+  border-radius: 50%;
+  background: rgba(var(--aq-gl), 0.8);
+  color: var(--aq-mut);
+  cursor: pointer;
+}
+.aq-paycard-icon:hover:not(:disabled) {
+  color: var(--aq-ink);
+}
+.aq-paycard-icon:disabled {
+  cursor: progress;
+}
+@media (pointer: coarse) {
+  .aq-paycard-icon {
+    width: 36px;
+    height: 36px;
+  }
+}
+.aq-paycard-ago {
+  display: block;
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--aq-mut);
+}
+.aq-paycard-more {
+  border-top: 1px solid var(--aq-bd);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.aq-paycard-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.aq-paycard-items li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+}
+.aq-paycard-thumb {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1px solid var(--aq-bd);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--aq-mint) 0 6px,
+    var(--aq-tint) 6px 12px
+  );
+}
+.aq-paycard-item {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.aq-paycard-qty {
+  flex-shrink: 0;
+  color: var(--aq-mut);
+  font-weight: 600;
+}
+.aq-paycard-line {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--aq-body);
+}
+.aq-paycard-line span {
+  display: inline-block;
+  min-width: 82px;
+  color: var(--aq-mut);
+  font-weight: 600;
+}
+
+/* Failed: the two ways forward, side by side (stacked on phones) */
+.aq-payactions {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 8px;
+}
+.aq-payaction {
+  height: auto;
+  min-height: 52px;
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  line-height: 1.25;
+}
+.aq-payaction small {
+  font-size: 11.5px;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+/* Failed: likely causes and WhatsApp help */
+.aq-payhelp {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px dashed var(--aq-bd);
+  background: rgba(var(--aq-gl), 0.45);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.aq-payhelp-lead {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--aq-body);
+}
+.aq-payhelp-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--aq-mut);
+}
+.aq-payhelp-wa {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #e7f8ee;
+  color: #12723c;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.aq-payhelp-wa:hover {
+  background: #d6f2e1;
+}
+.aq-payhelp-wa:focus-visible {
+  outline: 2px solid #12723c;
+  outline-offset: 2px;
+}
+
+/* Payment status: buttons with an in-place loader. Both faces sit in one grid
+   cell, so a button keeps its size when the loader shows. */
+.aq-loadbtn {
+  display: inline-grid;
+  place-items: center;
+}
+.aq-loadbtn-face {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.aq-loadbtn-busy,
+.aq-loadbtn[data-loading="true"] .aq-loadbtn-face:not(.aq-loadbtn-busy) {
+  opacity: 0;
+  transform: translateY(3px);
+  visibility: hidden;
+}
+.aq-loadbtn[data-loading="true"] .aq-loadbtn-busy {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+}
+.aq-loadbtn-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.aq-loadbtn-spin {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  opacity: 0.85;
+  animation: aqSpin 0.8s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aq-loadbtn-face {
+    transition: none;
+  }
+  .aq-loadbtn-spin {
+    animation-duration: 2.4s;
+  }
+}
+/* The working button stays at full strength; only its neighbours dim. */
+.aq-loadbtn[data-loading="true"]:disabled {
+  opacity: 1;
+  cursor: progress;
+}
+.aq-paystatus[aria-busy="true"] .aq-btn:disabled:not([data-loading="true"]) {
+  opacity: 0.5;
+}
+.aq-payaction {
+  white-space: normal;
+  text-align: center;
+}
+.aq-payaction-wide {
+  grid-column: 1 / -1;
+}
+
+/* Fixed heights for the parts whose text changes between pending and failed. */
+.aq-paystatus-head {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.aq-paystatus-text {
+  margin: 0;
+  min-height: 4.8em;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--aq-body);
+}
+.aq-paystatus-more {
+  min-height: 40px;
+  align-items: center;
+}
+.aq-paycard-skel {
+  display: inline-block;
+  width: 150px;
+  height: 1.2em;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--aq-tint) 0%,
+    rgba(var(--aq-gl), 0.95) 50%,
+    var(--aq-tint) 100%
+  );
+  background-size: 200% 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .aq-paycard-skel {
+    animation: aqPaySkel 1.2s ease-in-out infinite;
+  }
+}
+@keyframes aqPaySkel {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+/* Profile → Orders: payment chip and order details */
+.aq-pf-orderpay {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.aq-pf-orderinfo {
+  margin: 4px 0 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  font-size: 12.5px;
+}
+.aq-pf-orderinfo dt {
+  color: var(--aq-mut);
+  font-weight: 600;
+}
+.aq-pf-orderinfo dd {
+  margin: 0;
+  color: var(--aq-body);
+  overflow-wrap: anywhere;
+}
+
+/* Checkout: delivery address (pick a saved one, or add one on the spot) */
+.aq-addr {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.aq-addr-ask {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--aq-body);
+}
+.aq-addr-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+.aq-addr-card {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+}
+.aq-addr-card[aria-checked="true"] {
+  border-color: #10bfa4;
+  box-shadow: 0 0 0 3px rgba(16, 191, 164, 0.18);
+}
+.aq-addr-mark {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--aq-bd);
+  color: var(--aq-mut);
+  background: rgba(var(--aq-gl), 0.9);
+}
+.aq-addr-card[aria-checked="true"] .aq-addr-mark {
+  background: #10bfa4;
+  border-color: #10bfa4;
+  color: #fff;
+}
+.aq-addr-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.aq-addr-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.aq-addr-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--aq-mint);
+  color: var(--aq-mintink);
+}
+.aq-addr-line {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--aq-mut);
+  overflow-wrap: anywhere;
+}
+.aq-addr-add {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  border-style: dashed;
+}
+.aq-addr-add b {
+  display: block;
+  font-size: 14px;
+}
+.aq-addr-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--aq-bd);
+  background: rgba(var(--aq-gl), 0.6);
+}
+.aq-addr-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+.aq-addr-error {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #b42318;
+}
+.aq-addr-note {
+  font-size: 12px;
+  color: var(--aq-mut);
+}
+.aq-addr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Checkout layout. The panel's own width decides (container query), not the
+   window's: the panel can be resized beside the chat.
+   Narrow: one column, the Pay bar sticks to the bottom.
+   Wide: details | order, each column scrolls on its own if it must, and the
+   Pay button stays pinned at the foot of the order column. */
+.aq-co {
+  position: absolute;
+  inset: 0;
+  container-type: inline-size;
+}
+.aq-co-scroll {
+  height: 100%;
+  overflow-y: auto;
+  padding: 76px 16px 0;
+  box-sizing: border-box;
+}
+.aq-co-grid {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.aq-co-main,
+.aq-co-side-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.aq-co-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+.aq-co-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--aq-mut);
+}
+.aq-co-pay {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 -16px;
+  padding: 14px 16px 16px;
+  background: linear-gradient(
+    to top,
+    rgba(var(--aq-gl), 0.96) 72%,
+    rgba(var(--aq-gl), 0)
+  );
+}
+.aq-co-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--aq-mut);
+  font-weight: 600;
+}
+.aq-co-total b {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--aq-ink);
+}
+
+@container (min-width: 820px) {
+  .aq-co-scroll {
+    overflow: hidden;
+    padding: 76px 20px 16px;
+  }
+  .aq-co-grid {
+    max-width: 1120px;
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(330px, 0.88fr);
+    gap: 18px;
+    align-items: stretch;
+  }
+  .aq-co-main {
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 8px;
+  }
+  .aq-co-side {
+    min-height: 0;
+    border-radius: 22px;
+    background: rgba(var(--aq-gl), 0.4);
+    border: 1px solid rgba(var(--aq-gl), 0.85);
+    padding: 14px 14px 0;
+  }
+  .aq-co-side-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 8px;
+  }
+  .aq-co-pay {
+    position: static;
+    margin: 0 -14px;
+    padding: 14px;
+    border-top: 1px solid var(--aq-bd);
+    border-radius: 0 0 22px 22px;
+    background: rgba(var(--aq-gl), 0.9);
+  }
+}
+
+/* The Pay / Place order button: glows when everything is ready. */
+.aq-paybtn {
+  position: relative;
+  overflow: hidden;
+  height: 54px;
+  border-radius: 16px;
+  font-size: 15.5px;
+  background: linear-gradient(135deg, #12c7a8 0%, #008b68 55%, #00785a 100%);
+}
+.aq-paybtn:disabled {
+  background: #9fcfc2;
+  box-shadow: none;
+  opacity: 1;
+}
+.aq-paybtn[data-ready="true"] {
+  box-shadow:
+    0 0 0 1px rgba(16, 191, 164, 0.45),
+    0 10px 28px rgba(0, 139, 104, 0.35),
+    0 0 26px rgba(16, 191, 164, 0.4);
+}
+.aq-paybtn[data-ready="true"]:hover {
+  filter: brightness(1.05);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .aq-paybtn[data-ready="true"] {
+    animation: aqPayGlow 2.4s ease-in-out infinite;
+  }
+  /* A light sweep across the button every few seconds. */
+  .aq-paybtn[data-ready="true"]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 35%,
+      rgba(255, 255, 255, 0.38) 50%,
+      transparent 65%
+    );
+    transform: translateX(-120%);
+    animation: aqPaySweep 3.2s ease-in-out 0.6s infinite;
+    pointer-events: none;
+  }
+}
+@keyframes aqPayGlow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(16, 191, 164, 0.4),
+      0 10px 28px rgba(0, 139, 104, 0.3),
+      0 0 18px rgba(16, 191, 164, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(16, 191, 164, 0.65),
+      0 12px 32px rgba(0, 139, 104, 0.4),
+      0 0 38px rgba(16, 191, 164, 0.55);
+  }
+}
+@keyframes aqPaySweep {
+  0% {
+    transform: translateX(-120%);
+  }
+  45%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+/* Checkout repaint: numbers count to their new value, nothing blinks. */
+.aq-amt {
+  font-variant-numeric: tabular-nums;
+  border-radius: 6px;
+  transition:
+    color 0.35s ease,
+    background-color 0.35s ease;
+}
+.aq-amt[data-dir="up"] {
+  color: #b4410c;
+  background-color: rgba(249, 115, 22, 0.1);
+}
+.aq-amt[data-dir="down"] {
+  color: #008b68;
+  background-color: rgba(16, 191, 164, 0.12);
+}
+.aq-qty-bump {
+  display: inline-block;
+  min-width: 1.4em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .aq-qty-bump {
+    animation: aqQtyBump 0.32s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  }
+}
+@keyframes aqQtyBump {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.4;
+  }
+  60% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+  }
+}
+.aq-co-totals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  transition: opacity 0.25s ease;
+}
+.aq-co-totals[data-updating="true"],
+.aq-co-total[data-updating="true"] {
+  opacity: 0.62;
+}
+.aq-co-total {
+  transition: opacity 0.25s ease;
+}
+.aq-co-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  min-height: 1.5em;
+}
+.aq-co-line-total {
+  border-top: 1px solid var(--aq-bd);
+  padding-top: 12px;
+  margin-top: 4px;
+  min-height: 2.2em;
+}
+.aq-co-updating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--aq-mut);
+}
+.aq-co-updating .aq-loadbtn-spin {
+  width: 12px;
+  height: 12px;
+}
+.aq-co-skel {
+  display: inline-block;
+  height: 1em;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--aq-tint) 0%,
+    rgba(var(--aq-gl), 0.95) 50%,
+    var(--aq-tint) 100%
+  );
+  background-size: 200% 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .aq-co-skel {
+    animation: aqPaySkel 1.2s ease-in-out infinite;
+  }
+}
+/* Updating the price: the Pay button keeps its colour and size, just waits. */
+.aq-paybtn[data-updating="true"]:disabled {
+  background: linear-gradient(135deg, #12c7a8 0%, #008b68 55%, #00785a 100%);
+  opacity: 0.82;
+  cursor: progress;
+}

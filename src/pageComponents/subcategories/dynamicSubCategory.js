@@ -11,10 +11,14 @@ import {
   FunnelIcon,
 } from "@heroicons/react/24/outline";
 import AquaImage from "@/components/images/AquaImage";
+import RecentlyBought from "@/components/demand/RecentlyBought";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
-import { AquaCardSkeleton, AquaSkeletonGrid } from "@/components/loaders/AquaCardSkeleton";
+import {
+  AquaCardSkeleton,
+  AquaSkeletonGrid,
+} from "@/components/loaders/AquaCardSkeleton";
 
 const LoadingState = () => (
   <div className="space-y-14" aria-label="Loading subcategory" role="status">
@@ -81,10 +85,7 @@ const AquaDynamicSubCategoryComponent = ({
   }, [id, initialCategory, initialRelated]);
 
   return (
-    <AquaLayout
-      subcategoryData={seo}
-      productListData={related}
-    >
+    <AquaLayout subcategoryData={seo} productListData={related}>
       <div className="fixed inset-0 bg-slate-50 z-[-1]">
         <div className="absolute top-[10%] left-[20%] w-[30%] h-[30%] rounded-full bg-cyan-200/20 blur-[90px]" />
         <div className="absolute bottom-[20%] right-[10%] w-[40%] h-[40%] rounded-full bg-blue-200/20 blur-[100px]" />
@@ -154,6 +155,8 @@ const AquaDynamicSubCategoryComponent = ({
                 <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/20 to-transparent mix-blend-overlay" />
               </div>
             </section>
+
+            <RecentlyBought products={related} className="" />
 
             <section id="sub-products-grid">
               <div className="flex items-center justify-between mb-8">

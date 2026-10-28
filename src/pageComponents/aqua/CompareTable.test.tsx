@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import CompareTable from "./CompareTable";
 import type { Product } from "./types";
 
@@ -161,5 +161,31 @@ describe("CompareTable spec overflow", () => {
     expect(
       screen.getByRole("button", { name: "Show fewer specs" }),
     ).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("gives every product the same View and Buy now actions", async () => {
+    const { default: userEvent } = await import("@testing-library/user-event");
+    const user = userEvent.setup();
+    const onOpen = vi.fn();
+    const onBuy = vi.fn();
+    const soldOut = { ...auto, inStock: false, stock: "Out of stock" };
+    render(
+      <CompareTable
+        products={[washing, bathroom, soldOut]}
+        onOpen={onOpen}
+        onBuy={onBuy}
+      />,
+    );
+    await user.click(
+      screen.getByRole("button", { name: `View ${bathroom.title}` }),
+    );
+    expect(onOpen).toHaveBeenCalledWith("b");
+    await user.click(
+      screen.getByRole("button", { name: `Buy ${washing.title}` }),
+    );
+    expect(onBuy).toHaveBeenCalledWith("w");
+    expect(
+      screen.getByRole("button", { name: `Buy ${soldOut.title}` }),
+    ).toBeDisabled();
   });
 });

@@ -137,6 +137,15 @@ export type PaymentInfo = {
   // Only ever set after GET /payments/:id reported "paid".
   serverOrder: Record<string, unknown> | null;
   demoId: string | null;
+  // What GET /payments/:id last said, and when (the status card).
+  serverStatus: "paid" | "failed" | "pending" | null;
+  checkedAt: number | null;
+  // The order POST /payments created for this attempt (best effort):
+  // its number (AQOD-…) and payment status as stored on the order.
+  orderNumber: string | null;
+  // Stopped waiting without an answer: the payment may still go through, so
+  // the failed screen offers "Check status again" before paying twice.
+  unconfirmed: boolean;
 };
 
 export const emptyPayment: PaymentInfo = {
@@ -151,6 +160,10 @@ export const emptyPayment: PaymentInfo = {
   reason: "",
   serverOrder: null,
   demoId: null,
+  serverStatus: null,
+  checkedAt: null,
+  orderNumber: null,
+  unconfirmed: false,
 };
 
 export type FlowDispatch = Dispatch<FlowAction>;

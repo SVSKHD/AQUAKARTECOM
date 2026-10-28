@@ -173,9 +173,12 @@ const FIXED = ["price", "type", "scope", "brand", "stock"];
 export default function CompareTable({
   products,
   onOpen,
+  onBuy,
 }: {
   products: Product[];
   onOpen: (id: string) => void;
+  // Straight to checkout for that product (the comparison panel).
+  onBuy?: (id: string) => void;
 }) {
   const [allSpecs, setAllSpecs] = useState(false);
   const allRows = buildRows(products);
@@ -234,58 +237,47 @@ export default function CompareTable({
             Compare
           </div>
           {products.map((p) => (
-            <div
-              role="columnheader"
-              key={p.id}
-              style={{
-                padding: "14px 14px 10px",
-                display: "flex",
-                flexDirection: "column",
-                gap: 8,
-              }}
-            >
+            <div role="columnheader" key={p.id} className="aq-compare-head">
               <span
                 aria-hidden="true"
+                className="aq-compare-thumb"
                 style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 12,
                   background: p.photos[0]
                     ? `var(--aq-surf) center / contain no-repeat url("${p.photos[0]}")`
                     : "repeating-linear-gradient(135deg, var(--aq-mint) 0 6px, var(--aq-tint) 6px 12px)",
-                  border: "1px solid var(--aq-bd)",
                 }}
               />
+              {/* Clamped to two lines at a fixed height, so every column's
+                  actions sit on the same line whatever the title length. */}
               <button
                 type="button"
+                className="aq-compare-title"
+                title={p.title}
                 onClick={() => onOpen(p.id)}
-                style={{
-                  border: 0,
-                  background: "transparent",
-                  padding: 0,
-                  cursor: "pointer",
-                  color: "var(--aq-ink)",
-                  fontWeight: 700,
-                  fontSize: 13.5,
-                  textAlign: "left",
-                  lineHeight: 1.3,
-                }}
               >
                 {p.title}
               </button>
-              <button
-                type="button"
-                className="aq-chip"
-                onClick={() => onOpen(p.id)}
-                style={{
-                  alignSelf: "flex-start",
-                  fontSize: 12,
-                  padding: "4px 10px",
-                  minHeight: 28,
-                }}
-              >
-                View
-              </button>
+              <span className="aq-compare-actions">
+                <button
+                  type="button"
+                  className="aq-chip"
+                  onClick={() => onOpen(p.id)}
+                  aria-label={`View ${p.title}`}
+                >
+                  View
+                </button>
+                {onBuy && (
+                  <button
+                    type="button"
+                    className="aq-chip aq-compare-buy"
+                    onClick={() => onBuy(p.id)}
+                    disabled={!p.inStock}
+                    aria-label={`Buy ${p.title}`}
+                  >
+                    {p.inStock ? "Buy now" : p.stock}
+                  </button>
+                )}
+              </span>
             </div>
           ))}
         </div>

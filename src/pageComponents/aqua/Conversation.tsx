@@ -15,7 +15,7 @@ import { INR } from "./catalogue";
 import AquaSupportNote from "./AquaSupportNote";
 import { suggestFollowUps } from "@/utils/aiFollowUps";
 import Composer from "./Composer";
-import CompareTable from "./CompareTable";
+import CompareArtifact from "./CompareArtifact";
 import HardnessCard from "./HardnessCard";
 import ProductCard from "./ProductCard";
 import ReplyActions from "./ReplyActions";
@@ -65,6 +65,10 @@ type Props = {
   onToggleFav: (id: string) => void;
   onToggleCompare: (id: string) => void;
   onClearCompare: () => void;
+  // Opens a reply's comparison artifact in the panel (by message id).
+  onOpenComparison: (messageId: string, ids: string[]) => void;
+  // The message whose comparison the panel is showing, if any.
+  openComparison: string | null;
   onAddToCart: (id: string) => void;
   onBuy: () => void;
   // productId: the product a question is about (a tagged reply's chips).
@@ -492,7 +496,16 @@ export default function Conversation(p: Props) {
             </ProductGrid>
           )}
           {m.done && table.length > 1 && (
-            <CompareTable products={table} onOpen={p.onOpen} />
+            <CompareArtifact
+              products={table}
+              active={p.flow.state === "compare" && p.openComparison === m.id}
+              onOpen={() =>
+                p.onOpenComparison(
+                  m.id,
+                  table.map((x) => x.id),
+                )
+              }
+            />
           )}
           {m.done && m.chips && m.chips.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>

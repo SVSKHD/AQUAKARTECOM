@@ -196,23 +196,26 @@ export default function ProductCard({
         }}
       >
         <span className="aq-label">{p.brand}</span>
+        {/* Two lines tall whatever the title, so cards in a row line up. */}
         <span
-          title={compact ? p.title : undefined}
+          title={p.title}
           style={{
             fontSize: compact ? 13.5 : 15,
             fontWeight: 700,
             lineHeight: 1.3,
-            ...(compact && {
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-            }),
+            minHeight: "2.6em",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
           }}
         >
           {p.title}
         </span>
-        <SoftenerBadges product={p} />
+        {/* One badge tall even for products without badges. */}
+        <div style={{ minHeight: 22 }}>
+          <SoftenerBadges product={p} />
+        </div>
         <div
           style={{
             display: "flex",
@@ -239,9 +242,13 @@ export default function ProductCard({
             </span>
           )}
         </div>
-        {spec && (
-          <span style={{ fontSize: 12, color: "var(--aq-mut)" }}>{spec}</span>
-        )}
+        {/* Kept even when empty: the line holds its place. */}
+        <span
+          aria-hidden={!spec}
+          style={{ fontSize: 12, color: "var(--aq-mut)", minHeight: "1.4em" }}
+        >
+          {spec}
+        </span>
         {reason && !compact && (
           <div
             style={{
@@ -264,7 +271,8 @@ export default function ProductCard({
           flexWrap: compact ? "wrap" : undefined,
           gap: 6,
           padding: "0 4px 4px",
-          marginTop: compact ? "auto" : undefined,
+          // Pinned to the bottom: every card's buttons sit on one line.
+          marginTop: "auto",
         }}
       >
         <button

@@ -25,6 +25,7 @@ import {
   Truck,
   Waves,
 } from "lucide-react";
+import InDemandBadge from "@/components/demand/InDemandBadge";
 import {
   AnimatePresence,
   motion,
@@ -1180,6 +1181,8 @@ function AquaProductRevamp({
                   >
                     {stockCount > 0 ? "In stock" : "Out of stock"}
                   </span>
+
+                  <InDemandBadge product={product} />
 
                   {discount > 0 && (
                     <span className="rounded-full bg-slate-950 px-3 py-1.5 text-xs font-black text-white">

@@ -22,6 +22,7 @@ import {
 } from "@/utils/aquaFlow";
 import {
   CheckoutPaymentError,
+  checkoutPaymentStatus,
   findOrder,
   placeCodOrder,
   quote,
@@ -29,10 +30,13 @@ import {
   startCheckoutPayment,
   type ServerOrder,
 } from "@/utils/aquaCommerce";
+import { areaFromUser } from "@/utils/demandFeed";
+import UserServiceOperations from "@/services/user";
+import { editAddresses, sameAddress } from "./profile";
 import { aquaConfig, pickDayTheme } from "./config";
 import { useAquaAuth } from "./useAquaAuth";
 import { DEMO_PRODUCTS, INR, loadCatalogue, toStoreItem } from "./catalogue";
-import { storage, useIsMobile, useReducedMotion } from "./hooks";
+import { storage, useIsMobile, useIsTouch, useReducedMotion } from "./hooks";
 import { readThinkingPref, writeThinkingPref } from "@/services/ai";
 import { useAquaChat } from "./useAquaChat";
 import {
@@ -41,6 +45,7 @@ import {
   type CheckoutDraft,
   type CheckoutItem,
   type Mood,
+  type PayMethod,
   type PaymentInfo,
   type Product,
   type QuoteState,
@@ -60,6 +65,7 @@ import { categoryId, getActiveCoupons, type ActiveCoupon } from "./coupons";
 import ProfileDialog, { type ProfileTab } from "./ProfileDialog";
 import { tabTitle } from "./pageTitle";
 import BlogBar from "./BlogBar";
+import DemandStrip from "./DemandStrip";
 import { useBlogReads } from "./useBlogReads";
 import type { ProfileUser } from "./profile";
 
@@ -101,6 +107,8 @@ export default function AquaWorkspace() {
   // Below 1024px (phones, iPads in portrait) a side-by-side split leaves the chat
   // ~300px wide and squeezes the panel, so the panel opens as a bottom sheet.
   const sheetLayout = useIsMobile(aquaConfig.splitBreakpoint);
+  // Phones and iPads: the floating demand card swipes away instead of dragging.
+  const isTouch = useIsTouch();
   const store = useDispatch();
   const userData = useSelector((s: RootState) => s.userData);
   const cart = useSelector((s: RootState) => s.cartData) || [];
@@ -180,10 +188,38 @@ export default function AquaWorkspace() {
       writeThinkingPref(!on);
       return !on;
     });
+  // ---------- comparison artifact (panel state "compare") ----------
+  // The reply whose comparison is open, and the product opened from it (its
+  // back button returns to the comparison).
+  const [comparison, setComparison] = useState<{
+    messageId: string;
+    ids: string[];
+  } | null>(null);
+  const [comparedOrigin, setComparedOrigin] = useState<string | null>(null);
+  const openComparison = (messageId: string, ids: string[]) => {
+    if (!canDispatch(flowRef.current, "COMPARE")) return;
+    setComparison({ messageId, ids });
+    setComparedOrigin(null);
+    setDockOpen(false);
+    setShop(null);
+    setSheet("full");
+    dispatch({ type: "COMPARE" });
+  };
+  const openComparisonRef = useRef(openComparison);
+  useEffect(() => {
+    openComparisonRef.current = openComparison;
+  });
+  const onCompared = useCallback(
+    (messageId: string, ids: string[]) =>
+      openComparisonRef.current(messageId, ids),
+    [],
+  );
+
   const chat = useAquaChat({
     products,
     getCompare,
     clearCompare,
+    onCompared,
     reducedMotion,
     thinking: showThinking,
     token,
@@ -423,6 +459,31 @@ export default function AquaWorkspace() {
     };
   };
 
+  // A guest who signs in from checkout keeps what they typed; only empty
+  // fields are filled from the account (so the order can go live right away).
+  const accountUser = userData?.user;
+  useEffect(() => {
+    if (!token || !accountUser) return;
+    const saved = accountUser.selectedAddress || accountUser.addresses?.[0];
+    setDraft((d) => {
+      if (!d) return d;
+      const blankAddress = !d.address.street.trim() && !d.address.city.trim();
+      return {
+        ...d,
+        name: d.name || accountUser.name || accountUser.firstName || "",
+        phone:
+          d.phone ||
+          String(accountUser.phone ?? "")
+            .replace(/\D/g, "")
+            .slice(-10),
+        email: d.email || accountUser.email || "",
+        ...(blankAddress && saved
+          ? { address: { ...saved }, savedAddressId: saved._id ?? null }
+          : {}),
+      };
+    });
+  }, [token, accountUser]);
+
   // ---------- actions ----------
   const view = (id: string) => {
     const p = byId.get(id);
@@ -442,7 +503,12 @@ export default function AquaWorkspace() {
   };
 
   const buy = () => {
-    const p = flow.productId ? byId.get(flow.productId) : undefined;
+    if (flow.productId) buyProduct(flow.productId);
+  };
+
+  // Checkout for one product (the product panel, or straight from the comparison).
+  const buyProduct = (id: string) => {
+    const p = byId.get(id);
     if (!p || !p.inStock) return;
     const sel = getSel(p.id);
     const item: CheckoutItem = {
@@ -456,7 +522,16 @@ export default function AquaWorkspace() {
     };
     setDraft(prefill([item], "buy"));
     setQuoteState({ status: "idle" });
-    dispatch({ type: "BUY" });
+    dispatch({ type: "BUY", productId: p.id });
+  };
+
+  const viewCompared = (id: string) => {
+    setComparedOrigin(id);
+    view(id);
+  };
+  const buyCompared = (id: string) => {
+    setComparedOrigin(id);
+    buyProduct(id);
   };
 
   const checkoutCart = () => {
@@ -560,6 +635,57 @@ export default function AquaWorkspace() {
     if (flowRef.current.state === "welcome") dispatch({ type: "SEND" });
   };
 
+  // Checkout's "Add a new address": saved to the account (the same update the
+  // profile dialog makes), then used for the order. Resolves with the stored copy.
+  const saveCheckoutAddress = async (address: Address): Promise<Address> => {
+    const u = userData?.user as ProfileUser | undefined;
+    if (!u?._id || !token) throw new Error("Sign in to save addresses.");
+    const list = u.addresses || [];
+    const next = editAddresses(list, u.selectedAddress, {
+      kind: "save",
+      index: null,
+      address,
+      makeDefault: list.length === 0,
+    });
+    try {
+      const res = await (
+        UserServiceOperations as unknown as {
+          UserUpdateDetails: (
+            id: string,
+            data: { newDetails: Record<string, unknown> },
+            token: string,
+          ) => Promise<{ data?: Partial<ProfileUser> }>;
+        }
+      ).UserUpdateDetails(
+        u._id,
+        {
+          newDetails: {
+            addresses: next.addresses,
+            selectedAddress: next.selectedAddress,
+          },
+        },
+        token,
+      );
+      const addresses = res?.data?.addresses || next.addresses;
+      store({
+        type: "UPDATE_USER_DETAILS",
+        payload: {
+          addresses,
+          selectedAddress: res?.data?.selectedAddress ?? next.selectedAddress,
+        },
+      });
+      showToast("Address saved to your account");
+      return addresses.find((a) => sameAddress(a, address)) || address;
+    } catch (e) {
+      const err = e as { authError?: boolean };
+      throw new Error(
+        err?.authError
+          ? "Your session expired, so it couldn't be saved."
+          : "Couldn't save the address just now.",
+      );
+    }
+  };
+
   // Shipping address in the shape POST /payments requires (state is mandatory there).
   const paymentAddress = (d: CheckoutDraft) => ({
     name: d.name.trim(),
@@ -573,7 +699,9 @@ export default function AquaWorkspace() {
   // Click handler for Pay / Retry. The live path pays the server-side checkout
   // session from the quote (POST /payments); PhonePe's popup opens synchronously
   // inside startCheckoutPayment, before any await, so it isn't blocked.
-  const pay = (kind: "PAY" | "RETRY") => {
+  // `method` switches how to pay on a retry (e.g. cash on delivery after a
+  // failed PhonePe payment); the checkout form keeps the choice.
+  const pay = (kind: "PAY" | "RETRY", method?: PayMethod) => {
     if (!draft || !canDispatch(flowRef.current, kind)) return;
     if (!commerceLive) {
       setPayment({ ...emptyPayment, live: false });
@@ -581,7 +709,8 @@ export default function AquaWorkspace() {
       return;
     }
     if (quoteState.status !== "ready" || quoteState.demo) return;
-    const d = draft;
+    const d = method ? { ...draft, payMethod: method } : draft;
+    if (method) setDraft(d);
     const address = paymentAddress(d);
     if (d.payMethod === "cod") return placeCod(kind, d, address);
     // A session is consumed once a payment is created, so a retry quotes again.
@@ -608,12 +737,22 @@ export default function AquaWorkspace() {
       key,
     );
     dispatch({ type: kind });
-    setPayment({ ...emptyPayment, live: true, key });
+    // The PhonePe window is known at once (null when the browser blocked it).
+    setPayment({ ...emptyPayment, live: true, key, popup: started.popup });
     started.then(
-      ({ attemptId, orderId, url, popup }) =>
+      ({ attemptId, orderId, url, popup }) => {
         setPayment((p) =>
-          p.key === key ? { ...p, attemptId, orderId, url, popup } : p,
-        ),
+          p.key === key
+            ? { ...p, attemptId, orderId, url, popup, serverStatus: "pending" }
+            : p,
+        );
+        // POST /payments already created the order: show its number while paying.
+        findOrder(orderId, userData?.user?._id, token).then((order) => {
+          const orderNumber = order?.orderId ? String(order.orderId) : null;
+          if (orderNumber)
+            setPayment((p) => (p.key === key ? { ...p, orderNumber } : p));
+        });
+      },
       (e: CheckoutPaymentError) => {
         const reason = e?.sessionExpired
           ? "Your checkout timed out, so the price needs to be checked again. Press Retry to continue."
@@ -720,9 +859,40 @@ export default function AquaWorkspace() {
     );
   };
 
-  const onFailed = (reason: string) => {
-    setPayment((p) => ({ ...p, reason }));
+  // `unconfirmed`: we stopped waiting, not a "failed" from the server.
+  const onFailed = (reason: string, unconfirmed = false) => {
+    setPayment((p) => ({ ...p, reason, unconfirmed }));
     dispatch({ type: "FAILED" });
+  };
+
+  // Every status answer while waiting (the status card shows it).
+  const onPaymentCheck = (status: PaymentInfo["serverStatus"]) =>
+    setPayment((p) => ({ ...p, serverStatus: status, checkedAt: Date.now() }));
+
+  // "Check status again" on the failed / not-confirmed screen: one more
+  // GET /payments/:id. A late "paid" still confirms the order.
+  const [rechecking, setRechecking] = useState(false);
+  const recheckPayment = async () => {
+    const attemptId = payment.attemptId;
+    if (!attemptId || rechecking) return;
+    setRechecking(true);
+    try {
+      const r = await checkoutPaymentStatus(attemptId, token);
+      onPaymentCheck(r.status);
+      if (r.status === "paid") return onVerified(r.order);
+      if (r.status === "failed")
+        setPayment((p) => ({
+          ...p,
+          unconfirmed: false,
+          reason:
+            "PhonePe reported the payment as not completed. If money was debited, it is refunded by your bank.",
+        }));
+      else showToast("Still pending with PhonePe. Check again in a minute.");
+    } catch (e) {
+      showToast((e as Error)?.message || "Couldn't check the payment.");
+    } finally {
+      setRechecking(false);
+    }
   };
 
   const onDemoPreview = () => {
@@ -901,11 +1071,21 @@ export default function AquaWorkspace() {
       onToggleFav={toggleFav}
       onToggleCompare={toggleCompare}
       onBuy={buy}
+      compared={(comparison?.ids || [])
+        .map((id) => byId.get(id))
+        .filter((p): p is Product => !!p)}
+      fromComparison={
+        !!comparison && !!flow.productId && comparedOrigin === flow.productId
+      }
+      onViewCompared={viewCompared}
+      onBuyCompared={buyCompared}
       onAsk={(text) => sendMessage(text)}
       onChat={sheetLayout ? focusComposer : undefined}
       draft={draft}
       setDraft={setDraft}
       savedAddresses={userData?.user?.addresses || []}
+      defaultAddress={userData?.user?.selectedAddress || null}
+      onSaveAddress={saveCheckoutAddress}
       coupons={coupons}
       categoryOf={(id) => {
         const p = byId.get(id);
@@ -918,7 +1098,12 @@ export default function AquaWorkspace() {
       signedIn={!!token}
       token={token}
       onPay={() => pay("PAY")}
+      onSignIn={auth.signIn}
       onRetry={() => pay("RETRY")}
+      onRetryWith={(method) => pay("RETRY", method)}
+      onRecheck={recheckPayment}
+      rechecking={rechecking}
+      onPaymentCheck={onPaymentCheck}
       payment={payment}
       onVerified={onVerified}
       onFailed={onFailed}
@@ -1011,6 +1196,8 @@ export default function AquaWorkspace() {
             onToggleFav={toggleFav}
             onToggleCompare={toggleCompare}
             onClearCompare={clearCompare}
+            onOpenComparison={openComparison}
+            openComparison={comparison?.messageId ?? null}
             onAddToCart={(id) => addToCart(id)}
             onBuy={buy}
             onSend={sendMessage}
@@ -1323,6 +1510,21 @@ export default function AquaWorkspace() {
               dockReads(true);
               showToast("Water reads moved to your history sidebar");
             }}
+          />
+        )}
+
+      {/* Floating "Recently bought / Popular" card: same quiet times as the reads bar. */}
+      {!tourOpen &&
+        !profileTab &&
+        !(sheetLayout && open) &&
+        ["welcome", "chatting", "product", "compare"].includes(flow.state) && (
+          <DemandStrip
+            products={byId}
+            area={areaFromUser(userData?.user)}
+            onOpen={view}
+            bottomOffset={hideComposer ? 0 : composerH + mainPadB}
+            touch={isTouch || isMobile}
+            autoTuck={(isTouch || isMobile) && flow.state !== "welcome"}
           />
         )}
 

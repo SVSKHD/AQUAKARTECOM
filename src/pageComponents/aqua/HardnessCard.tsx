@@ -1,11 +1,19 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   ArrowRight,
   Building2,
   ChevronDown,
   ChevronLeft,
+  ChevronUp,
   Drill,
   Droplets,
   Flame,
@@ -355,8 +363,109 @@ function RangeFilter({
   );
 }
 
-// `compact` (phones): the report folds its "at home" details so the composer
-// and suggestions stay close.
+// Short verdict for the folded card (the full card explains it).
+const verdictTag = (step: number) =>
+  step === 4
+    ? "Softener recommended"
+    : step === 3
+      ? "Softener will help"
+      : "Purifier is enough";
+
+// The folded card. With a place already known: the area, the reading in its
+// level colour, a mini meter and the verdict. Without one: an invitation.
+// Either way one tap opens the full card.
+function HardnessSummary({ view, onOpen }: { view: View; onOpen: () => void }) {
+  if (view.step !== "report") {
+    const locating = view.step === "locating";
+    return (
+      <button
+        type="button"
+        className="aq-glass aq-hard-card aq-hard-mini"
+        data-tour="hardness"
+        aria-expanded={false}
+        onClick={onOpen}
+        style={card}
+      >
+        <span className="aq-hard-icon" aria-hidden="true">
+          <Droplets size={18} />
+        </span>
+        <span className="aq-hard-mini-body">
+          <span
+            className="aq-hard-mini-title"
+            role={locating ? "status" : undefined}
+          >
+            {locating
+              ? "Finding your area…"
+              : view.step === "area"
+                ? `Pick your area in ${view.city.name}`
+                : "Would you like to see the hardness of your area?"}
+          </span>
+          <span className="aq-hard-mini-sub">
+            Free estimate in seconds · helps Aqua size the right product
+          </span>
+        </span>
+        <ChevronDown
+          size={18}
+          className="aq-hard-mini-chev"
+          aria-hidden="true"
+        />
+      </button>
+    );
+  }
+  const { city, area } = view;
+  const ppm = area?.ppm ?? cityPpm(city);
+  const lv = level(ppm);
+  const place = area ? `${area.name}, ${city.name}` : city.name;
+  return (
+    <button
+      type="button"
+      className="aq-glass aq-hard-card aq-hard-mini aq-hard-report"
+      data-tour="hardness"
+      aria-expanded={false}
+      aria-label={`Water hardness in ${place}: about ${ppm} ppm, ${lv.label.toLowerCase()}. ${verdictTag(lv.step)}. Show details`}
+      onClick={onOpen}
+      style={{
+        ...card,
+        ["--lv" as string]: lv.ink,
+        ["--lvt" as string]: lv.tint,
+      }}
+    >
+      <span className="aq-hard-pin" aria-hidden="true">
+        <MapPin size={16} />
+      </span>
+      <span className="aq-hard-mini-body">
+        <span className="aq-hard-mini-place">{place}</span>
+        <span className="aq-hard-mini-reading">
+          <strong style={{ color: lv.ink }}>~{ppm}</strong>
+          <span className="aq-hard-mini-unit">ppm</span>
+          <span
+            className="aq-hard-pill"
+            style={{ background: lv.tint, color: lv.ink }}
+          >
+            {lv.label}
+          </span>
+          <span
+            className="aq-hard-mini-verdict"
+            style={{ color: lv.ink, borderColor: lv.ink }}
+          >
+            {verdictTag(lv.step)}
+          </span>
+        </span>
+        <span className="aq-hard-gauge aq-hard-mini-gauge" aria-hidden="true">
+          <span
+            className="aq-hard-marker"
+            style={{ left: `${gaugePct(ppm)}%`, borderColor: lv.ink }}
+          />
+        </span>
+      </span>
+      <ChevronDown size={18} className="aq-hard-mini-chev" aria-hidden="true" />
+    </button>
+  );
+}
+
+// Starts folded (HardnessSummary) so the welcome screen stays light; opens to
+// the full card. `compact` (phones): the report folds its "at home" details
+// so the composer and suggestions stay close.
 export default function HardnessCard({
   onAsk,
   compact = false,
@@ -368,6 +477,23 @@ export default function HardnessCard({
   // Kept across cities so "show me very hard areas" carries over when comparing.
   const [range, setRange] = useState<Range>(FULL_RANGE);
   const reduced = useReducedMotion();
+  // Folded on every visit; the place it found is still shown in the summary.
+  const [open, setOpen] = useState(false);
+  const withCollapse = (node: ReactNode) => (
+    <div className="aq-hard-wrap">
+      {node}
+      <button
+        type="button"
+        className="aq-hard-collapse"
+        aria-expanded={true}
+        aria-label="Hide water hardness"
+        title="Hide"
+        onClick={() => setOpen(false)}
+      >
+        <ChevronUp size={16} />
+      </button>
+    </div>
+  );
 
   const show = (place: Place, source: Source) => {
     if (!place.area && place.city.areas?.length && source === "picked")
@@ -424,11 +550,14 @@ export default function HardnessCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  if (!open)
+    return <HardnessSummary view={view} onOpen={() => setOpen(true)} />;
+
   // ---------- pick a city ----------
   if (view.step === "pick" || view.step === "locating") {
     const locating = view.step === "locating";
     const failed = view.step === "pick" && view.failed;
-    return (
+    return withCollapse(
       <div
         className="aq-glass aq-hard-card"
         data-tour="hardness"
@@ -529,7 +658,7 @@ export default function HardnessCard({
           ))}
         </div>
         <Legend />
-      </div>
+      </div>,
     );
   }
 
@@ -540,7 +669,7 @@ export default function HardnessCard({
     const all = city.areas || [];
     const areas = areasInRange(all, range[0], range[1]);
     const filtered = areas.length !== all.length;
-    return (
+    return withCollapse(
       <div
         className="aq-glass aq-hard-card"
         data-tour="hardness"
@@ -652,11 +781,11 @@ export default function HardnessCard({
           </button>
         </div>
         <Legend />
-      </div>
+      </div>,
     );
   }
 
-  return (
+  return withCollapse(
     <Report
       key={`${view.city.name}/${view.area?.name ?? ""}`}
       view={view}
@@ -664,7 +793,7 @@ export default function HardnessCard({
       compact={compact}
       onAsk={onAsk}
       setView={setView}
-    />
+    />,
   );
 }
 

@@ -8,6 +8,7 @@ import {
   type FlowActionType,
 } from "@/utils/aquaFlow";
 import type { ServerOrder } from "@/utils/aquaCommerce";
+import ComparePanel from "./ComparePanel";
 import ProductDetail from "./ProductDetail";
 import InlineCheckout from "./InlineCheckout";
 import type { ActiveCoupon } from "./coupons";
@@ -19,6 +20,7 @@ import type {
   Mood,
   PaymentInfo,
   Product,
+  PayMethod,
   QuoteState,
   Selection,
 } from "./types";
@@ -37,6 +39,12 @@ export type WorkspacePanelProps = {
   onToggleFav: (id: string) => void;
   onToggleCompare: (id: string) => void;
   onBuy: () => void;
+  // The comparison artifact (flow state "compare").
+  compared: Product[];
+  // The open product came from the comparison: its back button returns there.
+  fromComparison: boolean;
+  onViewCompared: (id: string) => void;
+  onBuyCompared: (id: string) => void;
   onAsk: (text: string) => void;
   draft: CheckoutDraft | null;
   setDraft: Dispatch<SetStateAction<CheckoutDraft | null>>;
@@ -50,10 +58,17 @@ export type WorkspacePanelProps = {
   signedIn: boolean;
   token: string | null;
   onPay: () => void;
+  onSignIn: () => void;
+  defaultAddress?: Address | null;
+  onSaveAddress?: (address: Address) => Promise<Address>;
   onRetry: () => void;
+  onRetryWith: (method: PayMethod) => void;
+  onRecheck: () => void;
+  rechecking: boolean;
+  onPaymentCheck: (status: PaymentInfo["serverStatus"]) => void;
   payment: PaymentInfo;
   onVerified: (order: ServerOrder | null) => void;
-  onFailed: (reason: string) => void;
+  onFailed: (reason: string, unconfirmed?: boolean) => void;
   onDemoPreview: () => void;
   onNewChat: () => void;
   // Sheet layouts: close the panel and focus the chat input.
@@ -64,7 +79,7 @@ export type WorkspacePanelProps = {
 };
 
 const STEPS = [
-  { label: "Product", states: ["product"] },
+  { label: "Product", states: ["compare", "product"] },
   { label: "Checkout", states: ["checkout"] },
   { label: "Payment", states: ["payment_pending", "payment_failed"] },
   { label: "Done", states: ["confirmed"] },
@@ -77,6 +92,10 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
 
   let back: { label: string; action: FlowActionType } | null = null;
   if (flow.state === "product")
+    back = props.fromComparison
+      ? { label: "Back to comparison", action: "BACK" }
+      : { label: "Back to chat", action: "CLOSE" };
+  else if (flow.state === "compare")
     back = { label: "Back to chat", action: "CLOSE" };
   else if (flow.state === "checkout")
     back =
@@ -219,6 +238,14 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
           isMobile={props.isMobile}
         />
       )}
+      {flow.state === "compare" && (
+        <ComparePanel
+          products={props.compared}
+          onView={props.onViewCompared}
+          onBuy={props.onBuyCompared}
+          onAsk={props.onAsk}
+        />
+      )}
       {flow.state === "product" && !props.product && (
         <div
           style={{
@@ -247,6 +274,9 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
           signedIn={props.signedIn}
           token={props.token}
           onPay={props.onPay}
+          onSignIn={props.onSignIn}
+          defaultAddress={props.defaultAddress}
+          onSaveAddress={props.onSaveAddress}
         />
       )}
       {(flow.state === "payment_pending" ||
@@ -260,6 +290,10 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
           payment={props.payment}
           token={props.token}
           onRetry={props.onRetry}
+          onRetryWith={props.onRetryWith}
+          onRecheck={props.onRecheck}
+          rechecking={props.rechecking}
+          onPaymentCheck={props.onPaymentCheck}
           onVerified={props.onVerified}
           onFailed={props.onFailed}
           onDemoPreview={props.onDemoPreview}

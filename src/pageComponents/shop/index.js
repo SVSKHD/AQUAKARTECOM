@@ -23,6 +23,7 @@ import ProductServiceOperations from "@/services/products";
 import { getProductReviewStats } from "@/utils/reviewStats";
 import ProductGrid from "./productGrid";
 import ShopFiltersPanel from "./shopFilter";
+import RecentlyBought from "@/components/demand/RecentlyBought";
 import { CategoryRail, CouponStrip, QuickFilters } from "./shopQuickFilters";
 
 const defaultFilters = {
@@ -536,6 +537,8 @@ const AquaShopPageComponent = ({
             </header>
 
             <CouponStrip />
+
+            <RecentlyBought products={products} />
 
             <section id="shop-products" className="scroll-mt-28">
               <div className="grid items-start gap-6 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[310px_minmax(0,1fr)]">

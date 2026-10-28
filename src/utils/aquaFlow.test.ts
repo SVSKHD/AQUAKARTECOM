@@ -115,4 +115,32 @@ describe("aquaFlow", () => {
       initialFlow,
     );
   });
+
+  it("opens the comparison and goes to a product or straight to checkout", () => {
+    const compared = run({ type: "SEND" }, { type: "COMPARE" });
+    expect(compared).toEqual({
+      state: "compare",
+      parked: null,
+      productId: null,
+    });
+    expect(panelOpen(compared)).toBe(true);
+    const viewed = flowReducer(compared, { type: "VIEW", productId: "p2" });
+    expect(viewed).toEqual({ state: "product", parked: null, productId: "p2" });
+    expect(flowReducer(viewed, { type: "BACK" }).state).toBe("compare");
+    expect(flowReducer(compared, { type: "BUY", productId: "p3" })).toEqual({
+      state: "checkout",
+      parked: null,
+      productId: "p3",
+    });
+  });
+
+  it("lets a late paid confirm a payment that timed out or failed", () => {
+    const failed = run(
+      { type: "VIEW", productId: "p1" },
+      { type: "BUY" },
+      { type: "PAY" },
+      { type: "FAILED" },
+    );
+    expect(flowReducer(failed, { type: "VERIFIED" }).state).toBe("confirmed");
+  });
 });

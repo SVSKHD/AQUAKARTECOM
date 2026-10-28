@@ -1,9 +1,8 @@
-// Initial state loaded from local storage or set to an empty array
-let initialState = [];
-if (typeof window !== "undefined") {
-  const storedCart = localStorage.getItem("cart");
-  initialState = storedCart ? JSON.parse(storedCart) : [];
-}
+// Empty on the server and on the first client render alike: the saved list
+// comes back through redux-persist after mount (see _app.js). Reading
+// localStorage here made the header badge render on the client only and
+// broke hydration.
+const initialState = [];
 
 // Reducer function for cart operations
 export const cartDataReducer = (state = initialState, action) => {

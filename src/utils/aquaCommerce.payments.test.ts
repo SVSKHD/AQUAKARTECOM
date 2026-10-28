@@ -139,8 +139,17 @@ describe("POST /payments flow", () => {
     getCheckoutPayment
       .mockResolvedValueOnce({ data: { status: "pending" } })
       .mockResolvedValueOnce({ data: { status: "paid", amount: 24990 } });
-    const w = waitForCheckoutPayment("att1", "tok", { intervalMs: 1000 });
+    const onCheck = vi.fn();
+    const w = waitForCheckoutPayment("att1", "tok", {
+      intervalMs: 1000,
+      onCheck,
+    });
     await vi.advanceTimersByTimeAsync(1500);
+    // Every answer reaches the status card, the pending one too.
+    expect(onCheck.mock.calls.map(([r]) => r.status)).toEqual([
+      "pending",
+      "paid",
+    ]);
     await expect(w.done).resolves.toMatchObject({
       status: "paid",
       order: { amount: 24990 },
