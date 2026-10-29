@@ -4,9 +4,44 @@ import { useId, type CSSProperties } from "react";
 import type { Mood } from "./types";
 import { useReducedMotion } from "./hooks";
 
-const INK = "var(--aq-ink)";
 const AQ = "#10BFA4";
-const LIMB = "#19B39D";
+
+// Light theme: the mint droplet. Dark theme: a white "pearl" droplet that
+// glows against the night background; its face stays dark so it reads on white.
+const PALETTE = {
+  light: {
+    body: ["#F7FFFE", "#C2F6ED", "#5EDBC7", "#16B8A1", "#0A8C7C"],
+    rim: "rgba(255,255,255,.9)",
+    depth: "#005F55",
+    depthOpacity: 0.3,
+    limb: "#19B39D",
+    limbEdge: "rgba(255,255,255,.7)",
+    face: "var(--aq-ink)",
+    mouth: "#0B4743",
+    water: "rgba(0,150,130,.26)",
+    bubble: "rgba(255,255,255,.8)",
+    shadow: "var(--aq-ink)",
+    shadowOpacity: 0.13,
+    shine: 0.85,
+    glow: "none",
+  },
+  dark: {
+    body: ["#FFFFFF", "#FAFCFD", "#EDF3F6", "#D3E0E7", "#AFC2CE"],
+    rim: "rgba(255,255,255,.95)",
+    depth: "#4E6878",
+    depthOpacity: 0.28,
+    limb: "#EEF4F7",
+    limbEdge: "rgba(150,178,194,.55)",
+    face: "#123039",
+    mouth: "#123039",
+    water: "rgba(122,154,174,.2)",
+    bubble: "rgba(132,164,184,.55)",
+    shadow: "#FFFFFF",
+    shadowOpacity: 0.14,
+    shine: 0.95,
+    glow: "drop-shadow(0 0 18px rgba(255,255,255,.22))",
+  },
+};
 const DROP =
   "M60 10 C64 26 102 60 102 90 A42 42 0 0 1 18 90 C18 60 56 26 60 10 Z";
 const MINI =
@@ -51,10 +86,9 @@ export default function AquaDroplet({
     transformOrigin: "center",
   };
 
-  const BS = dark
-    ? ["#E6FFFA", "#9BEADB", "#36C2AE", "#12907F", "#08544D"]
-    : ["#F7FFFE", "#C2F6ED", "#5EDBC7", "#16B8A1", "#0A8C7C"];
-  const RIM = dark ? "rgba(200,245,238,.55)" : "rgba(255,255,255,.9)";
+  const C = dark ? PALETTE.dark : PALETTE.light;
+  const BS = C.body;
+  const INK = C.face;
   const joy = mood === "happy" || mood === "success" || mood === "greeting";
   const wide = mood === "listening" || mood === "success";
   const ink = {
@@ -91,7 +125,7 @@ export default function AquaDroplet({
         cy={105}
         rx={6}
         ry={5}
-        fill="#0B4743"
+        fill={C.mouth}
         style={{ ...box, animation: A("aqTalk .3s ease-in-out infinite") }}
       />
     );
@@ -100,8 +134,8 @@ export default function AquaDroplet({
       <g>
         <path
           d="M49 100 Q60 117 71 100 Z"
-          fill="#0B4743"
-          stroke="#0B4743"
+          fill={C.mouth}
+          stroke={C.mouth}
           strokeWidth={1.6}
           strokeLinejoin="round"
         />
@@ -111,7 +145,7 @@ export default function AquaDroplet({
   else if (mood === "error")
     mouth = <path d="M52 109 Q60 101 68 109" {...ink} strokeWidth={3} />;
   else if (mood === "thinking")
-    mouth = <ellipse cx={64} cy={105} rx={3} ry={3.4} fill="#0B4743" />;
+    mouth = <ellipse cx={64} cy={105} rx={3} ry={3.4} fill={C.mouth} />;
   else mouth = <path d="M51 100 Q60 109 69 100" {...ink} strokeWidth={3} />;
 
   const brows =
@@ -124,6 +158,7 @@ export default function AquaDroplet({
       </g>
     ) : null;
 
+  const LIMB = C.limb;
   const arm = (x: number, side: number, wv: boolean) => (
     <g transform={`translate(${x} 92)`}>
       <ellipse
@@ -132,7 +167,7 @@ export default function AquaDroplet({
         rx={5}
         ry={10}
         fill={LIMB}
-        stroke="rgba(255,255,255,.7)"
+        stroke={C.limbEdge}
         strokeWidth={1}
         style={{
           transformBox: "fill-box",
@@ -155,7 +190,7 @@ export default function AquaDroplet({
       style={{
         overflow: "visible",
         display: "block",
-        filter: dark ? "drop-shadow(0 0 16px rgba(127,230,201,.28))" : "none",
+        filter: C.glow,
         transition: "filter .8s ease",
       }}
     >
@@ -168,8 +203,12 @@ export default function AquaDroplet({
           <stop offset="100%" stopColor={BS[4]} />
         </radialGradient>
         <linearGradient id={`${u}d`} x1={0} y1={0} x2={0} y2={1}>
-          <stop offset="55%" stopColor="#006E5F" stopOpacity={0} />
-          <stop offset="100%" stopColor="#005F55" stopOpacity={0.3} />
+          <stop offset="55%" stopColor={C.depth} stopOpacity={0} />
+          <stop
+            offset="100%"
+            stopColor={C.depth}
+            stopOpacity={C.depthOpacity}
+          />
         </linearGradient>
         <radialGradient id={`${u}q`} cx="35%" cy="30%" r="70%">
           <stop offset="0%" stopColor="#fff" stopOpacity={0.95} />
@@ -186,8 +225,8 @@ export default function AquaDroplet({
         cy={141}
         rx={30}
         ry={4.5}
-        fill={dark ? "#7FE6C9" : INK}
-        opacity={dark ? 0.16 : 0.13}
+        fill={C.shadow}
+        opacity={C.shadowOpacity}
         style={{
           ...box,
           animation:
@@ -269,7 +308,7 @@ export default function AquaDroplet({
               rx={9.5}
               ry={5.5}
               fill={LIMB}
-              stroke="rgba(255,255,255,.7)"
+              stroke={C.limbEdge}
               strokeWidth={1}
             />
           ))}
@@ -279,7 +318,7 @@ export default function AquaDroplet({
         <path d={DROP} fill={`url(#${u}b)`} />
         <g clipPath={`url(#${u}c)`}>
           <g style={{ animation: A("aqSlosh 3.2s linear infinite") }}>
-            <path d={wave(104)} fill="rgba(0,150,130,.26)" />
+            <path d={wave(104)} fill={C.water} />
           </g>
           <g style={{ animation: A("aqSlosh 4.6s linear infinite reverse") }}>
             <path d={wave(114)} fill="rgba(255,255,255,.24)" />
@@ -289,7 +328,7 @@ export default function AquaDroplet({
               cx={74}
               cy={124}
               r={2.6}
-              fill="rgba(255,255,255,.8)"
+              fill={C.bubble}
               style={{ animation: "aqInBub 3s ease-in infinite" }}
             />
           )}
@@ -298,20 +337,20 @@ export default function AquaDroplet({
               cx={46}
               cy={126}
               r={1.8}
-              fill="rgba(255,255,255,.75)"
+              fill={C.bubble}
               style={{ animation: "aqInBub 3.6s ease-in 1.4s infinite" }}
             />
           )}
         </g>
         <path d={DROP} fill={`url(#${u}d)`} />
-        <path d={DROP} fill="none" stroke={RIM} strokeWidth={1.6} />
+        <path d={DROP} fill="none" stroke={C.rim} strokeWidth={1.6} />
         <ellipse
           cx={40}
           cy={58}
           rx={7.5}
           ry={15}
           fill="#fff"
-          opacity={dark ? 0.55 : 0.85}
+          opacity={C.shine}
           transform="rotate(28 40 58)"
           style={{ animation: A("aqShine 4s ease-in-out infinite") }}
         />

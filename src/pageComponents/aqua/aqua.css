@@ -2643,7 +2643,7 @@ textarea::placeholder {
   }
 }
 
-/* ---------- profile dialog: details, addresses, purchases ---------- */
+/* ---------- profile dialog: sections on the left, content on the right ---------- */
 .aq-pf-scrim {
   position: absolute;
   inset: 0;
@@ -2658,55 +2658,157 @@ textarea::placeholder {
   z-index: 70;
   display: grid;
   place-items: center;
-  padding: 16px 12px;
+  padding: 16px;
   pointer-events: none;
 }
 .aq-pf {
+  position: relative;
   pointer-events: auto;
-  /* Five tabs (Profile ... Favourites) need ~135px each to show in full. */
-  width: min(720px, 100%);
-  /* Fixed, not max-height: every tab gets the same box and scrolls inside it. */
-  height: min(620px, calc(100dvh - 32px));
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  width: min(1080px, 100%);
+  /* Fixed, not max-height: every section gets the same box and scrolls inside it. */
+  height: min(780px, calc(100dvh - 32px));
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
   border-radius: 28px;
   background: rgba(var(--aq-gl), 0.92);
   animation: aqPop 0.25s cubic-bezier(0.22, 0.8, 0.24, 1) both;
-  /* The glass footer follows the dialog's rounded bottom corners. */
   overflow: hidden;
 }
-/* Liquid-glass account footer: frosted, lit from the top edge. */
+.aq-pf-rail {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px 14px 14px;
+  border-right: 1px solid rgba(var(--aq-ln), 0.08);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--aq-mintrgb), 0.28),
+    rgba(var(--aq-mintrgb), 0.08)
+  );
+}
+.aq-pf-me {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0 6px;
+}
+.aq-pf-me-text {
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.aq-pf-name {
+  margin: 0;
+  max-width: 100%;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--aq-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aq-pf-sub {
+  max-width: 100%;
+  font-size: 12.5px;
+  color: var(--aq-mut);
+  overflow-wrap: anywhere;
+}
+.aq-pf-bday {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--aq-mint);
+  color: var(--aq-mintink);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.aq-pf-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.aq-pf-navtab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--aq-mut);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
+}
+.aq-pf-navtab:hover:not([aria-selected="true"]) {
+  color: var(--aq-ink);
+  background: rgba(var(--aq-ln), 0.05);
+}
+.aq-pf-navtab[aria-selected="true"] {
+  color: var(--aq-ink);
+}
+.aq-pf-navtab:focus-visible {
+  outline: 2px solid var(--aq-mintink);
+  outline-offset: 2px;
+}
+.aq-pf-navtab[aria-selected="true"] svg {
+  color: #008b68;
+}
+.aq-pf-navtab .aq-dock-count {
+  margin-left: auto;
+}
+.aq-pf-navtab[aria-selected="true"] .aq-dock-count {
+  background: var(--aq-mint);
+  color: var(--aq-mintink);
+}
+.aq-pf-tab-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Who's signed in, and a clearly destructive Sign out kept apart from Save. */
 .aq-pf-foot {
   flex-shrink: 0;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px 14px 18px;
-  padding-bottom: max(14px, env(safe-area-inset-bottom));
-  border-top: 1px solid rgba(255, 255, 255, 0.55);
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
   background:
     linear-gradient(
       180deg,
       rgba(255, 255, 255, 0.55),
-      rgba(var(--aq-mintrgb), 0.35)
+      rgba(255, 255, 255, 0.2)
     ),
     rgba(var(--aq-gl), 0.5);
-  backdrop-filter: blur(18px) saturate(1.6);
-  -webkit-backdrop-filter: blur(18px) saturate(1.6);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 -10px 24px rgba(var(--aq-sh), 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 .aq-root[data-aq-mode="dark"] .aq-pf-foot {
-  border-top-color: rgba(255, 255, 255, 0.08);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.12)),
-    rgba(var(--aq-gl), 0.6);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
 }
 .aq-pf-foot-who {
-  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -2721,10 +2823,10 @@ textarea::placeholder {
   white-space: nowrap;
 }
 .aq-pf-signout {
-  flex-shrink: 0;
-  height: 42px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
   padding: 0 16px;
   border-radius: 999px;
@@ -2763,41 +2865,32 @@ textarea::placeholder {
   color: #fda29b;
   box-shadow: none;
 }
-.aq-pf-head {
+.aq-pf-main {
+  min-width: 0;
+  min-height: 0;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 12px;
-  padding: 18px 16px 0 18px;
 }
-.aq-pf-name {
+.aq-pf-main-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 22px 20px 0 28px;
+}
+.aq-pf-main-title {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--aq-ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
-.aq-pf-sub {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 8px;
-  font-size: 12.5px;
+.aq-pf-main-sub {
+  margin: 2px 0 0;
+  font-size: 13px;
   color: var(--aq-mut);
 }
-.aq-pf-bday {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--aq-mint);
-  color: var(--aq-mintink);
-  font-weight: 700;
-}
 .aq-pf-error {
-  margin: 0 16px;
+  margin: 0 28px;
   padding: 10px 12px;
   border-radius: 12px;
   background: #fdecec;
@@ -2816,12 +2909,61 @@ textarea::placeholder {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 2px 16px 4px;
+  padding: 2px 28px 24px;
+}
+/* Profile → account overview */
+.aq-pf-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.aq-pf-stat {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--aq-bd);
+  border-radius: 16px;
+  background: var(--aq-surf);
+  color: var(--aq-mut);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-align: left;
+}
+.aq-pf-stat b {
+  font-size: 13.5px;
+  color: var(--aq-ink);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+button.aq-pf-stat {
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
+}
+button.aq-pf-stat:hover {
+  border-color: var(--aq-mintbd);
+  transform: translateY(-1px);
+}
+button.aq-pf-stat:focus-visible {
+  outline: 2px solid var(--aq-mintink);
+  outline-offset: 2px;
+}
+.aq-pf-section {
+  margin: 22px 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--aq-mut);
 }
 .aq-pf-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
 }
 .aq-pf-hint {
   font-size: 11.5px;
@@ -2863,14 +3005,14 @@ textarea::placeholder {
 .aq-pf-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 .aq-pf-addr,
 .aq-pf-buy {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 10px 10px 12px;
+  gap: 12px;
+  padding: 12px 12px 12px 14px;
   border: 1px solid var(--aq-bd);
   border-radius: 16px;
   background: var(--aq-surf);
@@ -2924,8 +3066,8 @@ textarea::placeholder {
   grid-column: 2;
 }
 .aq-pf-buy-icon {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
@@ -2945,7 +3087,7 @@ textarea::placeholder {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 28px 12px;
+  padding: 40px 12px;
   text-align: center;
   color: var(--aq-mut);
   font-size: 13px;
@@ -2955,16 +3097,163 @@ textarea::placeholder {
   color: var(--aq-ink);
   font-size: 14px;
 }
+/* Profile → Orders: delivery and installation dates, always on the card */
+.aq-pf-order {
+  border: 1px solid var(--aq-bd);
+  background: var(--aq-surf);
+}
+.aq-pf-order .aq-pf-buy {
+  border: 0;
+  background: transparent;
+}
+.aq-pf-order .aq-pf-buy:hover {
+  transform: none;
+}
+.aq-pf-dates {
+  margin: 0 12px 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+}
+.aq-pf-dates > div {
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--aq-tint);
+}
+.aq-pf-dates dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--aq-mut);
+}
+.aq-pf-dates dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--aq-ink);
+}
+.aq-pf-dates dd[data-pending="true"] {
+  font-weight: 600;
+  color: var(--aq-body);
+}
+.aq-pf-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  gap: 6px;
+}
+.aq-pf-steps li {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 3px solid rgba(var(--aq-ln), 0.1);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--aq-mut);
+}
+.aq-pf-steps li[data-done="true"] {
+  border-top-color: #10bfa4;
+  color: var(--aq-ink);
+}
+.aq-pf-steps li > span {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(var(--aq-ln), 0.08);
+}
+.aq-pf-steps li[data-done="true"] > span {
+  background: #10bfa4;
+  color: #fff;
+}
+.aq-pf-cancelled {
+  font-size: 13px;
+  font-weight: 700;
+  color: #8a1f1f;
+}
 @media (max-width: 767px) {
   .aq-pf-layer {
     place-items: end center;
     padding: 0;
   }
+  /* Phones: one column. The rail's parts sit in the column themselves, so the
+     sections become a chip row under the name and Sign out goes to the end. */
   .aq-pf {
     width: 100%;
-    height: 85dvh;
+    height: 92dvh;
+    display: flex;
+    flex-direction: column;
     border-radius: 24px 24px 0 0;
     animation: aqSheetIn 0.3s ease both;
+  }
+  .aq-pf-rail {
+    display: contents;
+  }
+  .aq-pf-me {
+    order: 1;
+    flex-direction: row;
+    align-items: center;
+    padding: 18px 56px 8px 18px;
+  }
+  .aq-pf-nav {
+    order: 2;
+    flex: none;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 16px 6px;
+    scrollbar-width: none;
+  }
+  .aq-pf-navtab {
+    flex-shrink: 0;
+    min-height: 38px;
+    border-radius: 999px;
+    font-size: 13px;
+    gap: 6px;
+  }
+  .aq-pf-navtab .aq-dock-count {
+    margin-left: 0;
+  }
+  .aq-pf-main {
+    order: 3;
+    flex: 1;
+    gap: 8px;
+  }
+  .aq-pf-main-head {
+    padding: 6px 16px 0;
+  }
+  .aq-pf-main-head .aq-icon-btn {
+    position: absolute;
+    top: 18px;
+    right: 14px;
+  }
+  .aq-pf-main-title {
+    font-size: 18px;
+  }
+  .aq-pf-error {
+    margin: 0 16px;
+  }
+  .aq-pf-body {
+    padding: 2px 16px 12px;
+  }
+  .aq-pf-foot {
+    order: 4;
+    flex-direction: row;
+    align-items: center;
+    margin: 0;
+    border-radius: 0;
+    border-width: 1px 0 0;
+    padding: 10px 14px max(12px, env(safe-area-inset-bottom)) 18px;
+  }
+  .aq-pf-foot-who {
+    flex: 1;
   }
 }
 
@@ -4038,43 +4327,219 @@ textarea::placeholder {
   padding: 2px 0 12px;
 }
 
-/* ---------- profile dialog: five tabs ---------- */
-.aq-pf-tabs .aq-dock-tab {
-  gap: 6px;
-  min-width: 0;
-  padding: 0 6px;
+/* Profile → Addresses: the estimated hardness where each address is */
+.aq-pf-hard {
+  align-self: flex-start;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin-top: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
 }
-.aq-pf-tab-label {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.aq-pf-hard-where {
+  font-weight: 600;
+  opacity: 0.8;
 }
-/* Narrower than the full 720px dialog (tablets, phones): a tab is too narrow
-   for icon + label + count in a row, so the icon sits over a small label and
-   the count becomes a corner badge. Nothing gets cut. */
-@media (max-width: 760px) {
-  .aq-pf-tabs {
-    border-radius: 18px;
+
+/* ---------- profile dialog: section-to-section motion ---------- */
+/* The rail's highlight glides to the chosen section (springs a touch past). */
+.aq-pf-nav {
+  position: relative;
+}
+.aq-pf-navtab {
+  position: relative;
+  z-index: 1;
+}
+.aq-pf-navpill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  border-radius: 14px;
+  background: var(--aq-surf);
+  box-shadow:
+    0 2px 10px rgba(var(--aq-sh), 0.1),
+    inset 0 0 0 1px var(--aq-mintbd);
+  pointer-events: none;
+  transition:
+    transform 0.5s cubic-bezier(0.34, 1.3, 0.5, 1),
+    width 0.5s cubic-bezier(0.34, 1.3, 0.5, 1),
+    height 0.5s cubic-bezier(0.34, 1.3, 0.5, 1),
+    opacity 0.2s;
+}
+.aq-pf-navtab svg {
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    color 0.25s;
+}
+.aq-pf-navtab[aria-selected="true"] svg {
+  animation: aqPfIconPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.aq-pf-navtab:hover:not([aria-selected="true"]) svg {
+  transform: translateX(2px);
+}
+
+/* Header: the title and blurb slide in from the side the switch came from. */
+.aq-pf-head-swap {
+  flex: 1;
+  min-width: 0;
+  animation: aqPfHeadIn 0.4s cubic-bezier(0.22, 0.8, 0.24, 1) both;
+}
+.aq-pf-main[data-dir="back"] .aq-pf-head-swap {
+  animation-name: aqPfHeadInBack;
+}
+
+/* Panel: shown by removing `hidden`, which restarts these each time. */
+.aq-pf-panel:not([hidden]) {
+  animation: aqPfPanelIn 0.46s cubic-bezier(0.22, 0.8, 0.24, 1) both;
+}
+.aq-pf-main[data-dir="back"] .aq-pf-panel:not([hidden]) {
+  animation-name: aqPfPanelInBack;
+}
+/* ...and its cards rise in one after another. */
+.aq-pf-panel:not([hidden]) > *,
+.aq-pf-panel:not([hidden]) .aq-pf-overview > *,
+.aq-pf-panel:not([hidden]) .aq-pf-grid > *,
+.aq-pf-panel:not([hidden]) .aq-pf-list > * {
+  animation: aqPfRise 0.42s cubic-bezier(0.22, 0.8, 0.24, 1) both;
+}
+.aq-pf-panel :is(.aq-pf-overview, .aq-pf-grid, .aq-pf-list) > :nth-child(2),
+.aq-pf-panel:not([hidden]) > :nth-child(2) {
+  animation-delay: 0.04s;
+}
+.aq-pf-panel :is(.aq-pf-overview, .aq-pf-grid, .aq-pf-list) > :nth-child(3),
+.aq-pf-panel:not([hidden]) > :nth-child(3) {
+  animation-delay: 0.08s;
+}
+.aq-pf-panel :is(.aq-pf-overview, .aq-pf-grid, .aq-pf-list) > :nth-child(4) {
+  animation-delay: 0.12s;
+}
+.aq-pf-panel :is(.aq-pf-overview, .aq-pf-grid, .aq-pf-list) > :nth-child(5) {
+  animation-delay: 0.16s;
+}
+.aq-pf-panel :is(.aq-pf-overview, .aq-pf-grid, .aq-pf-list) > :nth-child(6) {
+  animation-delay: 0.2s;
+}
+.aq-pf-panel
+  :is(.aq-pf-overview, .aq-pf-grid, .aq-pf-list)
+  > :nth-child(n + 7) {
+  animation-delay: 0.24s;
+}
+
+@keyframes aqPfPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.99);
+    filter: blur(3px);
   }
-  .aq-pf-tabs .aq-dock-tab-pill {
-    border-radius: 14px;
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
   }
-  .aq-pf-tabs .aq-dock-tab {
-    flex-direction: column;
-    gap: 2px;
-    height: 50px;
-    border-radius: 14px;
-    font-size: 10.5px;
+}
+@keyframes aqPfPanelInBack {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.99);
+    filter: blur(3px);
   }
-  .aq-pf-tabs .aq-dock-count {
-    position: absolute;
-    top: 3px;
-    left: calc(50% + 6px);
-    min-width: 16px;
-    height: 16px;
-    padding: 0 4px;
-    font-size: 9.5px;
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@keyframes aqPfRise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes aqPfHeadIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes aqPfHeadInBack {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes aqPfIconPop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.22) rotate(-6deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (max-width: 767px) {
+  /* Phones: sections are a chip row, so the motion runs sideways. */
+  .aq-pf-navpill {
+    border-radius: 999px;
+  }
+  .aq-pf-panel:not([hidden]) {
+    animation-name: aqPfPanelInSide;
+  }
+  .aq-pf-main[data-dir="back"] .aq-pf-panel:not([hidden]) {
+    animation-name: aqPfPanelInSideBack;
+  }
+}
+@keyframes aqPfPanelInSide {
+  from {
+    opacity: 0;
+    transform: translateX(22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes aqPfPanelInSideBack {
+  from {
+    opacity: 0;
+    transform: translateX(-22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aq-pf-navpill {
+    transition: opacity 0.2s;
+  }
+  .aq-pf-navtab svg,
+  .aq-pf-head-swap,
+  .aq-pf-panel:not([hidden]),
+  .aq-pf-panel:not([hidden]) *,
+  .aq-pf-main[data-dir="back"] .aq-pf-panel:not([hidden]) {
+    animation: none !important;
+  }
+  .aq-pf-navtab:hover:not([aria-selected="true"]) svg {
+    transform: none;
   }
 }
 
@@ -4815,6 +5280,395 @@ button.aq-pf-buy {
 }
 @media (prefers-reduced-motion: reduce) {
   .aq-spin {
+    animation: none;
+  }
+}
+
+/* Cash on delivery: order placed, everything at a glance */
+.aq-cod-page {
+  position: absolute;
+  inset: 0;
+  padding: 72px 20px 18px;
+  overflow-y: auto;
+  container-type: inline-size;
+}
+.aq-cod {
+  max-width: 520px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.aq-cod-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  min-width: 0;
+}
+/* Phones: one stack, with the buttons last. */
+@container (max-width: 559.98px) {
+  .aq-cod-col {
+    display: contents;
+  }
+  .aq-cod-actions {
+    order: 1;
+  }
+}
+/* Let cards keep their natural height; the panel scrolls on short screens. */
+@container (min-width: 560px) {
+  .aq-cod {
+    max-width: 1240px;
+    display: grid;
+    align-items: start;
+    gap: 14px;
+  }
+  .aq-cod-col > :is(.aq-cod-next, :has(.aq-cod-lines)) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .aq-cod .aq-cod-lines {
+    min-height: 0;
+  }
+}
+@container (min-width: 860px) {
+  .aq-cod {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.15fr);
+  }
+}
+/* Medium: order on the left; journey and bill stacked on the right. */
+@container (min-width: 560px) and (max-width: 859.98px) {
+  .aq-cod {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    grid-template-rows: auto auto;
+    gap: 12px;
+  }
+  .aq-cod-col:nth-child(1) {
+    grid-row: 1 / span 2;
+  }
+  .aq-cod-col:nth-child(2),
+  .aq-cod-col:nth-child(3) {
+    grid-column: 2;
+  }
+  .aq-cod-col > .aq-cod-next {
+    flex: 0 0 auto;
+  }
+}
+.aq-cod-col > * {
+  animation: aqPfRise 0.42s cubic-bezier(0.22, 0.8, 0.24, 1) both;
+}
+.aq-cod-col:nth-child(2) > * {
+  animation-delay: 0.07s;
+}
+.aq-cod-col:nth-child(3) > * {
+  animation-delay: 0.14s;
+}
+.aq-cod-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.aq-cod-hero-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  min-width: 0;
+}
+.aq-cod-drop {
+  flex: none;
+  width: 84px;
+  height: 92px;
+  display: grid;
+  place-items: center;
+}
+.aq-cod-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: var(--aq-mint);
+  color: var(--aq-mintink);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.aq-cod-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+.aq-cod-lead {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--aq-body);
+}
+.aq-cod-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px dashed var(--aq-mintbd);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--aq-ink);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.aq-cod-id > .aq-mono {
+  min-width: 0;
+}
+.aq-cod-id > svg,
+.aq-cod-h > svg {
+  flex-shrink: 0;
+}
+.aq-cod-id:hover {
+  background: var(--aq-tint);
+}
+.aq-cod-copied {
+  font-size: 11.5px;
+  color: var(--aq-mintink);
+}
+.aq-cod-copied:empty {
+  display: none;
+}
+.aq-cod-due {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 6px 16px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #0a7d61, #10bfa4);
+  color: #fff;
+  box-shadow: 0 10px 28px rgba(var(--aq-sh), 0.18);
+}
+.aq-cod-due > div {
+  display: flex;
+  flex-direction: column;
+}
+.aq-cod-due-k {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+}
+.aq-cod-due-v {
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.aq-cod-due-note {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.92;
+}
+.aq-cod-card {
+  min-width: 0;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--aq-surf);
+  border: 1px solid var(--aq-bd);
+  box-shadow: 0 2px 10px rgba(var(--aq-sh), 0.06);
+}
+.aq-cod-h {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--aq-mut);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.aq-cod-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.aq-cod-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  column-gap: 12px;
+  padding-bottom: 12px;
+}
+.aq-cod-step:last-child {
+  padding-bottom: 0;
+}
+/* The line joining one step's dot to the next. */
+.aq-cod-step:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 30px;
+  bottom: 0;
+  width: 2px;
+  background: var(--aq-bd);
+}
+.aq-cod-step[data-state="done"]::before {
+  background: var(--aq-mintbd);
+}
+.aq-cod-step-dot {
+  grid-row: span 2;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--aq-tint);
+  color: var(--aq-mut);
+  border: 1px solid var(--aq-bd);
+}
+.aq-cod-step[data-state="done"] .aq-cod-step-dot {
+  background: #10bfa4;
+  border-color: #10bfa4;
+  color: #fff;
+}
+.aq-cod-step[data-state="active"] .aq-cod-step-dot {
+  background: var(--aq-mint);
+  border-color: var(--aq-mintbd);
+  color: var(--aq-mintink);
+  box-shadow: 0 0 0 4px rgba(var(--aq-mintrgb), 0.7);
+}
+.aq-cod-step-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--aq-ink);
+  padding-top: 5px;
+}
+.aq-cod-step[data-state="todo"] .aq-cod-step-label {
+  color: var(--aq-body);
+}
+.aq-cod-step-note {
+  font-size: 12.5px;
+  color: var(--aq-mut);
+}
+.aq-cod-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.aq-cod-line {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+.aq-cod-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--aq-tint);
+  color: var(--aq-mut);
+}
+.aq-cod-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.aq-cod-line-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.aq-cod-line-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--aq-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.aq-cod-line-sub {
+  overflow-wrap: anywhere;
+  font-size: 12.5px;
+  color: var(--aq-mut);
+}
+.aq-cod-line-sum {
+  font-size: 14px;
+  font-weight: 700;
+}
+.aq-cod-bill,
+.aq-cod-facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 7px 12px;
+  margin: 12px 0 0;
+  font-size: 13.5px;
+}
+.aq-cod-bill {
+  padding-top: 12px;
+  border-top: 1px dashed var(--aq-bd);
+}
+.aq-cod-facts {
+  margin: 0;
+}
+.aq-cod-bill dt,
+.aq-cod-facts dt {
+  color: var(--aq-mut);
+}
+.aq-cod-bill dd,
+.aq-cod-facts dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
+  font-weight: 600;
+  color: var(--aq-ink);
+}
+.aq-cod-save {
+  color: var(--aq-mintink) !important;
+}
+.aq-cod-bill .aq-cod-bill-total {
+  padding-top: 8px;
+  border-top: 1px solid var(--aq-bd);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--aq-ink);
+}
+.aq-cod-tips ul {
+  margin: 0 0 10px;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--aq-body);
+}
+.aq-cod-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.aq-cod-actions > .aq-btn {
+  min-width: 0;
+  white-space: normal;
+  text-align: center;
+}
+.aq-cod-actions > :first-child,
+.aq-cod-actions > :last-child:nth-child(even) {
+  grid-column: 1 / -1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aq-cod-col > * {
     animation: none;
   }
 }

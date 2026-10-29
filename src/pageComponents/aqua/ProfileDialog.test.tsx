@@ -44,6 +44,8 @@ vi.mock("@/services/order", () => ({
           paymentMethod: "Cash On Delivery",
           paymentStatus: "Pending",
           orderStatus: "Processing",
+          estimatedDelivery: "2099-11-03T10:00:00.000Z",
+          installation: { day: "2099-11-05", slot: "12 pm – 3 pm" },
         },
       ],
     })),
@@ -192,7 +194,8 @@ describe("ProfileDialog", () => {
     const sent = users.UserUpdateDetails.mock.calls[0][1].newDetails;
     expect(sent.addresses).toHaveLength(2);
     expect(sent.selectedAddress._id).toBe("a1");
-  });
+    // Types a whole address: slow when the full suite runs in parallel.
+  }, 15_000);
 
   it("lists purchases; each opens a quick view of its products and invoice", async () => {
     const u = userEvent.setup();
@@ -279,5 +282,73 @@ describe("ProfileDialog", () => {
     expect(
       screen.getByRole("link", { name: /get help on whatsapp/i }),
     ).toHaveAttribute("href", expect.stringContaining("AQOD-1"));
+  });
+
+  it("shows delivery and installation dates on each order card", async () => {
+    setup({ initialTab: "orders" });
+    const cod = await screen.findByRole("button", {
+      name: /Kent Bathroom Softener/,
+    });
+    const card = cod.closest(".aq-pf-order") as HTMLElement;
+    expect(card).toHaveTextContent("Expected by 3 Nov 2099");
+    expect(card).toHaveTextContent("Thu 5 Nov · 12 pm – 3 pm");
+    // An order placed before slots were saved says what happens next.
+    const older = screen
+      .getByRole("button", { name: /Kent Automatic 8L/ })
+      .closest(".aq-pf-order") as HTMLElement;
+    expect(older).toHaveTextContent("We'll call to schedule it");
+  });
+
+  it("sums up the account, with the next installation", async () => {
+    setup();
+    expect(
+      await screen.findByRole("button", { name: /next installation/i }),
+    ).toHaveTextContent("Thu 5 Nov · 12 pm – 3 pm");
+    expect(screen.getByText("+91 9876543210")).toBeInTheDocument();
+  });
+
+  it("moves between sections with the arrow keys", async () => {
+    const u = userEvent.setup();
+    setup();
+    expect(screen.getByRole("tablist")).toHaveAttribute(
+      "aria-orientation",
+      "vertical",
+    );
+    screen.getByRole("tab", { name: /profile/i }).focus();
+    await u.keyboard("{ArrowDown}");
+    expect(screen.getByRole("tab", { name: /addresses/i })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await u.keyboard("{ArrowUp}{ArrowUp}");
+    expect(screen.getByRole("tab", { name: /favourites/i })).toHaveFocus();
+  });
+
+  it("slides the next section in from the direction you moved", async () => {
+    const u = userEvent.setup();
+    setup();
+    const main = screen.getByRole("region", { name: /profile/i });
+    await u.click(screen.getByRole("tab", { name: /orders/i }));
+    expect(main).toHaveAttribute("data-dir", "fwd");
+    await u.click(screen.getByRole("tab", { name: /addresses/i }));
+    expect(main).toHaveAttribute("data-dir", "back");
+    // Only the shown panel is visible, so only it runs its entrance.
+    expect(
+      document.querySelectorAll(".aq-pf-panel:not([hidden])"),
+    ).toHaveLength(1);
+  });
+
+  it("shows how hard the water is at each address", async () => {
+    setup({ initialTab: "addresses" });
+    // "Plot 12, Narsingi, Hyderabad" sits in Narsingi on the hardness map.
+    expect(screen.getByText(/very hard water · ~700 ppm/i)).toBeInTheDocument();
+    expect(screen.getByText("est. for Narsingi")).toBeInTheDocument();
+  });
+
+  it("sums up the water at home in the overview", () => {
+    setup();
+    expect(
+      screen.getByRole("button", { name: /water at home/i }),
+    ).toHaveTextContent("Very hard · ~700 ppm (Narsingi)");
   });
 });

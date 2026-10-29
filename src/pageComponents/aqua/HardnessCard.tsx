@@ -48,7 +48,8 @@ import {
 
 const SAVED_KEY = "aqua.hardness";
 
-type Source = "near" | "region" | "picked" | "saved";
+// "home": the signed-in shopper's default address.
+type Source = "near" | "region" | "picked" | "saved" | "home";
 type View =
   | { step: "pick"; failed: boolean }
   | { step: "locating" }
@@ -469,9 +470,13 @@ function HardnessSummary({ view, onOpen }: { view: View; onOpen: () => void }) {
 export default function HardnessCard({
   onAsk,
   compact = false,
+  home = null,
 }: {
   onAsk: (text: string) => void;
   compact?: boolean;
+  // Where the account's default address is: shown until the shopper picks or
+  // locates a place themselves.
+  home?: Place | null;
 }) {
   const [view, setView] = useState<View>({ step: "pick", failed: false });
   // Kept across cities so "show me very hard areas" carries over when comparing.
@@ -499,7 +504,9 @@ export default function HardnessCard({
     if (!place.area && place.city.areas?.length && source === "picked")
       return setView({ step: "area", city: place.city });
     setView({ step: "report", city: place.city, area: place.area, source });
-    if (source !== "saved")
+    // A saved pick outranks the home address, so only the shopper's own choices
+    // are stored; "home" follows the address book instead.
+    if (source !== "saved" && source !== "home")
       storage.set(
         SAVED_KEY,
         JSON.stringify({
@@ -542,6 +549,7 @@ export default function HardnessCard({
     } catch {
       // unreadable: ask again
     }
+    if (home) return;
     navigator.permissions
       ?.query({ name: "geolocation" as PermissionName })
       .then((s) => s.state === "granted" && locate())
@@ -549,6 +557,20 @@ export default function HardnessCard({
     // run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // The home address (it can arrive after the account refreshes) fills the
+  // card only while nothing else is shown, and follows a change of address.
+  const homeKey = home ? `${home.city.name}|${home.area?.name ?? ""}` : "";
+  useEffect(() => {
+    if (!home) return;
+    setView((v) =>
+      v.step === "pick" || (v.step === "report" && v.source === "home")
+        ? { step: "report", city: home.city, area: home.area, source: "home" }
+        : v,
+    );
+    // keyed on the place, not the object identity
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [homeKey]);
 
   if (!open)
     return <HardnessSummary view={view} onOpen={() => setOpen(true)} />;
@@ -827,13 +849,15 @@ function Report({
   const sourceLabel =
     source === "near"
       ? "Near you"
-      : source === "saved"
-        ? "Your area"
-        : source === "region"
-          ? area
-            ? "Estimate"
-            : "City average"
-          : "Estimate";
+      : source === "home"
+        ? "Your address"
+        : source === "saved"
+          ? "Your area"
+          : source === "region"
+            ? area
+              ? "Estimate"
+              : "City average"
+            : "Estimate";
   const rank = area ? harderThan(city, area) : null;
   const supply = area ? SUPPLY[area.supply] : null;
   const verdict =

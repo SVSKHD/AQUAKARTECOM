@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { normalizeOrders, orderTitle, paymentView } from "./orders";
+import {
+  installationLabel,
+  nextInstallation,
+  normalizeOrders,
+  orderStage,
+  orderTitle,
+  paymentView,
+} from "./orders";
 
 const raw = [
   {
@@ -37,6 +44,11 @@ const raw = [
     paymentMethod: "Cash On Delivery",
     paymentStatus: "Pending",
     orderStatus: "Processing",
+    installation: { day: "2026-10-30", slot: "12 pm – 3 pm" },
+    estimatedDelivery: "2026-10-27T10:00:00.000Z",
+    discounts: 500,
+    shippingCost: 0,
+    offerAppliedDetails: { code: "FREEINSTALL" },
   },
 ];
 
@@ -82,5 +94,36 @@ describe("orders", () => {
     const [cod, online] = normalizeOrders(raw);
     expect(orderTitle(cod)).toBe("Kent Bathroom Softener + 1 more");
     expect(orderTitle(online)).toBe("Kent Automatic 8L");
+  });
+
+  it("reads the installation slot, dates and price breakdown", () => {
+    const [cod, online] = normalizeOrders(raw);
+    expect(cod.installation).toEqual({
+      day: "2026-10-30",
+      slot: "12 pm – 3 pm",
+    });
+    expect(installationLabel(cod.installation)).toBe(
+      "Fri 30 Oct · 12 pm – 3 pm",
+    );
+    expect(cod).toMatchObject({
+      discount: 500,
+      delivery: 0,
+      coupon: "FREEINSTALL",
+    });
+    expect(online.installation).toBeNull();
+    expect(online.tax).toBeNull();
+  });
+
+  it("tracks the order stage and the next installation", () => {
+    const base = { orderStatus: "Processing", deliveredOn: null };
+    expect(orderStage(base)).toBe(0);
+    expect(orderStage({ ...base, orderStatus: "Shipped" })).toBe(1);
+    expect(orderStage({ ...base, orderStatus: "Completed" })).toBe(2);
+    expect(orderStage({ ...base, orderStatus: "Cancelled" })).toBe(-1);
+    const rows = normalizeOrders(raw);
+    expect(nextInstallation(rows, new Date(2026, 9, 29))?.number).toBe(
+      "AQOD-2",
+    );
+    expect(nextInstallation(rows, new Date(2026, 9, 31))).toBeNull();
   });
 });

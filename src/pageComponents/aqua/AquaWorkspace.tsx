@@ -34,6 +34,8 @@ import { areaFromUser } from "@/utils/demandFeed";
 import UserServiceOperations from "@/services/user";
 import { editAddresses, sameAddress } from "./profile";
 import { aquaConfig, pickDayTheme } from "./config";
+import { addressHardness } from "./hardnessData";
+import { useAccountSync } from "./useAccountSync";
 import { useAquaAuth } from "./useAquaAuth";
 import { DEMO_PRODUCTS, INR, loadCatalogue, toStoreItem } from "./catalogue";
 import { storage, useIsMobile, useIsTouch, useReducedMotion } from "./hooks";
@@ -247,6 +249,13 @@ export default function AquaWorkspace() {
   );
   const [dayTheme] = useState(() => pickDayTheme());
   const auth = useAquaAuth(token);
+  const refreshAccount = useAccountSync(token);
+  // The welcome card's hardness reading starts from the saved home address.
+  const homeHardness = token
+    ? addressHardness(
+        userData?.user?.selectedAddress || userData?.user?.addresses?.[0],
+      )
+    : null;
   const userName =
     (token && (userData?.user?.name || userData?.user?.firstName)) || null;
   useEffect(() => storage.set("aqua.theme", theme), [theme]);
@@ -278,6 +287,7 @@ export default function AquaWorkspace() {
     setDockOpen(false);
     setShop(null);
     setProfileTab(tab);
+    void refreshAccount();
   };
   useEffect(() => {
     if (!token) setProfileTab(null);
@@ -521,6 +531,7 @@ export default function AquaWorkspace() {
       photo: p.photos[0],
     };
     setDraft(prefill([item], "buy"));
+    void refreshAccount();
     setQuoteState({ status: "idle" });
     dispatch({ type: "BUY", productId: p.id });
   };
@@ -550,6 +561,7 @@ export default function AquaWorkspace() {
       });
     if (!items.length) return showToast("Your cart is empty");
     setDraft(prefill(items, "cart"));
+    void refreshAccount();
     setQuoteState({ status: "idle" });
     setShop(null);
     setSheet("full");
@@ -731,6 +743,7 @@ export default function AquaWorkspace() {
           checkoutSessionId: sessionId,
           shippingAddress: address,
           billingAddress: address,
+          installation: { day: d.slotDay, slot: d.slotTime },
         };
       },
       token,
@@ -789,6 +802,7 @@ export default function AquaWorkspace() {
           checkoutSessionId: sessionId,
           shippingAddress: address,
           billingAddress: address,
+          installation: { day: d.slotDay, slot: d.slotTime },
         },
         token,
         requote,
@@ -1109,6 +1123,7 @@ export default function AquaWorkspace() {
       onFailed={onFailed}
       onDemoPreview={onDemoPreview}
       onNewChat={newChat}
+      onViewOrders={token ? () => openProfile("orders") : undefined}
       mood={mood}
       dark={theme === "dark"}
       isMobile={isMobile}
@@ -1187,6 +1202,7 @@ export default function AquaWorkspace() {
             dark={theme === "dark"}
             userName={userName}
             isMobile={isMobile}
+            homeHardness={homeHardness}
             panelOpen={open}
             selectedProduct={selectedProduct}
             favIds={favs.map((f) => f._id)}

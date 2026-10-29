@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import HardnessCard from "./HardnessCard";
+import { addressHardness } from "./hardnessData";
 
 describe("HardnessCard folding", () => {
   beforeEach(() => {
@@ -52,5 +53,35 @@ describe("HardnessCard folding", () => {
     await user.click(summary);
     expect(screen.getByText("Find a softener")).toBeInTheDocument();
     expect(screen.getByText("A softener is recommended")).toBeInTheDocument();
+  });
+
+  it("starts from the shopper's saved home address", async () => {
+    const user = userEvent.setup();
+    const home = addressHardness({
+      street: "Plot 12, Narsingi",
+      city: "Hyderabad",
+    });
+    render(<HardnessCard onAsk={vi.fn()} home={home} />);
+    const summary = await screen.findByRole("button", {
+      name: /water hardness in narsingi, hyderabad: about 700 ppm, very hard/i,
+    });
+    await user.click(summary);
+    expect(
+      screen.getByText(/water hardness · your address/i),
+    ).toBeInTheDocument();
+    // Not stored: a later change of address should follow through.
+    expect(window.localStorage.getItem("aqua.hardness")).toBeNull();
+  });
+
+  it("keeps an area the shopper picked over the home address", async () => {
+    window.localStorage.setItem(
+      "aqua.hardness",
+      JSON.stringify({ city: "Hyderabad", area: "Gachibowli" }),
+    );
+    const home = addressHardness({ street: "Narsingi", city: "Hyderabad" });
+    render(<HardnessCard onAsk={vi.fn()} home={home} />);
+    expect(
+      await screen.findByRole("button", { name: /gachibowli, hyderabad/i }),
+    ).toBeInTheDocument();
   });
 });

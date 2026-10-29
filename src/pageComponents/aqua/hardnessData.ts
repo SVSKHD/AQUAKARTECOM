@@ -438,3 +438,73 @@ export const findPlace = (
     : null;
   return { city, area };
 };
+
+// ---------- a saved address → its estimated hardness ----------
+
+// Spellings people type in addresses for the cities above.
+const CITY_ALIASES: Record<string, string> = {
+  bangalore: "Bengaluru",
+  bengaluru: "Bengaluru",
+  secunderabad: "Hyderabad",
+  cyberabad: "Hyderabad",
+  madras: "Chennai",
+  "new delhi": "Delhi",
+  gurgaon: "Gurugram",
+  "greater noida": "Noida",
+  bombay: "Mumbai",
+  "navi mumbai": "Mumbai",
+  thane: "Mumbai",
+  calcutta: "Kolkata",
+  cochin: "Kochi",
+  ernakulam: "Kochi",
+  vizag: "Visakhapatnam",
+};
+
+const words = (s: unknown) =>
+  ` ${String(s ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()} `;
+const mentions = (text: string, name: string) => text.includes(words(name));
+
+export type HomeHardness = Place & { ppm: number; basis: "area" | "city" };
+
+// Where an address sits on the hardness map: a known area named in it (the
+// longest match when several are), else its city's
+// average. Null when the city isn't one we have estimates for.
+export function addressHardness(
+  address:
+    | { street?: string; city?: string; state?: string; postalCode?: string }
+    | null
+    | undefined,
+): HomeHardness | null {
+  if (!address) return null;
+  const cityText = words(address.city);
+  const all = words(`${address.street ?? ""} ${address.city ?? ""}`);
+  const named = (text: string) =>
+    CITIES.find((c) => mentions(text, c.name)) ||
+    CITIES.find(
+      (c) =>
+        c.name ===
+        Object.entries(CITY_ALIASES).find(([alias]) =>
+          mentions(text, alias),
+        )?.[1],
+    );
+  let city = named(cityText) || named(all) || null;
+
+  let area: Area | null = null;
+  for (const c of city ? [city] : CITIES)
+    for (const x of c.areas || [])
+      if (
+        mentions(all, x.name) &&
+        (!area || x.name.length > area.name.length)
+      ) {
+        area = x;
+        city = c;
+      }
+
+  if (!city) return null;
+  return area
+    ? { city, area, ppm: area.ppm, basis: "area" }
+    : { city, area: null, ppm: cityPpm(city), basis: "city" };
+}

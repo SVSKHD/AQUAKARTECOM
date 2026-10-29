@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import dayjs from "dayjs";
 import type { Flow } from "@/utils/aquaFlow";
 import {
   PAYMENT_RETURN_MESSAGE,
@@ -19,7 +18,9 @@ const siteOrigin = () => {
   }
 };
 import AquaDroplet from "./AquaDroplet";
+import CodConfirmation from "./CodConfirmation";
 import { INR } from "./catalogue";
+import { installationLabel } from "./orders";
 import {
   LoadingButton,
   OrderStatusCard,
@@ -56,6 +57,8 @@ type Props = {
   onDemoPreview: () => void;
   // Clears the conversation and dispatches RESET (same as the header button).
   onNewChat: () => void;
+  // Opens the profile's orders tab (signed in only).
+  onViewOrders?: () => void;
   mood: Mood;
   dark: boolean;
 };
@@ -110,6 +113,7 @@ export default function PaymentStatus({
   onFailed,
   onDemoPreview,
   onNewChat,
+  onViewOrders,
   mood,
   dark,
 }: Props) {
@@ -277,6 +281,28 @@ export default function PaymentStatus({
   const cod = payment.method === "cod";
 
   // ---------- confirmed ----------
+  if (flow.state === "confirmed" && cod && payment.live)
+    return (
+      <CodConfirmation
+        order={so}
+        draft={draft}
+        quote={
+          quoteState.status === "ready" && !quoteState.demo
+            ? quoteState.data
+            : null
+        }
+        mood={mood}
+        dark={dark}
+        onContinue={() => dispatch({ type: "CLOSE" })}
+        onViewProduct={
+          flow.productId
+            ? () => dispatch({ type: "VIEW", productId: flow.productId })
+            : undefined
+        }
+        onViewOrders={onViewOrders}
+        onNewChat={onNewChat}
+      />
+    );
   if (flow.state === "confirmed") {
     const demo = !payment.live;
     const orderId = demo
@@ -411,10 +437,7 @@ export default function PaymentStatus({
               <>
                 <dt style={{ color: "var(--aq-mut)" }}>Installation</dt>
                 <dd style={{ margin: 0, fontWeight: 600, textAlign: "right" }}>
-                  {dayjs(inst.day).isValid()
-                    ? dayjs(inst.day).format("ddd D MMM")
-                    : inst.day}{" "}
-                  · {inst.slot}
+                  {installationLabel({ day: inst.day, slot: inst.slot || "" })}
                 </dd>
               </>
             )}
@@ -554,7 +577,7 @@ export default function PaymentStatus({
 
   const slot =
     draft?.slotDay && draft.slotTime
-      ? `${dayjs(draft.slotDay).isValid() ? dayjs(draft.slotDay).format("ddd D MMM") : draft.slotDay} · ${draft.slotTime}`
+      ? installationLabel({ day: draft.slotDay, slot: draft.slotTime })
       : "";
   const orderCard = vp.live && (
     <OrderStatusCard

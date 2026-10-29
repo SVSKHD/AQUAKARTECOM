@@ -71,6 +71,7 @@ export type WorkspacePanelProps = {
   onFailed: (reason: string, unconfirmed?: boolean) => void;
   onDemoPreview: () => void;
   onNewChat: () => void;
+  onViewOrders?: () => void;
   // Sheet layouts: close the panel and focus the chat input.
   onChat?: () => void;
   mood: Mood;
@@ -298,6 +299,7 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
           onFailed={props.onFailed}
           onDemoPreview={props.onDemoPreview}
           onNewChat={props.onNewChat}
+          onViewOrders={props.onViewOrders}
           mood={props.mood}
           dark={props.dark}
         />

@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  Fragment,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -11,6 +13,8 @@ import {
 } from "react";
 import {
   Cake,
+  Droplets,
+  CalendarClock,
   Check,
   ChevronDown,
   ExternalLink,
@@ -24,6 +28,7 @@ import {
   ShoppingCart,
   Star,
   Trash2,
+  Truck,
   UserRound,
   X,
 } from "lucide-react";
@@ -33,9 +38,14 @@ import UserServiceOperations from "@/services/user";
 import { INR } from "./catalogue";
 import { Avatar } from "./AquaHeader";
 import ArrowScroller from "./ArrowScroller";
+import { addressHardness, level, type HomeHardness } from "./hardnessData";
 import type { Purchase } from "./HistoryDock";
 import {
+  installationLabel,
+  nextInstallation,
   normalizeOrders,
+  ORDER_STEPS,
+  orderStage,
   orderTitle,
   paymentView,
   type OrderRowData,
@@ -74,6 +84,17 @@ const LABELS: Record<ProfileTab, string> = {
   purchases: "Purchases",
   cart: "Cart",
   fav: "Favourites",
+};
+const BLURBS: Record<ProfileTab, string> = {
+  profile:
+    "Your account at a glance, and the details we deliver and invoice to.",
+  addresses: "Checkout offers your default address first.",
+  orders:
+    "Everything you've ordered here, with delivery and installation dates.",
+  purchases:
+    "Invoices for what you've bought from Aquakart, online or in store.",
+  cart: "Ready when you are.",
+  fav: "Products you've saved for later.",
 };
 const ICONS: Record<ProfileTab, typeof ReceiptIndianRupee> = {
   profile: UserRound,
@@ -204,6 +225,13 @@ function Field({
 
 export default function ProfileDialog(p: Props) {
   const [tab, setTab] = useState<ProfileTab>(p.initialTab || "profile");
+  // Which way the last switch went: panels and the header slide in from it.
+  const [dir, setDir] = useState<"fwd" | "back">("fwd");
+  const go = (next: ProfileTab) => {
+    if (next === tab) return;
+    setDir(TABS.indexOf(next) > TABS.indexOf(tab) ? "fwd" : "back");
+    setTab(next);
+  };
   const tabRefs = useRef<Record<ProfileTab, HTMLButtonElement | null>>({
     profile: null,
     addresses: null,
@@ -310,15 +338,14 @@ export default function ProfileDialog(p: Props) {
     if (ok) setEditing(null);
   };
 
-  // ---------- orders: loaded when the tab first opens ----------
+  // ---------- orders: loaded on open (the overview shows the next installation) ----------
   const [orderList, setOrderList] = useState<OrderRowData[] | null | "error">(
     null,
   );
   const [ordersTry, setOrdersTry] = useState(0);
-  const ordersWanted = tab === "orders";
   const ordersLoaded = Array.isArray(orderList);
   useEffect(() => {
-    if (!ordersWanted || ordersLoaded || !userId) return;
+    if (ordersLoaded || !userId) return;
     let alive = true;
     setOrderList(null);
     orders
@@ -330,9 +357,9 @@ export default function ProfileDialog(p: Props) {
     };
     // p.token changes only with the account, which remounts the dialog.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ordersWanted, ordersLoaded, userId, ordersTry]);
+  }, [ordersLoaded, userId, ordersTry]);
 
-  // ---------- keyboard: Escape closes, Tab stays inside, arrows move tabs ----------
+  // ---------- keyboard: Escape closes, Tab stays inside, arrows move between sections ----------
   useEffect(() => {
     const el = dialogRef.current;
     // No scroll: on phones the sheet is still sliding up from below the screen.
@@ -366,21 +393,56 @@ export default function ProfileDialog(p: Props) {
     return () => window.removeEventListener("keydown", onKey, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const tabIndex = TABS.indexOf(tab);
   const onTabKey = (e: ReactKeyboardEvent) => {
-    const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    const d = /^Arrow(Down|Right)$/.test(e.key)
+      ? 1
+      : /^Arrow(Up|Left)$/.test(e.key)
+        ? -1
+        : 0;
     if (!d) return;
     e.preventDefault();
-    const next = TABS[(tabIndex + d + TABS.length) % TABS.length];
-    setTab(next);
+    const i = TABS.indexOf(tab);
+    const next = TABS[(i + d + TABS.length) % TABS.length];
+    go(next);
     tabRefs.current[next]?.focus();
   };
+
+  // ---------- the highlight that glides to the selected section ----------
+  const navRef = useRef<HTMLDivElement>(null);
+  const [pill, setPill] = useState<CSSProperties | null>(null);
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    const el = tabRefs.current[tab];
+    if (!nav || !el) return;
+    const place = () =>
+      setPill({
+        width: el.offsetWidth,
+        height: el.offsetHeight,
+        transform: `translate(${el.offsetLeft}px, ${el.offsetTop}px)`,
+      });
+    place();
+    // Phones: the sections are a chip row; keep the chosen one in view.
+    if (nav.scrollWidth > nav.clientWidth) {
+      const left = el.offsetLeft - (nav.clientWidth - el.offsetWidth) / 2;
+      nav.scrollTo?.({ left, behavior: "smooth" });
+    }
+    const ro =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(place);
+    ro?.observe(nav);
+    ro?.observe(el);
+    return () => ro?.disconnect();
+  }, [tab]);
 
   const displayName =
     [form.firstName, form.lastName].filter(Boolean).join(" ") ||
     p.user.name ||
     "Your profile";
   const bday = birthdayIn(initial.dob);
+  const loadedOrders = Array.isArray(orderList) ? orderList : [];
+  const upcoming = nextInstallation(loadedOrders);
+  // Estimated from the default address's area (or city), like the chat's card.
+  const home = addressHardness(current || addresses[0]);
+  const homeLevel = home ? level(home.ppm) : null;
   const counts: Record<ProfileTab, number | null> = {
     profile: null,
     addresses: addresses.length,
@@ -389,6 +451,52 @@ export default function ProfileDialog(p: Props) {
     cart: p.cart.length,
     fav: p.favs.length,
   };
+  const overview: {
+    label: string;
+    value: string;
+    tab: ProfileTab;
+    ink?: string;
+  }[] = [
+    {
+      label: "Mobile",
+      value: initial.phone ? `+91 ${initial.phone}` : "Not added yet",
+      tab: "profile",
+    },
+    {
+      label: "Default address",
+      value: addressLine(current || addresses[0]) || "Not added yet",
+      tab: "addresses",
+    },
+    {
+      label: "Water at home",
+      value:
+        home && homeLevel
+          ? `${homeLevel.label} · ~${home.ppm} ppm (${home.area ? home.area.name : `${home.city.name} average`})`
+          : addresses.length
+            ? "No estimate for this city yet"
+            : "Add an address to see it",
+      tab: "addresses",
+      ink: homeLevel?.ink,
+    },
+    {
+      label: "Next installation",
+      value: upcoming
+        ? installationLabel(upcoming.installation)
+        : Array.isArray(orderList)
+          ? "Nothing scheduled"
+          : "Checking…",
+      tab: "orders",
+    },
+    {
+      label: "Orders",
+      value: Array.isArray(orderList)
+        ? `${orderList.length} placed`
+        : orderList === "error"
+          ? "Couldn't load"
+          : "Checking…",
+      tab: "orders",
+    },
+  ];
 
   return (
     <>
@@ -401,14 +509,17 @@ export default function ProfileDialog(p: Props) {
           aria-labelledby="aq-pf-title"
           className="aq-glass aq-pf"
         >
-          <div className="aq-pf-head">
-            <Avatar name={displayName} size={44} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <h2 id="aq-pf-title" className="aq-display aq-pf-name">
-                {displayName}
-              </h2>
-              <span className="aq-pf-sub">
-                {p.user.email || "Signed in with Google"}
+          {/* ---------- left rail: who, sections, sign out ---------- */}
+          <aside className="aq-pf-rail">
+            <div className="aq-pf-me">
+              <Avatar name={displayName} size={52} />
+              <div className="aq-pf-me-text">
+                <h2 id="aq-pf-title" className="aq-display aq-pf-name">
+                  {displayName}
+                </h2>
+                <span className="aq-pf-sub">
+                  {p.user.email || "Signed in with Google"}
+                </span>
                 {bday !== null && bday <= 30 && (
                   <span className="aq-pf-bday">
                     <Cake size={12} aria-hidden="true" />
@@ -417,520 +528,589 @@ export default function ProfileDialog(p: Props) {
                       : `Birthday in ${bday} days`}
                   </span>
                 )}
-              </span>
+              </div>
             </div>
-            <button
-              type="button"
-              className="aq-icon-btn"
-              onClick={p.onClose}
-              aria-label="Close profile"
-            >
-              <X size={16} />
-            </button>
-          </div>
 
-          <div
-            role="tablist"
-            aria-label="Profile sections"
-            className="aq-dock-tabs aq-pf-tabs"
-            style={
-              {
-                "--tabs": TABS.length,
-                "--ti": tabIndex,
-                margin: "0 16px",
-              } as CSSProperties
-            }
-            onKeyDown={onTabKey}
-          >
-            <span className="aq-dock-tab-pill" aria-hidden="true" />
-            {TABS.map((t) => {
-              const Icon = ICONS[t];
-              return (
-                <button
-                  key={t}
-                  ref={(el) => {
-                    tabRefs.current[t] = el;
-                  }}
-                  type="button"
-                  role="tab"
-                  id={`aq-pf-tab-${t}`}
-                  aria-controls={`aq-pf-panel-${t}`}
-                  aria-selected={tab === t}
-                  tabIndex={tab === t ? 0 : -1}
-                  className="aq-dock-tab"
-                  onClick={() => setTab(t)}
-                >
-                  <Icon size={15} aria-hidden="true" />
-                  <span className="aq-pf-tab-label">{LABELS[t]}</span>
-                  {counts[t] ? (
-                    <span className="aq-dock-count">{counts[t]}</span>
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
-
-          {error && (
-            <div role="alert" className="aq-pf-error">
-              {error}
-            </div>
-          )}
-
-          <ArrowScroller
-            wrapClassName="aq-pf-scroll"
-            className="aq-pf-body"
-            label={LABELS[tab].toLowerCase()}
-            resetKey={tab}
-          >
-            {/* ---------- profile ---------- */}
             <div
-              role="tabpanel"
-              id="aq-pf-panel-profile"
-              aria-labelledby="aq-pf-tab-profile"
-              hidden={tab !== "profile"}
+              role="tablist"
+              aria-label="Profile sections"
+              aria-orientation="vertical"
+              className="aq-pf-nav"
+              ref={navRef}
+              onKeyDown={onTabKey}
             >
-              <form
-                className="aq-pf-grid"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void saveProfile();
-                }}
-              >
-                <Field label="First name" hint={errors.firstName} bad>
-                  {(a) => (
-                    <input
-                      {...a}
-                      data-autofocus
-                      className="aq-input"
-                      value={form.firstName}
-                      onChange={(e) =>
-                        setForm({ ...form, firstName: e.target.value })
-                      }
-                      autoComplete="given-name"
-                      aria-invalid={!!errors.firstName}
-                    />
-                  )}
-                </Field>
-                <Field label="Last name">
-                  {(a) => (
-                    <input
-                      {...a}
-                      className="aq-input"
-                      value={form.lastName}
-                      onChange={(e) =>
-                        setForm({ ...form, lastName: e.target.value })
-                      }
-                      autoComplete="family-name"
-                    />
-                  )}
-                </Field>
-                <Field label="Mobile number" hint={errors.phone} bad>
-                  {(a) => (
-                    <input
-                      {...a}
-                      className="aq-input"
-                      value={form.phone}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          phone: e.target.value.replace(/\D/g, "").slice(0, 10),
-                        })
-                      }
-                      inputMode="numeric"
-                      autoComplete="tel-national"
-                      placeholder="10 digits"
-                      aria-invalid={!!errors.phone}
-                    />
-                  )}
-                </Field>
-                <Field
-                  label="Birthday"
-                  hint={errors.dob || "Optional"}
-                  bad={!!errors.dob}
-                >
-                  {(a) => (
-                    // Same glass picker as the rest of the site: opens on a
-                    // year grid, then month, then day; 1900 → today.
-                    <AquaDatePicker
-                      {...a}
-                      name="dob"
-                      birthday
-                      value={form.dob}
-                      placeholder="Add your birthday"
-                      onChange={(e: { target: { value: string } }) =>
-                        setForm({ ...form, dob: e.target.value })
-                      }
-                      aria-invalid={!!errors.dob}
-                    />
-                  )}
-                </Field>
-                <Field
-                  label="Email"
-                  hint="From your Google sign-in. Invoices are sent here."
-                  wide
-                >
-                  {(a) => (
-                    <input
-                      {...a}
-                      className="aq-input"
-                      value={p.user.email || ""}
-                      disabled
-                      readOnly
-                    />
-                  )}
-                </Field>
-                <div className="aq-pf-actions" style={{ gridColumn: "1 / -1" }}>
-                  <span style={{ flex: 1 }} />
+              {/* Hidden until measured, so it doesn't fly in from the corner. */}
+              <span
+                className="aq-pf-navpill"
+                aria-hidden="true"
+                style={pill || { opacity: 0 }}
+              />
+              {TABS.map((t) => {
+                const Icon = ICONS[t];
+                return (
                   <button
-                    type="submit"
-                    className="aq-btn aq-btn-primary"
-                    disabled={!dirty || busy !== null}
+                    key={t}
+                    ref={(el) => {
+                      tabRefs.current[t] = el;
+                    }}
+                    type="button"
+                    role="tab"
+                    id={`aq-pf-tab-${t}`}
+                    aria-controls={`aq-pf-panel-${t}`}
+                    aria-selected={tab === t}
+                    tabIndex={tab === t ? 0 : -1}
+                    className="aq-pf-navtab"
+                    onClick={() => go(t)}
                   >
-                    {busy === "profile" ? "Saving…" : "Save changes"}
+                    <Icon size={17} aria-hidden="true" />
+                    <span className="aq-pf-tab-label">{LABELS[t]}</span>
+                    {counts[t] ? (
+                      <span className="aq-dock-count">{counts[t]}</span>
+                    ) : null}
                   </button>
-                </div>
-              </form>
+                );
+              })}
             </div>
 
-            {/* ---------- addresses ---------- */}
-            <div
-              role="tabpanel"
-              id="aq-pf-panel-addresses"
-              aria-labelledby="aq-pf-tab-addresses"
-              hidden={tab !== "addresses"}
-            >
-              <div className="aq-pf-list">
-                {addresses.map((a, i) =>
-                  editing === i ? null : (
-                    <div key={a._id || i} className="aq-pf-addr">
-                      <MapPin
-                        size={16}
-                        aria-hidden="true"
-                        className="aq-pf-addr-icon"
-                      />
-                      <span className="aq-pf-addr-text">
-                        <span
-                          style={{ fontWeight: 700, color: "var(--aq-ink)" }}
-                        >
-                          {a.city || `Address ${i + 1}`}
-                          {sameAddress(a, current) && (
-                            <span className="aq-pf-tag">Default</span>
-                          )}
-                        </span>
-                        <span>{addressLine(a)}</span>
-                      </span>
-                      {!sameAddress(a, current) && (
-                        <button
-                          type="button"
-                          className="aq-icon-btn"
-                          aria-label={`Use ${addressLine(a)} by default`}
-                          title="Make default"
-                          disabled={busy !== null}
-                          onClick={() =>
-                            void applyAddresses(
-                              { kind: "default", index: i },
-                              "Default address updated",
-                            )
-                          }
-                        >
-                          <Star size={15} />
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        className="aq-icon-btn"
-                        aria-label={`Edit ${addressLine(a)}`}
-                        title="Edit"
-                        disabled={busy !== null}
-                        onClick={() => startEdit(i)}
-                      >
-                        <Pencil size={15} />
-                      </button>
-                      <button
-                        type="button"
-                        className="aq-icon-btn"
-                        aria-label={`Remove ${addressLine(a)}`}
-                        title="Remove"
-                        disabled={busy !== null}
-                        onClick={() =>
-                          void applyAddresses(
-                            { kind: "remove", index: i },
-                            "Address removed",
-                          )
-                        }
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  ),
-                )}
+            <div className="aq-pf-foot">
+              <span className="aq-pf-foot-who">
+                <span>Signed in as</span>
+                <b>{p.user.email || displayName}</b>
+              </span>
+              <button
+                type="button"
+                className="aq-pf-signout"
+                onClick={p.onSignOut}
+                disabled={p.locked}
+                title={
+                  p.locked ? "Finish or wait for the payment first" : undefined
+                }
+              >
+                <LogOut size={15} aria-hidden="true" /> Sign out
+              </button>
+            </div>
+          </aside>
 
-                {editing !== null ? (
-                  <form
-                    className="aq-card aq-pf-grid"
-                    style={{ padding: 14 }}
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      void saveAddress();
-                    }}
-                  >
-                    <label
-                      className="aq-field"
-                      style={{ gridColumn: "1 / -1" }}
-                    >
-                      House, street, area
+          {/* ---------- right: the selected section ---------- */}
+          <section
+            className="aq-pf-main"
+            aria-labelledby={`aq-pf-tab-${tab}`}
+            data-dir={dir}
+          >
+            <header className="aq-pf-main-head">
+              {/* Keyed: the title and blurb swap in with the panel. */}
+              <div key={tab} className="aq-pf-head-swap">
+                <h3 className="aq-display aq-pf-main-title">{LABELS[tab]}</h3>
+                <p className="aq-pf-main-sub">{BLURBS[tab]}</p>
+              </div>
+              <button
+                type="button"
+                className="aq-icon-btn"
+                onClick={p.onClose}
+                aria-label="Close profile"
+              >
+                <X size={16} />
+              </button>
+            </header>
+
+            {error && (
+              <div role="alert" className="aq-pf-error">
+                {error}
+              </div>
+            )}
+
+            <ArrowScroller
+              wrapClassName="aq-pf-scroll"
+              className="aq-pf-body"
+              label={LABELS[tab].toLowerCase()}
+              resetKey={tab}
+            >
+              {/* ---------- profile ---------- */}
+              <div
+                role="tabpanel"
+                className="aq-pf-panel"
+                id="aq-pf-panel-profile"
+                aria-labelledby="aq-pf-tab-profile"
+                hidden={tab !== "profile"}
+              >
+                <div className="aq-pf-overview">
+                  {overview.map((o) =>
+                    o.tab === "profile" ? (
+                      <div key={o.label} className="aq-pf-stat">
+                        <span>{o.label}</span>
+                        <b style={o.ink ? { color: o.ink } : undefined}>
+                          {o.value}
+                        </b>
+                      </div>
+                    ) : (
+                      <button
+                        key={o.label}
+                        type="button"
+                        className="aq-pf-stat"
+                        onClick={() => go(o.tab)}
+                      >
+                        <span>{o.label}</span>
+                        <b style={o.ink ? { color: o.ink } : undefined}>
+                          {o.value}
+                        </b>
+                      </button>
+                    ),
+                  )}
+                </div>
+                <h4 className="aq-pf-section">Personal details</h4>
+                <form
+                  className="aq-pf-grid"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void saveProfile();
+                  }}
+                >
+                  <Field label="First name" hint={errors.firstName} bad>
+                    {(a) => (
                       <input
+                        {...a}
+                        data-autofocus
                         className="aq-input"
-                        value={addr.street}
+                        value={form.firstName}
                         onChange={(e) =>
-                          setAddr({ ...addr, street: e.target.value })
+                          setForm({ ...form, firstName: e.target.value })
                         }
-                        autoComplete="street-address"
-                        autoFocus
+                        autoComplete="given-name"
+                        aria-invalid={!!errors.firstName}
                       />
-                    </label>
-                    <label className="aq-field">
-                      City
+                    )}
+                  </Field>
+                  <Field label="Last name">
+                    {(a) => (
                       <input
+                        {...a}
                         className="aq-input"
-                        value={addr.city}
+                        value={form.lastName}
                         onChange={(e) =>
-                          setAddr({ ...addr, city: e.target.value })
+                          setForm({ ...form, lastName: e.target.value })
                         }
-                        autoComplete="address-level2"
+                        autoComplete="family-name"
                       />
-                    </label>
-                    <label className="aq-field">
-                      State
+                    )}
+                  </Field>
+                  <Field label="Mobile number" hint={errors.phone} bad>
+                    {(a) => (
                       <input
+                        {...a}
                         className="aq-input"
-                        value={addr.state || ""}
+                        value={form.phone}
                         onChange={(e) =>
-                          setAddr({ ...addr, state: e.target.value })
-                        }
-                        autoComplete="address-level1"
-                      />
-                    </label>
-                    <label className="aq-field">
-                      PIN code
-                      <input
-                        className="aq-input"
-                        value={addr.postalCode}
-                        onChange={(e) =>
-                          setAddr({
-                            ...addr,
-                            postalCode: e.target.value
+                          setForm({
+                            ...form,
+                            phone: e.target.value
                               .replace(/\D/g, "")
-                              .slice(0, 6),
+                              .slice(0, 10),
                           })
                         }
                         inputMode="numeric"
-                        autoComplete="postal-code"
+                        autoComplete="tel-national"
+                        placeholder="10 digits"
+                        aria-invalid={!!errors.phone}
                       />
-                    </label>
-                    {editing < 0 && addresses.length > 0 && (
-                      <label className="aq-pf-check">
-                        <input
-                          type="checkbox"
-                          checked={addrDefault}
-                          onChange={(e) => setAddrDefault(e.target.checked)}
-                        />
-                        Use as my default address
-                      </label>
                     )}
-                    {addrMissing.length > 0 && (
-                      <span
-                        className="aq-pf-hint"
-                        data-bad="true"
+                  </Field>
+                  <Field
+                    label="Birthday"
+                    hint={errors.dob || "Optional"}
+                    bad={!!errors.dob}
+                  >
+                    {(a) => (
+                      // Same glass picker as the rest of the site: opens on a
+                      // year grid, then month, then day; 1900 → today.
+                      <AquaDatePicker
+                        {...a}
+                        name="dob"
+                        birthday
+                        value={form.dob}
+                        placeholder="Add your birthday"
+                        onChange={(e: { target: { value: string } }) =>
+                          setForm({ ...form, dob: e.target.value })
+                        }
+                        aria-invalid={!!errors.dob}
+                      />
+                    )}
+                  </Field>
+                  <Field
+                    label="Email"
+                    hint="From your Google sign-in. Invoices are sent here."
+                    wide
+                  >
+                    {(a) => (
+                      <input
+                        {...a}
+                        className="aq-input"
+                        value={p.user.email || ""}
+                        disabled
+                        readOnly
+                      />
+                    )}
+                  </Field>
+                  <div
+                    className="aq-pf-actions"
+                    style={{ gridColumn: "1 / -1" }}
+                  >
+                    <span style={{ flex: 1 }} />
+                    <button
+                      type="submit"
+                      className="aq-btn aq-btn-primary"
+                      disabled={!dirty || busy !== null}
+                    >
+                      {busy === "profile" ? "Saving…" : "Save changes"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* ---------- addresses ---------- */}
+              <div
+                role="tabpanel"
+                className="aq-pf-panel"
+                id="aq-pf-panel-addresses"
+                aria-labelledby="aq-pf-tab-addresses"
+                hidden={tab !== "addresses"}
+              >
+                <div className="aq-pf-list">
+                  {addresses.map((a, i) =>
+                    editing === i ? null : (
+                      <div key={a._id || i} className="aq-pf-addr">
+                        <MapPin
+                          size={16}
+                          aria-hidden="true"
+                          className="aq-pf-addr-icon"
+                        />
+                        <span className="aq-pf-addr-text">
+                          <span
+                            style={{ fontWeight: 700, color: "var(--aq-ink)" }}
+                          >
+                            {a.city || `Address ${i + 1}`}
+                            {sameAddress(a, current) && (
+                              <span className="aq-pf-tag">Default</span>
+                            )}
+                          </span>
+                          <span>{addressLine(a)}</span>
+                          <HardnessChip h={addressHardness(a)} />
+                        </span>
+                        {!sameAddress(a, current) && (
+                          <button
+                            type="button"
+                            className="aq-icon-btn"
+                            aria-label={`Use ${addressLine(a)} by default`}
+                            title="Make default"
+                            disabled={busy !== null}
+                            onClick={() =>
+                              void applyAddresses(
+                                { kind: "default", index: i },
+                                "Default address updated",
+                              )
+                            }
+                          >
+                            <Star size={15} />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className="aq-icon-btn"
+                          aria-label={`Edit ${addressLine(a)}`}
+                          title="Edit"
+                          disabled={busy !== null}
+                          onClick={() => startEdit(i)}
+                        >
+                          <Pencil size={15} />
+                        </button>
+                        <button
+                          type="button"
+                          className="aq-icon-btn"
+                          aria-label={`Remove ${addressLine(a)}`}
+                          title="Remove"
+                          disabled={busy !== null}
+                          onClick={() =>
+                            void applyAddresses(
+                              { kind: "remove", index: i },
+                              "Address removed",
+                            )
+                          }
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    ),
+                  )}
+
+                  {editing !== null ? (
+                    <form
+                      className="aq-card aq-pf-grid"
+                      style={{ padding: 14 }}
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void saveAddress();
+                      }}
+                    >
+                      <label
+                        className="aq-field"
                         style={{ gridColumn: "1 / -1" }}
                       >
-                        Add {addrMissing.join(", ")}.
-                      </span>
-                    )}
-                    <div
-                      className="aq-pf-actions"
-                      style={{ gridColumn: "1 / -1" }}
+                        House, street, area
+                        <input
+                          className="aq-input"
+                          value={addr.street}
+                          onChange={(e) =>
+                            setAddr({ ...addr, street: e.target.value })
+                          }
+                          autoComplete="street-address"
+                          autoFocus
+                        />
+                      </label>
+                      <label className="aq-field">
+                        City
+                        <input
+                          className="aq-input"
+                          value={addr.city}
+                          onChange={(e) =>
+                            setAddr({ ...addr, city: e.target.value })
+                          }
+                          autoComplete="address-level2"
+                        />
+                      </label>
+                      <label className="aq-field">
+                        State
+                        <input
+                          className="aq-input"
+                          value={addr.state || ""}
+                          onChange={(e) =>
+                            setAddr({ ...addr, state: e.target.value })
+                          }
+                          autoComplete="address-level1"
+                        />
+                      </label>
+                      <label className="aq-field">
+                        PIN code
+                        <input
+                          className="aq-input"
+                          value={addr.postalCode}
+                          onChange={(e) =>
+                            setAddr({
+                              ...addr,
+                              postalCode: e.target.value
+                                .replace(/\D/g, "")
+                                .slice(0, 6),
+                            })
+                          }
+                          inputMode="numeric"
+                          autoComplete="postal-code"
+                        />
+                      </label>
+                      {editing < 0 && addresses.length > 0 && (
+                        <label className="aq-pf-check">
+                          <input
+                            type="checkbox"
+                            checked={addrDefault}
+                            onChange={(e) => setAddrDefault(e.target.checked)}
+                          />
+                          Use as my default address
+                        </label>
+                      )}
+                      {addrMissing.length > 0 && (
+                        <span
+                          className="aq-pf-hint"
+                          data-bad="true"
+                          style={{ gridColumn: "1 / -1" }}
+                        >
+                          Add {addrMissing.join(", ")}.
+                        </span>
+                      )}
+                      <div
+                        className="aq-pf-actions"
+                        style={{ gridColumn: "1 / -1" }}
+                      >
+                        <span style={{ flex: 1 }} />
+                        <button
+                          type="button"
+                          className="aq-btn aq-btn-ghost"
+                          onClick={() => setEditing(null)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="aq-btn aq-btn-primary"
+                          disabled={busy !== null}
+                        >
+                          <Check size={15} />
+                          {busy === "addresses" ? "Saving…" : "Save address"}
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <button
+                      type="button"
+                      className="aq-option aq-pf-add"
+                      onClick={() => startEdit(-1)}
                     >
-                      <span style={{ flex: 1 }} />
-                      <button
-                        type="button"
-                        className="aq-btn aq-btn-ghost"
-                        onClick={() => setEditing(null)}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="aq-btn aq-btn-primary"
-                        disabled={busy !== null}
-                      >
-                        <Check size={15} />
-                        {busy === "addresses" ? "Saving…" : "Save address"}
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <button
-                    type="button"
-                    className="aq-option aq-pf-add"
-                    onClick={() => startEdit(-1)}
+                      <Plus size={16} aria-hidden="true" />
+                      <span style={{ fontWeight: 700 }}>Add an address</span>
+                      <span style={{ fontSize: 12, color: "var(--aq-mut)" }}>
+                        Checkout offers your default address first.
+                      </span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* ---------- orders ---------- */}
+              <div
+                role="tabpanel"
+                className="aq-pf-panel"
+                id="aq-pf-panel-orders"
+                aria-labelledby="aq-pf-tab-orders"
+                hidden={tab !== "orders"}
+              >
+                {orderList === null ? (
+                  <div
+                    className="aq-pf-list"
+                    role="status"
+                    aria-label="Loading your orders"
                   >
-                    <Plus size={16} aria-hidden="true" />
-                    <span style={{ fontWeight: 700 }}>Add an address</span>
-                    <span style={{ fontSize: 12, color: "var(--aq-mut)" }}>
-                      Checkout offers your default address first.
+                    {[0, 1, 2].map((n) => (
+                      <span key={n} className="aq-dock-skeleton" />
+                    ))}
+                  </div>
+                ) : orderList === "error" ? (
+                  <div className="aq-pf-empty" role="alert">
+                    <Package size={20} aria-hidden="true" />
+                    <b>Couldn&apos;t load your orders</b>
+                    <span>Check your connection and try again.</span>
+                    <button
+                      type="button"
+                      className="aq-btn aq-btn-glass"
+                      onClick={() => {
+                        setOrderList(null);
+                        setOrdersTry((n) => n + 1);
+                      }}
+                    >
+                      Try again
+                    </button>
+                  </div>
+                ) : orderList.length ? (
+                  <div className="aq-pf-list">
+                    {orderList.map((o) => (
+                      <OrderRow
+                        key={o.id}
+                        order={o}
+                        products={p.products}
+                        canView={p.canView}
+                        onView={p.onView}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="aq-pf-empty">
+                    <Package size={20} aria-hidden="true" />
+                    <b>No orders yet</b>
+                    <span>
+                      Orders you place here, paid online or cash on delivery,
+                      show up with their payment status.
                     </span>
-                  </button>
+                  </div>
                 )}
               </div>
-            </div>
 
-            {/* ---------- orders ---------- */}
-            <div
-              role="tabpanel"
-              id="aq-pf-panel-orders"
-              aria-labelledby="aq-pf-tab-orders"
-              hidden={tab !== "orders"}
-            >
-              {orderList === null ? (
-                <div
-                  className="aq-pf-list"
-                  role="status"
-                  aria-label="Loading your orders"
-                >
-                  {[0, 1, 2].map((n) => (
-                    <span key={n} className="aq-dock-skeleton" />
-                  ))}
-                </div>
-              ) : orderList === "error" ? (
-                <div className="aq-pf-empty" role="alert">
-                  <Package size={20} aria-hidden="true" />
-                  <b>Couldn&apos;t load your orders</b>
-                  <span>Check your connection and try again.</span>
-                  <button
-                    type="button"
-                    className="aq-btn aq-btn-glass"
-                    onClick={() => {
-                      setOrderList(null);
-                      setOrdersTry((n) => n + 1);
-                    }}
-                  >
-                    Try again
-                  </button>
-                </div>
-              ) : orderList.length ? (
-                <div className="aq-pf-list">
-                  {orderList.map((o) => (
-                    <OrderRow
-                      key={o.id}
-                      order={o}
-                      products={p.products}
-                      canView={p.canView}
-                      onView={p.onView}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="aq-pf-empty">
-                  <Package size={20} aria-hidden="true" />
-                  <b>No orders yet</b>
-                  <span>
-                    Orders you place here, paid online or cash on delivery, show
-                    up with their payment status.
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* ---------- purchases ---------- */}
-            <div
-              role="tabpanel"
-              id="aq-pf-panel-purchases"
-              aria-labelledby="aq-pf-tab-purchases"
-              hidden={tab !== "purchases"}
-            >
-              {p.purchases === null ? (
-                <div
-                  className="aq-pf-list"
-                  role="status"
-                  aria-label="Loading your purchases"
-                >
-                  {[0, 1, 2].map((n) => (
-                    <span key={n} className="aq-dock-skeleton" />
-                  ))}
-                </div>
-              ) : p.purchases.length ? (
-                <div className="aq-pf-list">
-                  {p.purchases.map((inv) => (
-                    <PurchaseRow
-                      key={inv.id}
-                      inv={inv}
-                      products={p.products}
-                      canView={p.canView}
-                      onView={p.onView}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="aq-pf-empty">
-                  <ReceiptIndianRupee size={20} aria-hidden="true" />
-                  <b>No purchases yet</b>
-                  <span>
-                    Invoices for products you buy from Aquakart, online or in
-                    store, show up here.
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* ---------- cart & favourites ---------- */}
-            {(["cart", "fav"] as const).map((k) => (
+              {/* ---------- purchases ---------- */}
               <div
-                key={k}
                 role="tabpanel"
-                id={`aq-pf-panel-${k}`}
-                aria-labelledby={`aq-pf-tab-${k}`}
-                hidden={tab !== k}
+                className="aq-pf-panel"
+                id="aq-pf-panel-purchases"
+                aria-labelledby="aq-pf-tab-purchases"
+                hidden={tab !== "purchases"}
               >
-                <ShopList
-                  kind={k}
-                  inline
-                  rows={k === "cart" ? p.cart : p.favs}
-                  canView={p.canView}
-                  canCheckout={p.canCheckout}
-                  onQty={p.onQty}
-                  onRemove={k === "cart" ? p.onRemoveCart : p.onRemoveFav}
-                  onAddToCart={p.onAddToCart}
-                  onView={p.onView}
-                  onCheckout={p.onCheckout}
-                  onChat={p.onChat}
-                />
+                {p.purchases === null ? (
+                  <div
+                    className="aq-pf-list"
+                    role="status"
+                    aria-label="Loading your purchases"
+                  >
+                    {[0, 1, 2].map((n) => (
+                      <span key={n} className="aq-dock-skeleton" />
+                    ))}
+                  </div>
+                ) : p.purchases.length ? (
+                  <div className="aq-pf-list">
+                    {p.purchases.map((inv) => (
+                      <PurchaseRow
+                        key={inv.id}
+                        inv={inv}
+                        products={p.products}
+                        canView={p.canView}
+                        onView={p.onView}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="aq-pf-empty">
+                    <ReceiptIndianRupee size={20} aria-hidden="true" />
+                    <b>No purchases yet</b>
+                    <span>
+                      Invoices for products you buy from Aquakart, online or in
+                      store, show up here.
+                    </span>
+                  </div>
+                )}
               </div>
-            ))}
-          </ArrowScroller>
 
-          {/* Account footer on every tab: who's signed in, and a clearly
-              destructive Sign out kept apart from Save. */}
-          <div className="aq-pf-foot">
-            <span className="aq-pf-foot-who">
-              <span>Signed in as</span>
-              <b>{p.user.email || displayName}</b>
-            </span>
-            <button
-              type="button"
-              className="aq-pf-signout"
-              onClick={p.onSignOut}
-              disabled={p.locked}
-              title={
-                p.locked ? "Finish or wait for the payment first" : undefined
-              }
-            >
-              <LogOut size={15} aria-hidden="true" /> Sign out
-            </button>
-          </div>
+              {/* ---------- cart & favourites ---------- */}
+              {(["cart", "fav"] as const).map((k) => (
+                <div
+                  key={k}
+                  role="tabpanel"
+                  className="aq-pf-panel"
+                  id={`aq-pf-panel-${k}`}
+                  aria-labelledby={`aq-pf-tab-${k}`}
+                  hidden={tab !== k}
+                >
+                  <ShopList
+                    kind={k}
+                    inline
+                    rows={k === "cart" ? p.cart : p.favs}
+                    canView={p.canView}
+                    canCheckout={p.canCheckout}
+                    onQty={p.onQty}
+                    onRemove={k === "cart" ? p.onRemoveCart : p.onRemoveFav}
+                    onAddToCart={p.onAddToCart}
+                    onView={p.onView}
+                    onCheckout={p.onCheckout}
+                    onChat={p.onChat}
+                  />
+                </div>
+              ))}
+            </ArrowScroller>
+          </section>
         </div>
       </div>
     </>
+  );
+}
+
+// Where this address sits on the hardness scale. An estimate for its area
+// (or city), never a test of the water at that address.
+function HardnessChip({ h }: { h: HomeHardness | null }) {
+  if (!h) return null;
+  const lv = level(h.ppm);
+  return (
+    <span
+      className="aq-pf-hard"
+      style={{ background: lv.tint, color: lv.ink }}
+      title="Estimated for the area, not a test of your water"
+    >
+      <Droplets size={12} aria-hidden="true" />
+      {lv.label} water · ~{h.ppm} ppm
+      <span className="aq-pf-hard-where">
+        {h.area ? `est. for ${h.area.name}` : `${h.city.name} average`}
+      </span>
+    </span>
   );
 }
 
@@ -1052,8 +1232,9 @@ function PurchaseRow({
   );
 }
 
-// One order from checkout: the summary row (first item, number and date,
-// total, payment status) toggles its items, delivery address and order status.
+// One order from checkout. The summary (first item, number and date, total,
+// payment) toggles the details; delivery and installation dates stay in view
+// on the card, since they're what a shopper opens this tab for.
 function OrderRow({
   order,
   products,
@@ -1068,17 +1249,42 @@ function OrderRow({
   const [open, setOpen] = useState(false);
   const bodyId = useId();
   const pay = paymentView(order);
+  const stage = orderStage(order);
   const byId = new Map(products.map((x) => [x.id, x]));
   const address = order.address
     ? addressLine(order.address as unknown as Address)
     : "";
+  const delivery =
+    stage === -1
+      ? "Cancelled"
+      : order.deliveredOn
+        ? `Delivered ${shortDate(order.deliveredOn)}`
+        : order.estimatedDelivery
+          ? `Expected by ${shortDate(order.estimatedDelivery)}`
+          : "We'll share the date soon";
+  const install =
+    stage === -1
+      ? "Not needed"
+      : installationLabel(order.installation) || "We'll call to schedule it";
+  const breakdown = [
+    order.discount
+      ? [
+          `Discount${order.coupon ? ` (${order.coupon})` : ""}`,
+          `− ${INR(order.discount)}`,
+        ]
+      : null,
+    order.delivery != null
+      ? ["Delivery", order.delivery ? INR(order.delivery) : "Free"]
+      : null,
+    order.tax ? ["Tax", INR(order.tax)] : null,
+  ].filter(Boolean) as [string, string][];
   const help = supportLink(
     `Hi Aquakart, about my order ${order.number}${
       order.total != null ? ` (${INR(order.total)})` : ""
     }: ${pay.label.toLowerCase()}. Can you help?`,
   );
   return (
-    <div className="aq-pf-buy-wrap" data-open={open}>
+    <div className="aq-pf-buy-wrap aq-pf-order" data-open={open}>
       <button
         type="button"
         className="aq-pf-buy"
@@ -1095,8 +1301,7 @@ function OrderRow({
           </span>
           <span>
             {order.number}
-            {order.date ? ` · ${shortDate(order.date)}` : ""}
-            {order.cod ? " · Cash on delivery" : " · PhonePe"}
+            {order.date ? ` · Placed ${shortDate(order.date)}` : ""}
           </span>
         </span>
         <span className="aq-pf-buy-side">
@@ -1122,7 +1327,41 @@ function OrderRow({
           data-open={open}
         />
       </button>
+
+      <dl className="aq-pf-dates">
+        <div>
+          <dt>
+            <Truck size={14} aria-hidden="true" /> Delivery
+          </dt>
+          <dd>{delivery}</dd>
+        </div>
+        <div>
+          <dt>
+            <CalendarClock size={14} aria-hidden="true" /> Installation
+          </dt>
+          <dd data-pending={!order.installation}>{install}</dd>
+        </div>
+      </dl>
+
       <div id={bodyId} className="aq-pf-quick" hidden={!open}>
+        {stage === -1 ? (
+          <span className="aq-pf-cancelled">This order was cancelled.</span>
+        ) : (
+          <ol className="aq-pf-steps" aria-label="Order progress">
+            {ORDER_STEPS.map((label, i) => (
+              <li
+                key={label}
+                data-done={i <= stage}
+                aria-current={i === stage ? "step" : undefined}
+              >
+                <span aria-hidden="true">
+                  {i <= stage ? <Check size={11} /> : null}
+                </span>
+                {label}
+              </li>
+            ))}
+          </ol>
+        )}
         {order.lines.map((l, i) => {
           const prod = l.productId ? byId.get(l.productId) : undefined;
           const meta = [
@@ -1158,6 +1397,10 @@ function OrderRow({
           );
         })}
         <dl className="aq-pf-orderinfo">
+          <dt>Payment</dt>
+          <dd>
+            {order.cod ? "Cash on delivery" : "PhonePe"} · {pay.label}
+          </dd>
           {order.orderStatus && (
             <>
               <dt>Order status</dt>
@@ -1170,20 +1413,32 @@ function OrderRow({
               <dd>{address}</dd>
             </>
           )}
+          {breakdown.map(([k, v]) => (
+            <Fragment key={k}>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </Fragment>
+          ))}
+          {order.total != null && (
+            <>
+              <dt>Total</dt>
+              <dd style={{ fontWeight: 800, color: "var(--aq-ink)" }}>
+                {INR(order.total)}
+              </dd>
+            </>
+          )}
         </dl>
-        {pay.tone !== "ok" && (
-          <a
-            className="aq-hard-link aq-pf-quick-link"
-            href={help}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {pay.tone === "bad"
-              ? "Payment didn't go through? Get help on WhatsApp"
-              : "Questions about this order? Ask us on WhatsApp"}{" "}
-            <ExternalLink size={12} aria-hidden="true" />
-          </a>
-        )}
+        <a
+          className="aq-hard-link aq-pf-quick-link"
+          href={help}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {pay.tone === "bad"
+            ? "Payment didn't go through? Get help on WhatsApp"
+            : "Questions about this order or its installation? Ask us on WhatsApp"}{" "}
+          <ExternalLink size={12} aria-hidden="true" />
+        </a>
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ import { suggestFollowUps } from "@/utils/aiFollowUps";
 import Composer from "./Composer";
 import CompareArtifact from "./CompareArtifact";
 import HardnessCard from "./HardnessCard";
+import type { Place } from "./hardnessData";
 import ProductCard from "./ProductCard";
 import ReplyActions from "./ReplyActions";
 import WhileYouWait from "./WhileYouWait";
@@ -56,6 +57,8 @@ type Props = {
   dark: boolean;
   userName: string | null;
   isMobile: boolean;
+  // The default address's place on the hardness map (signed in only).
+  homeHardness?: Place | null;
   panelOpen: boolean;
   selectedProduct: Product | null;
   favIds: string[];
@@ -650,8 +653,10 @@ export default function Conversation(p: Props) {
                     width: 260,
                     height: 260,
                     borderRadius: "50%",
-                    background:
-                      "radial-gradient(circle, rgba(16,191,164,.22) 0%, rgba(118,206,240,.08) 45%, rgba(16,191,164,0) 70%)",
+                    // Dark: a soft white halo for the white droplet.
+                    background: p.dark
+                      ? "radial-gradient(circle, rgba(255,255,255,.16) 0%, rgba(190,214,228,.06) 45%, rgba(255,255,255,0) 70%)"
+                      : "radial-gradient(circle, rgba(16,191,164,.22) 0%, rgba(118,206,240,.08) 45%, rgba(16,191,164,0) 70%)",
                   }}
                 />
                 <AquaDroplet
@@ -704,7 +709,11 @@ export default function Conversation(p: Props) {
                   : "Tell me about your water and your home. I'll suggest what fits, and you can buy without leaving this chat."}
               </p>
             </div>
-            <HardnessCard onAsk={p.onSend} compact={p.isMobile} />
+            <HardnessCard
+              onAsk={p.onSend}
+              compact={p.isMobile}
+              home={p.homeHardness}
+            />
             <div
               data-tour="suggestions"
               style={{

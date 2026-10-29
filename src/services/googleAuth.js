@@ -1,6 +1,8 @@
 import {
   getRedirectResult,
+  GoogleAuthProvider,
   onAuthStateChanged,
+  signInWithCredential,
   signInWithPopup,
   signInWithRedirect,
   signOut,
@@ -112,6 +114,16 @@ export const loginWithGoogle = async () => {
   }
 };
 
+// One Tap hands back a Google ID token instead of a popup result: sign it into
+// Firebase so the session is the same one the popup flow creates.
+export const loginWithGoogleIdToken = async (googleIdToken) => {
+  const credential = await signInWithCredential(
+    getFirebaseAuth(),
+    GoogleAuthProvider.credential(googleIdToken),
+  );
+  return exchangeGoogleUser(credential.user);
+};
+
 export const loginWithGoogleForInvoice = async () => {
   const firebaseAuth = getFirebaseAuth();
   try {
@@ -188,6 +200,8 @@ export const getCurrentFirebaseIdToken = async () => {
   );
 };
 
+// The signed-in account as the server has it now (GET /auth/me): profile and
+// address book, so every device and page works from the same saved addresses.
 export const getCurrentUser = async (token) => {
   const response = await fetch(authUrl("/auth/me"), {
     headers: { Authorization: `Bearer ${token}` },

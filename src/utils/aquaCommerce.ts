@@ -7,7 +7,6 @@
 //   POST /payments        → { id, orderId, redirectUrl }   charges session.payableAmount
 //   GET  /payments/:id    → { status }                     set by the PhonePe webhook
 //   POST /checkout/orders/cod → order                      cash on delivery, no gateway
-// The legacy POST /order/pay path (startPhonePe / waitForPayment) is kept for reference.
 import orderService from "@/services/order";
 
 type OrderService = {
@@ -27,12 +26,6 @@ type OrderService = {
     config?: { signal?: AbortSignal },
   ) => Promise<any>;
   getOrdersByUserId: (id: string, token?: string | null) => Promise<any>;
-  createPhonePePayOrder: (data: unknown, token?: string | null) => Promise<any>;
-  getOrdersByTransactionId: (
-    id: string,
-    token?: string | null,
-    config?: { signal?: AbortSignal },
-  ) => Promise<any>;
 };
 const orders = orderService as unknown as OrderService;
 
@@ -97,6 +90,8 @@ export type CheckoutPaymentBody = {
   checkoutSessionId: string;
   shippingAddress: Record<string, unknown>;
   billingAddress?: Record<string, unknown>;
+  // Preferred installation slot, saved on the order (the team confirms by phone).
+  installation?: { day: string; slot: string };
   gateway?: string;
 };
 
@@ -279,53 +274,6 @@ export const waitForCheckoutPayment = (
 ) =>
   pollUntilSettled(
     (signal) => checkoutPaymentStatus(attemptId, token, signal),
-    opts,
-  );
-
-// ---------- legacy POST /order/pay ----------
-
-export async function startPhonePe(
-  order: Record<string, unknown>,
-  token?: string | null,
-) {
-  const popup = window.open("", "aquakart-phonepe", "width=480,height=760");
-  try {
-    const res = await orders.createPhonePePayOrder(order, token);
-    const url: string | undefined =
-      res?.url || res?.data?.url || res?.redirectUrl || res?.data?.redirectUrl;
-    if (!url) throw new Error("PhonePe did not return a payment page");
-    if (popup && !popup.closed) popup.location.href = url;
-    return { url, popup };
-  } catch (e) {
-    popup?.close();
-    throw e;
-  }
-}
-
-const pickOrder = (res: any): ServerOrder | null =>
-  (Array.isArray(res?.data)
-    ? res.data[0]
-    : res?.data?.order || res?.data || res) ?? null;
-
-export async function paymentStatus(
-  transactionId: string,
-  token?: string | null,
-  signal?: AbortSignal,
-): Promise<Check> {
-  const res = await orders.getOrdersByTransactionId(transactionId, token, {
-    signal,
-  });
-  const order = pickOrder(res);
-  return { status: toStatus(order?.paymentStatus), order };
-}
-
-export const waitForPayment = (
-  transactionId: string,
-  token?: string | null,
-  opts?: PollOptions,
-) =>
-  pollUntilSettled(
-    (signal) => paymentStatus(transactionId, token, signal),
     opts,
   );
 

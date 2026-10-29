@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  addressHardness,
   areasInRange,
   CITIES,
   LEVEL_RANGES,
@@ -121,5 +122,40 @@ describe("hardnessData", () => {
     expect(gaugePct(0)).toBe(3);
     expect(gaugePct(5000)).toBe(97);
     expect(gaugePct(400)).toBe(50);
+  });
+});
+
+describe("addressHardness", () => {
+  it("finds a known area in the street, with its reading", () => {
+    const h = addressHardness({
+      street: "Flat 402, My Home Avatar, Narsingi",
+      city: "Hyderabad",
+      postalCode: "500075",
+    });
+    expect(h).toMatchObject({ basis: "area", ppm: 700 });
+    expect(h?.area?.name).toBe("Narsingi");
+    expect(h?.city.name).toBe("Hyderabad");
+  });
+
+  it("prefers the longest area name and reads city aliases", () => {
+    expect(
+      addressHardness({ street: "Bandlaguda Jagir road", city: "Secunderabad" })
+        ?.area?.name,
+    ).toBe("Bandlaguda Jagir");
+    expect(
+      addressHardness({ street: "12 MG Road", city: "Bangalore" }),
+    ).toMatchObject({ basis: "city", area: null });
+  });
+
+  it("falls back to the city average, and gives up on unknown cities", () => {
+    const h = addressHardness({
+      street: "janapriya utopia",
+      city: "Hyderabad",
+      state: "Telangana",
+    });
+    expect(h?.basis).toBe("city");
+    expect(h?.ppm).toBe(cityPpm(h!.city));
+    expect(addressHardness({ street: "Main road", city: "Shimla" })).toBeNull();
+    expect(addressHardness(null)).toBeNull();
   });
 });
