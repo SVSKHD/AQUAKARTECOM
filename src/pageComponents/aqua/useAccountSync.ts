@@ -13,6 +13,8 @@ const SYNCED = [
   "photoURL",
   "addresses",
   "selectedAddress",
+  // admin / tester / user: the profile shows admin and tester.
+  "roleName",
 ] as const;
 // Coming back to the tab refreshes at most this often.
 const FOCUS_REFRESH_MS = 30_000;

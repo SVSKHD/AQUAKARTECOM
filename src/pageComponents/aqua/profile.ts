@@ -13,6 +13,8 @@ export type ProfileUser = {
   photoURL?: string;
   addresses?: Address[];
   selectedAddress?: Address;
+  // The account's role from the backend: "admin" | "tester" | "user".
+  roleName?: string;
 };
 
 export type ProfileForm = {

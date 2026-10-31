@@ -28,9 +28,13 @@ export type AiQuota = {
   // Infinity when unlimited.
   remaining: number;
   resetsAt: string;
-  // Backend TESTING_MODE=true: nothing is counted and nothing is ever blocked.
+  // Nothing is counted and nothing is ever blocked: the account is an admin
+  // or tester (any environment), or the backend runs with TESTING_MODE=true.
   unlimited: boolean;
+  // Why it's unlimited (null when limited).
+  access: AiAccess | null;
 };
+export type AiAccess = "admin" | "tester" | "testing";
 export type AiAnswer = {
   reply: string;
   thoughts: AiThought[];
@@ -95,7 +99,7 @@ export function normalizeQuota(value: unknown): AiQuota | null {
   const q = value as Record<string, unknown>;
   const tier = q.tier === "user" ? "user" : "guest";
   const resetsAt = typeof q.resetsAt === "string" ? q.resetsAt : "";
-  // TESTING_MODE sends { limit: null, remaining: null, unlimited: true }.
+  // Unlimited sends { limit: null, remaining: null, unlimited: true, access }.
   if (q.unlimited === true)
     return {
       tier,
@@ -104,6 +108,9 @@ export function normalizeQuota(value: unknown): AiQuota | null {
       remaining: Infinity,
       resetsAt,
       unlimited: true,
+      // Older backends only knew TESTING_MODE.
+      access:
+        q.access === "admin" || q.access === "tester" ? q.access : "testing",
     };
   // null/"" mean "missing", not 0 (Number(null) is 0, which would read as "used up").
   const num = (v: unknown) =>
@@ -119,6 +126,7 @@ export function normalizeQuota(value: unknown): AiQuota | null {
     remaining: Math.max(0, remaining),
     resetsAt,
     unlimited: false,
+    access: null,
   };
 }
 
@@ -473,9 +481,16 @@ export const carryGuestQuota = (token: string | null | undefined) =>
   );
 
 // "2 of 3 free questions left today" (guest) / "4 of 5 questions left today".
+// Unlimited: says whose account (admin / tester) or that it's testing mode.
+const UNLIMITED_LABEL: Record<AiAccess, string> = {
+  admin: "Admin · unlimited chats",
+  tester: "Tester · unlimited chats",
+  testing: "Testing mode · no question limit",
+};
+
 export const quotaLabel = (q: AiQuota) =>
   q.unlimited
-    ? "Testing mode · no question limit"
+    ? UNLIMITED_LABEL[q.access || "testing"]
     : `${q.remaining} of ${q.limit} ${q.tier === "guest" ? "free " : ""}question${q.limit === 1 ? "" : "s"} left today`;
 
 // The blocked state a quota implies: null while questions are left. Guests can

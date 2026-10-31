@@ -610,6 +610,22 @@ describe("backend TESTING_MODE (no question limits)", () => {
     expect(label(q)).toBe("Testing mode · no question limit");
   });
 
+  it("names the role of an admin or tester account (any environment)", () => {
+    const admin = normalizeQuota({
+      ...testing,
+      tier: "user",
+      access: "admin",
+      testingMode: false,
+    })!;
+    expect(admin).toMatchObject({ unlimited: true, access: "admin" });
+    expect(limitOf(admin)).toBeNull();
+    expect(label(admin)).toBe("Admin · unlimited chats");
+    const tester = normalizeQuota({ ...testing, access: "tester" })!;
+    expect(label(tester)).toBe("Tester · unlimited chats");
+    // An older backend (no access field) reads as testing mode.
+    expect(normalizeQuota(testing)!.access).toBe("testing");
+  });
+
   it("treats a quota with null numbers and no unlimited flag as unknown, not used up", () => {
     expect(normalizeQuota({ ...testing, unlimited: undefined })).toBeNull();
   });

@@ -25,6 +25,7 @@ import {
   Pencil,
   Plus,
   ReceiptIndianRupee,
+  ShieldCheck,
   ShoppingCart,
   Star,
   Trash2,
@@ -520,6 +521,18 @@ export default function ProfileDialog(p: Props) {
                 <span className="aq-pf-sub">
                   {p.user.email || "Signed in with Google"}
                 </span>
+                {(p.user.roleName === "admin" ||
+                  p.user.roleName === "tester") && (
+                  <span
+                    className="aq-pf-role"
+                    data-role={p.user.roleName}
+                    title="No daily limit on chats with Aqua"
+                  >
+                    <ShieldCheck size={12} aria-hidden="true" />
+                    {p.user.roleName === "admin" ? "Admin" : "Tester"} ·
+                    unlimited chats
+                  </span>
+                )}
                 {bday !== null && bday <= 30 && (
                   <span className="aq-pf-bday">
                     <Cake size={12} aria-hidden="true" />

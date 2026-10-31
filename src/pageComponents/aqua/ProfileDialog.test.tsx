@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -129,6 +129,14 @@ const setup = (over: Partial<Parameters<typeof ProfileDialog>[0]> = {}) => {
 
 describe("ProfileDialog", () => {
   beforeEach(() => users.UserUpdateDetails.mockReset());
+
+  it("shows an admin or tester role, and nothing for a plain user", () => {
+    setup({ user: { ...user, roleName: "tester" } });
+    expect(screen.getByText(/tester · unlimited chats/i)).toBeInTheDocument();
+    cleanup();
+    setup({ user: { ...user, roleName: "user" } });
+    expect(screen.queryByText(/unlimited chats/i)).toBeNull();
+  });
 
   it("opens prefilled with the account's details", () => {
     setup();
