@@ -8,6 +8,8 @@ export type FlowState =
   | "product"
   // The comparison artifact: compared products side by side in the panel.
   | "compare"
+  // The shop artifact: the whole catalogue in the panel.
+  | "shop"
   | "checkout"
   | "payment_pending"
   | "payment_failed"
@@ -17,6 +19,7 @@ export type FlowActionType =
   | "SEND"
   | "VIEW"
   | "COMPARE"
+  | "SHOP"
   | "BUY"
   | "CHECKOUT_CART"
   | "BACK"
@@ -48,11 +51,13 @@ export const FLOW: Record<
     SEND: "chatting",
     VIEW: "product",
     COMPARE: "compare",
+    SHOP: "shop",
     CHECKOUT_CART: "checkout",
   },
   chatting: {
     VIEW: "product",
     COMPARE: "compare",
+    SHOP: "shop",
     CHECKOUT_CART: "checkout",
     RESUME: "*parked",
     RESET: "welcome",
@@ -62,6 +67,7 @@ export const FLOW: Record<
     // Only offered when the product was opened from the comparison.
     BACK: "compare",
     COMPARE: "compare",
+    SHOP: "shop",
     BUY: "checkout",
     CHECKOUT_CART: "checkout",
     CLOSE: "chatting",
@@ -70,6 +76,17 @@ export const FLOW: Record<
   // View or buy any compared product from here (BUY carries its productId).
   compare: {
     VIEW: "product",
+    COMPARE: "compare",
+    SHOP: "shop",
+    BUY: "checkout",
+    CHECKOUT_CART: "checkout",
+    CLOSE: "chatting",
+    RESET: "welcome",
+  },
+  // Browse everything: view, buy or compare any product from here.
+  shop: {
+    VIEW: "product",
+    SHOP: "shop",
     COMPARE: "compare",
     BUY: "checkout",
     CHECKOUT_CART: "checkout",
@@ -80,6 +97,7 @@ export const FLOW: Record<
     BACK: "product",
     VIEW: "product",
     COMPARE: "compare",
+    SHOP: "shop",
     PAY: "payment_pending",
     CLOSE: "chatting",
     RESET: "welcome",
@@ -96,12 +114,14 @@ export const FLOW: Record<
     EDIT: "checkout",
     VIEW: "product",
     COMPARE: "compare",
+    SHOP: "shop",
     CLOSE: "chatting",
     RESET: "welcome",
   },
   confirmed: {
     VIEW: "product",
     COMPARE: "compare",
+    SHOP: "shop",
     CLOSE: "chatting",
     RESET: "welcome",
   },
@@ -133,7 +153,7 @@ export function flowReducer(f: Flow, action: FlowAction): Flow {
       ? f.state
       : null;
   const productId =
-    next === "compare"
+    next === "compare" || next === "shop"
       ? null
       : next === "chatting" || next === "welcome"
         ? parked

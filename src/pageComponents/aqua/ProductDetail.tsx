@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   ShoppingCart,
   Wrench,
+  X,
 } from "lucide-react";
 import { checkDelivery, type DeliveryCheck } from "@/services/delivery";
 import AquaAvatar from "./AquaAvatar";
@@ -34,9 +35,10 @@ type Props = {
   // Replaces AquaProductRevamp's router.push("/checkout").
   onBuy: () => void;
   onAsk: (text: string) => void;
-  // Sheet layouts (phones, tablets): closes the product and puts the cursor in
-  // the chat, from a pill right above the action bar (thumb reach).
+  // Sheet layouts (phones, tablets): a button group right above the action
+  // bar (thumb reach): Close, or Close & ask (the cursor goes to the chat).
   onChat?: () => void;
+  onClose?: () => void;
   dark: boolean;
   isMobile: boolean;
 };
@@ -116,6 +118,7 @@ export default function ProductDetail({
   onBuy,
   onAsk,
   onChat,
+  onClose,
   dark,
   isMobile,
 }: Props) {
@@ -728,39 +731,46 @@ export default function ProductDetail({
       />
 
       {onChat && (
-        <button
-          type="button"
+        <div
           className="aq-pd-chat"
-          onClick={onChat}
+          role="group"
+          aria-label="Close the product"
           style={{ bottom: (isMobile ? 8 : 12) + 56 + 12 }}
         >
-          <MessageCircle size={16} aria-hidden="true" />
-          Close &amp; ask Aqua
-        </button>
+          {onClose && (
+            <button type="button" onClick={onClose}>
+              <X size={16} aria-hidden="true" />
+              Close
+            </button>
+          )}
+          <button type="button" onClick={onChat}>
+            <MessageCircle size={16} aria-hidden="true" />
+            Close &amp; ask
+          </button>
+        </div>
       )}
 
-      {/* action bar */}
+      {/* action bar: no slab, each control its own glass piece (the fade
+          above keeps the page from showing sharply between them) */}
       <div
-        className="aq-glass"
+        className="aq-buybar"
         style={{
-          position: "absolute",
-          left: isMobile ? 8 : 12,
-          right: isMobile ? 8 : 12,
-          bottom: isMobile ? 8 : 12,
-          zIndex: 4,
-          display: "flex",
-          alignItems: "center",
+          left: isMobile ? 10 : 14,
+          right: isMobile ? 10 : 14,
+          bottom: isMobile ? 10 : 14,
           gap: isMobile ? 6 : 8,
-          padding: isMobile ? 6 : "8px 8px 8px 14px",
-          borderRadius: 20,
-          // Near-opaque: the page scrolls under this bar and must not show through.
-          background: "rgba(var(--aq-gl),.94)",
         }}
       >
         {!isMobile && (
           <div
-            className="aq-buybar-price"
-            style={{ display: "flex", flexDirection: "column", minWidth: 0 }}
+            className="aq-buybar-price aq-pbar-glass"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              minWidth: 0,
+              padding: "6px 16px",
+              borderRadius: 16,
+            }}
           >
             <span
               style={{
@@ -781,10 +791,10 @@ export default function ProductDetail({
             </span>
           </div>
         )}
-        <div style={{ flex: 1 }} />
+        <span className="aq-buybar-gap" aria-hidden="true" />
         {p.inStock ? (
           <>
-            <div className="aq-stepper">
+            <div className="aq-stepper aq-pbar-glass">
               <button
                 type="button"
                 aria-label="Decrease quantity"
@@ -807,7 +817,7 @@ export default function ProductDetail({
             </div>
             <button
               type="button"
-              className="aq-icon-btn"
+              className="aq-icon-btn aq-pbar-glass"
               onClick={() => onToggleCompare(p.id)}
               aria-pressed={inCompare}
               aria-label={inCompare ? "Remove from compare" : "Add to compare"}
@@ -825,7 +835,7 @@ export default function ProductDetail({
             </button>
             <button
               type="button"
-              className="aq-icon-btn"
+              className="aq-icon-btn aq-pbar-glass"
               onClick={() => onAddToCart(p.id, selection.qty)}
               aria-label={inCart ? "In cart, add more" : "Add to cart"}
               title="Add to cart"

@@ -134,6 +134,26 @@ describe("aquaFlow", () => {
     });
   });
 
+  it("opens the shop artifact from anywhere but a payment in progress", () => {
+    const shop = run({ type: "VIEW", productId: "p1" }, { type: "SHOP" });
+    expect(shop).toEqual({ state: "shop", parked: null, productId: null });
+    expect(panelOpen(shop)).toBe(true);
+    const viewed = flowReducer(shop, { type: "VIEW", productId: "p2" });
+    // A product opened from the shop goes back to it.
+    expect(flowReducer(viewed, { type: "SHOP" }).state).toBe("shop");
+    expect(flowReducer(shop, { type: "BUY", productId: "p3" })).toMatchObject({
+      state: "checkout",
+      productId: "p3",
+    });
+    expect(flowReducer(shop, { type: "CLOSE" }).state).toBe("chatting");
+    const paying = run(
+      { type: "VIEW", productId: "p1" },
+      { type: "BUY" },
+      { type: "PAY" },
+    );
+    expect(canDispatch(paying, "SHOP")).toBe(false);
+  });
+
   it("lets a late paid confirm a payment that timed out or failed", () => {
     const failed = run(
       { type: "VIEW", productId: "p1" },

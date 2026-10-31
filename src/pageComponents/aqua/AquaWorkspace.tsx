@@ -65,6 +65,10 @@ import type { Purchase } from "./HistoryDock";
 import { getMyInvoices } from "@/services/invoice";
 import { categoryId, getActiveCoupons, type ActiveCoupon } from "./coupons";
 import ProfileDialog, { type ProfileTab } from "./ProfileDialog";
+import { EMPTY_SHOP_UI, type ShopUi } from "./ShopPanel";
+
+// A comparison started from the shop (not from a chat reply).
+const SHOP_COMPARISON = "shop";
 import { tabTitle } from "./pageTitle";
 import BlogBar from "./BlogBar";
 import DemandStrip from "./DemandStrip";
@@ -480,7 +484,12 @@ export default function AquaWorkspace() {
       const blankAddress = !d.address.street.trim() && !d.address.city.trim();
       return {
         ...d,
-        name: d.name || accountUser.name || accountUser.firstName || "",
+        name:
+          d.name ||
+          accountUser.name ||
+          [accountUser.firstName, accountUser.lastName]
+            .filter(Boolean)
+            .join(" "),
         phone:
           d.phone ||
           String(accountUser.phone ?? "")
@@ -538,10 +547,35 @@ export default function AquaWorkspace() {
 
   const viewCompared = (id: string) => {
     setComparedOrigin(id);
+    setShopOrigin(null);
     view(id);
   };
   const buyCompared = (id: string) => {
     setComparedOrigin(id);
+    buyProduct(id);
+  };
+
+  // ---------- shop artifact (panel state "shop") ----------
+  // The navbar's Shop opens the loaded catalogue in the panel, not /shop.
+  // A product opened from it gets "Back to shop".
+  const [shopOrigin, setShopOrigin] = useState<string | null>(null);
+  const [shopUi, setShopUi] = useState<ShopUi>(EMPTY_SHOP_UI);
+  const openCatalogue = () => {
+    if (!canDispatch(flowRef.current, "SHOP")) return;
+    setShopOrigin(null);
+    setDockOpen(false);
+    setShop(null);
+    setSheet("full");
+    dispatch({ type: "SHOP" });
+  };
+  const viewFromShop = (id: string) => {
+    setShopOrigin(id);
+    setComparedOrigin(null);
+    view(id);
+  };
+  const buyFromShop = (id: string) => {
+    setShopOrigin(id);
+    setComparedOrigin(null);
     buyProduct(id);
   };
 
@@ -1093,6 +1127,24 @@ export default function AquaWorkspace() {
       }
       onViewCompared={viewCompared}
       onBuyCompared={buyCompared}
+      shop={{
+        products,
+        loading: catalogue.loading,
+        favs: favs.map((f) => f._id),
+        cart: cart.map((c) => c._id),
+        canView: canDispatch(flow, "VIEW") && !locked,
+        onView: viewFromShop,
+        onBuy: buyFromShop,
+        onAddToCart: (id) => addToCart(id),
+        onToggleFav: toggleFav,
+        ui: shopUi,
+        onUi: (patch) => setShopUi((u) => ({ ...u, ...patch })),
+        // Category-wise comparison, opened as the comparison artifact.
+        onCompare: (ids) => openComparison(SHOP_COMPARISON, ids),
+      }}
+      compareFromShop={comparison?.messageId === SHOP_COMPARISON}
+      chatBusy={chat.status !== "idle"}
+      fromShop={!!flow.productId && shopOrigin === flow.productId}
       onAsk={(text) => sendMessage(text)}
       onChat={sheetLayout ? focusComposer : undefined}
       draft={draft}
@@ -1113,6 +1165,8 @@ export default function AquaWorkspace() {
       token={token}
       onPay={() => pay("PAY")}
       onSignIn={auth.signIn}
+      emailAuth={auth}
+      authBusy={auth.busy}
       onRetry={() => pay("RETRY")}
       onRetryWith={(method) => pay("RETRY", method)}
       onRecheck={recheckPayment}
@@ -1163,6 +1217,8 @@ export default function AquaWorkspace() {
         onLogo={onLogo}
         onToggleTheme={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
         onOpenShop={(tab) => setShop((s) => (s === tab ? null : tab))}
+        onOpenCatalogue={openCatalogue}
+        shopOpen={flow.state === "shop"}
         onNewChat={newChat}
         userName={userName}
         authBusy={auth.busy}
@@ -1293,6 +1349,7 @@ export default function AquaWorkspace() {
 
       <HistoryDock
         open={dockOpen}
+        onOpenCatalogue={openCatalogue}
         locked={locked}
         sessions={chat.sessions.filter(
           (s) =>

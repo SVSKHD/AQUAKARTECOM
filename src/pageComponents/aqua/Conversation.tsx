@@ -28,7 +28,7 @@ import type { ChatMessage, FlowDispatch, Mood, Product } from "./types";
 
 // A reply's product cards in one horizontal row: arrows instead of a
 // scrollbar, cards snap into place and the next one peeks in at the edge so
-// the row reads as scrollable. Desktop shows ~3, phones ~2.
+// the row reads as scrollable. Desktop shows ~3, phones ~1.5.
 function ProductGrid({
   isMobile,
   children,
@@ -141,7 +141,9 @@ function FillLoader({ size = 26 }: { size?: number }) {
 // Always mounted, in every flow state. Messages, product cards and the compare table render inline.
 export default function Conversation(p: Props) {
   const reduced = useReducedMotion();
-  const isWelcome = p.flow.state === "welcome";
+  // The welcome screen until there's a conversation, also while a panel (the
+  // shop, a product, a comparison) was opened straight from it.
+  const isWelcome = p.flow.state === "welcome" || !p.chat.messages.length;
   const busy = p.chat.status !== "idle";
   const listRef = useRef<HTMLDivElement>(null);
   const stickRef = useRef(true);
@@ -601,9 +603,11 @@ export default function Conversation(p: Props) {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 18,
+              // Phones: tight, so the hero, the hardness card and the
+              // composer share one screen without dead bands between them.
+              gap: p.isMobile ? 12 : 18,
               textAlign: "center",
-              padding: "8px 0 16px",
+              padding: p.isMobile ? "4px 0 8px" : "8px 0 16px",
             }}
           >
             <div
@@ -611,11 +615,15 @@ export default function Conversation(p: Props) {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: 6,
+                gap: p.isMobile ? 2 : 6,
               }}
             >
               <div
-                style={{ height: 46, display: "flex", alignItems: "flex-end" }}
+                style={{
+                  height: p.isMobile ? undefined : 46,
+                  display: "flex",
+                  alignItems: "flex-end",
+                }}
               >
                 <div
                   className="aq-glass aq-bubble-tail"
@@ -643,15 +651,17 @@ export default function Conversation(p: Props) {
                   display: "grid",
                   placeItems: "center",
                   width: 240,
-                  height: "clamp(120px, 21vh, 190px)",
+                  // Phones: just the droplet (plus its bob); larger screens
+                  // give it room to breathe.
+                  height: p.isMobile ? 116 : "clamp(120px, 21vh, 190px)",
                 }}
               >
                 <div
                   aria-hidden="true"
                   style={{
                     position: "absolute",
-                    width: 260,
-                    height: 260,
+                    width: p.isMobile ? 200 : 260,
+                    height: p.isMobile ? 200 : 260,
                     borderRadius: "50%",
                     // Dark: a soft white halo for the white droplet.
                     background: p.dark
@@ -661,7 +671,7 @@ export default function Conversation(p: Props) {
                 />
                 <AquaDroplet
                   mood={p.mood}
-                  size={p.isMobile ? 116 : 150}
+                  size={p.isMobile ? 104 : 150}
                   dark={p.dark}
                   label="Aqua, the Aquakart assistant"
                 />
@@ -671,7 +681,7 @@ export default function Conversation(p: Props) {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: 12,
+                gap: p.isMobile ? 8 : 12,
                 maxWidth: 660,
               }}
             >
@@ -714,33 +724,37 @@ export default function Conversation(p: Props) {
               compact={p.isMobile}
               home={p.homeHardness}
             />
-            <div
-              data-tour="suggestions"
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                justifyContent: "center",
-                gap: 10,
-                maxWidth: 720,
-              }}
-            >
-              {aquaConfig.suggestionChips.map((c, i) => (
-                <button
-                  key={c}
-                  type="button"
-                  className="aq-chip aq-chip-soft"
-                  onClick={() => p.onSend(c)}
-                  style={{
-                    fontSize: 13.5,
-                    padding: "8px 16px",
-                    minHeight: 38,
-                    animation: `aqChipIn .4s cubic-bezier(.2,.8,.2,1) ${0.2 + i * 0.06}s both`,
-                  }}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
+            {/* Phones: the starters sit above the message box instead
+                (always in reach, no scrolling down past the card). */}
+            {!p.isMobile && (
+              <div
+                data-tour="suggestions"
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                  gap: 10,
+                  maxWidth: 720,
+                }}
+              >
+                {aquaConfig.suggestionChips.map((c, i) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className="aq-chip aq-chip-soft"
+                    onClick={() => p.onSend(c)}
+                    style={{
+                      fontSize: 13.5,
+                      padding: "8px 16px",
+                      minHeight: 38,
+                      animation: `aqChipIn .4s cubic-bezier(.2,.8,.2,1) ${0.2 + i * 0.06}s both`,
+                    }}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
             {aquaConfig.showFestive && (
               <button
                 type="button"
@@ -975,6 +989,28 @@ export default function Conversation(p: Props) {
               signingIn={p.signingIn}
               signInError={p.signInError}
             />
+          )}
+          {isWelcome && p.isMobile && !p.hideComposer && (
+            <div
+              data-tour="suggestions"
+              className="aq-starters aq-noscroll"
+              role="group"
+              aria-label="Suggestions"
+            >
+              {aquaConfig.suggestionChips.map((c, i) => (
+                <button
+                  key={c}
+                  type="button"
+                  className="aq-chip aq-chip-soft"
+                  onClick={() => p.onSend(c)}
+                  style={{
+                    animation: `aqChipIn .4s cubic-bezier(.2,.8,.2,1) ${0.15 + i * 0.06}s both`,
+                  }}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
           )}
           {!p.hideComposer && (
             <Composer

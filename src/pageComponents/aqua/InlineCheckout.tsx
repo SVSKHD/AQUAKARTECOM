@@ -3,6 +3,7 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   type Dispatch,
   type ReactNode,
@@ -23,6 +24,8 @@ import { quote } from "@/utils/aquaCommerce";
 import AnimatedAmount from "./AnimatedAmount";
 import { INR } from "./catalogue";
 import CheckoutAddress from "./CheckoutAddress";
+import EmailSignIn from "./EmailSignIn";
+import type { EmailAuth } from "./useAquaAuth";
 import {
   cartCouponOffers,
   couponTitle,
@@ -48,6 +51,9 @@ type Props = {
   // Live catalogue but no session: payment (online or COD) needs an account,
   // as on /checkout. The draft stays put while the customer signs in.
   onSignIn: () => void;
+  // Signing in with a one-time code by email, right in checkout.
+  emailAuth?: EmailAuth;
+  authBusy?: boolean;
   // The account's default address (tagged in the list).
   defaultAddress?: Address | null;
   // Adds a new address to the account from checkout; resolves with the stored copy.
@@ -216,9 +222,23 @@ export default function InlineCheckout({
   token,
   onPay,
   onSignIn,
+  emailAuth,
+  authBusy,
   defaultAddress,
   onSaveAddress,
 }: Props) {
+  // Signed in from here: say the details came from the account, for a while.
+  const [filled, setFilled] = useState(false);
+  const wasSignedIn = useRef(signedIn);
+  useEffect(() => {
+    if (signedIn && !wasSignedIn.current) {
+      setFilled(true);
+      const t = setTimeout(() => setFilled(false), 7000);
+      wasSignedIn.current = signedIn;
+      return () => clearTimeout(t);
+    }
+    wasSignedIn.current = signedIn;
+  }, [signedIn]);
   const [couponInput, setCouponInput] = useState(draft.coupon);
   // A coupon picked elsewhere (the history dock) shows up in the field too.
   useEffect(() => setCouponInput(draft.coupon), [draft.coupon]);
@@ -343,7 +363,8 @@ export default function InlineCheckout({
               </span>
             </div>
 
-            {!commerceLive && (
+            {/* The sign-in card below already says this for a guest. */}
+            {!commerceLive && !(needsSignIn && emailAuth) && (
               <div
                 role="note"
                 className="aq-mono"
@@ -373,6 +394,21 @@ export default function InlineCheckout({
                 ) : null
               }
             >
+              {!signedIn && emailAuth && (
+                <EmailSignIn
+                  sendEmailCode={emailAuth.sendEmailCode}
+                  verifyEmailCode={emailAuth.verifyEmailCode}
+                  defaultEmail={draft.email}
+                  onGoogle={onSignIn}
+                  googleBusy={authBusy}
+                />
+              )}
+              {filled && (
+                <p className="aq-esi-done" role="status">
+                  <Check size={14} aria-hidden="true" /> Signed in. We filled in
+                  your details from your account: check them below.
+                </p>
+              )}
               <div
                 style={{
                   display: "grid",

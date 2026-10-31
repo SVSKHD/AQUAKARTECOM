@@ -78,6 +78,8 @@ type Props = {
   onSignIn: () => void;
   onSignOut: () => void;
   onOpenProfile: (tab?: "profile" | "addresses" | "purchases") => void;
+  // Opens the shop artifact (the catalogue in the panel).
+  onOpenCatalogue: () => void;
   // Blog reads; listed here once the floating reads bar is closed (docked).
   reads: BlogRead[];
   readsDocked: boolean;
@@ -1095,15 +1097,20 @@ export default function HistoryDock(p: Props) {
               </span>
             </button>
           )}
-          {/* The full catalogue with filters (a Pages Router route). */}
-          <a className="aq-dock-row" href="/shop">
+          {/* The whole catalogue, opened as the shop artifact in the panel. */}
+          <button
+            type="button"
+            className="aq-dock-row"
+            disabled={p.locked}
+            onClick={p.onOpenCatalogue}
+          >
             <span className="aq-dock-row-icon" aria-hidden="true">
               <Store size={15} />
             </span>
             <span className="aq-dock-row-text">
               <span className="aq-dock-row-title">Shop all products</span>
               <span className="aq-dock-row-meta">
-                Browse and filter the whole catalogue
+                Search and filter the whole catalogue
               </span>
             </span>
             <ChevronRight
@@ -1111,7 +1118,7 @@ export default function HistoryDock(p: Props) {
               className="aq-dock-row-chev"
               aria-hidden="true"
             />
-          </a>
+          </button>
           <button type="button" className="aq-dock-row" onClick={openExpert}>
             <span className="aq-dock-row-icon" aria-hidden="true">
               <MessageCircle size={15} />

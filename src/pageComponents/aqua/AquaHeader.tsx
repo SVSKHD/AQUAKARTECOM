@@ -40,6 +40,9 @@ type Props = {
   onLogo: () => void;
   onToggleTheme: () => void;
   onOpenShop: (tab: ShopTab) => void;
+  // Opens the shop artifact: the loaded catalogue in the workspace panel.
+  onOpenCatalogue: () => void;
+  shopOpen: boolean;
   onNewChat: () => void;
   thinking: boolean;
   // Absent when the AI is offline (the built-in answers have no thinking steps).
@@ -296,10 +299,13 @@ export default function AquaHeader(p: Props) {
             Talk to an expert
           </button>
         )}
-        {/* The full catalogue (/shop). Phones reach it from the history dock. */}
+        {/* The catalogue as an artifact in the panel. Phones reach it from the history dock. */}
         {!p.isMobile && (
-          <a
-            href="/shop"
+          <button
+            type="button"
+            onClick={p.onOpenCatalogue}
+            disabled={p.locked}
+            aria-pressed={p.shopOpen}
             className="aq-btn aq-btn-ghost"
             data-tour="shop-page"
             aria-label="Shop all products"
@@ -311,13 +317,12 @@ export default function AquaHeader(p: Props) {
               fontWeight: 600,
               gap: 6,
               color: "var(--aq-ink)",
-              textDecoration: "none",
               flexShrink: 0,
             }}
           >
             <Store size={16} aria-hidden="true" />
             {!narrow && "Shop"}
-          </a>
+          </button>
         )}
         {p.onToggleThinking && !p.isMobile && (
           <button

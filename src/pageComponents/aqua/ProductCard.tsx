@@ -1,6 +1,13 @@
 "use client";
 
-import { Check, Heart, ShoppingCart } from "lucide-react";
+import {
+  Check,
+  Eye,
+  GitCompareArrows,
+  Heart,
+  ShoppingBag,
+  ShoppingCart,
+} from "lucide-react";
 import { INR } from "./catalogue";
 import { softenerBadges } from "./softenerSizing";
 import type { Product } from "./types";
@@ -169,7 +176,7 @@ export default function ProductCard({
         </span>
         <button
           type="button"
-          className="aq-icon-btn"
+          className="aq-icon-btn aq-pc-heart"
           onClick={() => onToggleFav(p.id)}
           aria-label={
             isFav
@@ -186,6 +193,44 @@ export default function ProductCard({
         >
           <Heart size={15} fill={isFav ? "#E0476B" : "none"} />
         </button>
+        {/* Compare and cart as icons on the photo: no labels to crowd the
+            card's narrow foot (two cards a row on a phone). */}
+        <div className="aq-pc-tools">
+          <button
+            type="button"
+            className="aq-icon-btn aq-pc-tool"
+            data-on={inCompare}
+            onClick={() => onToggleCompare(p.id)}
+            aria-pressed={inCompare}
+            aria-label={
+              inCompare
+                ? `Remove ${p.title} from compare`
+                : `Compare ${p.title}`
+            }
+            title={inCompare ? "In compare" : "Compare"}
+          >
+            <GitCompareArrows size={15} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="aq-icon-btn aq-pc-tool"
+            data-on={inCart}
+            onClick={() => onAddToCart(p.id)}
+            disabled={!p.inStock}
+            aria-label={
+              inCart
+                ? `${p.title} is in your cart, add one more`
+                : `Add ${p.title} to cart`
+            }
+            title={inCart ? "In your cart" : "Add to cart"}
+          >
+            {inCart ? (
+              <Check size={15} aria-hidden="true" />
+            ) : (
+              <ShoppingCart size={15} aria-hidden="true" />
+            )}
+          </button>
+        </div>
       </div>
       <div
         style={{
@@ -265,65 +310,20 @@ export default function ProductCard({
           </div>
         )}
       </div>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: compact ? "wrap" : undefined,
-          gap: 6,
-          padding: "0 4px 4px",
-          // Pinned to the bottom: every card's buttons sit on one line.
-          marginTop: "auto",
-        }}
-      >
+      {/* One clear action: opens the product (the drawer on a phone). */}
+      <div className="aq-pc-acts">
         <button
           type="button"
-          onClick={() => onToggleCompare(p.id)}
-          aria-pressed={inCompare}
-          className="aq-btn"
-          style={{
-            flex: compact ? "1 1 0" : 1,
-            minWidth: 0,
-            height: 36,
-            padding: compact ? "0 6px" : "0 10px",
-            fontSize: 12.5,
-            border: `1px solid ${inCompare ? "#10BFA4" : "var(--aq-bd)"}`,
-            background: inCompare ? "var(--aq-mint)" : "var(--aq-surf)",
-            color: inCompare ? "var(--aq-mintink)" : "var(--aq-ink)",
-          }}
-        >
-          {inCompare ? "Comparing" : "Compare"}
-        </button>
-        <button
-          type="button"
-          className="aq-icon-btn"
-          onClick={() => onAddToCart(p.id)}
-          disabled={!p.inStock}
-          aria-label={
-            inCart
-              ? `${p.title} is in your cart, add one more`
-              : `Add ${p.title} to cart`
-          }
-          style={{
-            width: 36,
-            height: 36,
-            color: inCart ? "#008B68" : "var(--aq-ink)",
-          }}
-        >
-          {inCart ? <Check size={16} /> : <ShoppingCart size={15} />}
-        </button>
-        <button
-          type="button"
-          className="aq-btn aq-btn-dark"
+          className="aq-btn aq-btn-dark aq-pc-buy"
           onClick={() => onOpen(p.id)}
-          style={{
-            flex: compact ? "1 0 100%" : 1.3,
-            order: compact ? 3 : undefined,
-            height: 36,
-            padding: "0 10px",
-            fontSize: 12.5,
-          }}
+          aria-label={p.inStock ? `Buy ${p.title}` : `View ${p.title}`}
         >
-          View
+          {p.inStock ? (
+            <ShoppingBag size={15} aria-hidden="true" />
+          ) : (
+            <Eye size={15} aria-hidden="true" />
+          )}
+          {p.inStock ? "Buy now" : "View"}
         </button>
       </div>
     </article>

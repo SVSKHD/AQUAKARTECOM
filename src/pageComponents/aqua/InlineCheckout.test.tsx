@@ -4,6 +4,7 @@ import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import type { ActiveCoupon } from "./coupons";
 import type { CheckoutDraft, QuoteState } from "./types";
+import type { EmailAuth } from "./useAquaAuth";
 
 vi.mock("@/utils/aquaCommerce", () => ({
   quote: vi.fn(async () => ({
@@ -58,11 +59,13 @@ function Harness({
   signedIn = true,
   onPay = vi.fn(),
   onSignIn = vi.fn(),
+  emailAuth,
 }: {
   commerceLive?: boolean;
   signedIn?: boolean;
   onPay?: () => void;
   onSignIn?: () => void;
+  emailAuth?: EmailAuth;
 }) {
   const [draft, setDraft] = useState<CheckoutDraft | null>(baseDraft);
   const [quoteState, setQuoteState] = useState<QuoteState>({ status: "idle" });
@@ -86,6 +89,7 @@ function Harness({
         token={null}
         onPay={onPay}
         onSignIn={onSignIn}
+        emailAuth={emailAuth}
       />
       <output data-testid="draft">{`${draft.coupon}|${draft.payMethod}`}</output>
     </>
@@ -142,6 +146,33 @@ describe("InlineCheckout offers and payment", () => {
     expect(
       screen.getByRole("button", { name: "Sign in to place order" }),
     ).toBeEnabled();
+  });
+
+  it("signs a guest in with an email code, then says the details were filled", async () => {
+    const user = userEvent.setup();
+    const emailAuth = {
+      sendEmailCode: vi.fn(async () => ({ newUser: false })),
+      verifyEmailCode: vi.fn(async () => {}),
+    };
+    const { rerender } = render(
+      <Harness signedIn={false} emailAuth={emailAuth} />,
+    );
+    await user.clear(screen.getByLabelText("Email for sign-in"));
+    await user.type(screen.getByLabelText("Email for sign-in"), "asha@x.in");
+    await user.click(screen.getByRole("button", { name: "Email me a code" }));
+    await user.type(screen.getByLabelText("6-digit code"), "123456");
+    expect(emailAuth.verifyEmailCode).toHaveBeenCalledWith(
+      "asha@x.in",
+      "123456",
+    );
+    // The account arrives: the card goes, the note appears.
+    rerender(<Harness signedIn emailAuth={emailAuth} />);
+    expect(screen.queryByLabelText("Email for sign-in")).toBeNull();
+    expect(
+      screen
+        .getAllByRole("status")
+        .some((el) => /filled in\s+your details/i.test(el.textContent || "")),
+    ).toBe(true);
   });
 
   it("keeps the old total on screen while a new quantity is priced, then counts to the new one", async () => {

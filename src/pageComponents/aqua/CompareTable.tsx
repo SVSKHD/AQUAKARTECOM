@@ -195,11 +195,14 @@ export default function CompareTable({
       !p.flow,
   );
   const gtc = `minmax(120px, .75fr) repeat(${products.length}, minmax(150px, 1fr))`;
+  // The label column stays put while the products scroll sideways under it:
+  // solid, with a soft edge, so nothing shows through.
   const stickyCol = {
     position: "sticky" as const,
     left: 0,
-    zIndex: 1,
-    background: "rgba(var(--aq-gl),.97)",
+    zIndex: 2,
+    background: "var(--aq-surf)",
+    boxShadow: "8px 0 10px -8px rgba(var(--aq-sh),.22)",
   };
 
   return (
@@ -231,7 +234,9 @@ export default function CompareTable({
               letterSpacing: ".08em",
               textTransform: "uppercase",
               color: "var(--aq-mut)",
-              alignSelf: "end",
+              // Full height, label at the bottom: covers the scrolled headers.
+              display: "flex",
+              alignItems: "flex-end",
             }}
           >
             Compare

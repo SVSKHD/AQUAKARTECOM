@@ -120,7 +120,7 @@ describe("CodConfirmation", () => {
     ).toBeInTheDocument();
     const due = screen.getByRole("region", { name: "Pay on delivery" });
     expect(within(due).getByText("₹25,500")).toBeInTheDocument();
-    expect(due).toHaveTextContent(/expected by Sun 4 Jan/);
+    expect(due).toHaveTextContent(/at the door · by Sun 4 Jan/);
     expect(screen.getByText("Discount (AQUA10)")).toBeInTheDocument();
     expect(screen.getByText("Free")).toBeInTheDocument();
     expect(screen.getByText("8 L · 2 × ₹13,500")).toBeInTheDocument();

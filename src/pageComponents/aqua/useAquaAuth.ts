@@ -9,6 +9,7 @@ import {
   logoutBackendUser,
   logoutGoogleUser,
 } from "@/services/googleAuth";
+import UserServiceOperations from "@/services/user";
 import {
   cancelGoogleOneTap,
   disableGoogleAutoSelect,
@@ -121,5 +122,46 @@ export function useAquaAuth(token: string | null) {
     setBusy(false);
   }, [dispatch, token]);
 
-  return { signIn, signOut, busy, error };
+  // ---------- email: a one-time code, then the same session as Google ----------
+  // POST /email/login mails a 6-digit code (it creates the account for a new
+  // email); POST /verify/email/otp returns { token, user }, stored like a
+  // Google sign-in, so the account sync and checkout prefill follow.
+  const sendEmailCode = useCallback(async (email: string) => {
+    try {
+      const res = await UserServiceOperations.UserEmailOtp({ email });
+      return { newUser: !res?.data?.userExist };
+    } catch {
+      throw new Error("Couldn't send the code. Check the email and try again.");
+    }
+  }, []);
+
+  const verifyEmailCode = useCallback(
+    async (email: string, code: string) => {
+      let data: { token?: string; user?: unknown } | undefined;
+      try {
+        data = (
+          await UserServiceOperations.UserEmailVerify({
+            email,
+            otp: Number(code),
+          })
+        )?.data;
+      } catch {
+        throw new Error("That code didn't match. Check it and try again.");
+      }
+      if (!data?.token || !data.user)
+        throw new Error("Couldn't sign you in. Please try again.");
+      dispatch({
+        type: "LOGGED_IN_USER",
+        payload: { token: data.token, user: data.user },
+      });
+    },
+    [dispatch],
+  );
+
+  return { signIn, signOut, busy, error, sendEmailCode, verifyEmailCode };
 }
+
+export type EmailAuth = Pick<
+  ReturnType<typeof useAquaAuth>,
+  "sendEmailCode" | "verifyEmailCode"
+>;

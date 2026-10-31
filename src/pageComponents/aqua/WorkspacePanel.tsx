@@ -9,9 +9,11 @@ import {
 } from "@/utils/aquaFlow";
 import type { ServerOrder } from "@/utils/aquaCommerce";
 import ComparePanel from "./ComparePanel";
+import ShopPanel, { type ShopUi } from "./ShopPanel";
 import ProductDetail from "./ProductDetail";
 import InlineCheckout from "./InlineCheckout";
 import type { ActiveCoupon } from "./coupons";
+import type { EmailAuth } from "./useAquaAuth";
 import PaymentStatus from "./PaymentStatus";
 import type {
   Address,
@@ -45,6 +47,27 @@ export type WorkspacePanelProps = {
   fromComparison: boolean;
   onViewCompared: (id: string) => void;
   onBuyCompared: (id: string) => void;
+  // The shop artifact (flow state "shop"): the whole catalogue.
+  shop: {
+    products: Product[];
+    loading: boolean;
+    favs: string[];
+    cart: string[];
+    canView: boolean;
+    onView: (id: string) => void;
+    onBuy: (id: string) => void;
+    onAddToCart: (id: string) => void;
+    onToggleFav: (id: string) => void;
+    ui: ShopUi;
+    onUi: (patch: Partial<ShopUi>) => void;
+    onCompare: (ids: string[]) => void;
+  };
+  // Aqua is answering in the chat (the comparison's "which suits me" loader).
+  chatBusy: boolean;
+  // The comparison was started from the shop: its back button returns there.
+  compareFromShop: boolean;
+  // The open product came from the shop: its back button returns there.
+  fromShop: boolean;
   onAsk: (text: string) => void;
   draft: CheckoutDraft | null;
   setDraft: Dispatch<SetStateAction<CheckoutDraft | null>>;
@@ -59,6 +82,9 @@ export type WorkspacePanelProps = {
   token: string | null;
   onPay: () => void;
   onSignIn: () => void;
+  // Checkout's sign-in with a one-time code by email.
+  emailAuth?: EmailAuth;
+  authBusy?: boolean;
   defaultAddress?: Address | null;
   onSaveAddress?: (address: Address) => Promise<Address>;
   onRetry: () => void;
@@ -80,7 +106,7 @@ export type WorkspacePanelProps = {
 };
 
 const STEPS = [
-  { label: "Product", states: ["compare", "product"] },
+  { label: "Product", states: ["shop", "compare", "product"] },
   { label: "Checkout", states: ["checkout"] },
   { label: "Payment", states: ["payment_pending", "payment_failed"] },
   { label: "Done", states: ["confirmed"] },
@@ -95,8 +121,12 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
   if (flow.state === "product")
     back = props.fromComparison
       ? { label: "Back to comparison", action: "BACK" }
-      : { label: "Back to chat", action: "CLOSE" };
-  else if (flow.state === "compare")
+      : props.fromShop
+        ? { label: "Back to shop", action: "SHOP" }
+        : { label: "Back to chat", action: "CLOSE" };
+  else if (flow.state === "compare" && props.compareFromShop)
+    back = { label: "Back to shop", action: "SHOP" };
+  else if (flow.state === "compare" || flow.state === "shop")
     back = { label: "Back to chat", action: "CLOSE" };
   else if (flow.state === "checkout")
     back =
@@ -120,56 +150,33 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
         minWidth: props.isMobile ? 0 : 340,
       }}
     >
-      <div
-        className="aq-glass"
-        style={{
-          position: "absolute",
-          top: pad,
-          left: pad,
-          right: pad,
-          zIndex: 4,
-          height: 48,
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "0 6px",
-          borderRadius: 16,
-          background: "rgba(var(--aq-gl),.42)",
-        }}
-      >
+      {/* No bar: each control floats as its own glass piece over the
+          content, which stays visible (blurred) only behind them. */}
+      <div className="aq-pbar" style={{ top: pad, left: pad, right: pad }}>
         {back ? (
           <button
             type="button"
-            className="aq-btn aq-btn-glass"
+            className="aq-pbar-glass aq-pbar-back"
             onClick={() => dispatch({ type: back.action })}
-            style={{ height: 36, padding: "0 12px 0 8px", fontSize: 12.5 }}
           >
-            <ArrowLeft size={16} /> {back.label}
+            <ArrowLeft size={16} aria-hidden="true" /> {back.label}
           </button>
         ) : (
-          <span
-            style={{
-              fontSize: 12.5,
-              fontWeight: 700,
-              color: "var(--aq-mut)",
-              paddingLeft: 8,
-            }}
-          >
+          <span className="aq-pbar-glass aq-pbar-note">
             Payment in progress
           </span>
         )}
-        <div style={{ flex: 1 }} />
         {!props.isMobile && (
           <ol
             aria-label="Progress"
-            className="aq-steps"
+            className="aq-steps aq-pbar-glass"
             style={{
               display: "flex",
-              gap: 6,
+              gap: 4,
               alignItems: "center",
               listStyle: "none",
               margin: 0,
-              padding: 0,
+              padding: 4,
             }}
           >
             {STEPS.map((s, i) => (
@@ -204,11 +211,11 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
         {!locked && (
           <button
             type="button"
-            className="aq-icon-btn"
+            className="aq-pbar-glass aq-pbar-close"
             onClick={() => dispatch({ type: "CLOSE" })}
             aria-label="Close panel"
           >
-            <X size={16} />
+            <X size={17} aria-hidden="true" />
           </button>
         )}
       </div>
@@ -235,6 +242,7 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
               props.onChat?.();
             })
           }
+          onClose={props.onChat && (() => dispatch({ type: "CLOSE" }))}
           dark={props.dark}
           isMobile={props.isMobile}
         />
@@ -244,6 +252,15 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
           products={props.compared}
           onView={props.onViewCompared}
           onBuy={props.onBuyCompared}
+          onAsk={props.onAsk}
+          chatBusy={props.chatBusy}
+          onViewAnswer={() => dispatch({ type: "CLOSE" })}
+        />
+      )}
+      {flow.state === "shop" && (
+        <ShopPanel
+          {...props.shop}
+          live={props.catalogueLive}
           onAsk={props.onAsk}
         />
       )}
@@ -276,6 +293,8 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
           token={props.token}
           onPay={props.onPay}
           onSignIn={props.onSignIn}
+          emailAuth={props.emailAuth}
+          authBusy={props.authBusy}
           defaultAddress={props.defaultAddress}
           onSaveAddress={props.onSaveAddress}
         />
