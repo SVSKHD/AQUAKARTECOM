@@ -42,6 +42,7 @@ import type { AiChatSummary } from "@/services/ai";
 import type { ChatSession } from "./useAquaChat";
 import type { Product } from "./types";
 
+import { sidebarTravel } from "./useEdgeSwipe";
 type Props = {
   open: boolean;
   locked: boolean;
@@ -80,6 +81,8 @@ type Props = {
   onOpenProfile: (tab?: "profile" | "addresses" | "purchases") => void;
   // Opens the shop artifact (the catalogue in the panel).
   onOpenCatalogue: () => void;
+  // While a finger drags it (phones): its translateX in px, else null.
+  drag?: number | null;
   // Blog reads; listed here once the floating reads bar is closed (docked).
   reads: BlogRead[];
   readsDocked: boolean;
@@ -705,9 +708,25 @@ export default function HistoryDock(p: Props) {
     tabRefs.current[next]?.focus();
   };
 
+  // Finger-drag state (phones): how far out the sidebar is, 0 to 1.
+  const dragging = p.drag != null;
+  const dragShare = dragging
+    ? Math.max(
+        0,
+        Math.min(
+          1,
+          1 +
+            (p.drag as number) /
+              sidebarTravel(
+                typeof window === "undefined" ? 360 : window.innerWidth,
+              ),
+        ),
+      )
+    : 0;
+
   return (
     <>
-      {p.open && (
+      {(p.open || dragging) && (
         <div
           onClick={p.onClose}
           aria-hidden="true"
@@ -716,7 +735,9 @@ export default function HistoryDock(p: Props) {
             inset: 0,
             background: "rgba(7,26,37,.24)",
             zIndex: 70,
-            animation: "aqIn .25s ease both",
+            // Under a finger: darkens with how far the sidebar is out.
+            opacity: dragging ? dragShare : 1,
+            animation: dragging ? undefined : "aqIn .25s ease both",
           }}
         />
       )}
@@ -740,10 +761,17 @@ export default function HistoryDock(p: Props) {
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
-          transform: p.open ? "none" : "translateX(calc(-100% - 24px))",
-          opacity: p.open ? 1 : 0,
-          transition:
-            "transform .45s cubic-bezier(.22,.8,.24,1), opacity .3s ease",
+          // A finger drags it 1:1 (no easing); released, it eases home.
+          transform: dragging
+            ? `translateX(${p.drag}px)`
+            : p.open
+              ? "none"
+              : "translateX(calc(-100% - 24px))",
+          opacity: p.open || dragging ? 1 : 0,
+          transition: dragging
+            ? "none"
+            : "transform .45s cubic-bezier(.22,.8,.24,1), opacity .3s ease",
+          touchAction: "pan-y",
         }}
       >
         {/* ---------- header ---------- */}

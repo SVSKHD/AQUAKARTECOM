@@ -27,6 +27,8 @@ type Props = {
   onToggleFav: (productId: string) => void;
   onToggleCompare: (productId: string) => void;
   onAddToCart: (productId: string) => void;
+  // Compare was pressed without enough picks: the compare button pulses.
+  hintCompare?: boolean;
 };
 
 // "Automatic · Whole home" / "Manual · Per bathroom", so softeners read apart at a glance.
@@ -89,6 +91,7 @@ export default function ProductCard({
   onToggleFav,
   onToggleCompare,
   onAddToCart,
+  hintCompare = false,
 }: Props) {
   const sc = stockColors(p);
   const spec = [p.capacity, p.warranty && `${p.warranty} warranty`]
@@ -200,6 +203,7 @@ export default function ProductCard({
             type="button"
             className="aq-icon-btn aq-pc-tool"
             data-on={inCompare}
+            data-hint={(hintCompare && !inCompare) || undefined}
             onClick={() => onToggleCompare(p.id)}
             aria-pressed={inCompare}
             aria-label={

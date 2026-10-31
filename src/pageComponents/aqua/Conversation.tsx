@@ -64,6 +64,9 @@ type Props = {
   favIds: string[];
   cartIds: string[];
   compare: string[];
+  // A Compare button was pressed without two picks: the cards' compare
+  // buttons pulse for a moment.
+  compareHint?: boolean;
   onOpen: (id: string) => void;
   onToggleFav: (id: string) => void;
   onToggleCompare: (id: string) => void;
@@ -492,6 +495,7 @@ export default function Conversation(p: Props) {
                   isFav={p.favIds.includes(c.id)}
                   inCart={p.cartIds.includes(c.id)}
                   inCompare={p.compare.includes(c.id)}
+                  hintCompare={!!p.compareHint}
                   onOpen={p.onOpen}
                   onToggleFav={p.onToggleFav}
                   onToggleCompare={p.onToggleCompare}

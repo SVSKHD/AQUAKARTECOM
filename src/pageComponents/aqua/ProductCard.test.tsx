@@ -77,6 +77,26 @@ describe("ProductCard", () => {
     expect(screen.queryByText("Compare")).toBeNull();
   });
 
+  it("pulses its compare button when asked to pick, unless already picked", () => {
+    const view = (inCompare: boolean) =>
+      render(
+        <ProductCard
+          product={product}
+          isFav={false}
+          inCart={false}
+          inCompare={inCompare}
+          selected={false}
+          hintCompare
+          onOpen={vi.fn()}
+          onToggleFav={vi.fn()}
+          onToggleCompare={vi.fn()}
+          onAddToCart={vi.fn()}
+        />,
+      ).container.querySelector(".aq-pc-tool");
+    expect(view(false)).toHaveAttribute("data-hint", "true");
+    expect(view(true)).not.toHaveAttribute("data-hint");
+  });
+
   it("offers View when the product is out of stock", () => {
     card({ ...product, inStock: false, stock: "Out of stock" });
     // The photo and the button both open it.

@@ -57,6 +57,9 @@ import {
 import ThemeLayer from "./ThemeLayer";
 import AquaHeader from "./AquaHeader";
 import HistoryDock from "./HistoryDock";
+import { useSheetContentDrag } from "./useSheetContentDrag";
+import { useEdgeSwipe } from "./useEdgeSwipe";
+import { isCompareAction } from "./compareAction";
 import Conversation from "./Conversation";
 import WorkspacePanel from "./WorkspacePanel";
 import ShopPopover, { type ShopTab } from "./ShopPopover";
@@ -394,9 +397,7 @@ export default function AquaWorkspace() {
     const dy = e.clientY - d.y;
     if (!d.moved && Math.abs(dy) < 6) return;
     d.moved = true;
-    const fullH =
-      window.innerHeight * 0.88 - (hideComposer ? 0 : composerH + mainPadB);
-    setDragH(Math.min(fullH, Math.max(80, d.h - dy)));
+    setDragH(Math.min(sheetFullH(), Math.max(80, d.h - dy)));
   };
   const onHandleUp = (e: RPointerEvent<HTMLButtonElement>) => {
     const d = dragRef.current;
@@ -404,9 +405,14 @@ export default function AquaWorkspace() {
     if (!d) return;
     skipClickRef.current = true;
     if (!d.moved) return setSheet((s) => (s === "full" ? "peek" : "full"));
-    const dy = e.clientY - d.y;
-    const v = dy / Math.max(1, performance.now() - d.t); // px/ms, positive = down
-    const h = d.h - dy;
+    settleSheet(d.h, e.clientY - d.y, performance.now() - d.t);
+  };
+  // Where a dragged sheet lands: closed, peek or full, from the height it was
+  // let go at and how fast it was moving. Shared by the handle and the
+  // content drag below.
+  const settleSheet = (startH: number, dy: number, ms: number) => {
+    const v = dy / Math.max(1, ms); // px/ms, positive = down
+    const h = startH - dy;
     const vh = window.innerHeight;
     setDragH(null);
     if ((h < vh * 0.2 || (v > 0.8 && sheet === "peek")) && !locked)
@@ -415,6 +421,20 @@ export default function AquaWorkspace() {
     if (v < -0.5) return setSheet("full");
     setSheet(h > vh * 0.55 ? "full" : "peek");
   };
+  const sheetFullH = () =>
+    window.innerHeight * 0.88 - (hideComposer ? 0 : composerH + mainPadB);
+
+  // ---------- drag the sheet by its content (not only the handle) ----------
+  // Like a native bottom sheet: content scrolled to its top hands a pull-down
+  // over to the sheet; collapsed to peek, any vertical drag moves it.
+  useSheetContentDrag({
+    ref: sheetRef,
+    enabled: sheetLayout && open,
+    isPeek: () => sheet === "peek",
+    fullH: sheetFullH,
+    onDrag: setDragH,
+    onSettle: settleSheet,
+  });
   const [peekFrom, setPeekFrom] = useState<number | null>(null);
   const [composerH, setComposerH] = useState(0);
   const roRef = useRef<ResizeObserver | null>(null);
@@ -631,7 +651,30 @@ export default function AquaWorkspace() {
 
   // `tagged`: the product a question is about when it comes from a tagged
   // reply's chip; otherwise the product open in the panel, if any.
+  // ---------- compare: needs two picked products ----------
+  // The Compare buttons (reply chips, the tray) check the picks first: with
+  // fewer than two nothing is sent (no chat bubbles, no AI tokens); the cards'
+  // compare buttons pulse to show where to pick.
+  const [compareHint, setCompareHint] = useState(false);
+  const compareHintT = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const needsComparePicks = (text: string) =>
+    isCompareAction(text) && compare.length < 2;
+  const hintComparePicks = () => {
+    showToast(
+      compare.length === 1
+        ? "Select one more product to compare"
+        : "Select at least 2 products to compare: tap ⇄ on the cards",
+    );
+    clearTimeout(compareHintT.current);
+    setCompareHint(true);
+    compareHintT.current = setTimeout(() => setCompareHint(false), 2600);
+  };
+
   const sendMessage = (text: string, tagged?: string | null) => {
+    if (needsComparePicks(text)) {
+      hintComparePicks();
+      return false;
+    }
     const productId =
       tagged ||
       (open && flow.productId && flow.state === "product"
@@ -1008,6 +1051,18 @@ export default function AquaWorkspace() {
 
   // ---------- AI tour: once, on a first visit's start screen; replay from the dock ----------
   const [tourOpen, setTourOpen] = useState(false);
+
+  // Phones and tablets: drag in from the left edge for the sidebar (and push
+  // it away again). Not over a dialog, the tour, or a payment in progress.
+  const dockDrag = useEdgeSwipe({
+    enabled: (isTouch || isMobile) && !locked && !profileOpen && !tourOpen,
+    open: dockOpen,
+    onOpen: () => {
+      setShop(null);
+      setDockOpen(true);
+    },
+    onClose: () => setDockOpen(false),
+  });
   const welcomeIdle = flow.state === "welcome" && !chat.messages.length;
   useEffect(() => {
     if (!welcomeIdle || storage.get(TOUR_KEY)) return;
@@ -1264,6 +1319,7 @@ export default function AquaWorkspace() {
             favIds={favs.map((f) => f._id)}
             cartIds={cart.map((c) => c._id)}
             compare={compare}
+            compareHint={compareHint}
             onOpen={view}
             onToggleFav={toggleFav}
             onToggleCompare={toggleCompare}
@@ -1349,6 +1405,7 @@ export default function AquaWorkspace() {
 
       <HistoryDock
         open={dockOpen}
+        drag={dockDrag}
         onOpenCatalogue={openCatalogue}
         locked={locked}
         sessions={chat.sessions.filter(
