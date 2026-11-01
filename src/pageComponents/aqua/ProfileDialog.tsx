@@ -54,6 +54,7 @@ import {
 import { supportLink, TONES } from "./PaymentParts";
 import { purchaseLines } from "./purchaseItems";
 import { ShopList, type ShopRow } from "./ShopPopover";
+import { useDrawer } from "./useDrawer";
 import type { Address, Product } from "./types";
 import {
   addressLine,
@@ -242,6 +243,13 @@ export default function ProfileDialog(p: Props) {
     fav: null,
   });
   const dialogRef = useRef<HTMLDivElement>(null);
+  // A drawer: slides in from the right, or up from the bottom on phones,
+  // where a pull down puts it away.
+  const drawer = useDrawer(dialogRef, p.onClose);
+  const closeRef = useRef(drawer.close);
+  useEffect(() => {
+    closeRef.current = drawer.close;
+  });
   const userId = p.user._id || "";
 
   // ---------- profile form (prefilled; reset if the account changes) ----------
@@ -370,7 +378,7 @@ export default function ProfileDialog(p: Props) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.stopPropagation();
-        p.onClose();
+        closeRef.current();
         return;
       }
       if (e.key !== "Tab" || !el) return;
@@ -501,15 +509,23 @@ export default function ProfileDialog(p: Props) {
 
   return (
     <>
-      <div className="aq-pf-scrim" aria-hidden="true" onClick={p.onClose} />
-      <div className="aq-pf-layer">
+      <div
+        className="aq-pf-scrim aq-drawer-scrim"
+        aria-hidden="true"
+        data-leaving={drawer.leaving}
+        onClick={drawer.close}
+      />
+      <div className="aq-pf-layer aq-drawer-layer">
         <div
           ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="aq-pf-title"
-          className="aq-glass aq-pf"
+          className="aq-glass aq-pf aq-drawer"
+          data-leaving={drawer.leaving}
+          style={drawer.style}
         >
+          <div className="aq-drawer-grip" aria-hidden="true" />
           {/* ---------- left rail: who, sections, sign out ---------- */}
           <aside className="aq-pf-rail">
             <div className="aq-pf-me">
@@ -619,7 +635,7 @@ export default function ProfileDialog(p: Props) {
               <button
                 type="button"
                 className="aq-icon-btn"
-                onClick={p.onClose}
+                onClick={drawer.close}
                 aria-label="Close profile"
               >
                 <X size={16} />

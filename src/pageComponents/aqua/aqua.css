@@ -2642,35 +2642,18 @@ textarea::placeholder {
   }
 }
 
-/* ---------- profile dialog: sections on the left, content on the right ---------- */
-.aq-pf-scrim {
-  position: absolute;
-  inset: 0;
-  z-index: 69;
-  background: rgba(7, 26, 37, 0.32);
-  animation: aqIn 0.2s ease both;
-}
-/* Centred by a grid layer: the entrance keyframes animate transform. */
+/* ---------- profile drawer: sections on the left, content on the right ---------- */
 .aq-pf-layer {
-  position: absolute;
-  inset: 0;
   z-index: 70;
-  display: grid;
-  place-items: center;
-  padding: 16px;
-  pointer-events: none;
 }
 .aq-pf {
   position: relative;
-  pointer-events: auto;
-  width: min(1080px, 100%);
-  /* Fixed, not max-height: every section gets the same box and scrolls inside it. */
-  height: min(780px, calc(100dvh - 32px));
+  width: min(940px, 100%);
+  /* Full height: every section gets the same box and scrolls inside it. */
+  height: 100%;
   display: grid;
-  grid-template-columns: 264px minmax(0, 1fr);
-  border-radius: 28px;
-  background: rgba(var(--aq-gl), 0.92);
-  animation: aqPop 0.25s cubic-bezier(0.22, 0.8, 0.24, 1) both;
+  grid-template-columns: 248px minmax(0, 1fr);
+  background: rgba(var(--aq-gl), 0.94);
   overflow: hidden;
 }
 .aq-pf-rail {
@@ -3194,10 +3177,6 @@ button.aq-pf-stat:focus-visible {
   color: #8a1f1f;
 }
 @media (max-width: 767px) {
-  .aq-pf-layer {
-    place-items: end center;
-    padding: 0;
-  }
   /* Phones: one column. The rail's parts sit in the column themselves, so the
      sections become a chip row under the name and Sign out goes to the end. */
   .aq-pf {
@@ -3205,8 +3184,6 @@ button.aq-pf-stat:focus-visible {
     height: 92dvh;
     display: flex;
     flex-direction: column;
-    border-radius: 24px 24px 0 0;
-    animation: aqSheetIn 0.3s ease both;
   }
   .aq-pf-rail {
     display: contents;
@@ -3215,7 +3192,7 @@ button.aq-pf-stat:focus-visible {
     order: 1;
     flex-direction: row;
     align-items: center;
-    padding: 18px 56px 8px 18px;
+    padding: 6px 56px 8px 18px;
   }
   .aq-pf-nav {
     order: 2;
@@ -3246,7 +3223,7 @@ button.aq-pf-stat:focus-visible {
   }
   .aq-pf-main-head .aq-icon-btn {
     position: absolute;
-    top: 18px;
+    top: 20px;
     right: 14px;
   }
   .aq-pf-main-title {
@@ -5079,8 +5056,9 @@ button.aq-pf-buy {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 14px 0 12px;
+  justify-content: center;
+  min-width: 44px;
+  padding: 0 12px 0 10px;
   border: 1px solid rgba(16, 191, 164, 0.4);
   border-left: 0;
   border-radius: 0 999px 999px 0;
@@ -5104,9 +5082,6 @@ button.aq-pf-buy {
     0 8px 20px rgba(var(--aq-sh), 0.14);
   animation: aqDemandTabIn 0.3s cubic-bezier(0.22, 0.8, 0.24, 1) both;
 }
-.aq-demand-tab-text {
-  color: var(--aq-ink);
-}
 @media (prefers-reduced-motion: no-preference) {
   .aq-demand-tab {
     animation:
@@ -5129,7 +5104,7 @@ button.aq-pf-buy {
   border-left: 1px solid rgba(16, 191, 164, 0.4);
   border-right: 0;
   border-radius: 999px 0 0 999px;
-  padding: 0 12px 0 14px;
+  padding: 0 10px 0 12px;
   animation-name: aqDemandTabInRight;
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -8092,4 +8067,727 @@ button.aq-pf-buy {
   background: linear-gradient(135deg, #12c7a8 0%, #008b68 55%, #00785a 100%);
   opacity: 0.82;
   cursor: progress;
+}
+
+/* ---------- drawers (profile, products in an answer) ----------
+   From the right on wide screens; a bottom sheet with a grip on phones,
+   pulled down to put away (useDrawer). */
+.aq-drawer-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 69;
+  background: rgba(7, 26, 37, 0.32);
+  animation: aqFadeIn 0.22s ease both;
+}
+.aq-drawer-scrim[data-leaving="true"] {
+  animation: aqFadeOut 0.22s ease both;
+}
+.aq-drawer-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+  padding: 12px;
+  pointer-events: none;
+}
+.aq-drawer {
+  pointer-events: auto;
+  border-radius: 24px;
+  box-shadow: -18px 0 48px rgba(7, 26, 37, 0.18);
+  animation: aqDrawerIn 0.32s cubic-bezier(0.22, 0.8, 0.24, 1) both;
+  transition: transform 0.25s cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+.aq-drawer[data-leaving="true"] {
+  animation: aqDrawerOut 0.22s ease-in both;
+}
+.aq-drawer-grip {
+  display: none;
+}
+@keyframes aqDrawerIn {
+  from {
+    transform: translateX(calc(100% + 24px));
+  }
+}
+@keyframes aqDrawerOut {
+  to {
+    transform: translateX(calc(100% + 24px));
+  }
+}
+@keyframes aqSheetOut {
+  to {
+    transform: translateY(100%);
+  }
+}
+@keyframes aqFadeOut {
+  to {
+    opacity: 0;
+  }
+}
+@media (max-width: 767px) {
+  .aq-drawer-layer {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .aq-drawer {
+    width: 100%;
+    max-height: 92dvh;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -14px 40px rgba(7, 26, 37, 0.18);
+    animation-name: aqSheetIn;
+    animation-duration: 0.3s;
+  }
+  .aq-drawer[data-leaving="true"] {
+    animation-name: aqSheetOut;
+    animation-duration: 0.22s;
+  }
+  /* The grip: where a thumb pulls the sheet down. */
+  .aq-drawer-grip {
+    display: block;
+    order: 0;
+    flex: none;
+    width: 100%;
+    height: 22px;
+    position: relative;
+    touch-action: none;
+  }
+  .aq-drawer-grip::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 9px;
+    width: 40px;
+    height: 5px;
+    margin-left: -20px;
+    border-radius: 999px;
+    background: rgba(var(--aq-ln), 0.22);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aq-drawer,
+  .aq-drawer-scrim {
+    animation: none;
+  }
+}
+
+/* ---------- products in an answer: the bar under a reply and its drawer ---------- */
+.aq-rp-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  min-height: 48px;
+  padding: 6px 12px 6px 6px;
+  border: 1px solid var(--aq-mintbd);
+  border-radius: 999px;
+  background: var(--aq-surf);
+  color: var(--aq-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(var(--aq-sh), 0.08);
+  animation: aqChipIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    border-color 0.2s;
+}
+.aq-rp-bar:hover {
+  transform: translateY(-1px);
+  border-color: #10bfa4;
+  box-shadow: 0 10px 24px rgba(var(--aq-sh), 0.12);
+}
+.aq-rp-bar:active {
+  transform: scale(0.98);
+}
+.aq-rp-bar:focus-visible {
+  outline: 2px solid #10bfa4;
+  outline-offset: 2px;
+}
+.aq-rp-thumbs {
+  display: flex;
+  flex: none;
+}
+.aq-rp-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--aq-surf);
+  box-shadow: 0 2px 6px rgba(var(--aq-sh), 0.12);
+}
+.aq-rp-thumb + .aq-rp-thumb {
+  margin-left: -12px;
+}
+.aq-rp-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.aq-rp-text b {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.aq-rp-text span {
+  font-size: 11.5px;
+  color: var(--aq-mut);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aq-rp-go {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: #008b68;
+  color: #fff;
+}
+
+.aq-pd {
+  width: min(440px, 100%);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgba(var(--aq-gl), 0.96);
+}
+.aq-pd-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 16px 4px 20px;
+}
+.aq-pd-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+/* Count and sort, on one line under the title. */
+.aq-pd-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 16px 10px 20px;
+  border-bottom: 1px solid rgba(var(--aq-ln), 0.08);
+}
+.aq-pd-sub {
+  font-size: 12px;
+  color: var(--aq-mut);
+}
+.aq-pd-sort {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 11px;
+  border: 1px solid var(--aq-bd);
+  border-radius: 999px;
+  background: var(--aq-surf);
+  color: var(--aq-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.aq-pd-sort[aria-pressed="true"] {
+  border-color: #10bfa4;
+  background: var(--aq-mint);
+  color: var(--aq-mintink);
+}
+.aq-pd-list {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 10px 12px 14px;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.aq-pd-row {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--aq-bd);
+  border-radius: 18px;
+  background: var(--aq-surf);
+  overflow: hidden;
+  animation: aqIn 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.aq-pd-row:hover {
+  border-color: var(--aq-mintbd);
+  box-shadow: 0 8px 20px rgba(var(--aq-sh), 0.08);
+}
+.aq-pd-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 6px 10px 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.aq-pd-open:disabled {
+  cursor: default;
+}
+.aq-pd-open:focus-visible {
+  outline: 2px solid #10bfa4;
+  outline-offset: -2px;
+  border-radius: 18px;
+}
+.aq-pd-img {
+  flex: none;
+  width: 76px;
+  height: 76px;
+  border-radius: 14px;
+  border: 1px solid rgba(var(--aq-ln), 0.06);
+}
+.aq-pd-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.aq-pd-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.aq-pd-price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px 6px;
+  font-size: 12px;
+}
+.aq-pd-price b {
+  font-size: 15px;
+  font-weight: 800;
+}
+.aq-pd-price s {
+  color: var(--aq-mut2);
+}
+.aq-pd-price em {
+  font-style: normal;
+  font-weight: 700;
+  color: #008b68;
+}
+.aq-pd-stock {
+  font-size: 11px;
+  color: #b42318;
+}
+.aq-pd-stock[data-in="true"] {
+  color: var(--aq-mintink);
+}
+.aq-pd-chev {
+  flex: none;
+  color: var(--aq-mut2);
+}
+/* Favourite / cart / compare: a column of solid chips at the row's edge. */
+.aq-pd-tools {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px 8px 4px;
+}
+.aq-pd-tool {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--aq-bd);
+  border-radius: 50%;
+  background: var(--aq-surf);
+  color: var(--aq-ink);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    transform 0.15s;
+}
+.aq-pd-tool:hover:not(:disabled) {
+  background: var(--aq-mint);
+}
+.aq-pd-tool:active:not(:disabled) {
+  transform: scale(0.9);
+}
+.aq-pd-tool:focus-visible {
+  outline: 2px solid #10bfa4;
+  outline-offset: 2px;
+}
+.aq-pd-tool[data-on="true"] {
+  border-color: #10bfa4;
+  background: #008b68;
+  color: #fff;
+}
+.aq-pd-tool[data-kind="fav"][data-on="true"] {
+  border-color: #e5484d;
+  background: #e5484d;
+}
+.aq-pd-tool:disabled:not([data-on="true"]) {
+  opacity: 0.45;
+  cursor: default;
+}
+.aq-pd-foot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px max(12px, env(safe-area-inset-bottom)) 18px;
+  border-top: 1px solid rgba(var(--aq-ln), 0.08);
+  font-size: 12.5px;
+  font-weight: 600;
+  animation: aqIn 0.25s ease both;
+}
+.aq-pd-foot span {
+  flex: 1;
+  min-width: 0;
+}
+.aq-pd-foot .aq-btn {
+  height: 38px;
+  padding: 0 16px;
+  gap: 6px;
+  font-size: 13px;
+}
+@media (max-width: 767px) {
+  .aq-pd {
+    width: 100%;
+    height: auto;
+  }
+  .aq-pd-head {
+    padding: 0 12px 2px 16px;
+  }
+  .aq-pd-bar {
+    padding: 0 12px 10px 16px;
+  }
+  .aq-pd-list {
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+  .aq-pd-img {
+    width: 64px;
+    height: 64px;
+  }
+  .aq-pd-chev {
+    display: none;
+  }
+}
+@media (pointer: coarse) {
+  .aq-pd-tool {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* ---------- follow-up questions: one swipeable line under the answer ---------- */
+.aq-followups-wrap {
+  width: 100%;
+}
+.aq-followups {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 4px;
+  scrollbar-width: none;
+  padding: 2px 4px 4px;
+  margin: 0 -4px;
+  /* Fades at the edges hint there's more to swipe. */
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 8px,
+    #000 calc(100% - 24px),
+    transparent
+  );
+}
+.aq-followups::-webkit-scrollbar {
+  display: none;
+}
+.aq-followups .aq-chip {
+  flex: none;
+  scroll-snap-align: start;
+  min-height: 38px;
+  padding: 8px 14px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+/* Smaller arrows, centred on the chips. */
+.aq-followups-wrap .aq-scroll-left,
+.aq-followups-wrap .aq-scroll-right {
+  width: 30px;
+  height: 30px;
+  margin-top: -17px;
+}
+
+/* ---------- contact us: a smooth accordion under the latest answer ---------- */
+.aq-support {
+  /* Closed: a pill beside Copy / Listen. Open: the full width under them. */
+  flex: 0 1 auto;
+  margin-left: auto;
+  max-width: 560px;
+  border-radius: 999px;
+  transition: border-radius 0.2s;
+  border: 1px solid #f2e2c2;
+  background: rgba(255, 248, 236, 0.92);
+  color: #5c4413;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+  animation: aqCardIn 0.4s ease both;
+}
+.aq-support[data-open="true"] {
+  flex-basis: 100%;
+  margin-left: 0;
+  border-radius: 16px;
+}
+.aq-support-sub {
+  display: none;
+}
+.aq-support[data-open="true"] .aq-support-sub {
+  display: inline;
+}
+.aq-support-head {
+  width: 100%;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  white-space: nowrap;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.aq-support-head > svg:first-child {
+  flex: none;
+  color: #b7791f;
+}
+.aq-support-head > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aq-support-head:focus-visible {
+  outline: 2px solid #b7791f;
+  outline-offset: -2px;
+  border-radius: 16px;
+}
+.aq-support-chev {
+  flex: none;
+  transition: transform 0.3s cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+.aq-support[data-open="true"] .aq-support-chev {
+  transform: rotate(180deg);
+}
+.aq-support-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.32s cubic-bezier(0.22, 0.8, 0.24, 1),
+    opacity 0.24s ease;
+}
+.aq-support[data-open="true"] .aq-support-body {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.aq-support-inner {
+  min-height: 0;
+  overflow: hidden;
+  /* Never widens the closed pill: the note only fills what the box gives it. */
+  width: 0;
+  min-width: 100%;
+}
+.aq-support-inner p {
+  margin: 0;
+  padding: 0 14px 0 35px;
+}
+.aq-support-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px 12px 35px;
+}
+.aq-support-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #fff;
+  text-decoration: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aq-support-body,
+  .aq-support-chev {
+    transition: none;
+  }
+}
+
+/* ---------- under an answer: compact rows, so phones keep their space ---------- */
+.aq-reply-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+}
+.aq-reply-foot {
+  align-self: stretch;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-top: -4px;
+}
+@media (max-width: 767px) {
+  .aq-rp-bar {
+    min-height: 40px;
+    gap: 8px;
+    padding: 4px 6px 4px 4px;
+  }
+  .aq-rp-thumb {
+    width: 30px;
+    height: 30px;
+  }
+  .aq-rp-thumb + .aq-rp-thumb {
+    margin-left: -10px;
+  }
+  .aq-rp-go {
+    width: 26px;
+    height: 26px;
+  }
+  .aq-reply-tools .aq-chip {
+    min-height: 40px;
+  }
+}
+
+/* ---------- sidebar grip: a glowing pull tab on the left edge (touch) ---------- */
+.aq-dock-grip {
+  position: absolute;
+  left: 0;
+  top: 42%;
+  z-index: 36;
+  /* A 24px-wide target inside the edge-swipe zone; the glow is the bar. */
+  width: 24px;
+  height: 84px;
+  margin-top: -42px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    opacity 0.2s ease,
+    transform 0.25s cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+/* The bar: glass inside a glowing teal border (no drop shadow). */
+.aq-dock-grip span {
+  position: absolute;
+  left: 3px;
+  top: 12px;
+  width: 8px;
+  height: 60px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92))
+      padding-box,
+    linear-gradient(180deg, #7cf3dd, #10bfa4, #008b68, #10bfa4, #7cf3dd)
+      border-box;
+  background-size:
+    100% 100%,
+    100% 300%;
+}
+/* The pulse: a ring of the border that swells out and fades. */
+.aq-dock-grip span::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  border: 2px solid #34d9bd;
+  opacity: 0;
+  pointer-events: none;
+}
+.aq-dock-grip:focus-visible {
+  outline: none;
+}
+.aq-dock-grip:focus-visible span {
+  outline: 2px solid #10bfa4;
+  outline-offset: 3px;
+}
+.aq-dock-grip:active span {
+  transform: scaleX(1.3);
+}
+.aq-dock-grip[data-hidden="true"] {
+  opacity: 0;
+  transform: translateX(-100%);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* Light runs along the border while the ring pulses outward. */
+  .aq-dock-grip span {
+    animation: aqGripFlow 2.4s linear infinite;
+  }
+  .aq-dock-grip span::after {
+    animation: aqGripPulse 1.8s cubic-bezier(0.22, 0.8, 0.24, 1) infinite;
+  }
+}
+@keyframes aqGripFlow {
+  to {
+    background-position:
+      0 0,
+      0 -300%;
+  }
+}
+@keyframes aqGripPulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  60% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.1, 1.3);
+  }
 }

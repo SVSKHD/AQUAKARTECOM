@@ -1,6 +1,7 @@
 "use client";
 
-import { Info, MessageCircle, Phone } from "lucide-react";
+import { useId, useState } from "react";
+import { ChevronDown, Headset, MessageCircle, Phone } from "lucide-react";
 import {
   AI_SUPPORT_NOTE,
   SUPPORT_PHONE_DISPLAY,
@@ -8,69 +9,59 @@ import {
   supportWhatsAppUrl,
 } from "@/utils/support";
 
-// Shown under the latest AI answer on /aqua: suggestions only, confirm with support.
+// Under the latest AI answer on /aqua: suggestions only, confirm with support.
+// A one-line accordion that opens smoothly onto the note and the call /
+// WhatsApp buttons, so it doesn't take the chat's space until it's wanted.
 // tel: and the WhatsApp tab don't navigate the Aqua page.
 export default function AquaSupportNote({ question }: { question?: string }) {
-  const btn = {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-    minHeight: 40,
-    padding: "0 14px",
-    borderRadius: 999,
-    fontSize: 12.5,
-    fontWeight: 800,
-    color: "#fff",
-    textDecoration: "none",
-  } as const;
+  const [open, setOpen] = useState(false);
+  const id = useId();
   return (
     <aside
-      aria-label="Confirm with AquaKart support"
-      style={{
-        width: "100%",
-        maxWidth: 560,
-        borderRadius: 16,
-        border: "1px solid #F2E2C2",
-        background: "rgba(255,248,236,.92)",
-        color: "#5C4413",
-        padding: "10px 14px 12px",
-        fontSize: 13,
-        lineHeight: 1.5,
-        display: "flex",
-        flexDirection: "column",
-        gap: 10,
-        animation: "aqCardIn .4s ease both",
-      }}
+      aria-label="Contact AquaKart support"
+      className="aq-support"
+      data-open={open}
     >
-      <p style={{ margin: 0, display: "flex", gap: 8 }}>
-        <Info
-          size={16}
-          color="#B7791F"
-          aria-hidden="true"
-          style={{ flexShrink: 0, marginTop: 2 }}
-        />
-        <span>{AI_SUPPORT_NOTE}</span>
-      </p>
-      <div
-        style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingLeft: 24 }}
+      <button
+        type="button"
+        className="aq-support-head"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen((o) => !o)}
       >
-        <a
-          href={SUPPORT_TEL}
-          aria-label={`Call AquaKart support on ${SUPPORT_PHONE_DISPLAY}`}
-          style={{ ...btn, background: "rgba(7,26,37,.85)" }}
-        >
-          <Phone size={14} aria-hidden="true" />
-          Call support
-        </a>
-        <a
-          href={supportWhatsAppUrl(question)}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ ...btn, background: "#25D366" }}
-        >
-          <MessageCircle size={14} aria-hidden="true" />
-          WhatsApp
-        </a>
+        <Headset size={16} aria-hidden="true" />
+        <span>
+          <b>Contact us</b>
+          <span className="aq-support-sub"> · confirm with an expert</span>
+        </span>
+        <ChevronDown size={16} className="aq-support-chev" aria-hidden="true" />
+      </button>
+      {/* grid rows 0fr → 1fr: the height animates to the content's own. */}
+      <div id={id} className="aq-support-body" inert={!open}>
+        <div className="aq-support-inner">
+          <p>{AI_SUPPORT_NOTE}</p>
+          <div className="aq-support-acts">
+            <a
+              href={SUPPORT_TEL}
+              aria-label={`Call AquaKart support on ${SUPPORT_PHONE_DISPLAY}`}
+              className="aq-support-btn"
+              style={{ background: "rgba(7,26,37,.85)" }}
+            >
+              <Phone size={14} aria-hidden="true" />
+              Call support
+            </a>
+            <a
+              href={supportWhatsAppUrl(question)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="aq-support-btn"
+              style={{ background: "#25D366" }}
+            >
+              <MessageCircle size={14} aria-hidden="true" />
+              WhatsApp
+            </a>
+          </div>
+        </div>
       </div>
     </aside>
   );

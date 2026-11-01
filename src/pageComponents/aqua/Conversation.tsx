@@ -1,7 +1,13 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowDown, X } from "lucide-react";
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { ArrowDown, ChevronRight, X } from "lucide-react";
 import type { Flow } from "@/utils/aquaFlow";
 import logo from "@/assests/logo.png";
 import { quotaLabel } from "@/services/ai";
@@ -19,6 +25,7 @@ import CompareArtifact from "./CompareArtifact";
 import HardnessCard from "./HardnessCard";
 import type { Place } from "./hardnessData";
 import ProductCard from "./ProductCard";
+import { namedProducts } from "./replyProducts";
 import ReplyActions from "./ReplyActions";
 import WhileYouWait from "./WhileYouWait";
 import { aquaConfig } from "./config";
@@ -77,6 +84,8 @@ type Props = {
   openComparison: string | null;
   onAddToCart: (id: string) => void;
   onBuy: () => void;
+  // Opens the drawer listing every product an answer names.
+  onViewProducts: (ids: string[]) => void;
   // productId: the product a question is about (a tagged reply's chips).
   onSend: (text: string, productId?: string | null) => boolean;
   // Opens Google sign-in; used by the daily-limit card.
@@ -254,6 +263,25 @@ export default function Conversation(p: Props) {
       ])
     : [];
 
+  // Products each finished answer names, worked out once per answer.
+  const catalogue = useMemo(() => [...p.products.values()], [p.products]);
+  const namedCache = useMemo(
+    () => new Map<string, string[]>(),
+    // A new catalogue can name more products: start again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [catalogue],
+  );
+  const named = (m: ChatMessage) => {
+    const text = m.full || m.text || "";
+    const key = `${m.id}:${text.length}`;
+    let ids = namedCache.get(key);
+    if (!ids) {
+      ids = namedProducts(text, catalogue);
+      namedCache.set(key, ids);
+    }
+    return ids;
+  };
+
   const renderMessage = (m: ChatMessage) => {
     if (m.role === "user")
       return (
@@ -320,6 +348,18 @@ export default function Conversation(p: Props) {
     const table = (m.table || [])
       .map((id) => p.products.get(id))
       .filter((x): x is Product => !!x);
+    // Everything the answer names plus its cards, for the products drawer:
+    // offered when there's more than the cards show, or more than one to
+    // look through.
+    const inAnswer =
+      m.done && !m.error && !m.table?.length
+        ? [...new Set([...named(m), ...cards.map((c) => c.id)])].filter((id) =>
+            p.products.has(id),
+          )
+        : [];
+    const showAll =
+      inAnswer.length > 1 ||
+      inAnswer.some((id) => !cards.some((c) => c.id === id));
     const streaming = !m.done && !m.typing;
     // The whole answer stays in its bubble; every product it suggests follows
     // as a portrait card in a grid that grows downwards.
@@ -516,21 +556,60 @@ export default function Conversation(p: Props) {
               }
             />
           )}
-          {m.done && m.chips && m.chips.length > 0 && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {m.chips.map((c, i) => (
+          {/* The answer's products and its action chips share a row. */}
+          {(showAll || (m.done && !!m.chips?.length)) && (
+            <div className="aq-reply-tools">
+              {showAll && (
                 <button
-                  key={c}
                   type="button"
-                  className="aq-chip"
-                  onClick={() => onChip(c, m.productId)}
-                  style={{
-                    animation: `aqChipIn .4s cubic-bezier(.2,.8,.2,1) ${i * 0.05}s both`,
-                  }}
+                  className="aq-rp-bar"
+                  onClick={() => p.onViewProducts(inAnswer)}
+                  aria-label={`View the ${inAnswer.length} products in this answer`}
                 >
-                  {c}
+                  <span className="aq-rp-thumbs" aria-hidden="true">
+                    {inAnswer.slice(0, p.isMobile ? 2 : 3).map((id) => {
+                      const photo = p.products.get(id)?.photos[0];
+                      return (
+                        <span
+                          key={id}
+                          className="aq-rp-thumb"
+                          style={{
+                            background: photo
+                              ? `center / contain no-repeat url("${photo}"), #fff`
+                              : "var(--aq-mint)",
+                          }}
+                        />
+                      );
+                    })}
+                  </span>
+                  <span className="aq-rp-text">
+                    <b>
+                      {inAnswer.length === 1
+                        ? "1 product"
+                        : `${inAnswer.length} products`}
+                      {!p.isMobile && " in this answer"}
+                    </b>
+                    {!p.isMobile && <span>Prices, reviews and compare</span>}
+                  </span>
+                  <span className="aq-rp-go" aria-hidden="true">
+                    <ChevronRight size={16} />
+                  </span>
                 </button>
-              ))}
+              )}
+              {m.done &&
+                m.chips?.map((c, i) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className="aq-chip"
+                    onClick={() => onChip(c, m.productId)}
+                    style={{
+                      animation: `aqChipIn .4s cubic-bezier(.2,.8,.2,1) ${i * 0.05}s both`,
+                    }}
+                  >
+                    {c}
+                  </button>
+                ))}
             </div>
           )}
           {m.ai &&
@@ -538,11 +617,28 @@ export default function Conversation(p: Props) {
             m.id === latestAi?.id &&
             !p.chat.limit &&
             followUps.length > 0 && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <span className="aq-label" style={{ fontSize: 10.5 }}>
-                  Ask a follow-up
-                </span>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                  alignSelf: "stretch",
+                  minWidth: 0,
+                }}
+              >
+                {/* Phones: the chips speak for themselves; no label row. */}
+                {!p.isMobile && (
+                  <span className="aq-label" style={{ fontSize: 10.5 }}>
+                    Ask a follow-up
+                  </span>
+                )}
+                {/* One swipeable line (arrows on desktop), not a stack of rows. */}
+                <ArrowScroller
+                  axis="x"
+                  wrapClassName="aq-followups-wrap"
+                  className="aq-followups"
+                  label="follow-up questions"
+                >
                   {followUps.map((f, i) => (
                     <button
                       key={f}
@@ -550,25 +646,23 @@ export default function Conversation(p: Props) {
                       className="aq-chip aq-chip-soft"
                       onClick={() => p.onSend(f)}
                       style={{
-                        // Long questions wrap on narrow phones instead of running off the edge.
-                        whiteSpace: "normal",
-                        textAlign: "left",
-                        maxWidth: "100%",
-                        lineHeight: 1.35,
                         animation: `aqChipIn .4s cubic-bezier(.2,.8,.2,1) ${0.1 + i * 0.05}s both`,
                       }}
                     >
                       {f}
                     </button>
                   ))}
-                </div>
+                </ArrowScroller>
               </div>
             )}
+          {/* Copy / Listen and Contact us on one line; Contact us opens below. */}
           {m.done && !m.error && (m.full || m.text) && (
-            <ReplyActions id={m.id} text={m.full || m.text} />
-          )}
-          {m.ai && m.done && m.id === latestAi?.id && (
-            <AquaSupportNote question={latestAi.question} />
+            <div className="aq-reply-foot">
+              <ReplyActions id={m.id} text={m.full || m.text} />
+              {m.ai && m.id === latestAi?.id && (
+                <AquaSupportNote question={latestAi.question} />
+              )}
+            </div>
           )}
         </div>
       </div>

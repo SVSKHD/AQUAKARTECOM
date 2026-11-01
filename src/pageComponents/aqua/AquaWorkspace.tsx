@@ -68,6 +68,7 @@ import type { Purchase } from "./HistoryDock";
 import { getMyInvoices } from "@/services/invoice";
 import { categoryId, getActiveCoupons, type ActiveCoupon } from "./coupons";
 import ProfileDialog, { type ProfileTab } from "./ProfileDialog";
+import ProductsDrawer from "./ProductsDrawer";
 import { EMPTY_SHOP_UI, type ShopUi } from "./ShopPanel";
 
 // A comparison started from the shop (not from a chat reply).
@@ -299,6 +300,8 @@ export default function AquaWorkspace() {
   useEffect(() => {
     if (!token) setProfileTab(null);
   }, [token]);
+  // The drawer listing every product an answer names (their ids).
+  const [answerProducts, setAnswerProducts] = useState<string[] | null>(null);
   const [toast, setToast] = useState("");
   const toastT = useRef<ReturnType<typeof setTimeout>>(undefined);
   const showToast = (t: string) => {
@@ -684,6 +687,21 @@ export default function AquaWorkspace() {
       hintComparePicks();
       return false;
     }
+    // These products were compared before (here or in a past chat): reopen
+    // that comparison. Nothing is posted and nothing is asked.
+    if (isCompareAction(text)) {
+      const earlier = chat.findComparison(compare);
+      if (earlier) {
+        openComparison(earlier.messageId, compare);
+        clearCompare();
+        showToast(
+          earlier.chatId
+            ? `Opened your comparison from "${earlier.chatTitle}"`
+            : "You compared these earlier: opened it again",
+        );
+        return true;
+      }
+    }
     const productId =
       tagged ||
       (open && flow.productId && flow.state === "product"
@@ -1064,7 +1082,12 @@ export default function AquaWorkspace() {
   // Phones and tablets: drag in from the left edge for the sidebar (and push
   // it away again). Not over a dialog, the tour, or a payment in progress.
   const dockDrag = useEdgeSwipe({
-    enabled: (isTouch || isMobile) && !locked && !profileOpen && !tourOpen,
+    enabled:
+      (isTouch || isMobile) &&
+      !locked &&
+      !profileOpen &&
+      !answerProducts &&
+      !tourOpen,
     open: dockOpen,
     onOpen: () => {
       setShop(null);
@@ -1209,7 +1232,16 @@ export default function AquaWorkspace() {
       compareFromShop={comparison?.messageId === SHOP_COMPARISON}
       chatBusy={chat.status !== "idle"}
       fromShop={!!flow.productId && shopOrigin === flow.productId}
-      onAsk={(text) => sendMessage(text)}
+      onAsk={(text) => {
+        // A question from the product or shop sheet: on phones the sheet
+        // covers the chat, so it slides away and the answer shows there.
+        const from = flowRef.current.state;
+        if (!sendMessage(text)) return;
+        if (sheetLayout && (from === "product" || from === "shop")) {
+          setPeekFrom(null);
+          closeSheet();
+        }
+      }}
       onChat={sheetLayout ? focusComposer : undefined}
       draft={draft}
       setDraft={setDraft}
@@ -1338,6 +1370,11 @@ export default function AquaWorkspace() {
             onAddToCart={(id) => addToCart(id)}
             onBuy={buy}
             onSend={sendMessage}
+            onViewProducts={(ids) => {
+              setDockOpen(false);
+              setShop(null);
+              setAnswerProducts(ids);
+            }}
             onSignIn={auth.signIn}
             signingIn={auth.busy}
             signInError={auth.error}
@@ -1411,6 +1448,31 @@ export default function AquaWorkspace() {
           </aside>
         )}
       </main>
+
+      {/* Phones and tablets: a glowing grip on the left edge says the sidebar
+          is there. Pull it (the edge swipe) or tap it; it fades away as soon
+          as the sidebar starts to come in. */}
+      {(isTouch || isMobile) && !locked && !tourOpen && (
+        <button
+          type="button"
+          className="aq-dock-grip"
+          data-hidden={
+            dockOpen ||
+            dockDrag !== null ||
+            profileOpen ||
+            !!answerProducts ||
+            (sheetLayout && open)
+          }
+          onClick={() => {
+            setShop(null);
+            setDockOpen(true);
+          }}
+          aria-label="Open the sidebar: chats, viewed products and settings"
+          title="Pull or tap for the sidebar"
+        >
+          <span aria-hidden="true" />
+        </button>
+      )}
 
       <HistoryDock
         open={dockOpen}
@@ -1631,6 +1693,30 @@ export default function AquaWorkspace() {
             setProfileTab(null);
             focusComposer();
           }}
+        />
+      )}
+
+      {answerProducts && (
+        <ProductsDrawer
+          products={answerProducts
+            .map((id) => byId.get(id))
+            .filter((x): x is Product => !!x)}
+          favIds={favs.map((f) => f._id)}
+          cartIds={cart.map((c) => c._id)}
+          compare={compare}
+          canView={canDispatch(flow, "VIEW") && !locked}
+          onView={(id) => {
+            setAnswerProducts(null);
+            view(id);
+          }}
+          onToggleFav={toggleFav}
+          onToggleCompare={toggleCompare}
+          onAddToCart={(id) => addToCart(id)}
+          onCompare={() => {
+            setAnswerProducts(null);
+            sendMessage("Compare these");
+          }}
+          onClose={() => setAnswerProducts(null)}
         />
       )}
 

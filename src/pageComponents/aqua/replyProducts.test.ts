@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEMO_PRODUCTS } from "./catalogue";
-import { mentionedProducts, splitReply } from "./replyProducts";
+import { mentionedProducts, namedProducts, splitReply } from "./replyProducts";
 
 const byTitle = (t: string) => DEMO_PRODUCTS.find((p) => p.title === t)!;
 const compact = byTitle("Compact Water Softener 10 L");
@@ -68,6 +68,45 @@ describe("splitReply", () => {
       mentionedProducts(
         "**Water softener** – any softener helps.",
         DEMO_PRODUCTS,
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe("namedProducts", () => {
+  const kent = (id: string, title: string) => ({
+    ...DEMO_PRODUCTS[0],
+    id,
+    title,
+  });
+  const catalogue = [
+    kent("k25", "Kent Automatic Water Softener 25 Litres"),
+    kent("k40", "Kent Automatic Water Softener 40 Litres"),
+    kent("k100", "Kent Automatic Water Softener 100 L"),
+    kent("k8", "Kent Automatic Water Softener 8 Litres"),
+    kent("kb", "Kent Bathroom Water Softener 5.5 L"),
+  ];
+
+  it("finds bold names mid-sentence, in order, once each", () => {
+    const reply = [
+      "- **For a home with several bathrooms (a villa, duplex, or independent house):** You can compare a single master system, such as the **Kent Automatic Water Softener 25**, **Kent Automatic Water Softener 40**, or **Kent Automatic Water Softener 100L**, with a softener per bathroom like the **Kent Automatic 8L** or **Kent Bathroom Water Softener 5.5L** (manual).",
+      "",
+      "The **Kent Automatic Water Softener 25** suits most homes.",
+    ].join("\n");
+    expect(namedProducts(reply, catalogue)).toEqual([
+      "k25",
+      "k40",
+      "k100",
+      "k8",
+      "kb",
+    ]);
+  });
+
+  it("ignores bold text that isn't a product", () => {
+    expect(
+      namedProducts(
+        "**Water softener** helps. **Book a site visit**.",
+        catalogue,
       ),
     ).toEqual([]);
   });

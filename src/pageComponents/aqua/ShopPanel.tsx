@@ -134,7 +134,7 @@ export function Stars({
   );
 }
 
-function RatingLine({ p, full }: { p: Product; full?: boolean }) {
+export function RatingLine({ p, full }: { p: Product; full?: boolean }) {
   const r = productReviews(p);
   if (!r.rating)
     return (

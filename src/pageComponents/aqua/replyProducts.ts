@@ -163,3 +163,19 @@ export const mentionedProducts = (text: string, products: Product[]) =>
   (splitReply(text, products) || [])
     .flatMap((s) => (s.kind === "product" ? [s.product.id] : []))
     .slice(0, 6);
+
+// Every catalogue product the reply names in bold, mid-sentence too ("such
+// as the **Kent Automatic 25**, **40** or …"), in the order they appear:
+// what the "products in this answer" drawer lists.
+export function namedProducts(text: string, products: Product[]): string[] {
+  if (!products.length) return [];
+  const ids: string[] = [];
+  for (const m of text.matchAll(/\*\*([^*\n]{3,90})\*\*/g)) {
+    const p = bestMatch(m[1], products);
+    if (p && !ids.includes(p.id)) ids.push(p.id);
+  }
+  // Names the reply leads a line with, without bold.
+  for (const id of mentionedProducts(text, products))
+    if (!ids.includes(id)) ids.push(id);
+  return ids.slice(0, 12);
+}

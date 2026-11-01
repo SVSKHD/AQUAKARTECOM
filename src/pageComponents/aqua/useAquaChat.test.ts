@@ -310,6 +310,43 @@ describe("useAquaChat with the backend AI", () => {
     expect(sendAiChat).not.toHaveBeenCalled();
   });
 
+  it("reopens an earlier comparison of the same picks instead of a second table", async () => {
+    const [a, b] = DEMO_PRODUCTS.map((p) => p.id);
+    let picks = [a, b];
+    const onCompared = vi.fn();
+    const { result } = renderHook(() =>
+      useAquaChat({
+        products: DEMO_PRODUCTS,
+        getCompare: () => picks,
+        clearCompare: () => {},
+        onCompared,
+        reducedMotion: true,
+      }),
+    );
+    const tables = () => result.current.messages.filter((m) => m.table);
+    // onCompared fires as the reply is posted, before React commits it:
+    // wait for the messages themselves. Generous timeouts for the full suite.
+    act(() => void result.current.send("Compare these"));
+    await waitFor(() => expect(tables()).toHaveLength(1), { timeout: 4000 });
+    const first = tables()[0].id;
+    expect(onCompared).toHaveBeenCalledWith(first, [a, b]);
+    expect(result.current.findComparison([b, a])?.messageId).toBe(first);
+
+    // The same two again (any order): the same comparison, no new table.
+    picks = [b, a];
+    act(() => void result.current.send("Compare these"));
+    await waitFor(
+      () =>
+        expect(lastAqua(result.current.messages)?.text).toMatch(
+          /compared these earlier/,
+        ),
+      { timeout: 4000 },
+    );
+    expect(onCompared).toHaveBeenLastCalledWith(first, [b, a]);
+    expect(tables()).toHaveLength(1);
+    expect(sendAiChat).not.toHaveBeenCalled();
+  });
+
   it("falls back to the built-in answers when the AI isn't configured", async () => {
     getAiStatus.mockResolvedValue(false);
     const { result } = setup();

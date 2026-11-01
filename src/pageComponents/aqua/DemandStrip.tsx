@@ -408,10 +408,10 @@ export default function DemandStrip({
         onPointerCancel={onTabUp}
         onKeyDown={onTabKey}
         aria-label={`Show ${headings.recent.toLowerCase()} and ${headings.trending.toLowerCase()}. Drag, or use the arrow keys, to move it`}
-        title="Tap to open · drag to move"
+        title="Popular · tap to open, drag to move"
       >
-        <Flame size={16} aria-hidden="true" />
-        <span className="aq-demand-tab-text">Popular</span>
+        {/* Just the flame: the label lives in aria-label and the tooltip. */}
+        <Flame size={18} aria-hidden="true" />
       </button>
     );
 

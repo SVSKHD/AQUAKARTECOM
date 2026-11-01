@@ -26,6 +26,7 @@ import { mentionedProducts } from "./replyProducts";
 import { readHome, sizeSofteners, type Sizing } from "./softenerSizing";
 import { uid } from "./hooks";
 import type { ChatMessage, ChatStatus, Product } from "./types";
+import { findComparison } from "./compareReuse";
 
 // Aqua's answers come from the AquaKart backend (POST /v1/ai/chat via
 // services/ai). The hook only produces messages: it never touches the flow
@@ -694,6 +695,22 @@ export function useAquaChat({
       return say(
         "Pick at least two products with Compare and I will line them up.",
       );
+    // Compared before (here or in a past chat): reopen it, no second table.
+    const earlier = findComparison(
+      ids,
+      messagesRef.current,
+      sessionsRef.current,
+    );
+    if (earlier) {
+      compareRef.current.clearCompare();
+      say(
+        earlier.chatId
+          ? `You compared these in "${earlier.chatTitle}", so I opened that comparison.`
+          : "You compared these earlier, so I opened that comparison again.",
+      );
+      compareRef.current.onCompared?.(earlier.messageId, ids);
+      return;
+    }
     compareRef.current.clearCompare();
     const id = say(
       "Here they are side by side. Open the comparison to view or buy any of them.",
@@ -1479,9 +1496,17 @@ export function useAquaChat({
       firstAsk.text
     : null;
 
+  // An earlier comparison of exactly these products, here or in a past chat.
+  const findEarlierComparison = useCallback(
+    (ids: string[]) =>
+      findComparison(ids, messagesRef.current, sessionsRef.current),
+    [],
+  );
+
   return {
     messages,
     title,
+    findComparison: findEarlierComparison,
     status,
     reasons,
     happy,
