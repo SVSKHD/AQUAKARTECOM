@@ -29,8 +29,8 @@ Versions below are declared ranges from `package.json`, not a guarantee of insta
 | Task                        | Start here                                                                                                            |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | Route, SSR data, metadata   | `src/pages/`; App Router routes in `src/app/`                                                                         |
-| Feature page UI             | `src/pageComponents/` (home, shop, products, checkout, orders, invoice, user, aqua, softenerPlanning)                 |
-| Shared UI                   | `src/components/`; common primitives in `src/components/ui/`                                                          |
+| Feature page UI             | `src/pageComponents/` (aqua, shop, products, checkout, orders, invoice, userDasboard, softenerPlanning)               |
+| Shared UI                   | `src/components/` (layout, dialogs, reusables, assistant, reviews)                                                    |
 | HTTP requests               | `src/services/` (products, user, order, invoice, googleAuth, ai, delivery, analyticsTracker, etc.)                    |
 | State / dialogs / cart      | `src/store/index.js`, `src/store/reducers/`                                                                           |
 | Session / Google sign-in    | `src/context/AuthContext.js`, `src/services/googleAuth.js`, `src/lib/`                                                |

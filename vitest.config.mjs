@@ -19,7 +19,7 @@ export default defineConfig({
     include: ["src/**/*.{test,spec}.{js,jsx,ts,tsx}"],
     coverage: {
       reporter: ["text", "html"],
-      include: ["src/components/ui/**/*.{js,jsx}"],
+      include: ["src/**/*.{js,jsx,ts,tsx}"],
     },
   },
 });
