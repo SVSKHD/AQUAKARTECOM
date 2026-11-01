@@ -31,6 +31,26 @@ export const scrollerOf = (node: EventTarget | null, sheet: Element) => {
   return null;
 };
 
+// Where a released sheet goes. Pulled down past 40% of its full height, or
+// flicked down: away. Pulled or flicked up the same way: full. Otherwise it
+// springs back to where it was.
+const FLICK_PX_PER_MS = 0.5;
+const CLOSE_BELOW = 0.6;
+export const sheetLanding = (
+  startH: number,
+  travel: number,
+  ms: number,
+  fullH: number,
+): "close" | "full" | "stay" => {
+  const v = travel / Math.max(1, ms); // px/ms, positive = down
+  const h = startH - travel;
+  if (travel > 0 && (v > FLICK_PX_PER_MS || h < fullH * CLOSE_BELOW))
+    return "close";
+  if (travel < 0 && (v < -FLICK_PX_PER_MS || h > fullH * CLOSE_BELOW))
+    return "full";
+  return "stay";
+};
+
 type Options = {
   ref: RefObject<HTMLElement | null>;
   enabled: boolean;

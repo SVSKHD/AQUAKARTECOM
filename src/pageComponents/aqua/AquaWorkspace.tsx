@@ -57,7 +57,7 @@ import {
 import ThemeLayer from "./ThemeLayer";
 import AquaHeader from "./AquaHeader";
 import HistoryDock from "./HistoryDock";
-import { useSheetContentDrag } from "./useSheetContentDrag";
+import { sheetLanding, useSheetContentDrag } from "./useSheetContentDrag";
 import { useEdgeSwipe } from "./useEdgeSwipe";
 import { isCompareAction } from "./compareAction";
 import Conversation from "./Conversation";
@@ -410,16 +410,25 @@ export default function AquaWorkspace() {
   // Where a dragged sheet lands: closed, peek or full, from the height it was
   // let go at and how fast it was moving. Shared by the handle and the
   // content drag below.
+  // Pulled down far enough (or flicked) it goes away, like a native sheet:
+  // it slides shut and the chat is back. A short pull springs back. Peek is
+  // the handle's tap; during a payment the sheet can't close, so it peeks.
   const settleSheet = (startH: number, dy: number, ms: number) => {
-    const v = dy / Math.max(1, ms); // px/ms, positive = down
-    const h = startH - dy;
-    const vh = window.innerHeight;
     setDragH(null);
-    if ((h < vh * 0.2 || (v > 0.8 && sheet === "peek")) && !locked)
-      return dispatch({ type: "CLOSE" });
-    if (v > 0.5) return setSheet("peek");
-    if (v < -0.5) return setSheet("full");
-    setSheet(h > vh * 0.55 ? "full" : "peek");
+    const landing = sheetLanding(startH, dy, ms, sheetFullH());
+    if (landing === "close") return locked ? setSheet("peek") : closeSheet();
+    if (landing === "full") setSheet("full");
+    // "stay": not far enough, back to where it was.
+  };
+  // Slides the sheet down to nothing, then closes the panel.
+  const [sheetLeaving, setSheetLeaving] = useState(false);
+  const closeSheet = () => {
+    if (reducedMotion) return dispatch({ type: "CLOSE" });
+    setSheetLeaving(true);
+    setTimeout(() => {
+      setSheetLeaving(false);
+      dispatch({ type: "CLOSE" });
+    }, 260);
   };
   const sheetFullH = () =>
     window.innerHeight * 0.88 - (hideComposer ? 0 : composerH + mainPadB);
@@ -1492,9 +1501,11 @@ export default function AquaWorkspace() {
             height:
               dragH !== null
                 ? dragH
-                : sheet === "full"
-                  ? `calc(88dvh - ${(hideComposer ? 0 : composerH + mainPadB) + (isMobile ? 0 : 8)}px)`
-                  : "34dvh",
+                : sheetLeaving
+                  ? 0
+                  : sheet === "full"
+                    ? `calc(88dvh - ${(hideComposer ? 0 : composerH + mainPadB) + (isMobile ? 0 : 8)}px)`
+                    : "34dvh",
             borderRadius: isMobile ? "24px 24px 0 0" : 24,
             zIndex: 30,
             overflow: "hidden",
@@ -1503,7 +1514,9 @@ export default function AquaWorkspace() {
             transition:
               dragH !== null
                 ? "none"
-                : "height 360ms cubic-bezier(.22,.8,.24,1), bottom 320ms ease",
+                : sheetLeaving
+                  ? "height 260ms cubic-bezier(.4,0,1,1)"
+                  : "height 360ms cubic-bezier(.22,.8,.24,1), bottom 320ms ease",
             animation: reducedMotion ? undefined : "aqSheetIn 320ms ease both",
           }}
         >

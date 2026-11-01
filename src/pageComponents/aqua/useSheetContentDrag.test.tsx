@@ -1,7 +1,7 @@
 import { act, render } from "@testing-library/react";
 import { useRef } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { useSheetContentDrag } from "./useSheetContentDrag";
+import { sheetLanding, useSheetContentDrag } from "./useSheetContentDrag";
 
 // jsdom has no Touch: a plain event carrying the touch lists the hook reads.
 const touch = (
@@ -111,5 +111,21 @@ describe("useSheetContentDrag", () => {
     expect(onDrag).toHaveBeenLastCalledWith(700);
     touch(content, "touchend", 100, 0, 200);
     expect(onSettle).toHaveBeenCalledWith(600, -480, 180);
+  });
+});
+
+describe("sheetLanding", () => {
+  const full = 700;
+  it("closes on a long pull down or a flick down", () => {
+    expect(sheetLanding(700, 300, 600, full)).toBe("close"); // 400 < 420
+    expect(sheetLanding(700, 80, 100, full)).toBe("close"); // flick
+  });
+  it("springs back from a short, slow pull", () => {
+    expect(sheetLanding(700, 120, 600, full)).toBe("stay");
+    expect(sheetLanding(300, -40, 400, full)).toBe("stay");
+  });
+  it("opens to full on a pull or flick up", () => {
+    expect(sheetLanding(300, -200, 600, full)).toBe("full"); // 500 > 420
+    expect(sheetLanding(300, -60, 80, full)).toBe("full"); // flick
   });
 });
