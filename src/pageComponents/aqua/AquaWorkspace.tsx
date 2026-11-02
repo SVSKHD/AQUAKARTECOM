@@ -1449,13 +1449,17 @@ export default function AquaWorkspace() {
         )}
       </main>
 
-      {/* Phones and tablets: a glowing grip on the left edge says the sidebar
-          is there. Pull it (the edge swipe) or tap it; it fades away as soon
-          as the sidebar starts to come in. */}
-      {(isTouch || isMobile) && !locked && !tourOpen && (
+      {/* Phones and tablets: a glowing grip near the left edge, the handle the
+          sidebar is pulled out by (the bare edge is the browser's back swipe).
+          Drag it right or tap it; it fades as the sidebar starts to come in.
+          Shown during the tour too, which points it out. */}
+      {(isTouch || isMobile) && !locked && (
         <button
           type="button"
           className="aq-dock-grip"
+          data-dock-grab
+          data-tour="dock-grip"
+          data-demo={tourOpen}
           data-hidden={
             dockOpen ||
             dockDrag !== null ||

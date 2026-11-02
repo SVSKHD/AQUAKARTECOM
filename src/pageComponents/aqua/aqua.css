@@ -1728,6 +1728,35 @@ textarea::placeholder {
   border-top: 1px solid rgba(var(--aq-ln), 0.08);
   background: rgba(var(--aq-gl), 0.35);
 }
+/* Preferences accordion in the sidebar footer. */
+.aq-dock-prefs-chev {
+  transition: transform 0.24s ease;
+}
+.aq-dock-prefs[data-open="true"] .aq-dock-prefs-chev {
+  transform: rotate(180deg);
+}
+.aq-dock-prefs-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.2s ease;
+}
+.aq-dock-prefs[data-open="true"] .aq-dock-prefs-body {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.aq-dock-prefs-inner {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 12px;
+  margin-left: 14px;
+  border-left: 1px solid rgba(var(--aq-ln), 0.1);
+}
 .aq-dock-account {
   display: flex;
   align-items: center;
@@ -8702,13 +8731,15 @@ button.aq-pf-buy {
 /* ---------- sidebar grip: a glowing pull tab on the left edge (touch) ---------- */
 .aq-dock-grip {
   position: absolute;
-  left: 0;
+  /* Inset from the edge: the outer ~20px is the browser's back swipe. The
+     thumb target is 52 x 96; the glowing bar sits at its left. */
+  left: 14px;
   top: 42%;
   z-index: 36;
-  /* A 24px-wide target inside the edge-swipe zone; the glow is the bar. */
-  width: 24px;
-  height: 84px;
-  margin-top: -42px;
+  width: 52px;
+  height: 96px;
+  margin-top: -48px;
+  border-radius: 16px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -8722,8 +8753,8 @@ button.aq-pf-buy {
 /* The bar: glass inside a glowing teal border (no drop shadow). */
 .aq-dock-grip span {
   position: absolute;
-  left: 3px;
-  top: 12px;
+  left: 8px;
+  top: 18px;
   width: 8px;
   height: 60px;
   border-radius: 999px;
@@ -8759,8 +8790,33 @@ button.aq-pf-buy {
 }
 .aq-dock-grip[data-hidden="true"] {
   opacity: 0;
-  transform: translateX(-100%);
+  transform: translateX(-40px);
   pointer-events: none;
+}
+/* The tour: the drag zone is outlined and the bar shows the pull. */
+.aq-dock-grip[data-demo="true"] {
+  border: 1.5px dashed rgba(16, 191, 164, 0.7);
+  background: rgba(16, 191, 164, 0.08);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .aq-dock-grip[data-demo="true"] span {
+    animation:
+      aqGripFlow 2.4s linear infinite,
+      aqGripDemo 1.6s cubic-bezier(0.22, 0.8, 0.24, 1) infinite;
+  }
+}
+@keyframes aqGripDemo {
+  0%,
+  15% {
+    transform: none;
+  }
+  55% {
+    transform: translateX(26px);
+  }
+  80%,
+  100% {
+    transform: none;
+  }
 }
 @media (prefers-reduced-motion: no-preference) {
   /* Light runs along the border while the ring pulses outward. */

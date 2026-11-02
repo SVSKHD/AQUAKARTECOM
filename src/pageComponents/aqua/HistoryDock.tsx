@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useId,
   useRef,
   useState,
   type CSSProperties,
@@ -12,6 +13,7 @@ import {
   BookOpen,
   Brain,
   Check,
+  ChevronDown,
   ChevronRight,
   Compass,
   ExternalLink,
@@ -25,6 +27,7 @@ import {
   Pin,
   PinOff,
   Plus,
+  SlidersHorizontal,
   Store,
   Trash2,
   X,
@@ -485,6 +488,8 @@ function Empty(p: { icon: ReactNode; title: string; text: string }) {
 export default function HistoryDock(p: Props) {
   const { open, onClose } = p;
   const [tab, setTab] = useState<Tab>("chats");
+  const [prefsOpen, setPrefsOpen] = useState(false);
+  const prefsId = useId();
   const tabRefs = useRef<Record<Tab, HTMLButtonElement | null>>({
     chats: null,
     viewed: null,
@@ -1097,88 +1102,129 @@ export default function HistoryDock(p: Props) {
               </section>
             )
           )}
-          {p.onToggleThinking && (
+          {/* Preferences: one row until opened, so the lists above keep the
+              height. Grid rows 0fr → 1fr animate to the content's own. */}
+          <section className="aq-dock-prefs" data-open={prefsOpen}>
             <button
               type="button"
-              role="switch"
-              aria-checked={p.thinking}
-              onClick={p.onToggleThinking}
-              className="aq-dock-row"
+              className="aq-dock-row aq-dock-prefs-head"
+              aria-expanded={prefsOpen}
+              aria-controls={prefsId}
+              onClick={() => setPrefsOpen((o) => !o)}
             >
               <span className="aq-dock-row-icon" aria-hidden="true">
-                <Brain size={15} color={p.thinking ? "#10BFA4" : undefined} />
+                <SlidersHorizontal size={15} />
               </span>
               <span className="aq-dock-row-text">
-                <span className="aq-dock-row-title">Show thinking</span>
+                <span className="aq-dock-row-title">Preferences</span>
                 <span className="aq-dock-row-meta">
-                  {p.thinking
-                    ? "See the steps behind each answer"
-                    : "Off for faster replies"}
+                  Thinking, shop, expert help and the tour
                 </span>
               </span>
-              <span
-                className="aq-dock-switch"
-                data-on={p.thinking}
+              <ChevronDown
+                size={15}
+                className="aq-dock-row-chev aq-dock-prefs-chev"
                 aria-hidden="true"
-              >
-                <span />
-              </span>
+              />
             </button>
-          )}
-          {/* The whole catalogue, opened as the shop artifact in the panel. */}
-          <button
-            type="button"
-            className="aq-dock-row"
-            disabled={p.locked}
-            onClick={p.onOpenCatalogue}
-          >
-            <span className="aq-dock-row-icon" aria-hidden="true">
-              <Store size={15} />
-            </span>
-            <span className="aq-dock-row-text">
-              <span className="aq-dock-row-title">Shop all products</span>
-              <span className="aq-dock-row-meta">
-                Search and filter the whole catalogue
-              </span>
-            </span>
-            <ChevronRight
-              size={15}
-              className="aq-dock-row-chev"
-              aria-hidden="true"
-            />
-          </button>
-          <button type="button" className="aq-dock-row" onClick={openExpert}>
-            <span className="aq-dock-row-icon" aria-hidden="true">
-              <MessageCircle size={15} />
-            </span>
-            <span className="aq-dock-row-text">
-              <span className="aq-dock-row-title">Talk to an expert</span>
-              <span className="aq-dock-row-meta">
-                Get help from the AquaKart team
-              </span>
-            </span>
-            <ChevronRight
-              size={15}
-              className="aq-dock-row-chev"
-              aria-hidden="true"
-            />
-          </button>
-          <button type="button" className="aq-dock-row" onClick={p.onStartTour}>
-            <span className="aq-dock-row-icon" aria-hidden="true">
-              <Compass size={15} />
-            </span>
-            <span className="aq-dock-row-text">
-              <span className="aq-dock-row-title">Take the tour</span>
-              <span className="aq-dock-row-meta">
-                A 30-second look at what Aqua can do
-              </span>
-            </span>
-            <ChevronRight
-              size={15}
-              className="aq-dock-row-chev"
-              aria-hidden="true"
-            />
-          </button>
+            <div id={prefsId} className="aq-dock-prefs-body" inert={!prefsOpen}>
+              <div className="aq-dock-prefs-inner">
+                {p.onToggleThinking && (
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={p.thinking}
+                    onClick={p.onToggleThinking}
+                    className="aq-dock-row"
+                  >
+                    <span className="aq-dock-row-icon" aria-hidden="true">
+                      <Brain
+                        size={15}
+                        color={p.thinking ? "#10BFA4" : undefined}
+                      />
+                    </span>
+                    <span className="aq-dock-row-text">
+                      <span className="aq-dock-row-title">Show thinking</span>
+                      <span className="aq-dock-row-meta">
+                        {p.thinking
+                          ? "See the steps behind each answer"
+                          : "Off for faster replies"}
+                      </span>
+                    </span>
+                    <span
+                      className="aq-dock-switch"
+                      data-on={p.thinking}
+                      aria-hidden="true"
+                    >
+                      <span />
+                    </span>
+                  </button>
+                )}
+                {/* The whole catalogue, opened as the shop artifact in the panel. */}
+                <button
+                  type="button"
+                  className="aq-dock-row"
+                  disabled={p.locked}
+                  onClick={p.onOpenCatalogue}
+                >
+                  <span className="aq-dock-row-icon" aria-hidden="true">
+                    <Store size={15} />
+                  </span>
+                  <span className="aq-dock-row-text">
+                    <span className="aq-dock-row-title">Shop all products</span>
+                    <span className="aq-dock-row-meta">
+                      Search and filter the whole catalogue
+                    </span>
+                  </span>
+                  <ChevronRight
+                    size={15}
+                    className="aq-dock-row-chev"
+                    aria-hidden="true"
+                  />
+                </button>
+                <button
+                  type="button"
+                  className="aq-dock-row"
+                  onClick={openExpert}
+                >
+                  <span className="aq-dock-row-icon" aria-hidden="true">
+                    <MessageCircle size={15} />
+                  </span>
+                  <span className="aq-dock-row-text">
+                    <span className="aq-dock-row-title">Talk to an expert</span>
+                    <span className="aq-dock-row-meta">
+                      Get help from the AquaKart team
+                    </span>
+                  </span>
+                  <ChevronRight
+                    size={15}
+                    className="aq-dock-row-chev"
+                    aria-hidden="true"
+                  />
+                </button>
+                <button
+                  type="button"
+                  className="aq-dock-row"
+                  onClick={p.onStartTour}
+                >
+                  <span className="aq-dock-row-icon" aria-hidden="true">
+                    <Compass size={15} />
+                  </span>
+                  <span className="aq-dock-row-text">
+                    <span className="aq-dock-row-title">Take the tour</span>
+                    <span className="aq-dock-row-meta">
+                      A 30-second look at what Aqua can do
+                    </span>
+                  </span>
+                  <ChevronRight
+                    size={15}
+                    className="aq-dock-row-chev"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
+            </div>
+          </section>
 
           {p.userName ? (
             <div className="aq-dock-account">

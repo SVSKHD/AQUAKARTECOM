@@ -2,13 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// Phones: a finger dragged in from the left edge pulls the sidebar out with
-// it; a finger dragged left on the open sidebar pushes it away. It only
-// becomes a swipe once the finger clearly moves sideways, so scrolling and
-// taps are left alone.
-
-// Where an opening swipe may start (px from the left edge).
-export const EDGE_ZONE = 28;
+// Phones: a finger dragged right from the sidebar's grip pulls the sidebar
+// out with it; a finger dragged left on the open sidebar pushes it away. It
+// only becomes a swipe once the finger clearly moves sideways, so scrolling
+// and taps are left alone.
+//
+// Not from the bare screen edge: there the browser's own back swipe (Safari,
+// Android's back gesture) wins and leaves the page. The grip sits inset,
+// clear of that zone, and is the only place an opening drag starts.
+export const GRAB_SELECTOR = "[data-dock-grab]";
 // Movement before deciding whether it's a sideways swipe or a scroll.
 const DECIDE_PX = 10;
 // Released past this share of the way, or faster than this, it completes.
@@ -81,8 +83,9 @@ export function useEdgeSwipe({
       if (e.touches.length !== 1) return;
       const t = e.touches[0];
       const isOpen = state.current.open;
-      // Opening only from the edge; closing from anywhere.
-      if (!isOpen && t.clientX > EDGE_ZONE) return;
+      // Opening only from the grip; closing from anywhere.
+      const target = e.target as Element | null;
+      if (!isOpen && !target?.closest?.(GRAB_SELECTOR)) return;
       track = {
         mode: isOpen ? "close" : "open",
         x0: t.clientX,
