@@ -20,6 +20,8 @@ import {
 import ArrowScroller from "./ArrowScroller";
 import { INR } from "./catalogue";
 import { useIsMobile, useIsTouch } from "./hooks";
+import { RatingLine } from "./ShopPanel";
+import type { Product } from "./types";
 
 export type ShopTab = "cart" | "fav";
 type Row = {
@@ -28,6 +30,8 @@ type Row = {
   price: number;
   photo?: string;
   qty: number;
+  // The catalogue product, when it's loaded: brand, rating, MRP and stock.
+  product?: Product;
 };
 
 type Props = {
@@ -227,13 +231,15 @@ export function ShopList(l: {
                 }
               />
               <div className="aq-shop-info">
+                {r.product?.brand && (
+                  <span className="aq-shop-brand">{r.product.brand}</span>
+                )}
                 <span className="aq-shop-title">{r.title}</span>
-                {/* Favourites: the price. Cart: the unit price, only when it
-                  differs from the line total beside it. */}
-                {(!isCart || r.qty > 1) && (
-                  <span className="aq-shop-unit">
-                    {INR(r.price)}
-                    {isCart ? " each" : ""}
+                {r.product && <RatingLine p={r.product} />}
+                <ShopPrice r={r} each={isCart && r.qty > 1} />
+                {r.product && (
+                  <span className="aq-pd-stock" data-in={r.product.inStock}>
+                    {r.product.stock}
                   </span>
                 )}
                 <div className="aq-shop-actions">
@@ -277,7 +283,8 @@ export function ShopList(l: {
                   </button>
                 </div>
               </div>
-              {isCart && (
+              {/* The line total, when it differs from the price shown. */}
+              {isCart && r.qty > 1 && (
                 <span className="aq-shop-total">{INR(r.price * r.qty)}</span>
               )}
             </div>
@@ -328,6 +335,27 @@ export function ShopList(l: {
         </div>
       )}
     </>
+  );
+}
+
+// Price, with the MRP struck through and the saving when there is one.
+// Cart rows with more than one unit say "each": the line total sits beside.
+function ShopPrice({ r, each }: { r: Row; each: boolean }) {
+  const mrp = r.product?.mrp ?? 0;
+  const pct = mrp > r.price ? Math.round(((mrp - r.price) / mrp) * 100) : 0;
+  return (
+    <span className="aq-pd-price aq-shop-price">
+      <b>
+        {INR(r.price)}
+        {each ? " each" : ""}
+      </b>
+      {pct > 0 && (
+        <>
+          <s>{INR(mrp)}</s>
+          <em>{pct}% off</em>
+        </>
+      )}
+    </span>
   );
 }
 

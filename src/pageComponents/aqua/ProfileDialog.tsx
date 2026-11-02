@@ -637,6 +637,9 @@ export default function ProfileDialog(p: Props) {
                 className="aq-icon-btn"
                 onClick={drawer.close}
                 aria-label="Close profile"
+                // Opening focus lands here, not on a field: a focused input
+                // pops the phone keyboard over the drawer as it opens.
+                data-autofocus
               >
                 <X size={16} />
               </button>
@@ -698,7 +701,6 @@ export default function ProfileDialog(p: Props) {
                     {(a) => (
                       <input
                         {...a}
-                        data-autofocus
                         className="aq-input"
                         value={form.firstName}
                         onChange={(e) =>
@@ -822,50 +824,54 @@ export default function ProfileDialog(p: Props) {
                             )}
                           </span>
                           <span>{addressLine(a)}</span>
-                          <HardnessChip h={addressHardness(a)} />
                         </span>
-                        {!sameAddress(a, current) && (
+                        <span className="aq-pf-addr-acts">
+                          {!sameAddress(a, current) && (
+                            <button
+                              type="button"
+                              className="aq-icon-btn"
+                              aria-label={`Use ${addressLine(a)} by default`}
+                              title="Make default"
+                              disabled={busy !== null}
+                              onClick={() =>
+                                void applyAddresses(
+                                  { kind: "default", index: i },
+                                  "Default address updated",
+                                )
+                              }
+                            >
+                              <Star size={15} />
+                            </button>
+                          )}
                           <button
                             type="button"
                             className="aq-icon-btn"
-                            aria-label={`Use ${addressLine(a)} by default`}
-                            title="Make default"
+                            aria-label={`Edit ${addressLine(a)}`}
+                            title="Edit"
+                            disabled={busy !== null}
+                            onClick={() => startEdit(i)}
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            className="aq-icon-btn"
+                            aria-label={`Remove ${addressLine(a)}`}
+                            title="Remove"
                             disabled={busy !== null}
                             onClick={() =>
                               void applyAddresses(
-                                { kind: "default", index: i },
-                                "Default address updated",
+                                { kind: "remove", index: i },
+                                "Address removed",
                               )
                             }
                           >
-                            <Star size={15} />
+                            <Trash2 size={15} />
                           </button>
-                        )}
-                        <button
-                          type="button"
-                          className="aq-icon-btn"
-                          aria-label={`Edit ${addressLine(a)}`}
-                          title="Edit"
-                          disabled={busy !== null}
-                          onClick={() => startEdit(i)}
-                        >
-                          <Pencil size={15} />
-                        </button>
-                        <button
-                          type="button"
-                          className="aq-icon-btn"
-                          aria-label={`Remove ${addressLine(a)}`}
-                          title="Remove"
-                          disabled={busy !== null}
-                          onClick={() =>
-                            void applyAddresses(
-                              { kind: "remove", index: i },
-                              "Address removed",
-                            )
-                          }
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                        </span>
+                        {/* Full card width under the address, so it never
+                            wraps around the action buttons. */}
+                        <HardnessChip h={addressHardness(a)} />
                       </div>
                     ),
                   )}
@@ -1134,8 +1140,10 @@ function HardnessChip({ h }: { h: HomeHardness | null }) {
       style={{ background: lv.tint, color: lv.ink }}
       title="Estimated for the area, not a test of your water"
     >
-      <Droplets size={12} aria-hidden="true" />
-      {lv.label} water · ~{h.ppm} ppm
+      <Droplets size={13} aria-hidden="true" />
+      <span className="aq-pf-hard-level">
+        {lv.label} water · ~{h.ppm} ppm
+      </span>
       <span className="aq-pf-hard-where">
         {h.area ? `est. for ${h.area.name}` : `${h.city.name} average`}
       </span>

@@ -4164,6 +4164,22 @@ button.aq-pf-stat:focus-visible {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+/* Favourites / cart rows read like a product card: brand, name, rating,
+   price with MRP and saving, stock. */
+.aq-shop-brand {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--aq-mut2);
+}
+.aq-shop-price {
+  margin-top: 2px;
+}
+.aq-shop-row .aq-pd-stock {
+  font-size: 11.5px;
+  font-weight: 600;
+}
 .aq-shop-unit {
   font-size: 12.5px;
   font-weight: 600;
@@ -4379,19 +4395,45 @@ button.aq-pf-stat:focus-visible {
 }
 
 /* Profile → Addresses: the estimated hardness where each address is */
-.aq-pf-hard {
-  align-self: flex-start;
-  display: inline-flex;
+/* Address cards: pin, text and actions on top; the hardness chip takes its
+   own line under the text, lined up with it. */
+.aq-pf-addr {
   flex-wrap: wrap;
+  align-items: flex-start;
+  row-gap: 10px;
+}
+.aq-pf-addr-icon {
+  margin-top: 2px;
+}
+.aq-pf-addr-acts {
+  flex: none;
+  display: flex;
+  gap: 4px;
+  margin: -4px -4px 0 0;
+}
+/* A two-line tag: the level, then where the estimate is from. */
+.aq-pf-hard {
+  /* Its own full line (the text's flex-basis is 0, so it would otherwise
+     share the top line), the same shape on every card. */
+  flex: 0 0 calc(100% - 28px);
+  margin-left: 28px; /* pin 16px + gap 12px */
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 4px 6px;
-  margin-top: 4px;
-  padding: 3px 9px;
-  border-radius: 999px;
-  font-size: 11.5px;
+  column-gap: 6px;
+  row-gap: 1px;
+  padding: 6px 12px 6px 10px;
+  border-radius: 12px;
+  font-size: 12px;
   font-weight: 700;
+  line-height: 1.35;
+}
+.aq-pf-hard-level {
+  min-width: 0;
 }
 .aq-pf-hard-where {
+  grid-column: 2;
+  font-size: 11px;
   font-weight: 600;
   opacity: 0.8;
 }
@@ -8569,12 +8611,35 @@ button.aq-pf-buy {
   font-size: 13px;
   white-space: nowrap;
 }
-/* Smaller arrows, centred on the chips. */
-.aq-followups-wrap .aq-scroll-left,
+/* One arrow size across an answer: the product cards and the follow-ups
+   share it (36px with a 44px hit area), so the two rows read as a set. */
+.aq-cards-wrap .aq-scroll-btn,
+.aq-followups-wrap .aq-scroll-btn {
+  width: 36px;
+  height: 36px;
+  margin-top: -18px;
+}
+.aq-cards-wrap .aq-scroll-btn::after,
+.aq-followups-wrap .aq-scroll-btn::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+}
+.aq-cards-wrap .aq-scroll-btn svg,
+.aq-followups-wrap .aq-scroll-btn svg {
+  width: 18px;
+  height: 18px;
+}
+/* On the chips the arrows sit at the very ends, and a snapped chip starts
+   clear of them, so an arrow never covers a question's first words. */
+.aq-followups-wrap .aq-scroll-left {
+  left: 0;
+}
 .aq-followups-wrap .aq-scroll-right {
-  width: 30px;
-  height: 30px;
-  margin-top: -17px;
+  right: 0;
+}
+.aq-followups-wrap[data-back="true"] .aq-followups {
+  scroll-padding-inline-start: 44px;
 }
 
 /* ---------- contact us: a smooth accordion under the latest answer ---------- */
@@ -8728,15 +8793,17 @@ button.aq-pf-buy {
   }
 }
 
-/* ---------- sidebar grip: a glowing pull tab on the left edge (touch) ---------- */
+/* ---------- sidebar grip: an iOS-style grabber on the left edge (touch) ---------- */
+/* Like the grabber on an iPhone sheet or notification: a slim frosted
+   capsule, stood on end. */
 .aq-dock-grip {
   position: absolute;
   /* Inset from the edge: the outer ~20px is the browser's back swipe. The
-     thumb target is 52 x 96; the glowing bar sits at its left. */
+     thumb target is 44 x 96; the capsule sits at its left. */
   left: 14px;
   top: 42%;
   z-index: 36;
-  width: 52px;
+  width: 44px;
   height: 96px;
   margin-top: -48px;
   border-radius: 16px;
@@ -8750,33 +8817,26 @@ button.aq-pf-buy {
     opacity 0.2s ease,
     transform 0.25s cubic-bezier(0.22, 0.8, 0.24, 1);
 }
-/* The bar: glass inside a glowing teal border (no drop shadow). */
+/* The capsule: iOS's grabber grey on frosted glass, a hairline keeping it
+   visible over any background. */
 .aq-dock-grip span {
   position: absolute;
   left: 8px;
-  top: 18px;
-  width: 8px;
-  height: 60px;
+  top: 26px;
+  width: 5px;
+  height: 44px;
   border-radius: 999px;
-  border: 2px solid transparent;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92))
-      padding-box,
-    linear-gradient(180deg, #7cf3dd, #10bfa4, #008b68, #10bfa4, #7cf3dd)
-      border-box;
-  background-size:
-    100% 100%,
-    100% 300%;
+  background: rgba(60, 60, 67, 0.34);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.7);
+  -webkit-backdrop-filter: blur(12px) saturate(1.6);
+  backdrop-filter: blur(12px) saturate(1.6);
+  transition:
+    transform 0.2s cubic-bezier(0.22, 0.8, 0.24, 1),
+    background-color 0.2s ease;
 }
-/* The pulse: a ring of the border that swells out and fades. */
-.aq-dock-grip span::after {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  border: 2px solid #34d9bd;
-  opacity: 0;
-  pointer-events: none;
+.aq-root[data-aq-mode="dark"] .aq-dock-grip span {
+  background: rgba(235, 235, 245, 0.36);
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.45);
 }
 .aq-dock-grip:focus-visible {
   outline: none;
@@ -8785,24 +8845,27 @@ button.aq-pf-buy {
   outline: 2px solid #10bfa4;
   outline-offset: 3px;
 }
+/* Pressed: the capsule firms up and stretches, as iOS does on touch. */
 .aq-dock-grip:active span {
-  transform: scaleX(1.3);
+  background: rgba(60, 60, 67, 0.55);
+  transform: scale(1.15, 1.12);
+}
+.aq-root[data-aq-mode="dark"] .aq-dock-grip:active span {
+  background: rgba(235, 235, 245, 0.6);
 }
 .aq-dock-grip[data-hidden="true"] {
   opacity: 0;
   transform: translateX(-40px);
   pointer-events: none;
 }
-/* The tour: the drag zone is outlined and the bar shows the pull. */
+/* The tour: the drag zone is outlined and the capsule shows the pull. */
 .aq-dock-grip[data-demo="true"] {
   border: 1.5px dashed rgba(16, 191, 164, 0.7);
   background: rgba(16, 191, 164, 0.08);
 }
 @media (prefers-reduced-motion: no-preference) {
   .aq-dock-grip[data-demo="true"] span {
-    animation:
-      aqGripFlow 2.4s linear infinite,
-      aqGripDemo 1.6s cubic-bezier(0.22, 0.8, 0.24, 1) infinite;
+    animation: aqGripDemo 1.6s cubic-bezier(0.22, 0.8, 0.24, 1) infinite;
   }
 }
 @keyframes aqGripDemo {
@@ -8811,39 +8874,10 @@ button.aq-pf-buy {
     transform: none;
   }
   55% {
-    transform: translateX(26px);
+    transform: translateX(24px);
   }
   80%,
   100% {
     transform: none;
-  }
-}
-@media (prefers-reduced-motion: no-preference) {
-  /* Light runs along the border while the ring pulses outward. */
-  .aq-dock-grip span {
-    animation: aqGripFlow 2.4s linear infinite;
-  }
-  .aq-dock-grip span::after {
-    animation: aqGripPulse 1.8s cubic-bezier(0.22, 0.8, 0.24, 1) infinite;
-  }
-}
-@keyframes aqGripFlow {
-  to {
-    background-position:
-      0 0,
-      0 -300%;
-  }
-}
-@keyframes aqGripPulse {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  60% {
-    opacity: 0.6;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(2.1, 1.3);
   }
 }

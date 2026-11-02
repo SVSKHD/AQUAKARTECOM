@@ -1169,6 +1169,7 @@ export default function AquaWorkspace() {
       price: byId.get(c._id)?.price ?? storePrice(c),
       photo: byId.get(c._id)?.photos[0] || storePhoto(c),
       qty: c.quantity || 1,
+      product: byId.get(c._id),
     })),
     favs: favs.map((f) => ({
       id: f._id,
@@ -1176,6 +1177,7 @@ export default function AquaWorkspace() {
       price: byId.get(f._id)?.price ?? storePrice(f),
       photo: byId.get(f._id)?.photos[0] || storePhoto(f),
       qty: 1,
+      product: byId.get(f._id),
     })),
     canCheckout: canDispatch(flow, "CHECKOUT_CART"),
     canView: canDispatch(flow, "VIEW") && !locked,
@@ -1449,7 +1451,7 @@ export default function AquaWorkspace() {
         )}
       </main>
 
-      {/* Phones and tablets: a glowing grip near the left edge, the handle the
+      {/* Phones and tablets: an iOS-style grabber near the left edge, the handle the
           sidebar is pulled out by (the bare edge is the browser's back swipe).
           Drag it right or tap it; it fades as the sidebar starts to come in.
           Shown during the tour too, which points it out. */}

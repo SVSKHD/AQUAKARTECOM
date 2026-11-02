@@ -71,7 +71,7 @@ const STEPS: Step[] = [
   {
     target: "dock-grip",
     title: "Pull out your sidebar",
-    body: "Drag the glowing handle on the left to the right with your thumb, or tap it, for your chats, viewed products and settings. Use the handle: a swipe from the very edge of the screen goes back in your browser.",
+    body: "Drag the small handle on the left to the right with your thumb, or tap it, for your chats, viewed products and settings. Use the handle: a swipe from the very edge of the screen goes back in your browser.",
     Icon: GripVertical,
   },
   {

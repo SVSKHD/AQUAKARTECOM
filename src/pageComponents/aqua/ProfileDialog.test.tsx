@@ -146,6 +146,8 @@ describe("ProfileDialog", () => {
     expect(screen.getByLabelText("First name")).toHaveValue("Asha");
     expect(screen.getByLabelText("Last name")).toHaveValue("Reddy");
     expect(screen.getByLabelText("Mobile number")).toHaveValue("9876543210");
+    // Focus starts on Close, not a field: no phone keyboard on open.
+    expect(screen.getByRole("button", { name: "Close profile" })).toHaveFocus();
     // The glass date picker's trigger shows the date (and the age beside it).
     expect(screen.getByLabelText("Birthday")).toHaveTextContent("21 Aug 1994");
     expect(screen.getByLabelText("Email")).toBeDisabled();
