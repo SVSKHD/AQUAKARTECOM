@@ -75,7 +75,7 @@ import { EMPTY_SHOP_UI, type ShopUi } from "./ShopPanel";
 const SHOP_COMPARISON = "shop";
 import { tabTitle } from "./pageTitle";
 import BlogBar from "./BlogBar";
-import DemandStrip from "./DemandStrip";
+import DemandStrip, { SHOW_HOT_PICKS } from "./DemandStrip";
 import { useBlogReads } from "./useBlogReads";
 import type { ProfileUser } from "./profile";
 
@@ -277,6 +277,8 @@ export default function AquaWorkspace() {
   );
   const [dragging, setDragging] = useState(false);
   const [dockOpen, setDockOpen] = useState(false);
+  // The hot-picks feed is showing (its bubble opens the sidebar on touch).
+  const [hotPicks, setHotPicks] = useState(false);
   const [shop, setShop] = useState<ShopTab | null>(null);
   // Blog reads: a floating, movable bar until it's closed, then a dock section.
   const reads = useBlogReads();
@@ -1451,39 +1453,18 @@ export default function AquaWorkspace() {
         )}
       </main>
 
-      {/* Phones and tablets: an iOS-style grabber near the left edge, the handle the
-          sidebar is pulled out by (the bare edge is the browser's back swipe).
-          Drag it right or tap it; it fades as the sidebar starts to come in.
-          Shown during the tour too, which points it out. */}
-      {(isTouch || isMobile) && !locked && (
-        <button
-          type="button"
-          className="aq-dock-grip"
-          data-dock-grab
-          data-tour="dock-grip"
-          data-demo={tourOpen}
-          data-hidden={
-            dockOpen ||
-            dockDrag !== null ||
-            profileOpen ||
-            !!answerProducts ||
-            (sheetLayout && open)
-          }
-          onClick={() => {
-            setShop(null);
-            setDockOpen(true);
-          }}
-          aria-label="Open the sidebar: chats, viewed products and settings"
-          title="Pull or tap for the sidebar"
-        >
-          <span aria-hidden="true" />
-        </button>
-      )}
-
       <HistoryDock
         open={dockOpen}
         drag={dockDrag}
         onOpenCatalogue={openCatalogue}
+        onOpenHotPicks={
+          (isTouch || isMobile) && hotPicks
+            ? () => {
+                setDockOpen(false);
+                window.dispatchEvent(new Event(SHOW_HOT_PICKS));
+              }
+            : undefined
+        }
         locked={locked}
         sessions={chat.sessions.filter(
           (s) =>
@@ -1759,7 +1740,16 @@ export default function AquaWorkspace() {
             onOpen={view}
             bottomOffset={hideComposer ? 0 : composerH + mainPadB}
             touch={isTouch || isMobile}
+            onOpenSidebar={
+              isTouch || isMobile
+                ? () => {
+                    setShop(null);
+                    setDockOpen(true);
+                  }
+                : undefined
+            }
             autoTuck={(isTouch || isMobile) && flow.state !== "welcome"}
+            onReady={setHotPicks}
           />
         )}
 

@@ -10,6 +10,8 @@ import { useEffect, useRef, useState } from "react";
 // Not from the bare screen edge: there the browser's own back swipe (Safari,
 // Android's back gesture) wins and leaves the page. The grip sits inset,
 // clear of that zone, and is the only place an opening drag starts.
+// Nothing carries it at the moment: on touch the sidebar opens from the
+// header's clock or the hot-picks bubble when it shows the clock (DemandStrip).
 export const GRAB_SELECTOR = "[data-dock-grab]";
 // Movement before deciding whether it's a sideways swipe or a scroll.
 const DECIDE_PX = 10;

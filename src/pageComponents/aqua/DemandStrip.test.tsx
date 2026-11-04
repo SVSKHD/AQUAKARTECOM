@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Product } from "./types";
@@ -35,7 +35,7 @@ vi.mock("@/components/demand/useDemandFeed", () => ({
   }),
 }));
 
-const { default: DemandStrip } = await import("./DemandStrip");
+const { default: DemandStrip, SHOW_HOT_PICKS } = await import("./DemandStrip");
 
 const product = {
   id: "p1",
@@ -44,7 +44,7 @@ const product = {
   photos: [],
 } as unknown as Product;
 
-function setup(touch: boolean) {
+function setup(touch: boolean, onOpenSidebar?: () => void) {
   const onOpen = vi.fn();
   render(
     <DemandStrip
@@ -54,6 +54,7 @@ function setup(touch: boolean) {
       bottomOffset={80}
       touch={touch}
       autoTuck={false}
+      onOpenSidebar={onOpenSidebar}
     />,
   );
   return { onOpen };
@@ -98,6 +99,38 @@ describe("DemandStrip (floating demand card)", () => {
     await user.click(screen.getByRole("button", { name: /^Show / }));
     expect(screen.getByRole("complementary")).toBeInTheDocument();
     expect(window.localStorage.getItem("aqua.demand.tucked")).toBe("0");
+  });
+
+  it("on touch, the bubble swaps flame and clock but always opens the sidebar", () => {
+    vi.useFakeTimers();
+    try {
+      window.localStorage.setItem("aqua.demand.tucked", "1");
+      const onOpenSidebar = vi.fn();
+      setup(true, onOpenSidebar);
+      const bubble = screen.getByRole("button", { name: /^Open the sidebar/ });
+      expect(bubble).toHaveAttribute("data-face", "hot");
+      fireEvent.click(bubble);
+      act(() => vi.advanceTimersByTime(2800));
+      expect(bubble).toHaveAttribute("data-face", "sidebar");
+      fireEvent.click(bubble);
+      expect(onOpenSidebar).toHaveBeenCalledTimes(2);
+      expect(screen.queryByRole("complementary")).not.toBeInTheDocument();
+      // The sidebar's "Hot picks" row brings the card back.
+      act(() => {
+        window.dispatchEvent(new Event(SHOW_HOT_PICKS));
+      });
+      expect(screen.getByRole("complementary")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps the flame alone without a sidebar to open", () => {
+    window.localStorage.setItem("aqua.demand.tucked", "1");
+    setup(true);
+    expect(screen.getByRole("button", { name: /^Show / })).not.toHaveAttribute(
+      "data-face",
+    );
   });
 
   it("swipes away on touch screens, and a short drag doesn't", () => {

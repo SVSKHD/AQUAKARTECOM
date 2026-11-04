@@ -18,7 +18,6 @@ import {
   ShoppingCart,
   Sparkles,
   X,
-  GripVertical,
 } from "lucide-react";
 import { useReducedMotion } from "./hooks";
 
@@ -67,12 +66,6 @@ const STEPS: Step[] = [
     title: "Cart and favourites",
     body: "Products you save or add from the chat land here, and checkout happens right in the chat.",
     Icon: ShoppingCart,
-  },
-  {
-    target: "dock-grip",
-    title: "Pull out your sidebar",
-    body: "Drag the small handle on the left to the right with your thumb, or tap it, for your chats, viewed products and settings. Use the handle: a swipe from the very edge of the screen goes back in your browser.",
-    Icon: GripVertical,
   },
   {
     target: "history",

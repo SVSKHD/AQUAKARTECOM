@@ -950,6 +950,14 @@ textarea::placeholder {
 .aq-composer textarea::placeholder {
   color: var(--aq-mut2);
 }
+/* One row while empty: the placeholder stays on one line beside the buttons. */
+.aq-composer[data-expanded="false"] textarea {
+  white-space: nowrap;
+  overflow: hidden;
+}
+.aq-composer[data-expanded="false"] textarea::placeholder {
+  text-overflow: ellipsis;
+}
 .aq-composer textarea:disabled {
   cursor: not-allowed;
 }
@@ -958,16 +966,6 @@ textarea::placeholder {
 }
 .aq-composer-action:disabled {
   opacity: 1;
-}
-.aq-composer-pill {
-  display: inline-flex;
-  align-items: center;
-  height: 24px;
-  padding: 0 10px;
-  border-radius: 999px;
-  font-size: 11.5px;
-  font-weight: 700;
-  white-space: nowrap;
 }
 .aq-composer-keys kbd {
   font-family: inherit;
@@ -1202,7 +1200,9 @@ textarea::placeholder {
   border-radius: 999px;
   background: var(--aq-surf);
   box-shadow: 0 2px 8px rgba(var(--aq-sh), 0.1);
-  transition: transform 0.42s cubic-bezier(0.34, 1.36, 0.5, 1);
+  transition:
+    transform 0.42s cubic-bezier(0.34, 1.36, 0.5, 1),
+    width 0.32s cubic-bezier(0.22, 0.8, 0.24, 1);
 }
 .aq-dock-tab {
   position: relative;
@@ -1728,7 +1728,22 @@ textarea::placeholder {
   border-top: 1px solid rgba(var(--aq-ln), 0.08);
   background: rgba(var(--aq-gl), 0.35);
 }
-/* Preferences accordion in the sidebar footer. */
+/* New chat: a compact pill in the sidebar's title row. */
+.aq-dock-newchat.aq-btn {
+  height: 40px;
+  min-height: 40px;
+  padding: 0 16px 0 12px;
+  gap: 6px;
+  border-radius: 999px;
+  font-size: 13.5px;
+}
+/* Preferences accordion in the sidebar footer. Its chevron stays on touch
+   screens (where row chevrons are hidden): it says the row opens. */
+@media (hover: none) {
+  .aq-dock-row-chev.aq-dock-prefs-chev {
+    display: block;
+  }
+}
 .aq-dock-prefs-chev {
   transition: transform 0.24s ease;
 }
@@ -2604,11 +2619,15 @@ textarea::placeholder {
 }
 
 /* ---------- history: purchases ---------- */
-/* Three tabs in a 320px dock: a touch tighter so "Purchases 12" fits. */
+/* Three tabs in a 320px dock: each as wide as its label plus even side
+   padding, sharing what's left, so "Purchases 12" never touches the pill. */
+.aq-dock-tabs {
+  grid-template-columns: repeat(var(--tabs, 2), auto);
+}
 .aq-dock-tab {
   font-size: 12.5px;
   gap: 5px;
-  padding: 0 4px;
+  padding: 0 8px;
   white-space: nowrap;
 }
 .aq-dock-purchase {
@@ -4946,6 +4965,31 @@ button.aq-pf-buy {
 .aq-demand-btn:focus-visible,
 .aq-demand-row:focus-visible,
 .aq-demand-line:focus-visible,
+/* Two-faced bubble (touch): the flame and the sidebar's clock swap places. */
+.aq-demand-tab[data-face] {
+  display: grid;
+  place-items: center;
+}
+.aq-demand-tab[data-face] svg {
+  grid-area: 1 / 1;
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+.aq-demand-face-sidebar {
+  color: var(--aq-mintink);
+}
+.aq-demand-tab[data-face="hot"] .aq-demand-face-sidebar,
+.aq-demand-tab[data-face="sidebar"] .aq-demand-face-hot {
+  opacity: 0;
+  transform: scale(0.6) rotate(-30deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .aq-demand-tab[data-face] svg {
+    transition: opacity 0.2s ease;
+    transform: none !important;
+  }
+}
 .aq-demand-tab:focus-visible {
   outline: 2px solid var(--aq-mintink);
   outline-offset: 2px;
@@ -8790,94 +8834,5 @@ button.aq-pf-buy {
   }
   .aq-reply-tools .aq-chip {
     min-height: 40px;
-  }
-}
-
-/* ---------- sidebar grip: an iOS-style grabber on the left edge (touch) ---------- */
-/* Like the grabber on an iPhone sheet or notification: a slim frosted
-   capsule, stood on end. */
-.aq-dock-grip {
-  position: absolute;
-  /* Inset from the edge: the outer ~20px is the browser's back swipe. The
-     thumb target is 44 x 96; the capsule sits at its left. */
-  left: 14px;
-  top: 42%;
-  z-index: 36;
-  width: 44px;
-  height: 96px;
-  margin-top: -48px;
-  border-radius: 16px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  touch-action: none;
-  -webkit-tap-highlight-color: transparent;
-  transition:
-    opacity 0.2s ease,
-    transform 0.25s cubic-bezier(0.22, 0.8, 0.24, 1);
-}
-/* The capsule: iOS's grabber grey on frosted glass, a hairline keeping it
-   visible over any background. */
-.aq-dock-grip span {
-  position: absolute;
-  left: 8px;
-  top: 26px;
-  width: 5px;
-  height: 44px;
-  border-radius: 999px;
-  background: rgba(60, 60, 67, 0.34);
-  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.7);
-  -webkit-backdrop-filter: blur(12px) saturate(1.6);
-  backdrop-filter: blur(12px) saturate(1.6);
-  transition:
-    transform 0.2s cubic-bezier(0.22, 0.8, 0.24, 1),
-    background-color 0.2s ease;
-}
-.aq-root[data-aq-mode="dark"] .aq-dock-grip span {
-  background: rgba(235, 235, 245, 0.36);
-  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.45);
-}
-.aq-dock-grip:focus-visible {
-  outline: none;
-}
-.aq-dock-grip:focus-visible span {
-  outline: 2px solid #10bfa4;
-  outline-offset: 3px;
-}
-/* Pressed: the capsule firms up and stretches, as iOS does on touch. */
-.aq-dock-grip:active span {
-  background: rgba(60, 60, 67, 0.55);
-  transform: scale(1.15, 1.12);
-}
-.aq-root[data-aq-mode="dark"] .aq-dock-grip:active span {
-  background: rgba(235, 235, 245, 0.6);
-}
-.aq-dock-grip[data-hidden="true"] {
-  opacity: 0;
-  transform: translateX(-40px);
-  pointer-events: none;
-}
-/* The tour: the drag zone is outlined and the capsule shows the pull. */
-.aq-dock-grip[data-demo="true"] {
-  border: 1.5px dashed rgba(16, 191, 164, 0.7);
-  background: rgba(16, 191, 164, 0.08);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .aq-dock-grip[data-demo="true"] span {
-    animation: aqGripDemo 1.6s cubic-bezier(0.22, 0.8, 0.24, 1) infinite;
-  }
-}
-@keyframes aqGripDemo {
-  0%,
-  15% {
-    transform: none;
-  }
-  55% {
-    transform: translateX(24px);
-  }
-  80%,
-  100% {
-    transform: none;
   }
 }

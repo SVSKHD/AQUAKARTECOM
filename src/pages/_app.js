@@ -11,7 +11,11 @@ import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import { useRouter } from "next/router";
 import Script from "next/script";
-import { Roboto_Mono, Montserrat } from "next/font/google";
+import {
+  Bricolage_Grotesque,
+  Plus_Jakarta_Sans,
+  Roboto_Mono,
+} from "next/font/google";
 import AquaAppLoader from "@/components/common/AquaAppLoader";
 import { AuthProvider } from "@/context/AuthContext";
 import { startAnalyticsVisit } from "@/services/analyticsTracker";
@@ -21,10 +25,17 @@ const robotoMono = Roboto_Mono({
   display: "swap",
   variable: "--font-roboto-mono",
 });
-const montserrat = Montserrat({
+// The same faces as the Aqua home (src/app/layout.tsx), so every page reads
+// as one product: Jakarta for text, Bricolage for display headings.
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-montserrat",
+  variable: "--font-jakarta",
+});
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-bricolage",
 });
 // Mounted here, not in AquaLayout, so the conversation and any in-flight reply
 // survive client-side navigation between pages.
@@ -152,7 +163,8 @@ export default function App({ Component, pageProps }) {
       <style jsx global>{`
         :root {
           --font-roboto-mono: ${robotoMono.style.fontFamily};
-          --font-montserrat: ${montserrat.style.fontFamily};
+          --font-jakarta: ${jakarta.style.fontFamily};
+          --font-bricolage: ${bricolage.style.fontFamily};
         }
       `}</style>
       <Script
@@ -167,7 +179,9 @@ export default function App({ Component, pageProps }) {
           gtag('config', '${GA_ID}');
         `}</Script>
       <AuthProvider>
-        <div className={`${robotoMono.variable} ${montserrat.variable}`}>
+        <div
+          className={`${robotoMono.variable} ${jakarta.variable} ${bricolage.variable}`}
+        >
           {!appReady ? (
             <AquaAppLoader variant="screen" message="AquaKart" subtext="" />
           ) : null}

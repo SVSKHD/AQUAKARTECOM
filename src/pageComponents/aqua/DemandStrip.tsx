@@ -10,7 +10,13 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { ChevronLeft, ChevronRight, Flame, GripVertical } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Flame,
+  GripVertical,
+} from "lucide-react";
 import { useDemandFeed } from "@/components/demand/useDemandFeed";
 import {
   cleanProductName,
@@ -47,6 +53,10 @@ type TabPos = { side: Side; y: number };
 const POS_KEY = "aqua.demand.pos";
 const TAB_KEY = "aqua.demand.tab";
 const TUCKED_KEY = "aqua.demand.tucked";
+// Fired on window to bring the card out of its bubble (the sidebar's row).
+export const SHOW_HOT_PICKS = "aqua:show-hot-picks";
+// How long each face of the two-faced bubble shows.
+const FACE_MS = 2800;
 const ROTATE_MS = 4000;
 const EDGE = 8;
 const NUDGE = 24;
@@ -84,6 +94,10 @@ const readPos = (): Pos | null => {
 // bottom on the bubble's side, swipe it toward that edge to tuck it away.
 // The bubble works like AssistiveTouch: drag it anywhere, it snaps to the
 // nearest side and stays there; tap it to open the card on that side.
+// On touch, given `onOpenSidebar`, the bubble is the sidebar's handle: it
+// alternates between the flame and the history clock, and a tap always opens
+// the sidebar, whose "Hot picks" row brings the card back (SHOW_HOT_PICKS).
+// `onReady` reports whether there's a feed to show.
 // Matched products open in the panel with the catalogue's photo and price
 // (the feed has no prices). Renders nothing while loading, empty or failed.
 export default function DemandStrip({
@@ -93,6 +107,8 @@ export default function DemandStrip({
   bottomOffset,
   touch,
   autoTuck,
+  onOpenSidebar,
+  onReady,
 }: {
   products: Map<string, Product>;
   area: string | null;
@@ -102,6 +118,8 @@ export default function DemandStrip({
   touch: boolean;
   // Tuck it away (without remembering it) once a chat is under way on touch.
   autoTuck: boolean;
+  onOpenSidebar?: () => void;
+  onReady?: (ready: boolean) => void;
 }) {
   const { status, result } = useDemandFeed({ area, limit: 8 });
   const reduced = useReducedMotion();
@@ -126,6 +144,8 @@ export default function DemandStrip({
   );
 
   // ---------- tucked into the edge tab ----------
+  // Which face the bubble shows when it doubles as the sidebar handle.
+  const [face, setFace] = useState<"hot" | "sidebar">("hot");
   const [tucked, setTuckedState] = useState(
     () => storage.get(TUCKED_KEY) === "1",
   );
@@ -235,6 +255,28 @@ export default function DemandStrip({
   } | null>(null);
   // While dragging, the bubble follows the finger freely (left/top in px).
   const [tabFree, setTabFree] = useState<Pos | null>(null);
+  const ready = status === "ready" && !!result;
+  useEffect(() => {
+    onReady?.(ready);
+    return () => onReady?.(false);
+  }, [ready, onReady]);
+  useEffect(() => {
+    const show = () => setTucked(false);
+    window.addEventListener(SHOW_HOT_PICKS, show);
+    return () => window.removeEventListener(SHOW_HOT_PICKS, show);
+  });
+  // Flame and clock take turns, held still while the bubble is dragged.
+  const twoFaced = touch && !!onOpenSidebar;
+  const holding = tabFree !== null;
+  useEffect(() => {
+    if (!twoFaced || !tucked) return setFace("hot");
+    if (holding) return;
+    const id = setInterval(
+      () => setFace((f) => (f === "hot" ? "sidebar" : "hot")),
+      FACE_MS,
+    );
+    return () => clearInterval(id);
+  }, [twoFaced, tucked, holding]);
   const tabJustDragged = useRef(false);
   const tabHost = () => tabRef.current?.offsetParent as HTMLElement | null;
   const clampTabY = useCallback((y: number) => {
@@ -309,6 +351,7 @@ export default function DemandStrip({
       tabJustDragged.current = false;
       return;
     }
+    if (onOpenSidebar) return onOpenSidebar();
     setTucked(false);
   };
   // Keyboard: up/down move it along the edge, left/right switch sides.
@@ -407,11 +450,28 @@ export default function DemandStrip({
         onPointerUp={onTabUp}
         onPointerCancel={onTabUp}
         onKeyDown={onTabKey}
-        aria-label={`Show ${headings.recent.toLowerCase()} and ${headings.trending.toLowerCase()}. Drag, or use the arrow keys, to move it`}
-        title="Popular · tap to open, drag to move"
+        data-face={twoFaced ? face : undefined}
+        aria-label={
+          twoFaced
+            ? "Open the sidebar: chats, hot picks and settings. Drag, or use the arrow keys, to move it"
+            : `Show ${headings.recent.toLowerCase()} and ${headings.trending.toLowerCase()}. Drag, or use the arrow keys, to move it`
+        }
+        title={
+          twoFaced
+            ? "Sidebar · tap to open, drag to move"
+            : "Popular · tap to open, drag to move"
+        }
       >
-        {/* Just the flame: the label lives in aria-label and the tooltip. */}
-        <Flame size={18} aria-hidden="true" />
+        {/* Just the icon: the label lives in aria-label and the tooltip. On
+            touch the flame and the sidebar's clock cross-fade in turn. */}
+        <Flame size={18} aria-hidden="true" className="aq-demand-face-hot" />
+        {twoFaced && (
+          <Clock
+            size={18}
+            aria-hidden="true"
+            className="aq-demand-face-sidebar"
+          />
+        )}
       </button>
     );
 

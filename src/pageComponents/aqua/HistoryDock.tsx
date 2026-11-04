@@ -3,6 +3,7 @@
 import {
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -18,6 +19,7 @@ import {
   Compass,
   ExternalLink,
   Eye,
+  Flame,
   ReceiptIndianRupee,
   LogOut,
   MessageCircle,
@@ -84,6 +86,8 @@ type Props = {
   onOpenProfile: (tab?: "profile" | "addresses" | "purchases") => void;
   // Opens the shop artifact (the catalogue in the panel).
   onOpenCatalogue: () => void;
+  // Touch: brings the hot-picks card back out (its bubble opens this sidebar).
+  onOpenHotPicks?: () => void;
   // While a finger drags it (phones): its translateX in px, else null.
   drag?: number | null;
   // Blog reads; listed here once the floating reads bar is closed (docked).
@@ -704,6 +708,22 @@ export default function HistoryDock(p: Props) {
     purchases: "Purchases",
   };
   const tabIndex = TABS.indexOf(tab);
+  // Tabs are as wide as their labels (so "Purchases 12" keeps its padding);
+  // the highlight takes the selected tab's measured place and size.
+  const [pill, setPill] = useState<{ x: number; w: number } | null>(null);
+  useLayoutEffect(() => {
+    const el = tabRefs.current[tab];
+    if (!el) return;
+    const place = () => setPill({ x: el.offsetLeft, w: el.offsetWidth });
+    place();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(place);
+    for (const t of TABS) {
+      const b = tabRefs.current[t];
+      if (b) ro.observe(b);
+    }
+    return () => ro.disconnect();
+  }, [tab]);
   const onTabKey = (e: ReactKeyboardEvent) => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
     e.preventDefault();
@@ -794,6 +814,15 @@ export default function HistoryDock(p: Props) {
             >
               History
             </span>
+            {/* In the title row, not a row of its own: the lists keep the height. */}
+            <button
+              type="button"
+              className="aq-btn aq-btn-primary aq-dock-newchat"
+              onClick={p.onNewChat}
+              disabled={p.locked}
+            >
+              <Plus size={16} aria-hidden="true" /> New chat
+            </button>
             <button
               type="button"
               className="aq-icon-btn"
@@ -803,15 +832,6 @@ export default function HistoryDock(p: Props) {
               <X size={16} />
             </button>
           </div>
-          <button
-            type="button"
-            className="aq-btn aq-btn-primary"
-            onClick={p.onNewChat}
-            disabled={p.locked}
-            style={{ width: "100%", fontSize: 13.5 }}
-          >
-            <Plus size={16} /> New chat
-          </button>
           <div
             role="tablist"
             aria-label="History"
@@ -819,7 +839,19 @@ export default function HistoryDock(p: Props) {
             style={{ "--ti": tabIndex, "--tabs": TABS.length } as CSSProperties}
             onKeyDown={onTabKey}
           >
-            <span className="aq-dock-tab-pill" aria-hidden="true" />
+            <span
+              className="aq-dock-tab-pill"
+              aria-hidden="true"
+              style={
+                pill
+                  ? {
+                      left: 0,
+                      width: pill.w,
+                      transform: `translateX(${pill.x}px)`,
+                    }
+                  : undefined
+              }
+            />
             {TABS.map((t) => (
               <button
                 key={t}
@@ -1101,6 +1133,28 @@ export default function HistoryDock(p: Props) {
                 ))}
               </section>
             )
+          )}
+          {p.onOpenHotPicks && (
+            <button
+              type="button"
+              className="aq-dock-row aq-dock-hotpicks"
+              onClick={p.onOpenHotPicks}
+            >
+              <span className="aq-dock-row-icon" aria-hidden="true">
+                <Flame size={15} color="#e8590c" />
+              </span>
+              <span className="aq-dock-row-text">
+                <span className="aq-dock-row-title">Hot picks</span>
+                <span className="aq-dock-row-meta">
+                  Recently bought and popular near you
+                </span>
+              </span>
+              <ChevronRight
+                size={15}
+                className="aq-dock-row-chev"
+                aria-hidden="true"
+              />
+            </button>
           )}
           {/* Preferences: one row until opened, so the lists above keep the
               height. Grid rows 0fr → 1fr animate to the content's own. */}

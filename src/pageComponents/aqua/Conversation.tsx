@@ -1119,6 +1119,13 @@ export default function Conversation(p: Props) {
               large={false}
               disabled={!!p.chat.limit}
               counter={p.chat.quota ? quotaLabel(p.chat.quota) : ""}
+              left={
+                p.chat.quota
+                  ? p.chat.quota.unlimited
+                    ? "unlimited"
+                    : p.chat.quota.remaining
+                  : undefined
+              }
               onSend={p.onSend}
               onFocusChange={p.onFocusChange}
             />

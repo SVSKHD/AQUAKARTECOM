@@ -5,7 +5,6 @@ import {
   ArrowUp,
   ArrowUpRight,
   Brain,
-  Droplets,
   LogIn,
   MessageCircle,
   Package,
@@ -15,6 +14,7 @@ import {
   Trash,
   X,
 } from "lucide-react";
+import logo from "@/assests/logo.png";
 import AssistantReply from "./AssistantReply";
 import ThinkingSteps from "./ThinkingSteps";
 import SupportNote from "./SupportNote";
@@ -168,12 +168,14 @@ function TypingIndicator() {
   );
 }
 
+// The Aquakart logo on every assistant message and in the header, as on /aqua.
 const AssistantAvatar = ({ size = "h-8 w-8" }) => (
   <span
     aria-hidden="true"
-    className={`${size} grid flex-none place-items-center rounded-full bg-gradient-to-br from-cyan-400 via-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/25`}
+    className={`${size} grid flex-none place-items-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-emerald-100`}
   >
-    <Droplets size={16} />
+    {/* eslint-disable-next-line @next/next/no-img-element */}
+    <img src={logo.src} alt="" className="h-[72%] w-[72%] object-contain" />
   </span>
 );
 
@@ -706,7 +708,7 @@ const AssistantWidget = ({ pathname = "" }) => {
   const panelHidden = reduceMotion
     ? { opacity: 0 }
     : drawer && !isSmall
-      ? { opacity: 1, x: "100%" }
+      ? { opacity: 0, x: 48, scale: 0.98 }
       : { opacity: 0, y: 24, scale: isSmall ? 1 : 0.97 };
 
   return (
@@ -734,9 +736,7 @@ const AssistantWidget = ({ pathname = "" }) => {
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="aq-assist-fab group fixed right-4 print:hidden z-[80] inline-flex h-14 items-center gap-2 rounded-full bg-slate-950 pl-2 pr-2 text-white shadow-[0_18px_45px_rgba(2,6,23,0.35)] ring-1 ring-white/10 transition hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/60 sm:right-6 sm:pr-5"
           >
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-cyan-400 via-emerald-500 to-teal-600 shadow-inner">
-              <Sparkles size={18} aria-hidden="true" />
-            </span>
+            <AssistantAvatar size="h-10 w-10" />
             <span className="hidden text-sm font-black tracking-tight sm:inline">
               Ask AquaKart
             </span>
@@ -745,7 +745,9 @@ const AssistantWidget = ({ pathname = "" }) => {
       </AnimatePresence>
 
       <AnimatePresence>
-        {open && drawer && (
+        {/* Dims the page behind the floating card: always on phones, and
+            for a page's context drawer on larger screens. */}
+        {open && (drawer || isSmall) && (
           <motion.div
             key="scrim"
             aria-hidden="true"
@@ -754,7 +756,7 @@ const AssistantWidget = ({ pathname = "" }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[94] hidden bg-slate-950/40 backdrop-blur-[2px] print:hidden sm:block"
+            className="fixed inset-0 z-[94] bg-slate-950/40 backdrop-blur-[2px] print:hidden"
           />
         )}
         {open && (
@@ -770,9 +772,12 @@ const AssistantWidget = ({ pathname = "" }) => {
             animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
             exit={panelHidden}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className={`fixed inset-0 z-[95] flex flex-col print:hidden overflow-hidden bg-[linear-gradient(180deg,#f3fbf8_0%,#f8fafc_55%,#eef4ff_100%)] pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] sm:pb-0 sm:pt-0 ${
+            className={`fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom)+8px)] top-[calc(env(safe-area-inset-top)+8px)] z-[95] flex flex-col overflow-hidden rounded-[1.5rem] border border-white/80 bg-[linear-gradient(180deg,#f3fbf8_0%,#f8fafc_55%,#eef4ff_100%)] shadow-[0_24px_70px_rgba(15,23,42,0.3)] ring-1 ring-slate-900/5 print:hidden ${
+              // Floating, never edge to edge: a card inset from the
+              // window (the page shows around it), full height for a page
+              // with context like an invoice.
               drawer
-                ? "sm:left-auto sm:w-[440px] sm:rounded-l-[1.75rem] sm:border-l sm:border-white/80 sm:shadow-[-30px_0_90px_rgba(15,23,42,0.28)]"
+                ? "sm:inset-auto sm:bottom-4 sm:right-4 sm:top-4 sm:w-[440px] sm:rounded-[1.75rem] sm:border sm:border-white/80 sm:shadow-[0_30px_90px_rgba(15,23,42,0.28)] sm:ring-1 sm:ring-slate-900/5"
                 : "sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[min(640px,calc(100dvh-3rem))] sm:w-[400px] sm:rounded-[1.75rem] sm:border sm:border-white/80 sm:shadow-[0_30px_90px_rgba(15,23,42,0.28)] sm:ring-1 sm:ring-slate-900/5"
             }`}
           >
@@ -852,7 +857,7 @@ const AssistantWidget = ({ pathname = "" }) => {
                     onClick={() => setTab(id)}
                     className={`inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-xl text-xs font-black transition ${
                       tab === id
-                        ? "bg-slate-950 text-white shadow-sm"
+                        ? "bg-[#008b68] text-white shadow-sm shadow-emerald-700/25"
                         : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                     }`}
                   >
@@ -925,7 +930,7 @@ const AssistantWidget = ({ pathname = "" }) => {
                       <button
                         type="button"
                         onClick={() => setTab("products")}
-                        className="mt-3 inline-flex min-h-10 w-full items-center gap-2 rounded-2xl bg-gradient-to-r from-slate-950 to-teal-900 px-3.5 text-left text-xs font-black text-white shadow-md transition hover:-translate-y-0.5"
+                        className="mt-3 inline-flex min-h-10 w-full items-center gap-2 rounded-2xl bg-[#008b68] px-3.5 text-left text-xs font-black text-white shadow-md transition hover:-translate-y-0.5"
                       >
                         <ShoppingBag size={15} aria-hidden="true" />
                         <span className="flex-1">

@@ -2947,6 +2947,507 @@
   }
 }
 
+/* ═══════════════ Aqua look ═══════════════
+   The invoice in the same language as /aqua and the shop: Jakarta text,
+   Bricolage headings, light frosted glass on a lagoon gradient, mint accents
+   and Aqua's green (#008b68) for actions. Colour and type only, so the
+   layouts above and the phone/print rules keep working. Sits before the
+   print block so print still wins. */
+.page {
+  --invoice-ink: #071a25;
+  --invoice-muted: #5f6f78;
+  --invoice-green: #006e53;
+  --invoice-mint: #10bfa4;
+  --aq-mint: #e5f8f2;
+  --aq-mintbd: #bfe6da;
+  --aq-bd: #dfe9e7;
+  --aq-tint: #f3f8f7;
+  --aq-body: #3d4f58;
+  --aq-mut2: #8a989f;
+  --aq-go: #008b68;
+  font-family: var(--app-font);
+  background: linear-gradient(180deg, #f4fcfe 0%, #e9f8f7 42%, #d6f2ee 100%)
+    fixed;
+}
+.page h1,
+.page h2,
+.page h3 {
+  font-family: var(--app-display-font);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.ambientOne {
+  background: #10bfa4;
+}
+.ambientTwo {
+  background: #7fd6f0;
+}
+
+/* Header: a glass pill like Aqua's. */
+.commandBar {
+  border-color: rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow:
+    0 18px 40px rgba(8, 74, 84, 0.1),
+    inset 1.5px 1.5px 0 -0.5px rgba(255, 255, 255, 0.98),
+    inset 0 -14px 24px -16px rgba(16, 191, 164, 0.22);
+  backdrop-filter: blur(22px) saturate(200%);
+}
+.commandBar::before {
+  display: none;
+}
+.brandMark {
+  border-color: var(--aq-mintbd);
+  border-radius: 999px;
+}
+.brand small {
+  letter-spacing: 0.06em;
+}
+.identityBadge {
+  border-color: var(--aq-mintbd);
+  color: var(--invoice-green);
+  background: var(--aq-mint);
+}
+.primaryButton {
+  background: var(--aq-go);
+  box-shadow: 0 10px 24px rgba(0, 139, 104, 0.28);
+}
+.primaryButton:hover:not(:disabled),
+.commandActions .primaryButton:hover:not(:disabled) {
+  background: #00785a;
+  box-shadow: 0 12px 28px rgba(0, 139, 104, 0.32);
+}
+.commandActions .chatButton {
+  border-color: var(--aq-mintbd);
+  color: var(--invoice-green);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 8px 20px rgba(8, 74, 84, 0.08);
+}
+.chatIcon {
+  background: var(--aq-go);
+}
+
+/* The sheet: frosted white, the hero light like Aqua's cards. */
+.invoiceShell {
+  border-color: rgba(255, 255, 255, 0.85);
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow:
+    0 30px 80px rgba(8, 74, 84, 0.12),
+    inset 1.5px 1.5px 0 -0.5px rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(22px) saturate(180%);
+}
+.invoiceHero {
+  color: var(--invoice-ink);
+  background:
+    radial-gradient(
+      circle at 85% 0%,
+      rgba(16, 191, 164, 0.18),
+      transparent 26rem
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      rgba(127, 214, 240, 0.2),
+      transparent 22rem
+    ),
+    linear-gradient(135deg, #f4fcfe, #e5f8f2);
+  border-bottom: 1px solid var(--aq-bd);
+}
+.invoiceHero::before {
+  border-color: rgba(16, 191, 164, 0.16);
+  box-shadow:
+    0 0 0 50px rgba(16, 191, 164, 0.04),
+    0 0 0 100px rgba(16, 191, 164, 0.025);
+}
+.heroLogo {
+  border-color: var(--aq-mintbd);
+  box-shadow: 0 14px 30px rgba(8, 74, 84, 0.12);
+}
+.heroBrand h1 {
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+}
+.heroBrand p,
+.heroInvoice small,
+.heroInvoice > span:not(.statusPill) {
+  color: var(--invoice-muted);
+}
+.eyebrow,
+.greetingCopy .eyebrow,
+.paymentInstructions .eyebrow {
+  color: var(--invoice-green);
+  letter-spacing: 0.12em;
+}
+.statusPaid {
+  border-color: var(--aq-mintbd);
+  color: var(--invoice-green);
+  background: var(--aq-mint);
+}
+.statusPending {
+  border-color: #f2dba8;
+  color: #8a5a00;
+  background: #fef3c7;
+}
+.greetingCard {
+  border-color: rgba(255, 255, 255, 0.9);
+  color: var(--invoice-ink);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 12px 30px rgba(8, 74, 84, 0.08);
+}
+.greetingIcon {
+  border-color: var(--aq-mintbd);
+  color: var(--invoice-green);
+  background: var(--aq-mint);
+  box-shadow: none;
+}
+.greetingCopy h2 {
+  color: var(--invoice-ink);
+}
+.greetingCopy p {
+  color: var(--aq-body);
+  font-size: 0.8rem;
+}
+.greetingFacts span {
+  border-color: var(--aq-mintbd);
+  color: var(--invoice-green);
+  background: #fff;
+  font-size: 0.72rem;
+}
+.greetingFacts svg {
+  color: var(--aq-go);
+}
+.metaStrip {
+  background: rgba(255, 255, 255, 0.6);
+  border-bottom-color: var(--aq-bd);
+}
+.metaStrip svg {
+  color: var(--aq-go);
+}
+.metaStrip span {
+  font-size: 0.68rem;
+}
+.metaStrip strong {
+  font-size: 0.9rem;
+}
+
+/* Section numbers and icons: mint chips, not black squares. */
+.sectionIndex,
+.recoIcon,
+.paymentIndex {
+  border: 1px solid var(--aq-mintbd);
+  color: var(--invoice-green);
+  background: var(--aq-mint);
+  box-shadow: none;
+}
+.sectionHeading h2,
+.summaryTopline h2 {
+  font-size: 1.2rem;
+}
+.itemCount {
+  border-color: var(--aq-mintbd);
+  color: var(--invoice-green);
+  background: var(--aq-mint);
+}
+.lineItem {
+  border-color: var(--aq-bd);
+  background: #fff;
+}
+.askButton {
+  color: #fff;
+  background: var(--aq-go);
+  box-shadow: 0 6px 16px rgba(0, 139, 104, 0.24);
+}
+.askButton svg {
+  color: #fff;
+}
+.askButton:hover {
+  background: #00785a;
+  box-shadow: 0 10px 22px rgba(0, 139, 104, 0.3);
+}
+.ghostButton {
+  border-color: var(--aq-mintbd);
+  color: var(--invoice-green);
+}
+.ghostButton:hover {
+  background: var(--aq-mint);
+}
+.amountWords {
+  border-color: var(--aq-mintbd);
+  background: var(--aq-mint);
+}
+/* The label on its own line above the words (they ran together inline). */
+.amountWords > span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--invoice-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.amountWords strong {
+  color: var(--invoice-ink);
+  font-size: 0.92rem;
+}
+
+/* Price calculation: a light card, the total in Aqua green. */
+.summaryCard {
+  border: 1px solid var(--aq-mintbd);
+  color: var(--invoice-ink);
+  background:
+    radial-gradient(
+      circle at 100% 0,
+      rgba(16, 191, 164, 0.14),
+      transparent 12rem
+    ),
+    #fff;
+  box-shadow: 0 18px 40px rgba(8, 74, 84, 0.1);
+}
+.summaryTopline h2 {
+  color: var(--invoice-ink);
+}
+.summaryTopline > svg {
+  color: var(--aq-go);
+}
+.summaryRows,
+.paymentState {
+  border-color: var(--aq-bd);
+}
+.summaryRows > .summaryPriceCell,
+.gstBreakdown > div {
+  border-color: var(--aq-bd);
+  color: var(--invoice-muted);
+  background: var(--aq-tint);
+  font-size: 0.74rem;
+}
+.summaryRows > .gstBreakdown {
+  border-color: var(--aq-mintbd);
+  background: var(--aq-mint);
+}
+.summaryRows small {
+  color: var(--invoice-green);
+}
+.summaryPriceCell > small,
+.summaryRows .summaryPriceCell > small,
+.gstBreakdown p,
+.grandTotal > small {
+  color: var(--aq-mut2);
+  font-size: 0.66rem;
+}
+.summaryRows strong {
+  color: var(--invoice-ink);
+  font-size: 0.92rem;
+}
+.grandTotal > span {
+  color: var(--invoice-muted);
+  font-size: 0.66rem;
+}
+.grandTotal > strong {
+  color: var(--invoice-green);
+  font-family: var(--app-display-font);
+  letter-spacing: -0.03em;
+}
+.paymentState > span:last-child {
+  color: var(--invoice-muted);
+  font-size: 0.7rem;
+}
+
+/* Recommendations: white product cards like the shop's, the photo on top
+   and the name and price on a frosted strip (no dark fade). */
+.recoCard {
+  color: var(--invoice-ink);
+  background: #fff;
+  box-shadow:
+    0 0 0 1px var(--aq-bd),
+    0 12px 28px rgba(8, 74, 84, 0.1);
+}
+.recoPoster {
+  color: var(--invoice-green);
+  background: radial-gradient(circle at 50% 30%, #fff, var(--aq-mint) 80%);
+}
+.recoPoster::after {
+  display: none;
+}
+.recoSummary {
+  border-top: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px) saturate(180%);
+}
+.recoPanel {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.92) 38%,
+    #fff 100%
+  );
+  backdrop-filter: blur(10px);
+}
+.recoCategory {
+  color: var(--invoice-green);
+}
+.recoTitle {
+  text-shadow: none;
+}
+.recoPrice s,
+.recoFacts dt {
+  color: var(--aq-mut2);
+}
+.recoFacts > div {
+  border-color: var(--aq-bd);
+  background: var(--aq-tint);
+}
+.recoDescription {
+  color: var(--aq-body);
+}
+.recoBadge {
+  background: var(--aq-go);
+  box-shadow: 0 6px 14px rgba(0, 139, 104, 0.25);
+}
+.recoAsk {
+  color: #fff;
+  background: var(--aq-go);
+}
+.recoAsk:hover {
+  background: #00785a;
+}
+.recoView {
+  border-color: var(--aq-mintbd);
+  color: var(--invoice-green);
+  background: #fff;
+}
+.recoView:hover {
+  background: var(--aq-mint);
+}
+
+/* Terms, care and footer. */
+.termItem,
+.careCard {
+  border-color: var(--aq-bd);
+  background: rgba(255, 255, 255, 0.86);
+}
+.termIcon,
+.careIcon {
+  border-color: var(--aq-mintbd);
+  color: var(--invoice-green);
+  background: var(--aq-mint);
+}
+.serviceAssurance {
+  border-color: var(--aq-mintbd);
+  background: var(--aq-mint);
+}
+.invoiceFooter {
+  border-top-color: var(--aq-bd);
+  background: rgba(255, 255, 255, 0.6);
+}
+.invoiceFooter strong {
+  font-family: var(--app-display-font);
+  font-size: 0.9rem;
+}
+.invoiceFooter span,
+.invoiceFooter p {
+  font-size: 0.72rem;
+}
+
+/* Purchase-order payment details: light, like the rest. */
+.paymentInstructions {
+  color: var(--invoice-ink);
+  background:
+    radial-gradient(
+      circle at 90% 0,
+      rgba(16, 191, 164, 0.14),
+      transparent 24rem
+    ),
+    var(--aq-tint);
+}
+.paymentHeading > p,
+.paymentNotice {
+  color: var(--aq-body);
+}
+.bankCard {
+  border-color: var(--aq-bd);
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(8, 74, 84, 0.08);
+}
+.bankTopline,
+.bankDetails dt {
+  color: var(--invoice-muted);
+}
+.bankIcon {
+  border-color: var(--aq-mintbd);
+  color: var(--invoice-green);
+  background: var(--aq-mint);
+}
+.bankCard h3,
+.bankDetails dd {
+  color: var(--invoice-ink);
+}
+.bankDetails > div {
+  border-color: var(--aq-bd);
+  background: var(--aq-tint);
+}
+.bankCard button {
+  border-color: transparent;
+  color: #fff;
+  background: var(--aq-go);
+}
+.bankCard button:hover {
+  background: #00785a;
+}
+.paymentNotice {
+  border-color: var(--aq-mintbd);
+  background: var(--aq-mint);
+}
+.paymentNotice svg {
+  color: var(--aq-go);
+}
+
+/* Phones: the bottom bar as Aqua's frosted composer bar. */
+@media (max-width: 720px) {
+  /* Edge to edge here (see the 720px block above): keep the corners square. */
+  .commandBar,
+  .invoiceShell {
+    border-radius: 0;
+  }
+  .mobileDownloadBar {
+    border-color: rgba(255, 255, 255, 0.85);
+    color: var(--invoice-ink);
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow:
+      0 18px 40px rgba(8, 74, 84, 0.16),
+      inset 1.5px 1.5px 0 -0.5px rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(22px) saturate(200%);
+  }
+  .mobileDownloadBar span {
+    color: var(--invoice-muted);
+    font-size: 0.62rem;
+  }
+  .mobileDownloadBar strong {
+    color: var(--invoice-green);
+    font-size: 0.95rem;
+  }
+  .mobileDownloadBar button {
+    border-radius: 999px;
+    color: #fff;
+    background: var(--aq-go);
+    font-size: 0.78rem;
+  }
+  .mobileDownloadBar button:last-child {
+    border: 1px solid var(--aq-bd);
+    color: var(--invoice-ink);
+    background: #fff;
+  }
+  .mobileDownloadBar .mobileChat {
+    border: 1px solid var(--aq-mintbd);
+    color: var(--invoice-green);
+    background: var(--aq-mint);
+    box-shadow: none;
+  }
+  .mobileChat i {
+    border-color: var(--aq-mint);
+  }
+}
+
 @media print {
   .page {
     padding: 0;

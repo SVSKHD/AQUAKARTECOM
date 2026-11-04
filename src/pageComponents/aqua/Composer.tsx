@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { ArrowUp, Mic, Square } from "lucide-react";
+import { ArrowUp, Infinity as Unlimited, Mic, Square } from "lucide-react";
 import { AI_PROMPT_MAX } from "@/services/ai";
 import { openExpert } from "./AquaHeader";
 import { stopSpeaking } from "./ReplyActions";
@@ -14,6 +14,9 @@ type Props = {
   disabled?: boolean;
   // "2 of 3 free questions left today"; empty when the quota is unknown.
   counter?: string;
+  // Questions left, for the badge on send: a number, or "unlimited" in
+  // testing / for admins and testers. Absent when the quota is unknown.
+  left?: number | "unlimited";
   onSend: (text: string) => boolean;
   onFocusChange: (focused: boolean) => void;
 };
@@ -38,8 +41,8 @@ type SpeechRec = {
 const COUNT_FROM = 1600;
 
 // Mic and send are one matched pair: same circle, same icon size and stroke.
-const ACTION = 40;
-const ICON = 18;
+const ACTION = 36;
+const ICON = 17;
 const STROKE = 2.25;
 
 // Always mounted and always enabled. Sending while Aqua is replying completes that reply first.
@@ -49,6 +52,7 @@ export default function Composer({
   large,
   disabled = false,
   counter = "",
+  left,
   onSend,
   onFocusChange,
 }: Props) {
@@ -64,7 +68,7 @@ export default function Composer({
     if (!el) return;
     el.style.height = "auto";
     el.style.height = Math.min(168, el.scrollHeight) + "px";
-  }, [text, large]);
+  }, [text, large, listening, hint]);
   useEffect(() => () => rec.current?.stop(), []);
   useEffect(() => {
     if (disabled) rec.current?.stop();
@@ -118,7 +122,11 @@ export default function Composer({
   const replying = busy && !canSend && !disabled;
   const active = focused || listening;
   const showCount = text.length >= COUNT_FROM;
-  const radius = large ? 26 : 24;
+  // Empty: one row (field, mic, send). Typing, listening or a hint opens it
+  // into the full text area with the toolbar underneath.
+  const expanded = !!text || listening || !!hint;
+  // A full pill while it's one row; a rounded card once it opens up.
+  const radius = expanded ? (large ? 26 : 22) : 999;
 
   const actionBase = {
     width: ACTION,
@@ -149,7 +157,15 @@ export default function Composer({
         data-active={active}
         data-listening={listening}
         data-disabled={disabled}
-        style={{ position: "relative", width: "100%", borderRadius: radius }}
+        data-expanded={expanded}
+        style={{
+          position: "relative",
+          width: "100%",
+          borderRadius: radius,
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
         onClick={(e) => {
           // Clicking the card's padding focuses the text box.
           if (e.target === e.currentTarget) ta.current?.focus();
@@ -176,8 +192,9 @@ export default function Composer({
           placeholder={listening ? "Listening… speak now" : placeholder}
           style={{
             display: "block",
-            width: "100%",
-            minHeight: large ? 56 : 44,
+            flex: expanded ? "1 1 100%" : "1 1 0",
+            minWidth: 0,
+            minHeight: expanded ? (large ? 56 : 44) : ACTION,
             maxHeight: 168,
             resize: "none",
             border: 0,
@@ -186,20 +203,35 @@ export default function Composer({
             fontFamily: "inherit",
             fontSize: large ? 16.5 : 15,
             fontWeight: 500,
-            lineHeight: 1.55,
+            lineHeight: 1.5,
             color: "var(--aq-ink)",
-            padding: large ? "16px 18px 4px" : "13px 16px 2px",
+            padding: expanded
+              ? large
+                ? "14px 18px 2px"
+                : "11px 16px 0"
+              : large
+                ? "14px 6px 14px 20px"
+                : "10px 6px 10px 18px",
           }}
         />
 
-        {/* toolbar: status on the left, the matched mic + send pair on the right */}
+        {/* toolbar: status on the left, the matched mic + send pair on the right;
+            beside the field while empty, under it once typing */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 8,
-            padding: large ? "4px 10px 10px 14px" : "2px 8px 8px 12px",
-            minHeight: ACTION + 10,
+            gap: 6,
+            flex: expanded ? "1 1 100%" : "0 0 auto",
+            minWidth: 0,
+            padding: expanded
+              ? large
+                ? "2px 8px 8px 14px"
+                : "0 6px 6px 12px"
+              : large
+                ? "8px 8px 8px 0"
+                : "4px 5px 4px 0",
+            minHeight: ACTION + 8,
           }}
         >
           <div
@@ -242,21 +274,7 @@ export default function Composer({
               </span>
             ) : (
               <>
-                {counter && (
-                  <span
-                    aria-live="polite"
-                    className="aq-composer-pill"
-                    style={{
-                      color: disabled ? "#B42318" : "var(--aq-mintink)",
-                      background: disabled
-                        ? "#FDECEC"
-                        : "rgba(var(--aq-mintrgb),.85)",
-                    }}
-                  >
-                    {counter}
-                  </span>
-                )}
-                {active && !showCount && !disabled && !counter && (
+                {expanded && active && !showCount && !disabled && (
                   <span
                     className="aq-composer-keys"
                     style={{ fontSize: 11.5, color: "var(--aq-mut2)" }}
@@ -318,10 +336,19 @@ export default function Composer({
             onClick={() => submit()}
             disabled={!canSend}
             aria-label={replying ? "Aqua is replying" : "Send"}
-            title={replying ? "Aqua is replying" : "Send"}
+            title={
+              replying
+                ? "Aqua is replying"
+                : counter
+                  ? `Send · ${counter}`
+                  : "Send"
+            }
             style={{
               ...actionBase,
-              background: canSend ? "#008B68" : "rgba(var(--aq-ln),.06)",
+              position: "relative",
+              background: canSend
+                ? "linear-gradient(135deg, #10bfa4, #008B68 70%)"
+                : "rgba(var(--aq-ln),.06)",
               color: canSend ? "#fff" : "var(--aq-mut2)",
               boxShadow: canSend ? "0 6px 16px rgba(0,139,104,.28)" : "none",
               cursor: canSend ? "pointer" : "default",
@@ -343,7 +370,27 @@ export default function Composer({
             ) : (
               <ArrowUp size={ICON} strokeWidth={STROKE} />
             )}
+            {/* Questions left, as the header's count badges: a number when
+                limited (red at none), an infinity sign when unlimited. */}
+            {left !== undefined && (
+              <span
+                className="aq-badge"
+                aria-hidden="true"
+                style={{ background: left === 0 ? "#B42318" : "#008B68" }}
+              >
+                {left === "unlimited" ? (
+                  <Unlimited size={11} strokeWidth={3} />
+                ) : (
+                  left
+                )}
+              </span>
+            )}
           </button>
+          {counter && (
+            <span aria-live="polite" className="aq-sr-only">
+              {counter}
+            </span>
+          )}
         </div>
       </div>
 

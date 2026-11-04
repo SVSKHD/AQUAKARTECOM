@@ -2,14 +2,18 @@
 
 /* ╔═══════════════════════════════════════════════════════════╗
    ║  FONT CONTROL — single source of truth for app fonts.      ║
-   ║  --font-roboto-mono / --font-montserrat are injected by    ║
-   ║  next/font/google from src/pages/_app.js.                  ║
-   ║  Reorder the stack below to change priority for the app.   ║
+   ║  --font-jakarta / --font-bricolage / --font-roboto-mono    ║
+   ║  are injected by next/font/google from src/pages/_app.js   ║
+   ║  (and src/app/layout.tsx for the Aqua home), so the shop,  ║
+   ║  invoices and every page match Aqua.                       ║
    ╚═══════════════════════════════════════════════════════════╝ */
 :root {
   --app-font:
-    var(--font-roboto-mono), var(--font-montserrat), ui-monospace,
-    SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    var(--font-jakarta), system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+  --app-display-font: var(--font-bricolage), var(--app-font);
+  --app-mono-font:
+    var(--font-roboto-mono), ui-monospace, SFMono-Regular, Menlo, Consolas,
     monospace;
   --aqua-page-surface: #f6faf9;
   --aqua-page-surface-strong: #eef6f4;
@@ -19,9 +23,9 @@
 /* Tailwind v4 theme tokens — so `font-sans` / `font-mono` utilities resolve to --app-font */
 @theme inline {
   --font-sans: var(--app-font);
-  --font-mono: var(--app-font);
+  --font-mono: var(--app-mono-font);
   --default-font-family: var(--app-font);
-  --default-mono-font-family: var(--app-font);
+  --default-mono-font-family: var(--app-mono-font);
 }
 
 /* ── Glass UI Base ─────────────────────────────────────── */
