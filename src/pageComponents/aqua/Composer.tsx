@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { ArrowUp, Infinity as Unlimited, Mic, Square } from "lucide-react";
-import { AI_PROMPT_MAX } from "@/services/ai";
+import { AI_PROMPT_MAX, AI_VOICE_MAX_MS } from "@/services/ai";
 import { openExpert } from "./AquaHeader";
 import { stopSpeaking } from "./ReplyActions";
 
@@ -18,23 +18,21 @@ type Props = {
   // testing / for admins and testers. Absent when the quota is unknown.
   left?: number | "unlimited";
   onSend: (text: string) => boolean;
+  // A recorded voice question → its words (the server transcribes it).
+  onTranscribe?: (audio: Blob) => Promise<string>;
   onFocusChange: (focused: boolean) => void;
 };
 
-type SpeechRec = {
-  lang: string;
-  interimResults: boolean;
-  onresult:
-    | ((e: {
-        results: ArrayLike<
-          ArrayLike<{ transcript: string }> & { isFinal: boolean }
-        >;
-      }) => void)
-    | null;
-  onend: (() => void) | null;
-  onerror: (() => void) | null;
-  start: () => void;
-  stop: () => void;
+// Shorter than this is a mis-tap, not a question.
+const VOICE_MIN_MS = 700;
+// The first format this browser can record: Opus in WebM (Chrome, Edge,
+// Firefox, Android), else AAC in MP4 (Safari, iOS).
+const VOICE_TYPES = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"];
+const voiceType = () =>
+  VOICE_TYPES.find((t) => MediaRecorder.isTypeSupported?.(t)) || "";
+const clock = (ms: number) => {
+  const sec = Math.floor(ms / 1000);
+  return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
 };
 
 // Shown once the draft gets close to the server's 2,000-character limit.
@@ -54,25 +52,60 @@ export default function Composer({
   counter = "",
   left,
   onSend,
+  onTranscribe,
   onFocusChange,
 }: Props) {
   const [text, setText] = useState("");
   const [hint, setHint] = useState("");
+  // Recording a voice question, then waiting for its words.
   const [listening, setListening] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const [focused, setFocused] = useState(false);
   const ta = useRef<HTMLTextAreaElement>(null);
-  const rec = useRef<SpeechRec | null>(null);
+  const rec = useRef<MediaRecorder | null>(null);
+  // Set when the recording is thrown away instead of sent (unmount, limit hit).
+  const discard = useRef(false);
+  const hintTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     const el = ta.current;
     if (!el) return;
     el.style.height = "auto";
     el.style.height = Math.min(168, el.scrollHeight) + "px";
-  }, [text, large, listening, hint]);
-  useEffect(() => () => rec.current?.stop(), []);
+  }, [text, large, listening, transcribing, hint]);
+  const stopRecording = (keep: boolean) => {
+    discard.current = !keep;
+    if (rec.current?.state === "recording") rec.current.stop();
+  };
+  useEffect(
+    () => () => {
+      stopRecording(false);
+      clearTimeout(hintTimer.current);
+    },
+    [],
+  );
   useEffect(() => {
-    if (disabled) rec.current?.stop();
+    if (disabled) stopRecording(false);
   }, [disabled]);
+  // The timer while recording; it stops itself at the server's one-minute cap.
+  useEffect(() => {
+    if (!listening) return;
+    const t0 = Date.now();
+    setElapsed(0);
+    const id = setInterval(() => {
+      const ms = Date.now() - t0;
+      setElapsed(ms);
+      if (ms >= AI_VOICE_MAX_MS) stopRecording(true);
+    }, 250);
+    return () => clearInterval(id);
+  }, [listening]);
+
+  const flash = (msg: string, ms = 3200) => {
+    clearTimeout(hintTimer.current);
+    setHint(msg);
+    hintTimer.current = setTimeout(() => setHint(""), ms);
+  };
 
   const submit = (value = text) => {
     if (!value.trim()) return;
@@ -86,36 +119,64 @@ export default function Composer({
     }
   };
 
-  const mic = () => {
-    const w = window as unknown as {
-      SpeechRecognition?: new () => SpeechRec;
-      webkitSpeechRecognition?: new () => SpeechRec;
-    };
-    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
-    if (listening) return rec.current?.stop();
+  // Tap to record, tap again to send: the clip is transcribed on the server
+  // and the words go to Aqua as the question.
+  const mic = async () => {
+    if (listening) return stopRecording(true);
+    if (transcribing) return;
     stopSpeaking();
-    if (!SR) {
-      setHint("Voice isn't supported in this browser. Type instead.");
-      setTimeout(() => setHint(""), 2600);
-      return;
+    if (
+      !onTranscribe ||
+      typeof MediaRecorder === "undefined" ||
+      !navigator.mediaDevices?.getUserMedia
+    )
+      return flash("Voice isn't supported in this browser. Type instead.");
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (e) {
+      const denied = (e as DOMException)?.name === "NotAllowedError";
+      return flash(
+        denied
+          ? "Allow microphone access to speak to Aqua."
+          : "No microphone found. Type instead.",
+      );
     }
-    const r = new SR();
+    const type = voiceType();
+    const r = new MediaRecorder(stream, type ? { mimeType: type } : undefined);
+    const chunks: Blob[] = [];
+    const started = Date.now();
     rec.current = r;
-    r.lang = "en-IN";
-    r.interimResults = true;
-    r.onresult = (e) => {
-      const res = e.results[e.results.length - 1];
-      setText(res[0].transcript);
-      if (res.isFinal) submit(res[0].transcript);
+    discard.current = false;
+    r.ondataavailable = (e) => {
+      if (e.data.size) chunks.push(e.data);
     };
-    r.onend = () => {
+    r.onstop = async () => {
+      stream.getTracks().forEach((t) => t.stop());
+      rec.current = null;
       setListening(false);
       onFocusChange(false);
+      if (discard.current) return;
+      if (Date.now() - started < VOICE_MIN_MS || !chunks.length)
+        return flash("Tap the mic, speak, then tap it again to send.");
+      setTranscribing(true);
+      try {
+        const words = await onTranscribe(
+          new Blob(chunks, { type: r.mimeType || type || "audio/webm" }),
+        );
+        if (!words) return flash("Didn't catch that. Try again or type.");
+        if (!onSend(words)) setText(words);
+      } catch (e) {
+        flash(
+          (e as Error)?.message || "Couldn't hear that. Try again or type.",
+        );
+      } finally {
+        setTranscribing(false);
+      }
     };
-    r.onerror = () => setHint("Microphone unavailable. Type instead.");
+    r.start();
     setListening(true);
     onFocusChange(true);
-    r.start();
   };
 
   const canSend = !!text.trim() && !disabled;
@@ -124,7 +185,7 @@ export default function Composer({
   const showCount = text.length >= COUNT_FROM;
   // Empty: one row (field, mic, send). Typing, listening or a hint opens it
   // into the full text area with the toolbar underneath.
-  const expanded = !!text || listening || !!hint;
+  const expanded = !!text || listening || transcribing || !!hint;
   // A full pill while it's one row; a rounded card once it opens up.
   const radius = expanded ? (large ? 26 : 22) : 999;
 
@@ -189,7 +250,13 @@ export default function Composer({
             setFocused(false);
             onFocusChange(false);
           }}
-          placeholder={listening ? "Listening… speak now" : placeholder}
+          placeholder={
+            listening
+              ? "Listening… speak now"
+              : transcribing
+                ? "Getting your words…"
+                : placeholder
+          }
           style={{
             display: "block",
             flex: expanded ? "1 1 100%" : "1 1 0",
@@ -263,7 +330,41 @@ export default function Composer({
                   <span />
                   <span />
                 </span>
-                Listening…
+                <span style={{ fontVariantNumeric: "tabular-nums" }}>
+                  Listening… {clock(elapsed)}
+                </span>
+                <button
+                  type="button"
+                  className="aq-composer-cancel"
+                  onClick={() => stopRecording(false)}
+                >
+                  Cancel
+                </button>
+              </span>
+            ) : transcribing ? (
+              <span
+                role="status"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  color: "var(--aq-mintink)",
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: "50%",
+                    border: "2px solid rgba(var(--aq-ln),.18)",
+                    borderTopColor: "#008B68",
+                    animation: "aqSpin .9s linear infinite",
+                  }}
+                />
+                Getting your words…
               </span>
             ) : hint ? (
               <span
@@ -306,10 +407,10 @@ export default function Composer({
             type="button"
             className="aq-icon-btn aq-composer-action"
             onClick={mic}
-            disabled={disabled}
-            aria-label={listening ? "Stop listening" : "Speak to Aqua"}
+            disabled={disabled || transcribing}
+            aria-label={listening ? "Stop and send" : "Speak to Aqua"}
             aria-pressed={listening}
-            title={listening ? "Stop listening" : "Speak"}
+            title={listening ? "Stop and send" : "Speak"}
             style={{
               ...actionBase,
               background: listening ? "#B42318" : "rgba(var(--aq-ln),.06)",

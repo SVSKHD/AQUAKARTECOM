@@ -15,6 +15,8 @@ import {
   listAiChats,
   onTokenRejected,
   streamAiChat,
+  toAiError,
+  transcribeAiAudio,
   type AiChatSummary,
   type AiLimit,
   type AiQuota,
@@ -1497,6 +1499,25 @@ export function useAquaChat({
     : null;
 
   // An earlier comparison of exactly these products, here or in a past chat.
+  // Voice questions: the recording → its words (the composer then sends them).
+  // Used-up questions show the limit just as a typed question would.
+  const transcribe = useCallback(
+    async (audio: Blob) => {
+      try {
+        return await transcribeAiAudio(audio, tokenRef.current);
+      } catch (e) {
+        const err = toAiError(e);
+        if (err.kind === "daily_limit")
+          applyQuota(err.quota ?? null, {
+            message: err.message,
+            loginRequired: !!err.loginRequired,
+          });
+        throw err;
+      }
+    },
+    [applyQuota],
+  );
+
   const findEarlierComparison = useCallback(
     (ids: string[]) =>
       findComparison(ids, messagesRef.current, sessionsRef.current),
@@ -1516,6 +1537,7 @@ export function useAquaChat({
     quota,
     limit,
     send,
+    transcribe,
     retry,
     say,
     post,

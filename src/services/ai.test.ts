@@ -27,6 +27,7 @@ const {
   sendAiChat,
   trimHistory,
   toAiError,
+  transcribeAiAudio,
   validatePrompt,
 } = await import("./ai");
 const post = axios.post as unknown as ReturnType<typeof vi.fn>;
@@ -714,5 +715,37 @@ describe("updateAiChat", () => {
       updateAiChat("c1", { pinned: true }, null),
     ).resolves.toBeNull();
     expect(patch).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("voice questions", () => {
+  beforeEach(() => post.mockReset());
+
+  it("posts the clip as base64 with its type and returns the words", async () => {
+    post.mockResolvedValue({ data: { success: true, data: { text: " Hi " } } });
+    const clip = new Blob([new Uint8Array([104, 105])], {
+      type: "audio/webm;codecs=opus",
+    });
+    await expect(transcribeAiAudio(clip, "tok")).resolves.toBe("Hi");
+    const [url, body, config] = post.mock.calls[0];
+    expect(url).toMatch(/\/ai\/transcribe$/);
+    expect(body).toEqual({ audio: "aGk=", mimeType: "audio/webm;codecs=opus" });
+    expect(config.headers).toEqual({ Authorization: "Bearer tok" });
+  });
+
+  it("reports a used-up day as the daily limit", async () => {
+    post.mockRejectedValueOnce(
+      httpError(429, {
+        code: "AI_DAILY_LIMIT",
+        message: "You've used your 3 free questions for today.",
+        loginRequired: true,
+      }),
+    );
+    const err = await transcribeAiAudio(
+      new Blob(["x"], { type: "audio/mp4" }),
+    ).catch((e) => e);
+    expect(err).toBeInstanceOf(AiError);
+    expect(err.kind).toBe("daily_limit");
+    expect(err.loginRequired).toBe(true);
   });
 });

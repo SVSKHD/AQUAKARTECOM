@@ -45,6 +45,8 @@ Versions below are declared ranges from `package.json`, not a guarantee of insta
 
 `src/pages/_app.js` creates the Redux store and Redux Persist setup, adds auth, route loading, analytics, toast UI, and the browser-only assistant. Persistence starts after mount to keep initial server/client renders consistent. UI flags and assistant state are blacklisted from persistence. Reducer keys are defined in `src/store/index.js`.
 
+Voice questions in the Aqua composer are recorded with `MediaRecorder`, sent to `POST /v1/ai/transcribe` (`transcribeAiAudio` in `src/services/ai.ts`) and the returned words are sent as the question; transcription is free but refused once the day's questions are used up.
+
 The assistant is a floating panel by default. A page can host it differently by setting `assistant.context` through `setAssistantContext` from `src/utils/assistant.js`, and must clear it with `null` on unmount. The public invoice/receipt page (`/invoice/[id]`) uses `variant: "drawer"`: a full-height right drawer with questions about the purchased products and a "Products for you" tab fed by `src/utils/invoice/recommendProducts.js`. On that page the floating button is hidden and chat opens from the page's own buttons.
 
 App Router routes use their own root layout and feature providers; do not assume `_app.js` wraps them. The alias `@/*` resolves to `src/*` in TypeScript and Vitest config.

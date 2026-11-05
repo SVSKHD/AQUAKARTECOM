@@ -1127,6 +1127,7 @@ export default function Conversation(p: Props) {
                   : undefined
               }
               onSend={p.onSend}
+              onTranscribe={p.chat.transcribe}
               onFocusChange={p.onFocusChange}
             />
           )}

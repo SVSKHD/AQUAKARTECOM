@@ -967,6 +967,18 @@ textarea::placeholder {
 .aq-composer-action:disabled {
   opacity: 1;
 }
+.aq-composer-cancel {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--aq-bd);
+  border-radius: 999px;
+  background: var(--aq-surf);
+  color: var(--aq-mut);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
 .aq-composer-keys kbd {
   font-family: inherit;
   font-size: 10.5px;

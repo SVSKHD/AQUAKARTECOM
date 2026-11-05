@@ -5,6 +5,7 @@ import axios from "axios";
 //   GET  /v1/ai/quota         → { tier, limit, used, remaining, resetsAt }
 //   POST /v1/ai/chat          → { reply, thoughts?, quota }      (JSON)
 //   POST /v1/ai/chat/stream   → thought · delta · done · error   (SSE over POST)
+//   POST /v1/ai/transcribe    → { text }  voice question → words (not counted)
 // The server owns the system prompt and keeps no conversation state, so the
 // caller sends the recent history with every prompt.
 // Daily question limits: guests 3 (per IP), logged-in customers 5 (per account),
@@ -337,6 +338,43 @@ export async function getAiQuota(
   } catch {
     return null;
   }
+}
+
+// ---------- voice questions ----------
+// A recorded clip (MediaRecorder) → the words spoken. Free, but the server
+// refuses it once today's questions are used up (daily_limit).
+export const AI_VOICE_MAX_MS = 60_000;
+
+const blobToBase64 = async (blob: Blob) => {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000)
+    bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+};
+
+export async function transcribeAiAudio(
+  audio: Blob,
+  token?: string | null,
+  { signal }: { signal?: AbortSignal } = {},
+): Promise<string> {
+  const body = {
+    audio: await blobToBase64(audio),
+    mimeType: audio.type || "audio/webm",
+  };
+  return asGuestOn401(token, async (auth) => {
+    try {
+      const res = await axios.post(`${BASE}/ai/transcribe`, body, {
+        timeout: 30_000,
+        signal,
+        headers: authHeaders(auth),
+      });
+      const text = res.data?.data?.text;
+      return typeof text === "string" ? text.trim() : "";
+    } catch (error) {
+      throw toAiError(error);
+    }
+  });
 }
 
 // ---------- saved conversations (logged-in customers) ----------
