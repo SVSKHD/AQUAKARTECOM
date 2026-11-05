@@ -63,6 +63,8 @@ import {
   profileDetails,
   profileForm,
   sameAddress,
+  toAddress,
+  toAddresses,
   validateAddress,
   validateProfile,
   type ProfileForm,
@@ -306,8 +308,11 @@ export default function ProfileDialog(p: Props) {
   };
 
   // ---------- address book ----------
-  const addresses = p.user.addresses || [];
-  const current = p.user.selectedAddress || null;
+  // Normalised: stored addresses can miss fields (the schema requires none).
+  const addresses = toAddresses(p.user.addresses);
+  const current = p.user.selectedAddress
+    ? toAddress(p.user.selectedAddress)
+    : null;
   // null: not editing; -1: a new address; otherwise the index being edited.
   const [editing, setEditing] = useState<number | null>(null);
   const [addr, setAddr] = useState<Address>(emptyAddress);
@@ -316,7 +321,7 @@ export default function ProfileDialog(p: Props) {
   const addrMissing = addrTouched ? validateAddress(addr) : [];
   const startEdit = (i: number) => {
     setEditing(i);
-    setAddr(i >= 0 ? { ...emptyAddress(), ...addresses[i] } : emptyAddress());
+    setAddr(i >= 0 ? toAddress(addresses[i]) : emptyAddress());
     setAddrDefault(i < 0 && !addresses.length);
     setAddrTouched(false);
     setError("");

@@ -207,6 +207,30 @@ describe("ProfileDialog", () => {
     // Types a whole address: slow when the full suite runs in parallel.
   }, 15_000);
 
+  it("opens and edits a partial address from the account without crashing", async () => {
+    // Prod: the backend schema requires no address field, so these happen.
+    const u = userEvent.setup();
+    const partial = { _id: "a9", city: "Hyderabad" };
+    setup({
+      initialTab: "addresses",
+      user: {
+        ...user,
+        addresses: [
+          partial,
+          null,
+          { _id: "a8", street: null, postalCode: 500032 },
+        ] as never,
+        selectedAddress: partial as never,
+      },
+    });
+    await u.click(screen.getByRole("button", { name: /edit hyderabad/i }));
+    expect(screen.getByLabelText("House, street, area")).toHaveValue("");
+    expect(screen.getByLabelText("City")).toHaveValue("Hyderabad");
+    await u.click(screen.getByRole("button", { name: /save address/i }));
+    expect(screen.getByText(/add house and street/i)).toBeInTheDocument();
+    expect(users.UserUpdateDetails).not.toHaveBeenCalled();
+  });
+
   it("lists purchases; each opens a quick view of its products and invoice", async () => {
     const u = userEvent.setup();
     const onView = vi.fn();

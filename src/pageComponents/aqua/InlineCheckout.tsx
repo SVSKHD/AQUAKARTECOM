@@ -25,6 +25,7 @@ import AnimatedAmount from "./AnimatedAmount";
 import { INR } from "./catalogue";
 import CheckoutAddress from "./CheckoutAddress";
 import EmailSignIn from "./EmailSignIn";
+import { toAddress } from "./profile";
 import type { EmailAuth } from "./useAquaAuth";
 import {
   cartCouponOffers,
@@ -151,14 +152,19 @@ function CouponCard({
 
 export function validate(d: CheckoutDraft) {
   const missing: string[] = [];
-  if (!d.name.trim()) missing.push("your name");
-  if (!/^[6-9]\d{9}$/.test(d.phone)) missing.push("a 10-digit mobile number");
-  if (d.email && !/^\S+@\S+\.\S+$/.test(d.email)) missing.push("a valid email");
-  if (!d.address.street.trim() || !d.address.city.trim())
+  const address = toAddress(d.address);
+  const name = typeof d.name === "string" ? d.name : "";
+  const phone = String(d.phone ?? "");
+  const email = typeof d.email === "string" ? d.email : "";
+  if (!name.trim()) missing.push("your name");
+  if (!/^[6-9]\d{9}$/.test(phone)) missing.push("a 10-digit mobile number");
+  if (email && !/^\S+@\S+\.\S+$/.test(email)) missing.push("a valid email");
+  if (!address.street.trim() || !address.city.trim())
     missing.push("your address");
   // POST /payments rejects an address without a state.
-  if (!(d.address.state || "").trim()) missing.push("your state");
-  if (!/^\d{6}$/.test(d.address.postalCode)) missing.push("a 6-digit PIN code");
+  if (!address.state.trim()) missing.push("your state");
+  if (!/^\d{6}$/.test(address.postalCode.trim()))
+    missing.push("a 6-digit PIN code");
   if (!d.slotDay || !d.slotTime) missing.push("an installation slot");
   return missing;
 }
@@ -249,7 +255,11 @@ export default function InlineCheckout({
   const setAddr = (patch: Partial<Address>) =>
     setDraft((d) =>
       d
-        ? { ...d, savedAddressId: null, address: { ...d.address, ...patch } }
+        ? {
+            ...d,
+            savedAddressId: null,
+            address: { ...toAddress(d.address), ...patch },
+          }
         : d,
     );
 

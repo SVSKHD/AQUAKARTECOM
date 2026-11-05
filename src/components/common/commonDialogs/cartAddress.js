@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { toAddress } from "@/pageComponents/aqua/profile";
 import AquaResponsiveDialog from "@/components/reusables/dialog";
 import { useSelector, useDispatch } from "react-redux";
 import UserServiceOperations from "@/services/user";
@@ -46,7 +47,8 @@ const AquaAddressDialog = ({ editData }) => {
   const userData = useSelector((state) => state.userData);
   useEffect(() => {
     if (addressData) {
-      setAddress(addressData);
+      // Stored addresses can miss fields; every field must be a string.
+      setAddress(toAddress(addressData));
     } else if (!addressData) {
       setAddress({
         street: "",
@@ -104,7 +106,10 @@ const AquaAddressDialog = ({ editData }) => {
     const userId = userData?.user?._id;
     const token = userData?.token;
     if (!userId || !token) {
-      AquaToast({ message: "Please sign in to save an address", type: "error" });
+      AquaToast({
+        message: "Please sign in to save an address",
+        type: "error",
+      });
       return;
     }
 
@@ -122,8 +127,9 @@ const AquaAddressDialog = ({ editData }) => {
     const sameAddress = (item) =>
       ["street", "city", "state", "postalCode"].every(
         (field) =>
-          String(item?.[field] ?? "").trim().toLowerCase() ===
-          normalizedAddress[field].toLowerCase(),
+          String(item?.[field] ?? "")
+            .trim()
+            .toLowerCase() === normalizedAddress[field].toLowerCase(),
       );
     if (
       existingAddresses.some(
@@ -136,8 +142,14 @@ const AquaAddressDialog = ({ editData }) => {
       return;
     }
 
-    if (isEditing && !existingAddresses.some((item) => String(item._id) === String(addressId))) {
-      AquaToast({ message: "Address not found. Please reload and retry.", type: "error" });
+    if (
+      isEditing &&
+      !existingAddresses.some((item) => String(item._id) === String(addressId))
+    ) {
+      AquaToast({
+        message: "Address not found. Please reload and retry.",
+        type: "error",
+      });
       return;
     }
 
@@ -157,7 +169,9 @@ const AquaAddressDialog = ({ editData }) => {
         token,
       );
       if (!Array.isArray(response?.data?.addresses)) {
-        throw new Error("Address update response did not contain saved addresses");
+        throw new Error(
+          "Address update response did not contain saved addresses",
+        );
       }
       dispatch({
         type: "UPDATE_USER_ADDRESSES",
@@ -166,13 +180,17 @@ const AquaAddressDialog = ({ editData }) => {
       dispatch({ type: "SET_ADDRESS_DATA", payload: null });
       dispatch({ type: "SET_ADDRESS_DIALOG", payload: false });
       AquaToast({
-        message: isEditing ? "Address updated successfully" : "Address saved successfully",
+        message: isEditing
+          ? "Address updated successfully"
+          : "Address saved successfully",
         type: "success",
       });
     } catch (error) {
       console.error("Unable to save checkout address", error);
       AquaToast({
-        message: error?.response?.data?.message || "Unable to save address. Please try again.",
+        message:
+          error?.response?.data?.message ||
+          "Unable to save address. Please try again.",
         type: "error",
       });
     } finally {
@@ -376,7 +394,11 @@ const AquaAddressDialog = ({ editData }) => {
             className="flex w-full items-center justify-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-emerald-400"
             onClick={handleSubmit}
           >
-            {isSaving ? "Saving..." : addressData ? "Save changes" : "Save address"}
+            {isSaving
+              ? "Saving..."
+              : addressData
+                ? "Save changes"
+                : "Save address"}
           </button>
         </div>
       </AquaResponsiveDialog>

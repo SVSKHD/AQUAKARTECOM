@@ -32,7 +32,13 @@ import {
 } from "@/utils/aquaCommerce";
 import { areaFromUser } from "@/utils/demandFeed";
 import UserServiceOperations from "@/services/user";
-import { editAddresses, sameAddress } from "./profile";
+import {
+  editAddresses,
+  hasAddress,
+  sameAddress,
+  toAddress,
+  toAddresses,
+} from "./profile";
 import { aquaConfig, pickDayTheme } from "./config";
 import { addressHardness } from "./hardnessData";
 import { useAccountSync } from "./useAccountSync";
@@ -73,6 +79,17 @@ import { EMPTY_SHOP_UI, type ShopUi } from "./ShopPanel";
 
 // A comparison started from the shop (not from a chat reply).
 const SHOP_COMPARISON = "shop";
+
+// The account's checkout address: the default when it has content, otherwise
+// the first saved address that does. Always normalised (never a partial
+// backend object), or null when the account has none.
+const accountAddress = (
+  u: { selectedAddress?: unknown; addresses?: unknown } | null | undefined,
+): Address | null => {
+  if (!u) return null;
+  if (hasAddress(u.selectedAddress)) return toAddress(u.selectedAddress);
+  return toAddresses(u.addresses).find(hasAddress) ?? null;
+};
 import { tabTitle } from "./pageTitle";
 import BlogBar from "./BlogBar";
 import DemandStrip, { SHOW_HOT_PICKS } from "./DemandStrip";
@@ -260,9 +277,7 @@ export default function AquaWorkspace() {
   const refreshAccount = useAccountSync(token);
   // The welcome card's hardness reading starts from the saved home address.
   const homeHardness = token
-    ? addressHardness(
-        userData?.user?.selectedAddress || userData?.user?.addresses?.[0],
-      )
+    ? addressHardness(accountAddress(userData?.user))
     : null;
   const userName =
     (token && (userData?.user?.name || userData?.user?.firstName)) || null;
@@ -481,7 +496,7 @@ export default function AquaWorkspace() {
     source: CheckoutDraft["source"],
   ): CheckoutDraft => {
     const u = userData?.user;
-    const saved = u?.selectedAddress || u?.addresses?.[0];
+    const saved = accountAddress(u);
     const prev = draft;
     return {
       source,
@@ -494,11 +509,11 @@ export default function AquaWorkspace() {
           .replace(/\D/g, "")
           .slice(-10),
       email: prev?.email || u?.email || "",
-      address:
-        prev?.address ||
-        (saved
+      address: prev?.address
+        ? toAddress(prev.address)
+        : saved
           ? { ...saved }
-          : { street: "", city: "", state: "", postalCode: "" }),
+          : toAddress(null),
       savedAddressId: prev?.savedAddressId ?? saved?._id ?? null,
       slotDay: prev?.slotDay || "",
       slotTime: prev?.slotTime || "",
@@ -512,10 +527,10 @@ export default function AquaWorkspace() {
   const accountUser = userData?.user;
   useEffect(() => {
     if (!token || !accountUser) return;
-    const saved = accountUser.selectedAddress || accountUser.addresses?.[0];
+    const saved = accountAddress(accountUser);
     setDraft((d) => {
       if (!d) return d;
-      const blankAddress = !d.address.street.trim() && !d.address.city.trim();
+      const blankAddress = !hasAddress(d.address);
       return {
         ...d,
         name:
@@ -758,7 +773,7 @@ export default function AquaWorkspace() {
   const saveCheckoutAddress = async (address: Address): Promise<Address> => {
     const u = userData?.user as ProfileUser | undefined;
     if (!u?._id || !token) throw new Error("Sign in to save addresses.");
-    const list = u.addresses || [];
+    const list = toAddresses(u.addresses);
     const next = editAddresses(list, u.selectedAddress, {
       kind: "save",
       index: null,
@@ -784,12 +799,16 @@ export default function AquaWorkspace() {
         },
         token,
       );
-      const addresses = res?.data?.addresses || next.addresses;
+      const addresses = Array.isArray(res?.data?.addresses)
+        ? toAddresses(res.data.addresses)
+        : next.addresses;
       store({
         type: "UPDATE_USER_DETAILS",
         payload: {
           addresses,
-          selectedAddress: res?.data?.selectedAddress ?? next.selectedAddress,
+          selectedAddress: res?.data?.selectedAddress
+            ? toAddress(res.data.selectedAddress)
+            : next.selectedAddress,
         },
       });
       showToast("Address saved to your account");
@@ -805,14 +824,17 @@ export default function AquaWorkspace() {
   };
 
   // Shipping address in the shape POST /payments requires (state is mandatory there).
-  const paymentAddress = (d: CheckoutDraft) => ({
-    name: d.name.trim(),
-    phone: d.phone,
-    street: d.address.street.trim(),
-    city: d.address.city.trim(),
-    state: (d.address.state || "").trim(),
-    postalCode: d.address.postalCode,
-  });
+  const paymentAddress = (d: CheckoutDraft) => {
+    const a = toAddress(d.address);
+    return {
+      name: String(d.name ?? "").trim(),
+      phone: d.phone,
+      street: a.street.trim(),
+      city: a.city.trim(),
+      state: a.state.trim(),
+      postalCode: a.postalCode.trim(),
+    };
+  };
 
   // Click handler for Pay / Retry. The live path pays the server-side checkout
   // session from the quote (POST /payments); PhonePe's popup opens synchronously
@@ -1249,8 +1271,12 @@ export default function AquaWorkspace() {
       onChat={sheetLayout ? focusComposer : undefined}
       draft={draft}
       setDraft={setDraft}
-      savedAddresses={userData?.user?.addresses || []}
-      defaultAddress={userData?.user?.selectedAddress || null}
+      savedAddresses={toAddresses(userData?.user?.addresses)}
+      defaultAddress={
+        userData?.user?.selectedAddress
+          ? toAddress(userData.user.selectedAddress)
+          : null
+      }
       onSaveAddress={saveCheckoutAddress}
       coupons={coupons}
       categoryOf={(id) => {

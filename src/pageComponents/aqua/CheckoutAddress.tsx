@@ -4,8 +4,12 @@ import { useEffect, useId, useState } from "react";
 import { Check, MapPin, Plus } from "lucide-react";
 import {
   addressLine,
+  cleanAddress,
   emptyAddress,
+  hasAddress,
   sameAddress,
+  toAddress,
+  toAddresses,
   validateAddress,
 } from "./profile";
 import type { Address } from "./types";
@@ -27,13 +31,16 @@ type Props = {
   onAddingChange: (adding: boolean) => void;
 };
 
-const filled = (a: Address) => !!(a.street.trim() || a.city.trim());
-const trimmed = (a: Address): Address => ({
-  street: a.street.trim(),
-  city: a.city.trim(),
-  state: (a.state || "").trim(),
-  postalCode: a.postalCode.trim(),
-});
+const filled = hasAddress;
+const trimmed = (a: Address): Address => {
+  const c = cleanAddress(a);
+  return {
+    street: c.street,
+    city: c.city,
+    state: c.state,
+    postalCode: c.postalCode,
+  };
+};
 
 function AddressFields({
   value,
@@ -98,16 +105,20 @@ function AddressFields({
 // (a radio list with the default tagged), or add a new one on the spot and
 // save it to the account. Guests type the address in directly.
 export default function CheckoutAddress({
-  address,
+  address: rawAddress,
   savedAddressId,
-  saved,
-  defaultAddress,
+  saved: rawSaved,
+  defaultAddress: rawDefault,
   signedIn,
   onPick,
   onChange,
   onSave,
   onAddingChange,
 }: Props) {
+  // Account data can hold partial addresses: normalise before any `.trim()`.
+  const address = toAddress(rawAddress);
+  const saved = toAddresses(rawSaved);
+  const defaultAddress = rawDefault ? toAddress(rawDefault) : null;
   const legendId = useId();
   const [adding, setAdding] = useState(
     () => signedIn && saved.length === 0 && !filled(address),

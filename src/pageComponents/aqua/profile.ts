@@ -86,30 +86,84 @@ export const emptyAddress = (): Address => ({
   postalCode: "",
 });
 
-export const sameAddress = (a?: Address | null, b?: Address | null) =>
-  !!a &&
-  !!b &&
-  (a._id && b._id
-    ? a._id === b._id
-    : [a.street, a.city, a.state, a.postalCode].join("|").toLowerCase() ===
-      [b.street, b.city, b.state, b.postalCode].join("|").toLowerCase());
+// The backend's address schema has no required fields, so a stored address can
+// miss any field, hold null, or carry a number (postalCode: 500032). Every
+// address that reaches the UI goes through toAddress first: all four fields
+// come back as strings, so `.trim()` and inputs never see undefined.
+const text = (v: unknown): string =>
+  typeof v === "string"
+    ? v
+    : typeof v === "number" && Number.isFinite(v)
+      ? String(v)
+      : "";
 
-export function validateAddress(a: Address) {
+// An address whose four fields are guaranteed strings.
+export type SafeAddress = Address & { state: string };
+
+export function toAddress(raw: unknown): SafeAddress {
+  const a =
+    raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const id = text(a._id);
+  const label = text(a.label);
+  return {
+    ...(id ? { _id: id } : {}),
+    ...(label ? { label } : {}),
+    street: text(a.street),
+    city: text(a.city),
+    state: text(a.state),
+    postalCode: text(a.postalCode),
+  };
+}
+
+// A list from the account, dropping anything that isn't an address object.
+export const toAddresses = (list: unknown): SafeAddress[] =>
+  Array.isArray(list)
+    ? list.filter((x) => x && typeof x === "object").map(toAddress)
+    : [];
+
+// An address with something in it (an empty `{}` subdocument doesn't count).
+export const hasAddress = (raw: unknown) => {
+  const a = toAddress(raw);
+  return !!(a.street.trim() || a.city.trim());
+};
+
+export const sameAddress = (x?: Address | null, y?: Address | null) => {
+  if (!x || !y) return false;
+  const a = toAddress(x);
+  const b = toAddress(y);
+  return a._id && b._id
+    ? a._id === b._id
+    : [a.street, a.city, a.state, a.postalCode]
+        .map((s) => s.trim())
+        .join("|")
+        .toLowerCase() ===
+        [b.street, b.city, b.state, b.postalCode]
+          .map((s) => s.trim())
+          .join("|")
+          .toLowerCase();
+};
+
+export function validateAddress(raw: Address | null | undefined) {
+  const a = toAddress(raw);
   const missing: string[] = [];
   if (!a.street.trim()) missing.push("house and street");
   if (!a.city.trim()) missing.push("city");
-  if (!(a.state || "").trim()) missing.push("state");
-  if (!/^\d{6}$/.test(a.postalCode)) missing.push("a 6-digit PIN code");
+  if (!a.state.trim()) missing.push("state");
+  if (!/^\d{6}$/.test(a.postalCode.trim())) missing.push("a 6-digit PIN code");
   return missing;
 }
 
-const clean = (a: Address): Address => ({
-  ...(a._id ? { _id: a._id } : {}),
-  street: a.street.trim(),
-  city: a.city.trim(),
-  state: (a.state || "").trim(),
-  postalCode: a.postalCode.trim(),
-});
+export const cleanAddress = (raw: Address | null | undefined): Address => {
+  const a = toAddress(raw);
+  return {
+    ...(a._id ? { _id: a._id } : {}),
+    street: a.street.trim(),
+    city: a.city.trim(),
+    state: (a.state || "").trim(),
+    postalCode: a.postalCode.trim(),
+  };
+};
+const clean = cleanAddress;
 
 // The address book after one change, plus which one is the default (the one
 // checkout picks first). Removing the default moves it to the first left.
@@ -126,7 +180,7 @@ export function editAddresses(
     | { kind: "remove"; index: number }
     | { kind: "default"; index: number },
 ): { addresses: Address[]; selectedAddress: Address | null } {
-  const addresses = list.map(clean);
+  const addresses = toAddresses(list).map(clean);
   let selected =
     addresses.find((x) => sameAddress(x, current)) || addresses[0] || null;
   if (change.kind === "save") {
@@ -145,5 +199,11 @@ export function editAddresses(
   return { addresses, selectedAddress: selected };
 }
 
-export const addressLine = (a?: Address | null) =>
-  a ? [a.street, a.city, a.state, a.postalCode].filter(Boolean).join(", ") : "";
+export const addressLine = (raw?: Address | null) => {
+  if (!raw) return "";
+  const a = toAddress(raw);
+  return [a.street, a.city, a.state, a.postalCode]
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .join(", ");
+};
