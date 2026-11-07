@@ -417,9 +417,12 @@ const buildSpeechQueue = (sectionElement) => {
   return queue;
 };
 
+// Stable default so the prop-change check below never sees a "new" list.
+const NO_RELATED = [];
+
 const AquaDynamicBlogComponent = ({
   initialBlog = null,
-  initialRelated = [],
+  initialRelated = NO_RELATED,
   initialAttached = [],
   initialRelatedBlogs = [],
   initialError = "",
@@ -465,12 +468,24 @@ const AquaDynamicBlogComponent = ({
     [blog?.description],
   );
 
-  useEffect(() => {
+  // New server props (client-side navigation between posts) replace the
+  // article state; adjusted during render rather than in an effect.
+  const [stateFromProps, setStateFromProps] = useState({
+    initialBlog,
+    initialRelated,
+    initialError,
+  });
+  if (
+    stateFromProps.initialBlog !== initialBlog ||
+    stateFromProps.initialRelated !== initialRelated ||
+    stateFromProps.initialError !== initialError
+  ) {
+    setStateFromProps({ initialBlog, initialRelated, initialError });
     setBlog(initialBlog);
     setRelated(initialRelated);
     setError(initialError);
     setLoading(!initialBlog && !initialError);
-  }, [initialBlog, initialRelated, initialError]);
+  }
 
   // Reader preferences are per-device conveniences; load after mount so the
   // first render matches the server.
@@ -480,6 +495,7 @@ const AquaDynamicBlogComponent = ({
         window.localStorage.getItem(READER_PREFS_KEY) || "null",
       );
       if (saved && typeof saved === "object")
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is read after mount so SSR and first client render match (AGENTS.md)
         setPrefs((prev) => ({ ...prev, ...saved }));
     } catch {}
     let savedListen = null;
@@ -668,70 +684,76 @@ const AquaDynamicBlogComponent = ({
   }, []);
 
   const speakFrom = useCallback(
-    (sectionIndex) => {
+    (startIndex) => {
       if (typeof window === "undefined" || !("speechSynthesis" in window))
         return;
       const synth = window.speechSynthesis;
-      const element = sectionRefs.current[sectionIndex];
+      // Declared as a function so it can queue the next section itself.
+      function speakSection(sectionIndex) {
+        const element = sectionRefs.current[sectionIndex];
 
-      speechTokenRef.current += 1;
-      const token = speechTokenRef.current;
-      clearTimeout(speechTimerRef.current);
-      pausedRef.current = false;
-      pendingStepRef.current = null;
-      synth.cancel();
+        speechTokenRef.current += 1;
+        const token = speechTokenRef.current;
+        clearTimeout(speechTimerRef.current);
+        pausedRef.current = false;
+        pendingStepRef.current = null;
+        synth.cancel();
 
-      if (!element) {
-        setSpeech({ status: "idle", section: -1 });
-        return;
-      }
-
-      const queue = buildSpeechQueue(element);
-      setSpeech({ status: "playing", section: sectionIndex });
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
-
-      const nextSection = () => {
-        if (token !== speechTokenRef.current) return;
-        if (sectionIndex + 1 < sections.length) {
-          const goNext = () => speakFrom(sectionIndex + 1);
-          speechTimerRef.current = setTimeout(() => {
-            if (pausedRef.current) pendingStepRef.current = goNext;
-            else goNext();
-          }, 800);
-        } else {
+        if (!element) {
           setSpeech({ status: "idle", section: -1 });
+          return;
         }
-      };
 
-      // One utterance at a time so we can breathe between sentences/paragraphs.
-      const playItem = (index) => {
-        if (token !== speechTokenRef.current) return;
-        if (pausedRef.current) {
-          pendingStepRef.current = () => playItem(index);
-          return;
-        }
-        if (index >= queue.length) {
-          nextSection();
-          return;
-        }
-        const item = queue[index];
-        const utterance = createUtterance(item.text, { heading: item.heading });
-        const advance = () => {
+        const queue = buildSpeechQueue(element);
+        setSpeech({ status: "playing", section: sectionIndex });
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        const nextSection = () => {
           if (token !== speechTokenRef.current) return;
-          speechTimerRef.current = setTimeout(
-            () => playItem(index + 1),
-            item.pause,
-          );
+          if (sectionIndex + 1 < sections.length) {
+            const goNext = () => speakSection(sectionIndex + 1);
+            speechTimerRef.current = setTimeout(() => {
+              if (pausedRef.current) pendingStepRef.current = goNext;
+              else goNext();
+            }, 800);
+          } else {
+            setSpeech({ status: "idle", section: -1 });
+          }
         };
-        utterance.onend = advance;
-        utterance.onerror = (event) => {
-          if (event.error !== "interrupted" && event.error !== "canceled")
-            advance();
-        };
-        synth.speak(utterance);
-      };
 
-      playItem(0);
+        // One utterance at a time so we can breathe between sentences/paragraphs.
+        const playItem = (index) => {
+          if (token !== speechTokenRef.current) return;
+          if (pausedRef.current) {
+            pendingStepRef.current = () => playItem(index);
+            return;
+          }
+          if (index >= queue.length) {
+            nextSection();
+            return;
+          }
+          const item = queue[index];
+          const utterance = createUtterance(item.text, {
+            heading: item.heading,
+          });
+          const advance = () => {
+            if (token !== speechTokenRef.current) return;
+            speechTimerRef.current = setTimeout(
+              () => playItem(index + 1),
+              item.pause,
+            );
+          };
+          utterance.onend = advance;
+          utterance.onerror = (event) => {
+            if (event.error !== "interrupted" && event.error !== "canceled")
+              advance();
+          };
+          synth.speak(utterance);
+        };
+
+        playItem(0);
+      }
+      speakSection(startIndex);
     },
     [createUtterance, sections.length],
   );
@@ -773,13 +795,14 @@ const AquaDynamicBlogComponent = ({
   // Stop reading aloud when leaving or switching articles.
   useEffect(() => stopSpeech, [blog?._id, stopSpeech]);
 
+  const blogDescription = blog?.description;
   const estimatedReadMinutes = useMemo(() => {
-    if (!blog?.description) return 3;
-    const words = stripTags(blog.description)
+    if (!blogDescription) return 3;
+    const words = stripTags(blogDescription)
       .split(/\s+/)
       .filter(Boolean).length;
     return Math.max(1, Math.ceil(words / 200));
-  }, [blog?.description]);
+  }, [blogDescription]);
 
   const listenMinutes = useMemo(() => {
     const words = stripTags(blog?.description || "")
@@ -802,10 +825,11 @@ const AquaDynamicBlogComponent = ({
     [sections],
   );
 
+  const blogCreatedAt = blog?.createdAt;
   const publishedDate = useMemo(() => {
-    if (!blog?.createdAt) return "";
+    if (!blogCreatedAt) return "";
     try {
-      return new Date(blog.createdAt).toLocaleDateString("en-IN", {
+      return new Date(blogCreatedAt).toLocaleDateString("en-IN", {
         timeZone: "Asia/Kolkata",
         year: "numeric",
         month: "long",
@@ -814,7 +838,7 @@ const AquaDynamicBlogComponent = ({
     } catch {
       return "";
     }
-  }, [blog?.createdAt]);
+  }, [blogCreatedAt]);
 
   const authorName =
     (typeof blog?.author === "string" && blog.author) ||
@@ -914,25 +938,27 @@ const AquaDynamicBlogComponent = ({
   const coverImage =
     blog?.titleImages?.[0]?.secure_url || blog?.photos?.[0]?.secure_url || "";
 
+  const blogKeyHighlights = blog?.keyHighlights;
+  const blogSummary = blog?.summary;
   const keyHighlights = useMemo(() => {
-    if (Array.isArray(blog?.keyHighlights)) {
-      return blog.keyHighlights.filter(Boolean);
+    if (Array.isArray(blogKeyHighlights)) {
+      return blogKeyHighlights.filter(Boolean);
     }
-    if (typeof blog?.keyHighlights === "string") {
-      return blog.keyHighlights
+    if (typeof blogKeyHighlights === "string") {
+      return blogKeyHighlights
         .split(/\r?\n/)
         .map((line) => line.trim())
         .filter(Boolean);
     }
-    if (typeof blog?.summary === "string") {
-      return blog.summary
+    if (typeof blogSummary === "string") {
+      return blogSummary
         .split(/\r?\n/)
         .map((line) => line.trim())
         .filter(Boolean)
         .slice(0, 5);
     }
     return [];
-  }, [blog?.keyHighlights, blog?.summary]);
+  }, [blogKeyHighlights, blogSummary]);
 
   const schemaBlog = blog || initialBlog || null;
   const ready = !loading && !error && blog;

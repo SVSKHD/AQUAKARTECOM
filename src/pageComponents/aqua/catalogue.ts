@@ -144,7 +144,6 @@ const strip = (s: unknown) =>
 type RawPhoto =
   string | { secure_url?: string; delivery_url?: string; url?: string } | null;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mapReal(p: any): Product {
   const photos = ((p.photos || []) as RawPhoto[])
     .map((x) =>

@@ -109,7 +109,7 @@ const card = {
 function useCountUp(target: number, run: boolean) {
   const [n, setN] = useState(run ? 0 : target);
   useEffect(() => {
-    if (!run) return void setN(target);
+    if (!run) return;
     let raf = 0;
     const t0 = performance.now();
     const tick = (now: number) => {
@@ -120,7 +120,7 @@ function useCountUp(target: number, run: boolean) {
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [target, run]);
-  return n;
+  return run ? n : target;
 }
 
 function PlaceSearch({
@@ -478,7 +478,12 @@ export default function HardnessCard({
   // locates a place themselves.
   home?: Place | null;
 }) {
-  const [view, setView] = useState<View>({ step: "pick", failed: false });
+  // The home address fills the card until the shopper picks or locates a place.
+  const [view, setView] = useState<View>(() =>
+    home
+      ? { step: "report", city: home.city, area: home.area, source: "home" }
+      : { step: "pick", failed: false },
+  );
   // Kept across cities so "show me very hard areas" carries over when comparing.
   const [range, setRange] = useState<Range>(FULL_RANGE);
   const reduced = useReducedMotion();
@@ -545,6 +550,7 @@ export default function HardnessCard({
     try {
       const saved = JSON.parse(storage.get(SAVED_KEY) || "null");
       const place = saved && findPlace(saved.city, saved.area);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is read only after mount (SSR hydration)
       if (place) return show(place, "saved");
     } catch {
       // unreadable: ask again
@@ -560,17 +566,18 @@ export default function HardnessCard({
 
   // The home address (it can arrive after the account refreshes) fills the
   // card only while nothing else is shown, and follows a change of address.
+  // Keyed on the place, not the object identity; the initial view covers mount.
   const homeKey = home ? `${home.city.name}|${home.area?.name ?? ""}` : "";
-  useEffect(() => {
-    if (!home) return;
-    setView((v) =>
-      v.step === "pick" || (v.step === "report" && v.source === "home")
-        ? { step: "report", city: home.city, area: home.area, source: "home" }
-        : v,
-    );
-    // keyed on the place, not the object identity
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [homeKey]);
+  const [homeKeySeen, setHomeKeySeen] = useState(homeKey);
+  if (homeKey !== homeKeySeen) {
+    setHomeKeySeen(homeKey);
+    if (home)
+      setView((v) =>
+        v.step === "pick" || (v.step === "report" && v.source === "home")
+          ? { step: "report", city: home.city, area: home.area, source: "home" }
+          : v,
+      );
+  }
 
   if (!open)
     return <HardnessSummary view={view} onOpen={() => setOpen(true)} />;

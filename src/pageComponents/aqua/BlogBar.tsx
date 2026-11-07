@@ -54,6 +54,8 @@ const readPos = (): Pos | null => {
 };
 
 const podcastId = (r: BlogRead) => `blog:${r.id}`;
+const focusAt = (reads: BlogRead[], focusId?: string | null) =>
+  focusId ? reads.findIndex((r) => r.id === focusId) : -1;
 
 // A small floating card of Aquakart blog reads, read in place (never a new
 // window) or played as a podcast. Drag it by its grip (or nudge it with the
@@ -66,24 +68,29 @@ export default function BlogBar({
 }: Props) {
   const ref = useRef<HTMLElement>(null);
   const [pos, setPos] = useState<Pos | null>(readPos);
-  const [i, setI] = useState(0);
-  const [expanded, setExpanded] = useState(false);
+  const [i, setI] = useState(() => Math.max(0, focusAt(reads, focusId)));
+  const [expanded, setExpanded] = useState(() => focusAt(reads, focusId) >= 0);
   const read = reads.length ? reads[i % reads.length] : null;
   const playing = useSpeaking(read ? podcastId(read) : "");
   const speakable = canSpeak();
 
-  // Opened from the dock on a particular read.
-  useEffect(() => {
-    if (!focusId) return;
-    const at = reads.findIndex((r) => r.id === focusId);
-    if (at < 0) return;
-    setI(at);
-    setExpanded(true);
-  }, [focusId, reads]);
+  // Opened from the dock on a particular read (adjusted while rendering when
+  // the focus or the list changes; the initial state covers the first render).
+  const [focusFor, setFocusFor] = useState({ focusId, reads });
+  if (focusFor.focusId !== focusId || focusFor.reads !== reads) {
+    setFocusFor({ focusId, reads });
+    const at = focusAt(reads, focusId);
+    if (at >= 0) {
+      setI(at);
+      setExpanded(true);
+    }
+  }
 
   // A podcast started here stops when the bar goes (closed or hidden).
   const readsRef = useRef(reads);
-  readsRef.current = reads;
+  useEffect(() => {
+    readsRef.current = reads;
+  }, [reads]);
   useEffect(
     () => () => {
       const now = speakingNow();
@@ -241,7 +248,6 @@ export default function BlogBar({
           onClick={() => setExpanded((v) => !v)}
         >
           {read.image ? (
-            // eslint-disable-next-line @next/next/no-img-element -- CMS images on Cloudinary
             <img
               src={read.image}
               alt=""

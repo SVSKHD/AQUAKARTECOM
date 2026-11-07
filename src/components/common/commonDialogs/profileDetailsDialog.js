@@ -34,11 +34,15 @@ const ProfileDetailsDialog = ({
   const dobRef = useRef(null);
   const addressRef = useRef(null);
 
-  useEffect(() => {
+  // Reload the form each time it opens or its initial values change while
+  // open (adjusted during render rather than in an effect).
+  const [formFor, setFormFor] = useState({ open: false, initialValues });
+  if (formFor.open !== open || formFor.initialValues !== initialValues) {
+    setFormFor({ open, initialValues });
     if (open) {
       setFormValues({ ...defaultValues, ...initialValues });
     }
-  }, [initialValues, open]);
+  }
 
   const focusTarget = useMemo(() => {
     switch (focusField) {

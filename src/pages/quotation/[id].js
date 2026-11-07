@@ -13,44 +13,69 @@ const normalizeRouteId = (value) => {
 
 const PublicQuotationRoute = () => {
   const router = useRouter();
-  const [state, setState] = useState({ document: null, statusCode: 0, loading: true });
+  const [state, setState] = useState({
+    document: null,
+    statusCode: 0,
+    loading: true,
+  });
+
+  // A route without a valid id 404s straight away (adjusted during render).
+  const routeId = router.isReady ? normalizeRouteId(router.query.id) : null;
+  const [checkedFor, setCheckedFor] = useState(null);
+  if (router.isReady && (!checkedFor || checkedFor.routeId !== routeId)) {
+    setCheckedFor({ routeId });
+    if (!routeId) setState({ document: null, statusCode: 404, loading: false });
+  }
 
   useEffect(() => {
     if (!router.isReady) return undefined;
-    const id = normalizeRouteId(router.query.id);
-    if (!id) {
-      setState({ document: null, statusCode: 404, loading: false });
-      return undefined;
-    }
+    const id = routeId;
+    if (!id) return undefined;
 
     const controller = new AbortController();
     const load = async () => {
       try {
         const response = await fetch(
           `/api/crm/quotations/public/${encodeURIComponent(id)}`,
-          { headers: { Accept: "application/json" }, signal: controller.signal },
+          {
+            headers: { Accept: "application/json" },
+            signal: controller.signal,
+          },
         );
         const payload = await response.json().catch(() => null);
-        if (!response.ok) throw Object.assign(new Error("Quotation unavailable"), { status: response.status });
+        if (!response.ok)
+          throw Object.assign(new Error("Quotation unavailable"), {
+            status: response.status,
+          });
         const quotation = payload?.data ?? payload;
         const document = mapInvoiceFromApi({
           ...quotation,
           invoiceNo: quotation?.quotationNo,
           total: quotation?.totalAmount,
           quotation: true,
-          paidStatus: quotation?.payment?.status || quotation?.status || "unpaid",
+          paidStatus:
+            quotation?.payment?.status || quotation?.status || "unpaid",
           paymentType: quotation?.payment?.method || "quotation",
         });
-        if (!controller.signal.aborted) setState({ document, statusCode: document ? 200 : 502, loading: false });
+        if (!controller.signal.aborted)
+          setState({
+            document,
+            statusCode: document ? 200 : 502,
+            loading: false,
+          });
       } catch (error) {
         if (!controller.signal.aborted) {
-          setState({ document: null, statusCode: error?.status || 502, loading: false });
+          setState({
+            document: null,
+            statusCode: error?.status || 502,
+            loading: false,
+          });
         }
       }
     };
     void load();
     return () => controller.abort();
-  }, [router.isReady, router.query.id]);
+  }, [router.isReady, routeId]);
 
   if (state.loading) return null;
   return <InvoicePage invoice={state.document} statusCode={state.statusCode} />;

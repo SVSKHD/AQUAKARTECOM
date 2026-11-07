@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FALLBACK_IMAGE } from "@/constants/images";
 
 const AquaImage = ({
@@ -13,10 +13,13 @@ const AquaImage = ({
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
+  // A new src gets a fresh attempt (adjusted during render).
+  const [attemptedSrc, setAttemptedSrc] = useState(src);
+  if (attemptedSrc !== src) {
+    setAttemptedSrc(src);
     setFailed(false);
     setLoaded(false);
-  }, [src]);
+  }
 
   // next/image throws on an empty src, and a broken URL renders a broken icon;
   // both fall back to the brand image instead.

@@ -1,5 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Droplets, Loader2, MessageCircle, Send } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  CheckCircle2,
+  Droplets,
+  Loader2,
+  MessageCircle,
+  Send,
+} from "lucide-react";
 import { toast } from "sonner";
 import AquaResponsiveDialog from "@/components/reusables/dialog";
 import LeadServiceOperations from "@/services/leads";
@@ -46,17 +52,22 @@ const AquaEnquireForm = ({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  useEffect(() => {
-    if (!open) return;
-    setSubmitted(false);
-    setForm((current) => ({
-      ...emptyForm(),
-      name: current.name,
-      phone: current.phone,
-      email: current.email,
-      water_problem: defaultMessage || "",
-    }));
-  }, [open, defaultMessage]);
+  // Each opening starts a fresh enquiry, keeping the contact details typed
+  // before (adjusted during render rather than in an effect).
+  const [formFor, setFormFor] = useState({ open: false, defaultMessage });
+  if (formFor.open !== open || formFor.defaultMessage !== defaultMessage) {
+    setFormFor({ open, defaultMessage });
+    if (open) {
+      setSubmitted(false);
+      setForm((current) => ({
+        ...emptyForm(),
+        name: current.name,
+        phone: current.phone,
+        email: current.email,
+        water_problem: defaultMessage || "",
+      }));
+    }
+  }
 
   const productTitle = product?.title || product?.name || "";
   const helper = useMemo(() => {
@@ -231,7 +242,8 @@ const AquaEnquireForm = ({
 
           <label className="block">
             <span className="text-xs font-bold text-slate-600">
-              Email <span className="font-medium text-slate-400">(optional)</span>
+              Email{" "}
+              <span className="font-medium text-slate-400">(optional)</span>
             </span>
             <input
               value={form.email}

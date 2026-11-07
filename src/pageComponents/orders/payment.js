@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import AquaLayout from "@/components/Layout/Layout";
 import orderServiceOperations from "@/services/order";
 import { useRouter } from "next/router";
@@ -22,6 +22,116 @@ import {
 
 const PAYMENT_METHOD_LABEL = "Online Payment";
 
+const getOrderStep = (orderStatus) => {
+  switch (orderStatus) {
+    case "Pending":
+      return 0;
+    case "Processing":
+      return 1;
+    case "Shipped":
+      return 2;
+    case "Delivered":
+      return 3;
+    case "Completed":
+      return 4;
+    case "Cancelled":
+      return -1;
+    default:
+      return 0;
+  }
+};
+
+const timelineSteps = [
+  {
+    name: "Order placed",
+    description: "We received your order",
+    icon: ShoppingBag,
+  },
+  {
+    name: "Processing",
+    description: "Items are being prepared",
+    icon: Clock,
+  },
+  {
+    name: "Shipped",
+    description: "On the way to you",
+    icon: Truck,
+  },
+  {
+    name: "Delivered",
+    description: "Package delivered",
+    icon: CheckCircle,
+  },
+];
+
+const AquaOrderTimeline = ({ currentOrder }) => {
+  const currentStep = getOrderStep(currentOrder.orderStatus);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-2 rounded-2xl bg-emerald-50/80 p-4 text-sm text-emerald-900 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <Truck className="h-5 w-5" aria-hidden="true" />
+          <div>
+            <p className="font-semibold">
+              Current status: {currentOrder.orderStatus}
+            </p>
+            <p className="text-xs text-emerald-700">
+              Last updated{" "}
+              {dayjs(currentOrder.updatedAt).format("DD MMM YYYY, hh:mm A")}
+            </p>
+          </div>
+        </div>
+        <button className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-medium text-emerald-600 transition hover:border-emerald-300 hover:bg-emerald-50">
+          Track package
+        </button>
+      </div>
+
+      <div className="relative">
+        <div
+          className="absolute left-[13px] top-0 h-full w-0.5 bg-gray-200"
+          aria-hidden="true"
+        />
+        <ol className="space-y-6">
+          {timelineSteps.map((step, index) => {
+            const isCompleted = index <= currentStep;
+            const isCurrent = index === currentStep;
+            const Icon = step.icon;
+
+            return (
+              <li key={step.name} className="relative flex gap-4">
+                <span
+                  className={`relative inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-white shadow ${
+                    isCompleted ? "bg-emerald-600" : "bg-gray-300 text-gray-500"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                </span>
+                <div className="flex flex-col gap-1">
+                  <p
+                    className={`text-sm font-semibold ${isCompleted ? "text-gray-900" : "text-gray-500"}`}
+                  >
+                    {step.name}
+                  </p>
+                  <p className="text-xs text-gray-500">{step.description}</p>
+                  {isCurrent && currentOrder.estimatedDelivery && (
+                    <p className="text-xs font-medium text-emerald-600">
+                      Estimated delivery{" "}
+                      {dayjs(currentOrder.estimatedDelivery).format(
+                        "DD MMM YYYY",
+                      )}
+                    </p>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </div>
+  );
+};
+
 const AquaPaymentOrderPageComponent = () => {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -32,134 +142,19 @@ const AquaPaymentOrderPageComponent = () => {
 
   const { formatCurrencyINR } = useCurrency;
 
-  const getOrderStep = (orderStatus) => {
-    switch (orderStatus) {
-      case "Pending":
-        return 0;
-      case "Processing":
-        return 1;
-      case "Shipped":
-        return 2;
-      case "Delivered":
-        return 3;
-      case "Completed":
-        return 4;
-      case "Cancelled":
-        return -1;
-      default:
-        return 0;
-    }
-  };
-
-  const timelineSteps = useMemo(
-    () => [
-      {
-        name: "Order placed",
-        description: "We received your order",
-        icon: ShoppingBag,
-      },
-      {
-        name: "Processing",
-        description: "Items are being prepared",
-        icon: Clock,
-      },
-      {
-        name: "Shipped",
-        description: "On the way to you",
-        icon: Truck,
-      },
-      {
-        name: "Delivered",
-        description: "Package delivered",
-        icon: CheckCircle,
-      },
-    ],
-    [],
-  );
-
-  const AquaOrderTimeline = ({ currentOrder }) => {
-    const currentStep = getOrderStep(currentOrder.orderStatus);
-
-    return (
-      <div className="space-y-6">
-        <div className="flex flex-col gap-2 rounded-2xl bg-emerald-50/80 p-4 text-sm text-emerald-900 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <Truck className="h-5 w-5" aria-hidden="true" />
-            <div>
-              <p className="font-semibold">
-                Current status: {currentOrder.orderStatus}
-              </p>
-              <p className="text-xs text-emerald-700">
-                Last updated{" "}
-                {dayjs(currentOrder.updatedAt).format("DD MMM YYYY, hh:mm A")}
-              </p>
-            </div>
-          </div>
-          <button className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-medium text-emerald-600 transition hover:border-emerald-300 hover:bg-emerald-50">
-            Track package
-          </button>
-        </div>
-
-        <div className="relative">
-          <div
-            className="absolute left-[13px] top-0 h-full w-0.5 bg-gray-200"
-            aria-hidden="true"
-          />
-          <ol className="space-y-6">
-            {timelineSteps.map((step, index) => {
-              const isCompleted = index <= currentStep;
-              const isCurrent = index === currentStep;
-              const Icon = step.icon;
-
-              return (
-                <li key={step.name} className="relative flex gap-4">
-                  <span
-                    className={`relative inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-white shadow ${
-                      isCompleted
-                        ? "bg-emerald-600"
-                        : "bg-gray-300 text-gray-500"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" aria-hidden="true" />
-                  </span>
-                  <div className="flex flex-col gap-1">
-                    <p
-                      className={`text-sm font-semibold ${isCompleted ? "text-gray-900" : "text-gray-500"}`}
-                    >
-                      {step.name}
-                    </p>
-                    <p className="text-xs text-gray-500">{step.description}</p>
-                    {isCurrent && currentOrder.estimatedDelivery && (
-                      <p className="text-xs font-medium text-emerald-600">
-                        Estimated delivery{" "}
-                        {dayjs(currentOrder.estimatedDelivery).format(
-                          "DD MMM YYYY",
-                        )}
-                      </p>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-      </div>
-    );
-  };
+  const orderId = router.query.id;
+  const token = userData?.token;
 
   useEffect(() => {
-    if (!router.isReady || !userData?.token) return;
+    if (!router.isReady || !token) return;
 
-    const { id } = router.query;
+    const id = orderId;
     if (!id) return;
 
     const fetchPaymentOrder = async () => {
       setLoading(true);
       try {
-        const response = await orderServiceOperations.verifyPayment(
-          id,
-          userData.token,
-        );
+        const response = await orderServiceOperations.verifyPayment(id, token);
         const orderData = response?.data ?? response;
         setOrder(orderData);
         dispatch({ type: "EMPTY_CART" });
@@ -174,7 +169,7 @@ const AquaPaymentOrderPageComponent = () => {
     };
 
     fetchPaymentOrder();
-  }, [router.isReady, router.query.id, userData?.token, dispatch]);
+  }, [router.isReady, orderId, token, dispatch]);
 
   const shippingCharge =
     typeof order?.shippingCharge === "number" ? order.shippingCharge : 0;

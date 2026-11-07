@@ -71,14 +71,17 @@ const ReusableProductCard = ({
   const tick = useCallback(() => {
     if (!emblaApi) return;
 
-    if (!isGlass || !isHoveredRef.current) return;
+    function step() {
+      if (!isGlass || !isHoveredRef.current) return;
 
-    const now = performance.now();
-    const elapsed = now - startRef.current;
-    const p = Math.min(1, elapsed / AUTO_MS);
-    setProgress(p);
-    if (p >= 1) return;
-    rafRef.current = requestAnimationFrame(tick);
+      const now = performance.now();
+      const elapsed = now - startRef.current;
+      const p = Math.min(1, elapsed / AUTO_MS);
+      setProgress(p);
+      if (p >= 1) return;
+      rafRef.current = requestAnimationFrame(step);
+    }
+    step();
   }, [emblaApi, isGlass, AUTO_MS]);
 
   const startAuto = useCallback(() => {
@@ -98,12 +101,20 @@ const ReusableProductCard = ({
     }, AUTO_MS);
   }, [emblaApi, stopAuto, tick, isGlass, AUTO_MS]);
 
-  useEffect(() => {
-    const isProductInCart = cartData?.some((i) => i._id === product?._id);
-    const isProductInFav = favData?.some((i) => i._id === product?._id);
-    setAddCart(!!isProductInCart);
-    setAddFav(!!isProductInFav);
-  }, [cartData, favData, product?._id]);
+  // Re-sync the cart/favourite flags whenever the store or product changes
+  // (adjusted during render; the handlers below still set them optimistically).
+  const productId = product?._id;
+  const [syncedFrom, setSyncedFrom] = useState(null);
+  if (
+    !syncedFrom ||
+    syncedFrom.cartData !== cartData ||
+    syncedFrom.favData !== favData ||
+    syncedFrom.productId !== productId
+  ) {
+    setSyncedFrom({ cartData, favData, productId });
+    setAddCart(!!cartData?.some((i) => i._id === productId));
+    setAddFav(!!favData?.some((i) => i._id === productId));
+  }
 
   // Drop photo entries without a usable URL; show the brand image if none remain.
   const displayPhotos = useMemo(() => {
@@ -112,6 +123,20 @@ const ReusableProductCard = ({
       : [];
     return usable.length > 0 ? usable : [{ secure_url: FALLBACK_IMAGE }];
   }, [photos]);
+
+  // A new carousel instance (or card variant) starts with an empty filler.
+  const [progressResetFor, setProgressResetFor] = useState({
+    emblaApi: undefined,
+    isGlass,
+  });
+  if (
+    emblaApi &&
+    (progressResetFor.emblaApi !== emblaApi ||
+      progressResetFor.isGlass !== isGlass)
+  ) {
+    setProgressResetFor({ emblaApi, isGlass });
+    setProgress(0);
+  }
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -124,7 +149,6 @@ const ReusableProductCard = ({
     emblaApi.on("select", onSelect);
 
     stopAuto();
-    setProgress(0);
 
     return () => {
       emblaApi.off("select", onSelect);
@@ -134,9 +158,9 @@ const ReusableProductCard = ({
 
   const productHref = useMemo(() => {
     if (slug) return `/product/${slug}`;
-    if (product?._id) return `/product/${product._id}`;
+    if (productId) return `/product/${productId}`;
     return "/product";
-  }, [slug, product?._id]);
+  }, [slug, productId]);
 
   const reviewStats = useMemo(() => getProductReviewStats(product), [product]);
 

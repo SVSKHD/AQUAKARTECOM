@@ -416,17 +416,20 @@ const AquaOrdersPageComponent = () => {
     [resolvedOrders],
   );
 
-  useEffect(() => {
-    if (resolvedCodOrders.length === 0 && resolvedOnlineOrders.length > 0) {
-      setActiveTab("online");
-    } else if (
-      resolvedOnlineOrders.length === 0 &&
-      resolvedCodOrders.length > 0 &&
-      activeTab !== "cod"
-    ) {
-      setActiveTab("cod");
-    }
-  }, [resolvedCodOrders.length, resolvedOnlineOrders.length, activeTab]);
+  // Switch to the only tab that has orders (adjusted during render).
+  if (
+    resolvedCodOrders.length === 0 &&
+    resolvedOnlineOrders.length > 0 &&
+    activeTab !== "online"
+  ) {
+    setActiveTab("online");
+  } else if (
+    resolvedOnlineOrders.length === 0 &&
+    resolvedCodOrders.length > 0 &&
+    activeTab !== "cod"
+  ) {
+    setActiveTab("cod");
+  }
 
   const paymentSummaryCards = [
     {

@@ -87,10 +87,8 @@ const AquaCheckoutComponent = () => {
   const hasContactDetails = Boolean(
     userData?.user?.email && userData?.user?.phone,
   );
-  const savedAddresses = useMemo(
-    () => userData?.user?.addresses ?? [],
-    [userData?.user?.addresses],
-  );
+  const userAddresses = userData?.user?.addresses;
+  const savedAddresses = useMemo(() => userAddresses ?? [], [userAddresses]);
   const hasAddresses = Boolean(savedAddresses.length);
   const hasSingleAddress = savedAddresses.length === 1;
   const hasMultipleAddresses = savedAddresses.length > 1;
@@ -102,15 +100,15 @@ const AquaCheckoutComponent = () => {
     ? "Tap “Add address” to unlock delivery options."
     : "Tap an address card to set it for this order.";
 
-  useEffect(() => {
-    if (!hasAddresses) return;
-    const selectedExists = savedAddresses.some((address) =>
-      addressesMatch(address, selectedAddress),
-    );
-    if (!selectedExists && hasSingleAddress) {
-      setSelectedAddress(savedAddresses[0]);
-    }
-  }, [hasAddresses, hasSingleAddress, savedAddresses, selectedAddress]);
+  // With exactly one saved address, select it automatically (adjusted during
+  // render rather than in an effect).
+  if (
+    hasSingleAddress &&
+    selectedAddress !== savedAddresses[0] &&
+    !savedAddresses.some((address) => addressesMatch(address, selectedAddress))
+  ) {
+    setSelectedAddress(savedAddresses[0]);
+  }
 
   const getPaymentDisabledReason = ({ processing, type }) => {
     if (processing) {
@@ -249,10 +247,13 @@ const AquaCheckoutComponent = () => {
     }
   };
 
-  useEffect(() => {
+  // A changed cart invalidates the coupon quote (adjusted during render).
+  const [quotedCart, setQuotedCart] = useState(quoteCart);
+  if (quotedCart !== quoteCart) {
+    setQuotedCart(quoteCart);
     setCheckoutQuote(null);
     setCouponError("");
-  }, [quoteCart]);
+  }
 
   const handleAddressChange = (address) => {
     setSelectedAddress(address);

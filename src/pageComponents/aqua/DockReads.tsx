@@ -19,7 +19,9 @@ export default function DockReads({ reads }: { reads: BlogRead[] }) {
   // A podcast from this list stops when the sidebar unmounts (sign-out, new
   // layout). Closing the drawer keeps it playing while the chat continues.
   const readsRef = useRef(reads);
-  readsRef.current = reads;
+  useEffect(() => {
+    readsRef.current = reads;
+  }, [reads]);
   useEffect(
     () => () => {
       const now = speakingNow();

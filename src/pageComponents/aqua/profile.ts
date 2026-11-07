@@ -149,9 +149,38 @@ export function validateAddress(raw: Address | null | undefined) {
   if (!a.street.trim()) missing.push("house and street");
   if (!a.city.trim()) missing.push("city");
   if (!a.state.trim()) missing.push("state");
-  if (!/^\d{6}$/.test(a.postalCode.trim())) missing.push("a 6-digit PIN code");
+  if (!/^[1-9]\d{5}$/.test(a.postalCode.trim()))
+    missing.push("a 6-digit PIN code");
   return missing;
 }
+
+// Why an order can't be delivered to this address, one reason per problem
+// (empty when it can). Checkout and POST /payments need all four fields and
+// a real 6-digit Indian PIN code (they don't start with 0).
+export function deliveryIssues(raw: Address | null | undefined): string[] {
+  const a = toAddress(raw);
+  const pin = a.postalCode.trim();
+  const issues: string[] = [];
+  if (!a.street.trim()) issues.push("the house and street are missing");
+  if (!a.city.trim()) issues.push("the city is missing");
+  if (!a.state.trim()) issues.push("the state is missing");
+  if (!pin) issues.push("the PIN code is missing");
+  else if (!/^\d{6}$/.test(pin))
+    issues.push(`the PIN code ${pin} isn't 6 digits`);
+  else if (pin.startsWith("0"))
+    issues.push(`${pin} isn't a valid PIN code (they don't start with 0)`);
+  return issues;
+}
+
+// "We can't deliver here: the state is missing and the PIN code is missing."
+export const deliveryReason = (issues: string[]) =>
+  issues.length
+    ? `We can't deliver here: ${
+        issues.length > 1
+          ? `${issues.slice(0, -1).join(", ")} and ${issues[issues.length - 1]}`
+          : issues[0]
+      }.`
+    : "";
 
 export const cleanAddress = (raw: Address | null | undefined): Address => {
   const a = toAddress(raw);

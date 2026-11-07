@@ -116,6 +116,8 @@ const AquaOrderPage = () => {
   const [retrying, setRetrying] = useState(false);
   const [switchingToCod, setSwitchingToCod] = useState(false);
   const pollCountRef = useRef(0);
+  // Mirrors pollCountRef for rendering ("Confirming your payment..." copy).
+  const [pollAttempt, setPollAttempt] = useState(0);
 
   const token = userData?.token;
   const userId = userData?.user?._id;
@@ -167,14 +169,25 @@ const AquaOrderPage = () => {
     [id, token],
   );
 
+  // A new order/session (or the router becoming ready) restarts loading and
+  // the retry count; adjusted during render rather than in the effect below.
+  const canFetch = Boolean(router.isReady && token && id);
+  const [fetchFor, setFetchFor] = useState(null);
+  if (
+    !fetchFor ||
+    fetchFor.isReady !== router.isReady ||
+    fetchFor.id !== id ||
+    fetchFor.token !== token
+  ) {
+    setFetchFor({ isReady: router.isReady, id, token });
+    setLoading(canFetch);
+    setPollAttempt(0);
+  }
+
   // Initial fetch + polling for payment verification (max 3 retries over 15s)
   useEffect(() => {
-    if (!router.isReady || !token || !id) {
-      setLoading(false);
-      return;
-    }
+    if (!router.isReady || !token || !id) return;
 
-    setLoading(true);
     pollCountRef.current = 0;
     const controller = new AbortController();
 
@@ -188,6 +201,7 @@ const AquaOrderPage = () => {
         pollCountRef.current += 1;
         setTimeout(() => {
           if (!controller.signal.aborted) {
+            setPollAttempt(pollCountRef.current);
             setLoading(true);
             setError("");
             poll();
@@ -395,12 +409,12 @@ const AquaOrderPage = () => {
               <AquaSpinner color="emerald" size="lg" />
               <div className="text-center">
                 <p className="text-sm font-semibold text-slate-700">
-                  {pollCountRef.current > 0
+                  {pollAttempt > 0
                     ? "Confirming your payment..."
                     : "Loading your order details..."}
                 </p>
                 <p className="text-xs text-slate-400 mt-1">
-                  {pollCountRef.current > 0
+                  {pollAttempt > 0
                     ? "This may take a few seconds while we verify with the payment gateway."
                     : "Please wait while we fetch your order."}
                 </p>

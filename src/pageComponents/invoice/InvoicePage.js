@@ -339,7 +339,6 @@ const ProductRow = ({ product, index, onAsk }) => {
       >
         <span>{String(index + 1).padStart(2, "0")}</span>
         {product.productImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={product.productImage} alt="" />
         ) : (
           <Package size={26} strokeWidth={1.4} aria-hidden="true" />
@@ -503,7 +502,6 @@ const RecommendationCard = ({ product, onAsk }) => {
     <article className={styles.recoCard} role="listitem">
       <div className={styles.recoPoster} aria-hidden="true">
         {product.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={product.image} alt="" loading="lazy" />
         ) : (
           <Package size={40} strokeWidth={1.2} />

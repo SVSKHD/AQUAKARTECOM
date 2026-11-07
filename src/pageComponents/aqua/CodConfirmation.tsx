@@ -321,7 +321,6 @@ export default function CodConfirmation(p: Props) {
               <li key={l.key} className="aq-cod-line">
                 <span className="aq-cod-thumb" aria-hidden="true">
                   {l.photo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={l.photo} alt="" loading="lazy" />
                   ) : (
                     <PackageCheck size={18} />

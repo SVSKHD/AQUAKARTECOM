@@ -92,7 +92,6 @@ export default function Composer({
   useEffect(() => {
     if (!listening) return;
     const t0 = Date.now();
-    setElapsed(0);
     const id = setInterval(() => {
       const ms = Date.now() - t0;
       setElapsed(ms);
@@ -175,6 +174,7 @@ export default function Composer({
       }
     };
     r.start();
+    setElapsed(0);
     setListening(true);
     onFocusChange(true);
   };

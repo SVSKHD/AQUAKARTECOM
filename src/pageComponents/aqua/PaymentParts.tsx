@@ -76,14 +76,14 @@ export function PaymentTimeline({ steps }: { steps: Step[] }) {
 
 // "just now", "40s ago", "3 min ago": refreshed every 10s while shown.
 function useAgo(at: number | null) {
-  const [, tick] = useState(0);
+  const [now, setNow] = useState(Date.now);
   useEffect(() => {
     if (!at) return;
-    const t = setInterval(() => tick((n) => n + 1), 10000);
+    const t = setInterval(() => setNow(Date.now()), 10000);
     return () => clearInterval(t);
   }, [at]);
   if (!at) return "";
-  const s = Math.max(0, Math.round((Date.now() - at) / 1000));
+  const s = Math.max(0, Math.round((now - at) / 1000));
   if (s < 10) return "just now";
   if (s < 60) return `${s}s ago`;
   const m = Math.round(s / 60);

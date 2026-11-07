@@ -83,6 +83,8 @@ export default function App({ Component, pageProps }) {
   const routeHideTimerRef = useRef(null);
   const skipRouteLoaderRef = useRef(false);
   const analyticsStopRef = useRef(null);
+  // The landing path starts the first visit; later ones come from route events.
+  const initialPathRef = useRef(router.asPath);
 
   useEffect(() => {
     const beginVisit = (url) => {
@@ -90,7 +92,7 @@ export default function App({ Component, pageProps }) {
       analyticsStopRef.current = startAnalyticsVisit(url);
     };
 
-    beginVisit(router.asPath);
+    beginVisit(initialPathRef.current);
     router.events.on("routeChangeComplete", beginVisit);
     return () => {
       router.events.off("routeChangeComplete", beginVisit);

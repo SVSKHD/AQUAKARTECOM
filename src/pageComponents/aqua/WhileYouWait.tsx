@@ -86,7 +86,6 @@ export function Read({
         onClick={onToggle}
       >
         {read.image ? (
-          // eslint-disable-next-line @next/next/no-img-element -- CMS images on Cloudinary
           <img src={read.image} alt="" className="aq-read-img" loading="lazy" />
         ) : (
           <span className="aq-read-img" aria-hidden="true">

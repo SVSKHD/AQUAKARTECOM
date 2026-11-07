@@ -613,11 +613,15 @@ export default function HistoryDock(p: Props) {
   useEffect(() => {
     setHost(asideRef.current?.closest(".aq-root") ?? document.body);
   }, []);
-  useEffect(() => {
-    if (open) return;
-    setMenu(null);
-    setRenaming(null);
-  }, [open]);
+  // Closing the dock drops its menu and any rename in progress.
+  const [openSeen, setOpenSeen] = useState(open);
+  if (open !== openSeen) {
+    setOpenSeen(open);
+    if (!open) {
+      setMenu(null);
+      setRenaming(null);
+    }
+  }
   const closeMenu = () => {
     setMenu(null);
     setArmed(null);

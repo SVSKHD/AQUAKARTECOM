@@ -13,53 +13,43 @@ const WINNING_COMBINATIONS = [
   [2, 4, 6],
 ];
 
+const getWinner = (board) => {
+  for (let i = 0; i < WINNING_COMBINATIONS.length; i++) {
+    const [a, b, c] = WINNING_COMBINATIONS[i];
+    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+      return board[a];
+    }
+  }
+  if (board.every((cell) => cell !== null)) return "Draw";
+  return null;
+};
+
 const TicTacToe = () => {
   const [board, setBoard] = useState(Array(9).fill(null));
   const [isXNext, setIsXNext] = useState(true); // Player is X
-  const [winner, setWinner] = useState(null);
-  const [isCpuThinking, setIsCpuThinking] = useState(false);
+  // Both follow from the board, so they are derived rather than stored.
+  const winner = getWinner(board);
+  const isCpuThinking = !isXNext && !winner;
 
-  // Check for winner
+  // CPU turn, after a 700ms "thinking" delay.
   useEffect(() => {
-    const checkWinner = () => {
-      for (let i = 0; i < WINNING_COMBINATIONS.length; i++) {
-        const [a, b, c] = WINNING_COMBINATIONS[i];
-        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-          return board[a];
-        }
+    if (!isCpuThinking) return undefined;
+    const timer = setTimeout(() => {
+      const emptyIndices = board
+        .map((val, idx) => (val === null ? idx : null))
+        .filter((val) => val !== null);
+
+      if (emptyIndices.length > 0) {
+        const randomIndex =
+          emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+        const newBoard = [...board];
+        newBoard[randomIndex] = "O";
+        setBoard(newBoard);
+        setIsXNext(true);
       }
-      if (board.every((cell) => cell !== null)) return "Draw";
-      return null;
-    };
-
-    const winResult = checkWinner();
-    if (winResult) {
-      setWinner(winResult);
-    } else if (!isXNext && !winner) {
-      // CPU Turn
-      setIsCpuThinking(true);
-      const timer = setTimeout(() => {
-        makeCpuMove();
-        setIsCpuThinking(false);
-      }, 700); // 700ms delay for "thinking"
-      return () => clearTimeout(timer);
-    }
-  }, [board, isXNext, winner]);
-
-  const makeCpuMove = () => {
-    const emptyIndices = board
-      .map((val, idx) => (val === null ? idx : null))
-      .filter((val) => val !== null);
-
-    if (emptyIndices.length > 0) {
-      const randomIndex =
-        emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-      const newBoard = [...board];
-      newBoard[randomIndex] = "O";
-      setBoard(newBoard);
-      setIsXNext(true);
-    }
-  };
+    }, 700);
+    return () => clearTimeout(timer);
+  }, [board, isCpuThinking]);
 
   const handleClick = (index) => {
     if (board[index] || winner || isCpuThinking) return;
@@ -73,7 +63,6 @@ const TicTacToe = () => {
   const resetGame = () => {
     setBoard(Array(9).fill(null));
     setIsXNext(true);
-    setWinner(null);
   };
 
   return (

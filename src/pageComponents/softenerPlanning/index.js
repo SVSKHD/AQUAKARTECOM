@@ -42,7 +42,11 @@ const questions = [
     icon: FaHome,
     options: [
       { value: "bathroom", label: "One bathroom", note: "Shower and fittings" },
-      { value: "multiple", label: "2–3 bathrooms", note: "Multiple daily users" },
+      {
+        value: "multiple",
+        label: "2–3 bathrooms",
+        note: "Multiple daily users",
+      },
       { value: "whole-home", label: "Whole home", note: "All major outlets" },
     ],
   },
@@ -54,18 +58,22 @@ const questions = [
     options: [
       { value: "mild", label: "Mild", note: "Light white marks" },
       { value: "hard", label: "Hard", note: "Frequent scale on taps" },
-      { value: "very-hard", label: "Very hard", note: "Heavy scale or borewell" },
-      { value: "unknown", label: "Not sure", note: "Recommend with safe margin" },
+      {
+        value: "very-hard",
+        label: "Very hard",
+        note: "Heavy scale or borewell",
+      },
+      {
+        value: "unknown",
+        label: "Not sure",
+        note: "Recommend with safe margin",
+      },
     ],
   },
 ];
 
 const extractCapacity = (product) => {
-  const text = [
-    product?.title,
-    product?.capacity,
-    product?.description,
-  ]
+  const text = [product?.title, product?.capacity, product?.description]
     .filter(Boolean)
     .join(" ");
   const match = text.match(/(\d+(?:\.\d+)?)\s*(?:l|litre|liter)/i);
@@ -75,12 +83,13 @@ const extractCapacity = (product) => {
 const requiredCapacity = ({ residents, coverage, hardness }) => {
   if (coverage === "bathroom") return hardness === "very-hard" ? 12 : 8;
 
-  const peopleBase = {
-    "1-2": 20,
-    "3-4": 25,
-    "5-7": 40,
-    "8+": 100,
-  }[residents] || 25;
+  const peopleBase =
+    {
+      "1-2": 20,
+      "3-4": 25,
+      "5-7": 40,
+      "8+": 100,
+    }[residents] || 25;
 
   const coverageBoost = coverage === "whole-home" ? 1.25 : 1;
   const hardnessBoost =
@@ -152,11 +161,13 @@ const InstallationGallery = ({ sections = [], loading = false }) => {
     () =>
       sections
         .flatMap((section) =>
-          (Array.isArray(section?.photos) ? section.photos : []).map((photo) => ({
-            id: photo?.id || photo?._id || photo?.secure_url,
-            url: photo?.secure_url || photo?.delivery_url || photo?.url || "",
-            area: section?.title || section?.area || "Aquakart installation",
-          })),
+          (Array.isArray(section?.photos) ? section.photos : []).map(
+            (photo) => ({
+              id: photo?.id || photo?._id || photo?.secure_url,
+              url: photo?.secure_url || photo?.delivery_url || photo?.url || "",
+              area: section?.title || section?.area || "Aquakart installation",
+            }),
+          ),
         )
         .filter((image) => image.url)
         .slice(0, 10),
@@ -164,9 +175,8 @@ const InstallationGallery = ({ sections = [], loading = false }) => {
   );
   const [activeIndex, setActiveIndex] = useState(0);
 
-  useEffect(() => {
-    if (activeIndex >= images.length) setActiveIndex(0);
-  }, [activeIndex, images.length]);
+  // Reset when the photo list shrinks below the selection (adjusted during render).
+  if (activeIndex > 0 && activeIndex >= images.length) setActiveIndex(0);
 
   if (loading) {
     return (
@@ -259,18 +269,22 @@ const AquaSoftenerPlannerComponent = () => {
     hardness: "",
   });
   const [products, setProducts] = useState([]);
-  const [catalogueLoading, setCatalogueLoading] = useState(false);
+  // Both start true: the mount effect below loads them straight away.
+  const [catalogueLoading, setCatalogueLoading] = useState(true);
   const [catalogueError, setCatalogueError] = useState("");
   const [installationSections, setInstallationSections] = useState([]);
-  const [installationsLoading, setInstallationsLoading] = useState(false);
+  const [installationsLoading, setInstallationsLoading] = useState(true);
   const [complete, setComplete] = useState(false);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const saved = JSON.parse(window.sessionStorage.getItem(DRAFT_KEY) || "null");
+      const saved = JSON.parse(
+        window.sessionStorage.getItem(DRAFT_KEY) || "null",
+      );
       if (saved?.answers) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage draft is restored after mount so SSR and first client render match (AGENTS.md)
         setAnswers((current) => ({ ...current, ...saved.answers }));
         setStep(Math.min(Number(saved.step) || 0, questions.length - 1));
       }
@@ -281,40 +295,36 @@ const AquaSoftenerPlannerComponent = () => {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.sessionStorage.setItem(
-      DRAFT_KEY,
-      JSON.stringify({ answers, step }),
-    );
+    window.sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ answers, step }));
   }, [answers, step]);
 
   useEffect(() => {
     let active = true;
-    setCatalogueLoading(true);
-    setInstallationsLoading(true);
-    setCatalogueError("");
 
     Promise.allSettled([
       ProductServiceOperations.AllProducts(),
       AquaSoftnerOperations.getSofteners(),
-    ]).then(([productsResult, installationsResult]) => {
-      if (!active) return;
+    ])
+      .then(([productsResult, installationsResult]) => {
+        if (!active) return;
 
-      if (productsResult.status === "fulfilled") {
-        const data = productsResult.value?.data?.data;
-        setProducts(Array.isArray(data) ? data : []);
-      } else {
-        setCatalogueError("We could not load the live catalogue.");
-      }
+        if (productsResult.status === "fulfilled") {
+          const data = productsResult.value?.data?.data;
+          setProducts(Array.isArray(data) ? data : []);
+        } else {
+          setCatalogueError("We could not load the live catalogue.");
+        }
 
-      if (installationsResult.status === "fulfilled") {
-        const sections = installationsResult.value?.data;
-        setInstallationSections(Array.isArray(sections) ? sections : []);
-      }
-    }).finally(() => {
-      if (!active) return;
-      setCatalogueLoading(false);
-      setInstallationsLoading(false);
-    });
+        if (installationsResult.status === "fulfilled") {
+          const sections = installationsResult.value?.data;
+          setInstallationSections(Array.isArray(sections) ? sections : []);
+        }
+      })
+      .finally(() => {
+        if (!active) return;
+        setCatalogueLoading(false);
+        setInstallationsLoading(false);
+      });
 
     return () => {
       active = false;
@@ -426,7 +436,10 @@ const AquaSoftenerPlannerComponent = () => {
                 <>
                   <div className="grid gap-6 md:grid-cols-2">
                     {recommendations.map((product, index) => (
-                      <div key={product._id || product.slug} className="relative">
+                      <div
+                        key={product._id || product.slug}
+                        className="relative"
+                      >
                         <span className="absolute left-5 top-5 z-30 rounded-full bg-slate-950 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white shadow-lg">
                           {index === 0 ? "Best match" : "Alternative"}
                         </span>
@@ -436,8 +449,11 @@ const AquaSoftenerPlannerComponent = () => {
                   </div>
                   <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm">
                     <div className="text-sm leading-6 text-slate-600">
-                      <strong className="text-slate-950">Final installation check:</strong>{" "}
-                      Aquakart can confirm inlet hardness and plumbing before installation.
+                      <strong className="text-slate-950">
+                        Final installation check:
+                      </strong>{" "}
+                      Aquakart can confirm inlet hardness and plumbing before
+                      installation.
                       <p className="mt-2 text-xs font-bold text-emerald-700">
                         Planner target: about {plannerCapacity} L
                       </p>
@@ -565,7 +581,9 @@ const AquaSoftenerPlannerComponent = () => {
                     disabled={!selectedValue}
                     className="inline-flex min-h-12 items-center gap-3 rounded-full bg-slate-950 px-6 text-xs font-black text-white shadow-lg transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-35"
                   >
-                    {step === questions.length - 1 ? "Show my matches" : "Continue"}
+                    {step === questions.length - 1
+                      ? "Show my matches"
+                      : "Continue"}
                     <FaArrowRight />
                   </button>
                 </div>

@@ -69,15 +69,21 @@ export default function RecentlyBought({ products = [], className = "mb-5" }) {
 
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  useEffect(() => {
+  // A new feed starts the ticker from the top (adjusted during render).
+  const [indexFor, setIndexFor] = useState(result);
+  if (indexFor !== result) {
+    setIndexFor(result);
     setIndex(0);
-  }, [result]);
+  }
+  // Reference time for "x hours ago"; refreshed on each ticker step so the
+  // labels never go stale, without calling Date.now() during render.
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (reduced || paused || recent.length < 2) return undefined;
-    const t = setInterval(
-      () => setIndex((i) => (i + 1) % recent.length),
-      ROTATE_MS,
-    );
+    const t = setInterval(() => {
+      setNow(Date.now());
+      setIndex((i) => (i + 1) % recent.length);
+    }, ROTATE_MS);
     return () => clearInterval(t);
   }, [reduced, paused, recent.length]);
 
@@ -95,7 +101,6 @@ export default function RecentlyBought({ products = [], className = "mb-5" }) {
 
   const headings = demandHeadings(result);
   const days = result.feed.days;
-  const now = Date.now();
   const current = recent[index % Math.max(recent.length, 1)];
 
   return (
@@ -166,7 +171,6 @@ export default function RecentlyBought({ products = [], className = "mb-5" }) {
                   {i + 1}
                 </span>
                 {view?.photo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={view.photo}
                     alt=""

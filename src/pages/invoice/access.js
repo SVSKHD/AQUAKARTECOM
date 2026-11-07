@@ -16,19 +16,29 @@ const InvoiceAccessPage = () => {
     message: "Verifying your secure invoice link…",
   });
 
+  // Checked once, when the query first becomes available: a link without a
+  // token is reported straight away (adjusted during render).
+  const [queryChecked, setQueryChecked] = useState(false);
+  if (router.isReady && !queryChecked) {
+    setQueryChecked(true);
+    const queryToken = Array.isArray(router.query.token)
+      ? router.query.token[0]
+      : router.query.token;
+    if (!queryToken) {
+      setState({
+        status: "error",
+        message: "This invoice link is incomplete. Please request a new one.",
+      });
+    }
+  }
+
   useEffect(() => {
     if (!router.isReady || exchanged.current) return;
     exchanged.current = true;
     const token = Array.isArray(router.query.token)
       ? router.query.token[0]
       : router.query.token;
-    if (!token) {
-      setState({
-        status: "error",
-        message: "This invoice link is incomplete. Please request a new one.",
-      });
-      return;
-    }
+    if (!token) return;
     InvoiceServiceOperations.exchangeInvoiceToken(token)
       .then(() => {
         setState({

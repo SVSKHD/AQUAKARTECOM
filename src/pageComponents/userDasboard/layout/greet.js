@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { ArrowRight, Package } from "lucide-react";
 
 const greetingFor = (hour) => {
@@ -8,14 +8,19 @@ const greetingFor = (hour) => {
   return "Good evening";
 };
 
+const noSubscribe = () => () => {};
+const clientGreeting = () => greetingFor(new Date().getHours());
+const serverGreeting = () => "Welcome back";
+
 /** Welcome banner for the dashboard overview. */
 const AquaUserGreet = ({ userName = "there" }) => {
-  // The hour depends on the visitor's clock, so pick it after mount to keep
-  // the server and client HTML identical.
-  const [greeting, setGreeting] = useState("Welcome back");
-  useEffect(() => {
-    setGreeting(greetingFor(new Date().getHours()));
-  }, []);
+  // The hour depends on the visitor's clock: the server snapshot keeps the
+  // hydration HTML identical, then the client snapshot takes over.
+  const greeting = useSyncExternalStore(
+    noSubscribe,
+    clientGreeting,
+    serverGreeting,
+  );
 
   return (
     <section

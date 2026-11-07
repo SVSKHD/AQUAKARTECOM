@@ -148,11 +148,11 @@ const FindInvoicePage = () => {
   const pendingPrefilledLookup = useRef(false);
   const lastAutoLookupKey = useRef("");
 
+  // Auth becoming ready clears the expired gate (adjusted during render).
+  if (authReady && authGateExpired) setAuthGateExpired(false);
+
   useEffect(() => {
-    if (authReady) {
-      setAuthGateExpired(false);
-      return undefined;
-    }
+    if (authReady) return undefined;
 
     const timeout = window.setTimeout(
       () => setAuthGateExpired(true),

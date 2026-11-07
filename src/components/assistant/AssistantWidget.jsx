@@ -174,7 +174,6 @@ const AssistantAvatar = ({ size = "h-8 w-8" }) => (
     aria-hidden="true"
     className={`${size} grid flex-none place-items-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-emerald-100`}
   >
-    {/* eslint-disable-next-line @next/next/no-img-element */}
     <img src={logo.src} alt="" className="h-[72%] w-[72%] object-contain" />
   </span>
 );
@@ -197,7 +196,6 @@ function ContextProductCard({ product, onAsk }) {
     <article className="flex gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200/70">
       <div className="grid h-24 w-20 flex-none place-items-center overflow-hidden rounded-xl bg-gradient-to-b from-emerald-50 to-slate-50 ring-1 ring-slate-100">
         {product.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={product.image}
             alt=""
@@ -283,9 +281,14 @@ const AssistantWidget = ({ pathname = "" }) => {
   const drawer = context?.variant === "drawer";
   const contextProducts = drawer ? context.products || [] : [];
   const [tab, setTab] = useState("chat");
-  useEffect(() => {
+  // Opening (or a new requested tab while open) selects that tab. Adjusted
+  // during render rather than in an effect, per React's "adjusting state when
+  // a prop changes" pattern.
+  const [tabSync, setTabSync] = useState({ open: false, requestedTab });
+  if (tabSync.open !== open || tabSync.requestedTab !== requestedTab) {
+    setTabSync({ open, requestedTab });
     if (open) setTab(requestedTab === "products" ? "products" : "chat");
-  }, [open, requestedTab]);
+  }
   // Logged-in customers send their token (5 questions a day); guests get 3.
   const token = useSelector((state) => state.userData?.token) || null;
   const reduceMotion = useReducedMotion();
@@ -479,10 +482,19 @@ const AssistantWidget = ({ pathname = "" }) => {
   }, [open]);
 
   // "Ask about this product" hands over a prompt to edit, not to send.
+  // The text is copied into the composer during render; the effect below then
+  // clears the store and focuses the field.
+  const pendingPrefill = open && prefill ? prefill : "";
+  const [appliedPrefill, setAppliedPrefill] = useState("");
+  if (pendingPrefill !== appliedPrefill) {
+    setAppliedPrefill(pendingPrefill);
+    if (pendingPrefill) {
+      setInput(pendingPrefill.slice(0, AI_PROMPT_MAX));
+      setError(null);
+    }
+  }
   useEffect(() => {
     if (!open || !prefill) return;
-    setInput(prefill.slice(0, AI_PROMPT_MAX));
-    setError(null);
     dispatch({ type: "CLEAR_ASSISTANT_PREFILL" });
     window.requestAnimationFrame(() => {
       const el = inputRef.current;

@@ -34,10 +34,13 @@ const LoadingState = () => (
   </div>
 );
 
+// Stable default so the prop-change check below never sees a "new" list.
+const NO_RELATED = [];
+
 const AquaDynamicSubCategoryComponent = ({
   id,
   initialCategory = null,
-  initialRelated = [],
+  initialRelated = NO_RELATED,
 }) => {
   const [category, setCategory] = useState(initialCategory || {});
   const [related, setRelated] = useState(initialRelated);
@@ -57,19 +60,33 @@ const AquaDynamicSubCategoryComponent = ({
     follow: true,
   };
 
-  useEffect(() => {
+  // New props (client-side navigation) reset the view; adjusted during render
+  // rather than in an effect. The effect below only fetches.
+  const [viewFor, setViewFor] = useState({
+    id,
+    initialCategory,
+    initialRelated,
+  });
+  if (
+    viewFor.id !== id ||
+    viewFor.initialCategory !== initialCategory ||
+    viewFor.initialRelated !== initialRelated
+  ) {
+    setViewFor({ id, initialCategory, initialRelated });
     if (initialCategory) {
       setCategory(initialCategory);
       setRelated(initialRelated || []);
       setErrorMessage("");
       setIsLoading(false);
-      return;
+    } else if (id) {
+      setIsLoading(true);
+      setErrorMessage("");
     }
+  }
 
-    if (!id) return;
+  useEffect(() => {
+    if (initialCategory || !id) return;
 
-    setIsLoading(true);
-    setErrorMessage("");
     SubCategoryServiceOperations.SubCategoryByTitle(id)
       .then((res) => {
         setCategory(res.data.data);

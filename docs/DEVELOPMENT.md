@@ -30,21 +30,24 @@ For Google login setup, see [AUTH_GOOGLE_FIREBASE.md](AUTH_GOOGLE_FIREBASE.md). 
 
 ## Commands
 
-| Command                                    | Purpose                                                                   |
-| ------------------------------------------ | ------------------------------------------------------------------------- |
-| `npm run dev`                              | Next development using Webpack                                            |
-| `npm run build`                            | Production build using Turbopack                                          |
-| `npm start`                                | Serve an existing production build                                        |
-| `npm test`                                 | Run Vitest suite once                                                     |
-| `npm test -- src/utils/priceUtils.test.js` | Run one relevant test file                                                |
-| `npm run test:watch`                       | Watch tests                                                               |
-| `npm run test:coverage`                    | Coverage; current coverage include targets UI primitives                  |
-| `npm run lint`                             | Repository ESLint check                                                   |
-| `npx eslint src/path/to/changed-file.js`   | Focused lint check                                                        |
-| `npx tsc --noEmit --incremental false`     | TS check without writing incremental cache; no dedicated typecheck script |
-| `npm run pretty`                           | Formats the whole repo; prefer targeted formatting for small changes      |
+| Command                                    | Purpose                                                                                         |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `npm run dev`                              | Next development using Webpack                                                                  |
+| `npm run build`                            | Production build (Turbopack); `prebuild` runs `typecheck` + `lint` first and stops on any error |
+| `npm start`                                | Serve an existing production build                                                              |
+| `npm test`                                 | Run Vitest suite once                                                                           |
+| `npm test -- src/utils/priceUtils.test.js` | Run one relevant test file                                                                      |
+| `npm run test:watch`                       | Watch tests                                                                                     |
+| `npm run test:coverage`                    | Coverage; current coverage include targets UI primitives                                        |
+| `npm run lint`                             | Repository ESLint check; fails on any error or warning                                          |
+| `npx eslint src/path/to/changed-file.js`   | Focused lint check                                                                              |
+| `npm run typecheck`                        | `tsc --noEmit --incremental false`                                                              |
+| `npm run verify`                           | typecheck + lint + full Vitest run (`--maxWorkers=2`); run before pushing                       |
+| `npm run pretty`                           | Formats the whole repo; prefer targeted formatting for small changes                            |
 
-Vitest uses jsdom, `vitest.setup.js`, and discovers `src/**/*.{test,spec}.{js,jsx,ts,tsx}`. Keep useful regression tests beside related code. Do not claim a successful check without running it; pre-existing errors may prevent a full build or type check.
+Vitest uses jsdom, `vitest.setup.js`, and discovers `src/**/*.{test,spec}.{js,jsx,ts,tsx}`. Keep useful regression tests beside related code. Do not claim a successful check without running it. The build (including the Jenkins Docker build) refuses to start while type or lint errors exist, and the pre-commit hook lints staged JS/TS files.
+
+ESLint 10 notes: `eslint.config.mjs` pins `settings.react.version` (the plugin's `detect` crashes on ESLint 10) and parses JS/JSX with `espree` (Next's bundled Babel parser crashes on ESLint 10). Keep both until `eslint-config-next` supports ESLint 10 natively. Running the full Vitest suite with default parallelism can crash workers on smaller machines; use `--maxWorkers=2`.
 
 ## Fast diagnosis
 

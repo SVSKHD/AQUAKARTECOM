@@ -51,17 +51,31 @@ const PublicInvoiceRoute = () => {
     catalogue: null,
   });
 
+  // Each new request (route ready, id change or access refresh) starts in the
+  // loading state, or 404s without an id; adjusted during render.
+  const routeId = router.isReady ? normalizeRouteId(router.query.id) : null;
+  const [requestFor, setRequestFor] = useState(null);
+  if (
+    router.isReady &&
+    (!requestFor ||
+      requestFor.routeId !== routeId ||
+      requestFor.refreshKey !== refreshKey)
+  ) {
+    setRequestFor({ routeId, refreshKey });
+    if (!routeId) {
+      setState({ invoice: null, statusCode: 404, loading: false });
+    } else {
+      setState((current) => ({ ...current, loading: true }));
+    }
+  }
+
   useEffect(() => {
     if (!router.isReady) return undefined;
 
-    const id = normalizeRouteId(router.query.id);
-    if (!id) {
-      setState({ invoice: null, statusCode: 404, loading: false });
-      return undefined;
-    }
+    const id = routeId;
+    if (!id) return undefined;
 
     const controller = new AbortController();
-    setState((current) => ({ ...current, loading: true }));
 
     const loadInvoice = async () => {
       try {
@@ -104,7 +118,7 @@ const PublicInvoiceRoute = () => {
 
     void loadInvoice();
     return () => controller.abort();
-  }, [refreshKey, router.isReady, router.query.id]);
+  }, [refreshKey, router.isReady, routeId]);
 
   if (state.loading) return null;
   return (

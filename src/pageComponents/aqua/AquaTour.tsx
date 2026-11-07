@@ -111,6 +111,9 @@ export default function AquaTour({
 
   useLayoutEffect(() => {
     if (!open) return;
+    // Which targets are on screen is read from the DOM, so it can only be
+    // known after layout; done before paint so the first step never flickers.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the DOM (external) in a layout effect
     setSteps(STEPS.filter((s) => !s.target || shown(targetEl(s))));
     setI(0);
   }, [open]);
@@ -166,6 +169,7 @@ export default function AquaTour({
       block: "center",
       behavior: reduced ? "auto" : "smooth",
     });
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- positions from DOM measurement (external layout)
     measure();
     const settle = window.setTimeout(measure, reduced ? 0 : 380);
     const ro = new ResizeObserver(measure);

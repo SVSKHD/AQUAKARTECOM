@@ -147,25 +147,31 @@ export default function DemandStrip({
   // Which face the bubble shows when it doubles as the sidebar handle.
   const [face, setFace] = useState<"hot" | "sidebar">("hot");
   const [tucked, setTuckedState] = useState(
-    () => storage.get(TUCKED_KEY) === "1",
+    () => autoTuck || storage.get(TUCKED_KEY) === "1",
   );
   const setTucked = (on: boolean, remember = true) => {
     setTuckedState(on);
     if (remember) storage.set(TUCKED_KEY, on ? "1" : "0");
   };
-  useEffect(() => {
+  // Turning autoTuck on tucks it (not remembered); the initial state covers mount.
+  const [autoTuckSeen, setAutoTuckSeen] = useState(autoTuck);
+  if (autoTuck !== autoTuckSeen) {
+    setAutoTuckSeen(autoTuck);
     if (autoTuck) setTuckedState(true);
-  }, [autoTuck]);
+  }
 
   // ---------- rotating "recently bought" line ----------
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  // "3 hours ago" is measured from here; refreshed with each rotation (feed
+  // times are hourly, so this is plenty fresh).
+  const [now, setNow] = useState(Date.now);
   useEffect(() => {
     if (reduced || paused || tucked || recent.length < 2) return;
-    const t = setInterval(
-      () => setIndex((i) => (i + 1) % recent.length),
-      ROTATE_MS,
-    );
+    const t = setInterval(() => {
+      setIndex((i) => (i + 1) % recent.length);
+      setNow(Date.now());
+    }, ROTATE_MS);
     return () => clearInterval(t);
   }, [reduced, paused, tucked, recent.length]);
 
@@ -268,15 +274,17 @@ export default function DemandStrip({
   // Flame and clock take turns, held still while the bubble is dragged.
   const twoFaced = touch && !!onOpenSidebar;
   const holding = tabFree !== null;
+  // Back on the flame whenever the bubble stops doubling as the handle.
+  const faceTurns = twoFaced && tucked;
+  if (!faceTurns && face !== "hot") setFace("hot");
   useEffect(() => {
-    if (!twoFaced || !tucked) return setFace("hot");
-    if (holding) return;
+    if (!faceTurns || holding) return;
     const id = setInterval(
       () => setFace((f) => (f === "hot" ? "sidebar" : "hot")),
       FACE_MS,
     );
     return () => clearInterval(id);
-  }, [twoFaced, tucked, holding]);
+  }, [faceTurns, holding]);
   const tabJustDragged = useRef(false);
   const tabHost = () => tabRef.current?.offsetParent as HTMLElement | null;
   const clampTabY = useCallback((y: number) => {
@@ -426,7 +434,6 @@ export default function DemandStrip({
 
   if (status !== "ready" || !result) return null;
   const headings = demandHeadings(result);
-  const now = Date.now();
   const days = result.feed.days;
 
   if (tucked)

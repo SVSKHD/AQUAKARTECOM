@@ -223,6 +223,17 @@ export default function AquaWorkspace() {
     ids: string[];
   } | null>(null);
   const [comparedOrigin, setComparedOrigin] = useState<string | null>(null);
+  const [dockOpen, setDockOpen] = useState(false);
+  const [shop, setShop] = useState<ShopTab | null>(null);
+  // Mobile sheet: full or peek (see the mobile sheet section below).
+  const [sheet, setSheet] = useState<"full" | "peek">("full");
+  const [toast, setToast] = useState("");
+  const toastT = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const showToast = (t: string) => {
+    clearTimeout(toastT.current);
+    setToast(t);
+    toastT.current = setTimeout(() => setToast(""), 2200);
+  };
   const openComparison = (messageId: string, ids: string[]) => {
     if (!canDispatch(flowRef.current, "COMPARE")) return;
     setComparison({ messageId, ids });
@@ -284,17 +295,15 @@ export default function AquaWorkspace() {
   useEffect(() => storage.set("aqua.theme", theme), [theme]);
   // Sign-in from the header fails out of sight of the dock: say why in a toast too.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- auth.error is owned by useAquaAuth (no error callback); the toast also starts a timer, so it can't be derived during render
     if (auth.error) showToast(auth.error);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.error]);
   const [split, setSplit] = useState(() =>
     clampSplit(Number(storage.get("aqua.split")) || aquaConfig.splitDefault),
   );
   const [dragging, setDragging] = useState(false);
-  const [dockOpen, setDockOpen] = useState(false);
   // The hot-picks feed is showing (its bubble opens the sidebar on touch).
   const [hotPicks, setHotPicks] = useState(false);
-  const [shop, setShop] = useState<ShopTab | null>(null);
   // Blog reads: a floating, movable bar until it's closed, then a dock section.
   const reads = useBlogReads();
   const [readsDocked, setReadsDocked] = useState(
@@ -314,18 +323,10 @@ export default function AquaWorkspace() {
     setProfileTab(tab);
     void refreshAccount();
   };
-  useEffect(() => {
-    if (!token) setProfileTab(null);
-  }, [token]);
+  // Signed out: the profile dialog closes (adjusted during render).
+  if (!token && profileTab !== null) setProfileTab(null);
   // The drawer listing every product an answer names (their ids).
   const [answerProducts, setAnswerProducts] = useState<string[] | null>(null);
-  const [toast, setToast] = useState("");
-  const toastT = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const showToast = (t: string) => {
-    clearTimeout(toastT.current);
-    setToast(t);
-    toastT.current = setTimeout(() => setToast(""), 2200);
-  };
   const [focused, setFocused] = useState(false);
   const [greeting, setGreeting] = useState(true);
   const greetT = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -357,6 +358,7 @@ export default function AquaWorkspace() {
   const setViewed = (fn: (ids: string[]) => string[]) =>
     setViewedState((s) => ({ ...s, ids: fn(s.ids) }));
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reads localStorage, which must happen after mount (SSR hydration, AGENTS.md)
     setViewedState((s) => {
       if (s.key === viewedKey) return s;
       if (!viewedKey) return { key: null, ids: [] };
@@ -387,7 +389,6 @@ export default function AquaWorkspace() {
   const seenRef = useRef(new Set<string>());
 
   // ---------- mobile sheet ----------
-  const [sheet, setSheet] = useState<"full" | "peek">("full");
   // Dragging the handle: the sheet follows the finger, then snaps to full or
   // peek (a flick decides the direction); dragging it near the bottom, or a firm
   // flick down from peek, closes it. A tap (or Enter/Space) toggles.
@@ -419,14 +420,6 @@ export default function AquaWorkspace() {
     d.moved = true;
     setDragH(Math.min(sheetFullH(), Math.max(80, d.h - dy)));
   };
-  const onHandleUp = (e: RPointerEvent<HTMLButtonElement>) => {
-    const d = dragRef.current;
-    dragRef.current = null;
-    if (!d) return;
-    skipClickRef.current = true;
-    if (!d.moved) return setSheet((s) => (s === "full" ? "peek" : "full"));
-    settleSheet(d.h, e.clientY - d.y, performance.now() - d.t);
-  };
   // Where a dragged sheet lands: closed, peek or full, from the height it was
   // let go at and how fast it was moving. Shared by the handle and the
   // content drag below.
@@ -452,6 +445,14 @@ export default function AquaWorkspace() {
   };
   const sheetFullH = () =>
     window.innerHeight * 0.88 - (hideComposer ? 0 : composerH + mainPadB);
+  const onHandleUp = (e: RPointerEvent<HTMLButtonElement>) => {
+    const d = dragRef.current;
+    dragRef.current = null;
+    if (!d) return;
+    skipClickRef.current = true;
+    if (!d.moved) return setSheet((s) => (s === "full" ? "peek" : "full"));
+    settleSheet(d.h, e.clientY - d.y, performance.now() - d.t);
+  };
 
   // ---------- drag the sheet by its content (not only the handle) ----------
   // Like a native bottom sheet: content scrolled to its top hands a pull-down
@@ -525,32 +526,39 @@ export default function AquaWorkspace() {
   // A guest who signs in from checkout keeps what they typed; only empty
   // fields are filled from the account (so the order can go live right away).
   const accountUser = userData?.user;
-  useEffect(() => {
-    if (!token || !accountUser) return;
-    const saved = accountAddress(accountUser);
-    setDraft((d) => {
-      if (!d) return d;
-      const blankAddress = !hasAddress(d.address);
-      return {
-        ...d,
-        name:
-          d.name ||
-          accountUser.name ||
-          [accountUser.firstName, accountUser.lastName]
-            .filter(Boolean)
-            .join(" "),
-        phone:
-          d.phone ||
-          String(accountUser.phone ?? "")
-            .replace(/\D/g, "")
-            .slice(-10),
-        email: d.email || accountUser.email || "",
-        ...(blankAddress && saved
-          ? { address: { ...saved }, savedAddressId: saved._id ?? null }
-          : {}),
-      };
-    });
-  }, [token, accountUser]);
+  // Adjusted during render whenever the token or account changes.
+  const [draftAccount, setDraftAccount] = useState({ token, accountUser });
+  if (
+    draftAccount.token !== token ||
+    draftAccount.accountUser !== accountUser
+  ) {
+    setDraftAccount({ token, accountUser });
+    if (token && accountUser) {
+      const saved = accountAddress(accountUser);
+      setDraft((d) => {
+        if (!d) return d;
+        const blankAddress = !hasAddress(d.address);
+        return {
+          ...d,
+          name:
+            d.name ||
+            accountUser.name ||
+            [accountUser.firstName, accountUser.lastName]
+              .filter(Boolean)
+              .join(" "),
+          phone:
+            d.phone ||
+            String(accountUser.phone ?? "")
+              .replace(/\D/g, "")
+              .slice(-10),
+          email: d.email || accountUser.email || "",
+          ...(blankAddress && saved
+            ? { address: { ...saved }, savedAddressId: saved._id ?? null }
+            : {}),
+        };
+      });
+    }
+  }
 
   // ---------- actions ----------
   const view = (id: string) => {
@@ -650,6 +658,30 @@ export default function AquaWorkspace() {
     setSheet("full");
     dispatch({ type: "CHECKOUT_CART", productId: items[0].id });
   };
+
+  // A cart checkout and the shop are tabs of one panel: quantity changes and
+  // removals made in checkout go back to the cart, so switching to Shop and
+  // back to Checkout shows the same items.
+  const cartDraftRef = useRef<CheckoutDraft | null>(null);
+  useEffect(() => {
+    const live = flow.state === "checkout" && draft?.source === "cart";
+    const prev = cartDraftRef.current;
+    cartDraftRef.current = live ? draft : null;
+    if (!live || !prev || prev === draft) return;
+    const now = new Map(draft.items.map((i) => [i.id, i.qty]));
+    for (const it of prev.items) {
+      const qty = now.get(it.id);
+      if (qty === undefined)
+        store({ type: "REMOVE_FROM_CART", payload: it.id });
+      else if (qty !== it.qty)
+        store({
+          type: "UPDATE_QUANTITY",
+          payload: { productId: it.id, quantity: qty },
+        });
+    }
+    // Only the draft's own edits are mirrored; `store` is stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft, flow.state]);
 
   const addToCart = (id: string, qty = 1) => {
     const p = byId.get(id);
@@ -768,18 +800,21 @@ export default function AquaWorkspace() {
     if (flowRef.current.state === "welcome") dispatch({ type: "SEND" });
   };
 
-  // Checkout's "Add a new address": saved to the account (the same update the
-  // profile dialog makes), then used for the order. Resolves with the stored copy.
-  const saveCheckoutAddress = async (address: Address): Promise<Address> => {
+  // Checkout's address book: add, edit or delete a saved address (the same
+  // update the profile dialog makes). Resolves with the stored list.
+  type AddressChange = Parameters<typeof editAddresses>[2];
+  const changeCheckoutAddresses = async (
+    change: AddressChange | ((list: Address[]) => AddressChange),
+    done: string,
+  ): Promise<Address[]> => {
     const u = userData?.user as ProfileUser | undefined;
     if (!u?._id || !token) throw new Error("Sign in to save addresses.");
     const list = toAddresses(u.addresses);
-    const next = editAddresses(list, u.selectedAddress, {
-      kind: "save",
-      index: null,
-      address,
-      makeDefault: list.length === 0,
-    });
+    const next = editAddresses(
+      list,
+      u.selectedAddress,
+      typeof change === "function" ? change(list) : change,
+    );
     try {
       const res = await (
         UserServiceOperations as unknown as {
@@ -811,8 +846,8 @@ export default function AquaWorkspace() {
             : next.selectedAddress,
         },
       });
-      showToast("Address saved to your account");
-      return addresses.find((a) => sameAddress(a, address)) || address;
+      showToast(done);
+      return addresses;
     } catch (e) {
       const err = e as { authError?: boolean };
       throw new Error(
@@ -822,6 +857,31 @@ export default function AquaWorkspace() {
       );
     }
   };
+  // "Add a new address": saved, then used for the order (the stored copy).
+  const saveCheckoutAddress = async (address: Address): Promise<Address> => {
+    const addresses = await changeCheckoutAddresses(
+      (list) => ({
+        kind: "save",
+        index: null,
+        address,
+        makeDefault: list.length === 0,
+      }),
+      "Address saved to your account",
+    );
+    return addresses.find((a) => sameAddress(a, address)) || address;
+  };
+  const editCheckoutAddress = async (
+    index: number,
+    address: Address,
+  ): Promise<Address> => {
+    const addresses = await changeCheckoutAddresses(
+      { kind: "save", index, address },
+      "Address updated",
+    );
+    return addresses[index] || address;
+  };
+  const removeCheckoutAddress = (index: number) =>
+    changeCheckoutAddresses({ kind: "remove", index }, "Address deleted");
 
   // Shipping address in the shape POST /payments requires (state is mandatory there).
   const paymentAddress = (d: CheckoutDraft) => {
@@ -1072,8 +1132,10 @@ export default function AquaWorkspace() {
   const [purchases, setPurchases] = useState<Purchase[] | null>(null);
   const orderConfirmed = flow.state === "confirmed";
   const profileOpen = profileTab !== null;
+  // Signed out: no purchases (adjusted during render).
+  if (!token && purchases !== null) setPurchases(null);
   useEffect(() => {
-    if (!token) return void setPurchases(null);
+    if (!token) return;
     let alive = true;
     getMyInvoices(token)
       .then((list: Purchase[]) => alive && setPurchases(list))
@@ -1094,7 +1156,8 @@ export default function AquaWorkspace() {
   }, []);
   const applyCoupon = (code: string) => {
     // Pre-fills the next checkout; also copied so it can be pasted elsewhere.
-    chat.offerCode.current = code;
+    const offerCodeRef = chat.offerCode;
+    offerCodeRef.current = code;
     setDraft((d) => (d ? { ...d, coupon: code } : d));
     void navigator.clipboard?.writeText(code).catch(() => {});
     showToast(`${code} will be applied at checkout`);
@@ -1125,10 +1188,14 @@ export default function AquaWorkspace() {
     const t = setTimeout(() => setTourOpen(true), 1200);
     return () => clearTimeout(t);
   }, [welcomeIdle]);
-  const closeTour = useCallback((finished: boolean) => {
-    setTourOpen(false);
-    storage.set(TOUR_KEY, finished ? "done" : "skipped");
-  }, []);
+  const closeTour = useCallback(
+    (finished: boolean) => {
+      setTourOpen(false);
+      storage.set(TOUR_KEY, finished ? "done" : "skipped");
+      // setTourOpen is stable; listed because the compiler infers it as a dependency.
+    },
+    [setTourOpen],
+  );
 
   // ---------- droplet mood: derived, never stored ----------
   const mood: Mood =
@@ -1255,6 +1322,9 @@ export default function AquaWorkspace() {
         // Category-wise comparison, opened as the comparison artifact.
         onCompare: (ids) => openComparison(SHOP_COMPARISON, ids),
       }}
+      cartCount={cart.length}
+      onShopTab={openCatalogue}
+      onCheckoutTab={checkoutCart}
       compareFromShop={comparison?.messageId === SHOP_COMPARISON}
       chatBusy={chat.status !== "idle"}
       fromShop={!!flow.productId && shopOrigin === flow.productId}
@@ -1278,6 +1348,8 @@ export default function AquaWorkspace() {
           : null
       }
       onSaveAddress={saveCheckoutAddress}
+      onEditAddress={editCheckoutAddress}
+      onRemoveAddress={removeCheckoutAddress}
       coupons={coupons}
       categoryOf={(id) => {
         const p = byId.get(id);

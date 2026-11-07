@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export const DASHBOARD_PAGE_SIZE = 10;
@@ -8,9 +8,8 @@ export const useDashboardPagination = (items = []) => {
   const totalItems = items.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / DASHBOARD_PAGE_SIZE));
 
-  useEffect(() => {
-    setPage((current) => Math.min(current, totalPages));
-  }, [totalPages]);
+  // Clamp the page when the list shrinks (adjusted during render).
+  if (page > totalPages) setPage(totalPages);
 
   const pageItems = useMemo(() => {
     const start = (page - 1) * DASHBOARD_PAGE_SIZE;

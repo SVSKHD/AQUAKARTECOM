@@ -1,7 +1,7 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Store, X } from "lucide-react";
 import {
   isPaymentLocked,
   type Flow,
@@ -62,6 +62,11 @@ export type WorkspacePanelProps = {
     onUi: (patch: Partial<ShopUi>) => void;
     onCompare: (ids: string[]) => void;
   };
+  // Shop | Checkout tabs: the catalogue and a cart checkout switch back and
+  // forth in the same panel.
+  cartCount: number;
+  onShopTab: () => void;
+  onCheckoutTab: () => void;
   // Aqua is answering in the chat (the comparison's "which suits me" loader).
   chatBusy: boolean;
   // The comparison was started from the shop: its back button returns there.
@@ -87,6 +92,8 @@ export type WorkspacePanelProps = {
   authBusy?: boolean;
   defaultAddress?: Address | null;
   onSaveAddress?: (address: Address) => Promise<Address>;
+  onEditAddress?: (index: number, address: Address) => Promise<Address>;
+  onRemoveAddress?: (index: number) => Promise<Address[]>;
   onRetry: () => void;
   onRetryWith: (method: PayMethod) => void;
   onRecheck: () => void;
@@ -138,6 +145,16 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
   else if (flow.state === "confirmed")
     back = { label: "Continue chatting", action: "CLOSE" };
 
+  // The catalogue and a cart checkout are two tabs of one panel. They replace
+  // the back button (× closes to the chat) and the step list.
+  const tab =
+    flow.state === "shop"
+      ? "shop"
+      : flow.state === "checkout" && draft?.source === "cart"
+        ? "checkout"
+        : null;
+  if (tab) back = null;
+
   const current = STEPS.findIndex((s) => s.states.includes(flow.state));
   const pad = props.isMobile ? 12 : 12;
 
@@ -153,7 +170,41 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
       {/* No bar: each control floats as its own glass piece over the
           content, which stays visible (blurred) only behind them. */}
       <div className="aq-pbar" style={{ top: pad, left: pad, right: pad }}>
-        {back ? (
+        {tab ? (
+          <div
+            role="tablist"
+            aria-label="Shop and checkout"
+            className="aq-pbar-glass aq-pbar-tabs"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === "shop"}
+              className="aq-pbar-tab"
+              onClick={() => tab !== "shop" && props.onShopTab()}
+            >
+              <Store size={15} aria-hidden="true" /> Shop
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === "checkout"}
+              className="aq-pbar-tab"
+              disabled={tab === "shop" && props.cartCount === 0}
+              title={
+                tab === "shop" && props.cartCount === 0
+                  ? "Add a product to your cart first"
+                  : undefined
+              }
+              onClick={() => tab !== "checkout" && props.onCheckoutTab()}
+            >
+              <ShoppingCart size={15} aria-hidden="true" /> Checkout
+              {props.cartCount > 0 && (
+                <span className="aq-shop-count">{props.cartCount}</span>
+              )}
+            </button>
+          </div>
+        ) : back ? (
           <button
             type="button"
             className="aq-pbar-glass aq-pbar-back"
@@ -166,7 +217,7 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
             Payment in progress
           </span>
         )}
-        {!props.isMobile && (
+        {!props.isMobile && !tab && (
           <ol
             aria-label="Progress"
             className="aq-steps aq-pbar-glass"
@@ -297,6 +348,8 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
           authBusy={props.authBusy}
           defaultAddress={props.defaultAddress}
           onSaveAddress={props.onSaveAddress}
+          onEditAddress={props.onEditAddress}
+          onRemoveAddress={props.onRemoveAddress}
         />
       )}
       {(flow.state === "payment_pending" ||

@@ -30,6 +30,8 @@ describe("AquaUserDashbordLayout", () => {
     const greeting = readLayoutSource("greet.js");
 
     expect(greeting).toContain("data-dashboard-greeting");
-    expect(greeting).toMatch(/useEffect\(\(\) => \{\s*setGreeting/);
+    // Server snapshot = neutral greeting; the clock is only read on the client.
+    expect(greeting).toMatch(/useSyncExternalStore\(/);
+    expect(greeting).toMatch(/serverGreeting = \(\) => "Welcome back"/);
   });
 });

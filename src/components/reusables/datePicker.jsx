@@ -485,7 +485,9 @@ const AquaDatePicker = forwardRef(function AquaDatePicker(
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-describedby={describedBy}
-        aria-invalid={invalid}
+        // aria-invalid isn't supported on role=button; the error text is
+        // announced via aria-describedby, and this drives the red border.
+        data-invalid={invalid}
         className={s.field}
         data-open={open || undefined}
         data-empty={!selected || undefined}

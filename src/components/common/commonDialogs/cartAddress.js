@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { toAddress } from "@/pageComponents/aqua/profile";
 import AquaResponsiveDialog from "@/components/reusables/dialog";
 import { useSelector, useDispatch } from "react-redux";
@@ -33,32 +33,32 @@ const STATE_CITY_OPTIONS = [
   },
 ];
 
-const AquaAddressDialog = ({ editData }) => {
-  const [address, setAddress] = useState({
-    street: "",
-    city: "",
-    state: "",
-    postalCode: "",
-  });
-  const [errors, setErrors] = useState({});
-  const dispatch = useDispatch();
-  const addressDialog = useSelector((state) => state.addressDialog);
-  const addressData = useSelector((state) => state.addressData);
-  const userData = useSelector((state) => state.userData);
-  useEffect(() => {
-    if (addressData) {
-      // Stored addresses can miss fields; every field must be a string.
-      setAddress(toAddress(addressData));
-    } else if (!addressData) {
-      setAddress({
+const addressFormFrom = (addressData) =>
+  addressData
+    ? // Stored addresses can miss fields; every field must be a string.
+      toAddress(addressData)
+    : {
         street: "",
         city: "",
         state: "",
         postalCode: "",
-      });
-    }
+      };
+
+const AquaAddressDialog = ({ editData }) => {
+  const dispatch = useDispatch();
+  const addressDialog = useSelector((state) => state.addressDialog);
+  const addressData = useSelector((state) => state.addressData);
+  const userData = useSelector((state) => state.userData);
+  const [address, setAddress] = useState(() => addressFormFrom(addressData));
+  const [errors, setErrors] = useState({});
+  // Reload the form whenever the stored address changes (adjusted during
+  // render rather than in an effect).
+  const [formAddressData, setFormAddressData] = useState(addressData);
+  if (formAddressData !== addressData) {
+    setFormAddressData(addressData);
+    setAddress(addressFormFrom(addressData));
     setErrors({});
-  }, [addressData]);
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import AquaLayout from "@/components/Layout/Layout";
 import AquaEnquireForm from "@/components/common/commonDialogs/enquireForm";
@@ -70,8 +70,11 @@ const GlassCard = ({ children, className = "", hoverEffect = true }) => (
   </div>
 );
 
+// Stable default so the prop-change checks below never see a "new" list.
+const NO_SECTIONS = [];
+
 const AquaSoftenerHyderabadComponent = ({
-  initialSections = [],
+  initialSections = NO_SECTIONS,
   initialError = "",
   initialProducts = [],
 }) => {
@@ -80,13 +83,18 @@ const AquaSoftenerHyderabadComponent = ({
   const [errorMessage, setErrorMessage] = useState(initialError ?? "");
   const [enquiryOpen, setEnquiryOpen] = useState(false);
 
-  useEffect(() => {
+  // New server props replace the gallery/error state (adjusted during render
+  // rather than in effects).
+  const [sectionsFrom, setSectionsFrom] = useState(initialSections);
+  if (sectionsFrom !== initialSections) {
+    setSectionsFrom(initialSections);
     setImageData(initialSections);
-  }, [initialSections]);
-
-  useEffect(() => {
+  }
+  const [errorFrom, setErrorFrom] = useState(initialError);
+  if (errorFrom !== initialError) {
+    setErrorFrom(initialError);
     setErrorMessage(initialError ?? "");
-  }, [initialError]);
+  }
 
   const handleRetry = async () => {
     setIsLoading(true);
@@ -255,15 +263,18 @@ const AquaSoftenerHyderabadComponent = ({
                         Pet-friendly home water care
                       </div>
                       <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-                        A softer-water home can also make pet-care routines easier to manage.
+                        A softer-water home can also make pet-care routines
+                        easier to manage.
                       </h2>
                       <p className="mt-3 text-base leading-relaxed text-slate-600">
-                        Aquakart provides household softening solutions for hard-water management in bathing,
-                        grooming, laundry and cleaning. For pet nutrition, hydration and wellness guidance,
-                        visit Paw Sattva.
+                        Aquakart provides household softening solutions for
+                        hard-water management in bathing, grooming, laundry and
+                        cleaning. For pet nutrition, hydration and wellness
+                        guidance, visit Paw Sattva.
                       </p>
                       <p className="mt-2 text-xs font-medium text-slate-500">
-                        Drinking-water choices for pets should follow veterinary advice and local water-quality guidance.
+                        Drinking-water choices for pets should follow veterinary
+                        advice and local water-quality guidance.
                       </p>
                     </div>
                     <a

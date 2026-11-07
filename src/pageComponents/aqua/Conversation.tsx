@@ -150,6 +150,23 @@ function FillLoader({ size = 26 }: { size?: number }) {
   );
 }
 
+// The products a finished answer names, cached per message id and text length.
+// Pure memoisation (same input, same output), so filling the cache during render
+// is safe; one lookup per catalogue.
+function namedLookup(catalogue: Product[]) {
+  const cache = new Map<string, string[]>();
+  return (m: ChatMessage) => {
+    const text = m.full || m.text || "";
+    const key = `${m.id}:${text.length}`;
+    let ids = cache.get(key);
+    if (!ids) {
+      ids = namedProducts(text, catalogue);
+      cache.set(key, ids);
+    }
+    return ids;
+  };
+}
+
 // Always mounted, in every flow state. Messages, product cards and the compare table render inline.
 export default function Conversation(p: Props) {
   const reduced = useReducedMotion();
@@ -166,7 +183,9 @@ export default function Conversation(p: Props) {
   // The composer sits at the bottom on the welcome screen too, and is the same element
   // in the chat, so starting a conversation never moves or remounts it (no layout shift);
   // only its max-width eases out.
-  const setCompRef = p.composerRef;
+  // Destructured, not read as `p.composerRef`: a `*Ref` property read off `p`
+  // makes the React Compiler lint treat every `p.*` read in render as a ref read.
+  const { composerRef: setCompRef } = p;
 
   // Keep the newest message in view unless the reader scrolled up. Instant scrolling on
   // purpose: smooth scrolling emits intermediate scroll events that would unstick it.
@@ -214,7 +233,6 @@ export default function Conversation(p: Props) {
         title={`Open ${prod.title}`}
       >
         {prod.photos[0] ? (
-          // eslint-disable-next-line @next/next/no-img-element -- catalogue images on Cloudinary
           <img src={prod.photos[0]} alt="" loading="lazy" />
         ) : (
           <span aria-hidden="true" className="aq-ptag-ph" />
@@ -264,23 +282,11 @@ export default function Conversation(p: Props) {
     : [];
 
   // Products each finished answer names, worked out once per answer.
-  const catalogue = useMemo(() => [...p.products.values()], [p.products]);
-  const namedCache = useMemo(
-    () => new Map<string, string[]>(),
-    // A new catalogue can name more products: start again.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [catalogue],
+  // A new catalogue can name more products: the cache starts again.
+  const named = useMemo(
+    () => namedLookup([...p.products.values()]),
+    [p.products],
   );
-  const named = (m: ChatMessage) => {
-    const text = m.full || m.text || "";
-    const key = `${m.id}:${text.length}`;
-    let ids = namedCache.get(key);
-    if (!ids) {
-      ids = namedProducts(text, catalogue);
-      namedCache.set(key, ids);
-    }
-    return ids;
-  };
 
   const renderMessage = (m: ChatMessage) => {
     if (m.role === "user")

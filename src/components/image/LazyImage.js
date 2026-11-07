@@ -47,11 +47,14 @@ export default function LazyImage({
     return () => io.disconnect();
   }, [priority]);
 
-  // A new src gets a fresh attempt (and shimmer) even if the previous one failed.
-  useEffect(() => {
+  // A new src gets a fresh attempt (and shimmer) even if the previous one failed
+  // (adjusted during render rather than in an effect).
+  const [attemptedSrc, setAttemptedSrc] = useState(src);
+  if (attemptedSrc !== src) {
+    setAttemptedSrc(src);
     setFailed(false);
     setLoaded(false);
-  }, [src]);
+  }
 
   const safeSrc = !src || failed ? FALLBACK_IMAGE : src;
 

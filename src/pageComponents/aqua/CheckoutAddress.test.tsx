@@ -140,3 +140,93 @@ describe("CheckoutAddress", () => {
     expect(p.onChange).toHaveBeenCalledWith({ city: "H" });
   });
 });
+
+describe("CheckoutAddress: undeliverable, edit and delete", () => {
+  const broken: Address = {
+    _id: "a9",
+    street: "Flat 2, Kukatpally",
+    city: "Hyderabad",
+    state: "",
+    postalCode: "5000",
+  };
+
+  it("says why a saved address can't be delivered to", () => {
+    setup({ saved: [home, broken] });
+    expect(
+      screen.getByText(
+        "We can't deliver here: the state is missing and the PIN code 5000 isn't 6 digits.",
+      ),
+    ).toBeInTheDocument();
+    // The deliverable one carries no reason.
+    expect(screen.getAllByText(/We can't deliver here/)).toHaveLength(1);
+  });
+
+  it("opens an undeliverable address to fix it, then saves and uses it", async () => {
+    const user = userEvent.setup();
+    const onEdit = vi.fn(async (_i: number, a: Address) => ({
+      ...a,
+      _id: "a9",
+    }));
+    const p = setup({ saved: [home, broken], onEdit });
+    await user.click(screen.getAllByRole("radio")[1]);
+    expect(p.onPick).toHaveBeenCalledWith(broken, "a9");
+    expect(
+      screen.getByRole("form", { name: "Edit delivery address" }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("City")).toHaveValue("Hyderabad");
+    await user.type(screen.getByLabelText("State"), "Telangana");
+    await user.clear(screen.getByLabelText("PIN code"));
+    await user.type(screen.getByLabelText("PIN code"), "500072");
+    await user.click(screen.getByRole("button", { name: /Save and use/ }));
+    expect(onEdit).toHaveBeenCalledWith(1, {
+      street: "Flat 2, Kukatpally",
+      city: "Hyderabad",
+      state: "Telangana",
+      postalCode: "500072",
+    });
+    expect(p.onPick).toHaveBeenLastCalledWith(
+      expect.objectContaining({ _id: "a9", postalCode: "500072" }),
+      "a9",
+    );
+  });
+
+  it("edits a saved address from its Edit button", async () => {
+    const user = userEvent.setup();
+    const onEdit = vi.fn(async (_i: number, a: Address) => ({
+      ...a,
+      _id: "a2",
+    }));
+    setup({ onEdit });
+    await user.click(screen.getByRole("button", { name: /^Edit Tower B/ }));
+    await user.clear(screen.getByLabelText("House, street, area"));
+    await user.type(
+      screen.getByLabelText("House, street, area"),
+      "Tower C, Hitech City",
+    );
+    await user.click(screen.getByRole("button", { name: /Save and use/ }));
+    expect(onEdit).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({ street: "Tower C, Hitech City" }),
+    );
+  });
+
+  it("deletes after confirming and moves the order to the next address", async () => {
+    const user = userEvent.setup();
+    const onRemove = vi.fn(async () => [office]);
+    const p = setup({ onRemove });
+    await user.click(screen.getByRole("button", { name: /^Delete Plot 12/ }));
+    expect(onRemove).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Delete" }));
+    expect(onRemove).toHaveBeenCalledWith(0);
+    expect(p.onPick).toHaveBeenCalledWith(office, "a2");
+  });
+
+  it("keeps the address when the delete is cancelled", async () => {
+    const user = userEvent.setup();
+    const onRemove = vi.fn(async () => [office]);
+    setup({ onRemove });
+    await user.click(screen.getByRole("button", { name: /^Delete Plot 12/ }));
+    await user.click(screen.getByRole("button", { name: "Keep it" }));
+    expect(onRemove).not.toHaveBeenCalled();
+  });
+});

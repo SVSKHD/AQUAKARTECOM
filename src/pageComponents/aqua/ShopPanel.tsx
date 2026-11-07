@@ -436,7 +436,6 @@ export default function ShopPanel(p: Props) {
                 >
                   <span className="aq-store-img" aria-hidden="true">
                     {x.photos[0] && (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img src={x.photos[0]} alt="" loading="lazy" />
                     )}
                   </span>
@@ -589,10 +588,7 @@ export default function ShopPanel(p: Props) {
             {pickedProducts.map((x) => (
               <span key={x.id} className="aq-store-tray-item" title={x.title}>
                 <span className="aq-store-tray-img" aria-hidden="true">
-                  {x.photos[0] && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={x.photos[0]} alt="" />
-                  )}
+                  {x.photos[0] && <img src={x.photos[0]} alt="" />}
                 </span>
                 <span className="aq-store-tray-name">{x.title}</span>
                 <button
@@ -714,10 +710,7 @@ function QuickLook({
       </button>
       <div className="aq-store-peek-top">
         <span className="aq-store-peek-img" aria-hidden="true">
-          {x.photos[0] && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={x.photos[0]} alt="" />
-          )}
+          {x.photos[0] && <img src={x.photos[0]} alt="" />}
         </span>
         <div className="aq-store-peek-head">
           <span className="aq-store-brand">

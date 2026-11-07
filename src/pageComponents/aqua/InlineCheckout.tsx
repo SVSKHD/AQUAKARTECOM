@@ -59,6 +59,8 @@ type Props = {
   defaultAddress?: Address | null;
   // Adds a new address to the account from checkout; resolves with the stored copy.
   onSaveAddress?: (address: Address) => Promise<Address>;
+  onEditAddress?: (index: number, address: Address) => Promise<Address>;
+  onRemoveAddress?: (index: number) => Promise<Address[]>;
 };
 
 const SLOTS = ["9 am – 12 pm", "12 pm – 3 pm", "3 pm – 6 pm"];
@@ -68,21 +70,18 @@ const PAY_METHODS: {
   title: string;
   text: string;
   Icon: typeof Smartphone;
-  tags: string[];
 }[] = [
   {
     id: "online",
     title: "Pay online",
-    text: "Secure PhonePe checkout. Confirmed as soon as it's paid.",
+    text: "UPI, cards, net banking, wallets · PhonePe",
     Icon: Smartphone,
-    tags: ["UPI", "Cards", "Net banking", "Wallets"],
   },
   {
     id: "cod",
     title: "Cash on delivery",
-    text: "Place the order now and pay when it's delivered.",
+    text: "Pay at your door when it's delivered",
     Icon: Banknote,
-    tags: ["Pay at your door"],
   },
 ];
 
@@ -163,7 +162,7 @@ export function validate(d: CheckoutDraft) {
     missing.push("your address");
   // POST /payments rejects an address without a state.
   if (!address.state.trim()) missing.push("your state");
-  if (!/^\d{6}$/.test(address.postalCode.trim()))
+  if (!/^[1-9]\d{5}$/.test(address.postalCode.trim()))
     missing.push("a 6-digit PIN code");
   if (!d.slotDay || !d.slotTime) missing.push("an installation slot");
   return missing;
@@ -232,6 +231,8 @@ export default function InlineCheckout({
   authBusy,
   defaultAddress,
   onSaveAddress,
+  onEditAddress,
+  onRemoveAddress,
 }: Props) {
   // Signed in from here: say the details came from the account, for a while.
   const [filled, setFilled] = useState(false);
@@ -247,7 +248,11 @@ export default function InlineCheckout({
   }, [signedIn]);
   const [couponInput, setCouponInput] = useState(draft.coupon);
   // A coupon picked elsewhere (the history dock) shows up in the field too.
-  useEffect(() => setCouponInput(draft.coupon), [draft.coupon]);
+  const [couponSeen, setCouponSeen] = useState(draft.coupon);
+  if (draft.coupon !== couponSeen) {
+    setCouponSeen(draft.coupon);
+    setCouponInput(draft.coupon);
+  }
   // A new address is being typed: checkout waits until it's confirmed.
   const [addingAddress, setAddingAddress] = useState(false);
   const update = (patch: Partial<CheckoutDraft>) =>
@@ -332,9 +337,7 @@ export default function InlineCheckout({
   // The last live quote stays on screen (dimmed, numbers animating to the
   // new ones) while the next one loads, so nothing blinks or reflows.
   const [lastLive, setLastLive] = useState<typeof q>(null);
-  useEffect(() => {
-    if (q && !q.demo) setLastLive(q);
-  }, [q]);
+  if (q && !q.demo && q !== lastLive) setLastLive(q);
   const pricing = quoteState.status === "loading";
   const shownQ = q ?? (pricing ? lastLive : null);
   const updating = pricing && !!lastLive;
@@ -361,7 +364,10 @@ export default function InlineCheckout({
       <div className="aq-co-scroll aq-noscroll">
         <div className="aq-co-grid">
           <div className="aq-co-main aq-noscroll">
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <div
+              className="aq-co-head"
+              style={{ display: "flex", flexDirection: "column", gap: 4 }}
+            >
               <h2
                 className="aq-display"
                 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}
@@ -475,55 +481,38 @@ export default function InlineCheckout({
                 }
                 onChange={setAddr}
                 onSave={signedIn ? onSaveAddress : undefined}
+                onEdit={signedIn ? onEditAddress : undefined}
+                onRemove={signedIn ? onRemoveAddress : undefined}
                 onAddingChange={setAddingAddress}
               />
             </Section>
 
             <Section n={3} title="Installation slot">
-              <div
-                className="aq-noscroll"
-                style={{ display: "flex", gap: 8, overflowX: "auto" }}
-              >
+              <div className="aq-noscroll aq-slot-days">
                 {days.map((d) => {
                   const v = d.format("YYYY-MM-DD");
                   return (
                     <button
                       key={v}
                       type="button"
-                      className="aq-option"
+                      className="aq-option aq-slot-day"
                       aria-pressed={draft.slotDay === v}
                       onClick={() => update({ slotDay: v })}
-                      style={{
-                        minWidth: 76,
-                        alignItems: "center",
-                        flexShrink: 0,
-                      }}
                     >
-                      <span style={{ fontSize: 12, color: "var(--aq-mut)" }}>
-                        {d.format("ddd")}
-                      </span>
-                      <span style={{ fontSize: 15, fontWeight: 700 }}>
-                        {d.format("D MMM")}
-                      </span>
+                      <small>{d.format("ddd")}</small>
+                      <b>{d.format("D MMM")}</b>
                     </button>
                   );
                 })}
               </div>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
-                  gap: 8,
-                }}
-              >
+              <div className="aq-slot-times">
                 {SLOTS.map((s) => (
                   <button
                     key={s}
                     type="button"
-                    className="aq-option"
+                    className="aq-option aq-slot-time"
                     aria-pressed={draft.slotTime === s}
                     onClick={() => update({ slotTime: s })}
-                    style={{ minHeight: 44, fontSize: 13.5, fontWeight: 600 }}
                   >
                     {s}
                   </button>
@@ -537,110 +526,114 @@ export default function InlineCheckout({
 
           <aside className="aq-co-side" aria-label="Your order">
             <div className="aq-co-side-scroll aq-noscroll">
-              <span className="aq-co-kicker">Your order</span>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {draft.items.map((it, idx) => (
-                  <div
-                    key={it.id}
-                    className="aq-card"
-                    style={{
-                      display: "flex",
-                      gap: 12,
-                      alignItems: "center",
-                      padding: 10,
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: 14,
-                        flexShrink: 0,
-                        background: it.photo
-                          ? `center / cover no-repeat url("${it.photo}")`
-                          : "repeating-linear-gradient(135deg, var(--aq-mint) 0 6px, var(--aq-tint) 6px 12px)",
-                      }}
-                    />
+              <div className="aq-co-items">
+                <span className="aq-co-kicker">Your order</span>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                >
+                  {draft.items.map((it, idx) => (
                     <div
+                      key={it.id}
+                      className="aq-card"
                       style={{
-                        flex: 1,
-                        minWidth: 0,
                         display: "flex",
-                        flexDirection: "column",
-                        gap: 3,
+                        gap: 12,
+                        alignItems: "center",
+                        padding: 10,
                       }}
                     >
                       <span
                         style={{
-                          fontSize: 14,
-                          fontWeight: 700,
-                          lineHeight: 1.3,
+                          width: 56,
+                          height: 56,
+                          borderRadius: 14,
+                          flexShrink: 0,
+                          background: it.photo
+                            ? `center / cover no-repeat url("${it.photo}")`
+                            : "repeating-linear-gradient(135deg, var(--aq-mint) 0 6px, var(--aq-tint) 6px 12px)",
                         }}
-                      >
-                        {it.title}
-                      </span>
-                      <span style={{ fontSize: 12, color: "var(--aq-mut)" }}>
-                        {it.variantLabel ? `${it.variantLabel} · ` : ""}
-                        {INR(it.price)} each
-                        {it.qty > 1 && (
-                          <>
-                            {" · "}
-                            <b style={{ color: "var(--aq-ink)" }}>
-                              <AnimatedAmount value={it.price * it.qty} />
-                            </b>
-                          </>
-                        )}
-                      </span>
-                    </div>
-                    <div className="aq-stepper" style={{ height: 36 }}>
-                      <button
-                        type="button"
-                        aria-label={`Decrease quantity of ${it.title}`}
-                        onClick={() => setQty(idx, it.qty - 1)}
-                        style={{ height: 34 }}
-                      >
-                        <Minus size={14} />
-                      </button>
-                      {/* Re-keyed so each change replays the bump. */}
-                      <span
-                        key={it.qty}
-                        className="aq-qty-bump"
-                        style={{ fontSize: 14 }}
-                        aria-live="polite"
-                      >
-                        {it.qty}
-                      </span>
-                      <button
-                        type="button"
-                        aria-label={`Increase quantity of ${it.title}`}
-                        onClick={() => setQty(idx, it.qty + 1)}
-                        style={{ height: 34 }}
-                      >
-                        <Plus size={14} />
-                      </button>
-                    </div>
-                    {draft.items.length > 1 && (
-                      <button
-                        type="button"
-                        className="aq-icon-btn"
-                        aria-label={`Remove ${it.title}`}
-                        onClick={() =>
-                          update({
-                            items: draft.items.filter((_, j) => j !== idx),
-                          })
-                        }
+                      />
+                      <div
                         style={{
-                          border: 0,
-                          background: "transparent",
-                          boxShadow: "none",
-                          color: "var(--aq-mut2)",
+                          flex: 1,
+                          minWidth: 0,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 3,
                         }}
                       >
-                        <Trash size={15} />
-                      </button>
-                    )}
-                  </div>
-                ))}
+                        <span
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 700,
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {it.title}
+                        </span>
+                        <span style={{ fontSize: 12, color: "var(--aq-mut)" }}>
+                          {it.variantLabel ? `${it.variantLabel} · ` : ""}
+                          {INR(it.price)} each
+                          {it.qty > 1 && (
+                            <>
+                              {" · "}
+                              <b style={{ color: "var(--aq-ink)" }}>
+                                <AnimatedAmount value={it.price * it.qty} />
+                              </b>
+                            </>
+                          )}
+                        </span>
+                      </div>
+                      <div className="aq-stepper" style={{ height: 36 }}>
+                        <button
+                          type="button"
+                          aria-label={`Decrease quantity of ${it.title}`}
+                          onClick={() => setQty(idx, it.qty - 1)}
+                          style={{ height: 34 }}
+                        >
+                          <Minus size={14} />
+                        </button>
+                        {/* Re-keyed so each change replays the bump. */}
+                        <span
+                          key={it.qty}
+                          className="aq-qty-bump"
+                          style={{ fontSize: 14 }}
+                          aria-live="polite"
+                        >
+                          {it.qty}
+                        </span>
+                        <button
+                          type="button"
+                          aria-label={`Increase quantity of ${it.title}`}
+                          onClick={() => setQty(idx, it.qty + 1)}
+                          style={{ height: 34 }}
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                      {draft.items.length > 1 && (
+                        <button
+                          type="button"
+                          className="aq-icon-btn"
+                          aria-label={`Remove ${it.title}`}
+                          onClick={() =>
+                            update({
+                              items: draft.items.filter((_, j) => j !== idx),
+                            })
+                          }
+                          style={{
+                            border: 0,
+                            background: "transparent",
+                            boxShadow: "none",
+                            color: "var(--aq-mut2)",
+                          }}
+                        >
+                          <Trash size={15} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <Section
@@ -739,7 +732,7 @@ export default function InlineCheckout({
                   aria-label="Payment method"
                   className="aq-paymethods"
                 >
-                  {PAY_METHODS.map(({ id, title, text, Icon, tags }) => (
+                  {PAY_METHODS.map(({ id, title, text, Icon }) => (
                     <button
                       key={id}
                       type="button"
@@ -748,36 +741,14 @@ export default function InlineCheckout({
                       className="aq-option aq-paymethod"
                       onClick={() => update({ payMethod: id })}
                     >
-                      <span className="aq-paymethod-head">
-                        <span className="aq-paymethod-icon" aria-hidden="true">
-                          <Icon size={18} />
-                        </span>
-                        <span
-                          style={{ fontSize: 14.5, fontWeight: 700, flex: 1 }}
-                        >
-                          {title}
-                        </span>
-                        <span
-                          className="aq-paymethod-radio"
-                          aria-hidden="true"
-                        />
+                      <span className="aq-paymethod-icon" aria-hidden="true">
+                        <Icon size={16} />
                       </span>
-                      <span
-                        style={{
-                          fontSize: 12.5,
-                          color: "var(--aq-mut)",
-                          lineHeight: 1.45,
-                        }}
-                      >
-                        {text}
+                      <span className="aq-paymethod-text">
+                        <span className="aq-paymethod-name">{title}</span>
+                        <span className="aq-paymethod-sub">{text}</span>
                       </span>
-                      <span className="aq-paymethod-tags">
-                        {tags.map((t) => (
-                          <span key={t} className="aq-paymethod-tag">
-                            {t}
-                          </span>
-                        ))}
-                      </span>
+                      <span className="aq-paymethod-radio" aria-hidden="true" />
                     </button>
                   ))}
                 </div>

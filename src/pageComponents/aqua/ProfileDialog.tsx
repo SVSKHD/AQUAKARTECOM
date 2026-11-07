@@ -259,12 +259,13 @@ export default function ProfileDialog(p: Props) {
   const [touched, setTouched] = useState(false);
   const [busy, setBusy] = useState<null | "profile" | "addresses">(null);
   const [error, setError] = useState("");
-  useEffect(() => {
+  // Only a different account resets the form; saves update p.user too.
+  const [formUserId, setFormUserId] = useState(userId);
+  if (formUserId !== userId) {
+    setFormUserId(userId);
     setForm(profileForm(p.user));
     setTouched(false);
-    // Only a different account resets the form; saves update p.user too.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }
   const errors = touched ? validateProfile(form) : {};
   const initial = profileForm(p.user);
   const dirty = (Object.keys(form) as (keyof ProfileForm)[]).some(
@@ -361,7 +362,6 @@ export default function ProfileDialog(p: Props) {
   useEffect(() => {
     if (ordersLoaded || !userId) return;
     let alive = true;
-    setOrderList(null);
     orders
       .getOrdersByUserId(userId, p.token)
       .then((res) => alive && setOrderList(normalizeOrders(res)))
@@ -405,7 +405,6 @@ export default function ProfileDialog(p: Props) {
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const onTabKey = (e: ReactKeyboardEvent) => {
     const d = /^Arrow(Down|Right)$/.test(e.key)
@@ -1227,7 +1226,6 @@ function PurchaseRow({
           return (
             <div key={`${l.name}-${i}`} className="aq-pf-quick-row">
               {prod?.photos[0] ? (
-                // eslint-disable-next-line @next/next/no-img-element -- catalogue images on Cloudinary
                 <img src={prod.photos[0]} alt="" loading="lazy" />
               ) : (
                 <span className="aq-pf-quick-ph" aria-hidden="true">
@@ -1413,7 +1411,6 @@ function OrderRow({
           return (
             <div key={`${l.name}-${i}`} className="aq-pf-quick-row">
               {prod?.photos[0] ? (
-                // eslint-disable-next-line @next/next/no-img-element -- catalogue images on Cloudinary
                 <img src={prod.photos[0]} alt="" loading="lazy" />
               ) : (
                 <span className="aq-pf-quick-ph" aria-hidden="true">
