@@ -1283,6 +1283,18 @@ export default function AquaWorkspace() {
       store({ type: "REMOVE_FROM_FAV", payload: id }),
     onAddToCart: (id: string) => addToCart(id),
   };
+  // The shop's cart bar: what's in the cart, and which of it can be bought.
+  const shopCartItems = cart.map((c) => {
+    const p = byId.get(c._id);
+    return {
+      id: c._id,
+      title: p?.title || c.title || "Product",
+      photo: p?.photos[0] || storePhoto(c),
+      qty: c.quantity || 1,
+      price: p?.price ?? storePrice(c),
+      inStock: p?.inStock !== false,
+    };
+  });
 
   const panel = open ? (
     <WorkspacePanel
@@ -1321,6 +1333,9 @@ export default function AquaWorkspace() {
         onUi: (patch) => setShopUi((u) => ({ ...u, ...patch })),
         // Category-wise comparison, opened as the comparison artifact.
         onCompare: (ids) => openComparison(SHOP_COMPARISON, ids),
+        cartItems: shopCartItems,
+        canCheckout: shopShared.canCheckout,
+        onCheckout: checkoutCart,
       }}
       cartCount={cart.length}
       onShopTab={openCatalogue}

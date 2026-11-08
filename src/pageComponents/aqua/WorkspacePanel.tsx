@@ -1,7 +1,7 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
-import { ArrowLeft, ShoppingCart, Store, X } from "lucide-react";
+import { ArrowLeft, ChevronRight, X } from "lucide-react";
 import {
   isPaymentLocked,
   type Flow,
@@ -9,7 +9,7 @@ import {
 } from "@/utils/aquaFlow";
 import type { ServerOrder } from "@/utils/aquaCommerce";
 import ComparePanel from "./ComparePanel";
-import ShopPanel, { type ShopUi } from "./ShopPanel";
+import ShopPanel, { type CartBarItem, type ShopUi } from "./ShopPanel";
 import ProductDetail from "./ProductDetail";
 import InlineCheckout from "./InlineCheckout";
 import type { ActiveCoupon } from "./coupons";
@@ -61,6 +61,9 @@ export type WorkspacePanelProps = {
     ui: ShopUi;
     onUi: (patch: Partial<ShopUi>) => void;
     onCompare: (ids: string[]) => void;
+    cartItems: CartBarItem[];
+    canCheckout: boolean;
+    onCheckout: () => void;
   };
   // Shop | Checkout tabs: the catalogue and a cart checkout switch back and
   // forth in the same panel.
@@ -183,8 +186,16 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
               className="aq-pbar-tab"
               onClick={() => tab !== "shop" && props.onShopTab()}
             >
-              <Store size={15} aria-hidden="true" /> Shop
+              <span className="aq-pbar-stepno" aria-hidden="true">
+                1
+              </span>
+              Shop
             </button>
+            <ChevronRight
+              size={14}
+              aria-hidden="true"
+              className="aq-pbar-tabsep"
+            />
             <button
               type="button"
               role="tab"
@@ -198,7 +209,10 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
               }
               onClick={() => tab !== "checkout" && props.onCheckoutTab()}
             >
-              <ShoppingCart size={15} aria-hidden="true" /> Checkout
+              <span className="aq-pbar-stepno" aria-hidden="true">
+                2
+              </span>
+              Checkout
               {props.cartCount > 0 && (
                 <span className="aq-shop-count">{props.cartCount}</span>
               )}

@@ -296,3 +296,71 @@ describe("ShopPanel", () => {
     );
   });
 });
+
+describe("ShopPanel cart bar", () => {
+  const cartItems = [
+    { id: "a", title: "Kent Grand Plus", qty: 2, price: 18500, inStock: true },
+    { id: "c", title: "Sediment Filter", qty: 1, price: 450, inStock: false },
+  ];
+  const setup = (over = {}) => {
+    const props = {
+      products,
+      loading: false,
+      live: true,
+      favs: [],
+      cart: ["a", "c"],
+      canView: true,
+      ui: EMPTY_SHOP_UI,
+      onUi: vi.fn(),
+      onView: vi.fn(),
+      onBuy: vi.fn(),
+      onAddToCart: vi.fn(),
+      onToggleFav: vi.fn(),
+      onCompare: vi.fn(),
+      onAsk: vi.fn(),
+      cartItems,
+      canCheckout: true,
+      onCheckout: vi.fn(),
+      ...over,
+    };
+    render(<ShopPanel {...props} />);
+    return props;
+  };
+
+  it("shows the in-stock units and subtotal, and goes on to checkout", async () => {
+    const user = userEvent.setup();
+    const p = setup();
+    const bar = screen.getByRole("region", { name: "Your cart" });
+    expect(within(bar).getByText(/2 items in cart/)).toBeInTheDocument();
+    expect(within(bar).getByText("₹37,000")).toBeInTheDocument();
+    expect(
+      within(bar).getByText("1 out of stock, left out"),
+    ).toBeInTheDocument();
+    await user.click(
+      within(bar).getByRole("button", { name: /Next: Checkout/ }),
+    );
+    expect(p.onCheckout).toHaveBeenCalled();
+  });
+
+  it("folds out a brief list of the cart", async () => {
+    const user = userEvent.setup();
+    const p = setup();
+    const toggle = screen.getByRole("button", { name: /items in cart/ });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    const bar = screen.getByRole("region", { name: "Your cart" });
+    expect(within(bar).getByText("Out of stock")).toBeInTheDocument();
+    await user.click(
+      within(bar).getByRole("button", { name: /Kent Grand Plus/ }),
+    );
+    expect(p.onView).toHaveBeenCalledWith("a");
+  });
+
+  it("is hidden with an empty cart", () => {
+    setup({ cartItems: [], cart: [] });
+    expect(
+      screen.queryByRole("region", { name: "Your cart" }),
+    ).not.toBeInTheDocument();
+  });
+});

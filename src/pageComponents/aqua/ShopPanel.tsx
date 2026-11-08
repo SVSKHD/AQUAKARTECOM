@@ -9,9 +9,12 @@ import {
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
   type Ref,
+  useId,
 } from "react";
 import {
+  ArrowRight,
   Check,
+  ChevronUp,
   Eye,
   GitCompareArrows,
   Heart,
@@ -173,6 +176,19 @@ type Props = {
   onToggleFav: (id: string) => void;
   onCompare: (ids: string[]) => void;
   onAsk: (text: string) => void;
+  // The cart, for the "Next: Checkout" bar at the foot of the shop.
+  cartItems?: CartBarItem[];
+  canCheckout?: boolean;
+  onCheckout?: () => void;
+};
+
+export type CartBarItem = {
+  id: string;
+  title: string;
+  photo?: string;
+  qty: number;
+  price: number;
+  inStock: boolean;
 };
 
 type Peek = {
@@ -581,6 +597,21 @@ export default function ShopPanel(p: Props) {
         />
       )}
 
+      {/* With something in the cart (and nothing being compared): what's in
+          it, the subtotal, and the step on to checkout. */}
+      {pickedProducts.length === 0 &&
+        p.cartItems &&
+        p.cartItems.length > 0 &&
+        p.onCheckout && (
+          <CartBar
+            items={p.cartItems}
+            canCheckout={p.canCheckout !== false}
+            onCheckout={p.onCheckout}
+            onView={p.onView}
+            canView={p.canView}
+          />
+        )}
+
       {/* The products picked to compare, all from one category. */}
       {pickedProducts.length > 0 && (
         <div className="aq-store-tray" role="region" aria-label="Compare tray">
@@ -630,6 +661,103 @@ export default function ShopPanel(p: Props) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ---------- the cart bar ----------
+
+// Sticks to the foot of the shop while the cart has items: stacked photos,
+// how many and the subtotal, a fold-out list of what's in it, and Next.
+function CartBar({
+  items,
+  canCheckout,
+  onCheckout,
+  onView,
+  canView,
+}: {
+  items: CartBarItem[];
+  canCheckout: boolean;
+  onCheckout: () => void;
+  onView: (id: string) => void;
+  canView: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const buyable = items.filter((i) => i.inStock);
+  const units = buyable.reduce((a, i) => a + i.qty, 0);
+  const subtotal = buyable.reduce((a, i) => a + i.price * i.qty, 0);
+  const left = items.length - buyable.length;
+  const shown = items.slice(0, 3);
+  const listId = useId();
+  return (
+    <div className="aq-cartbar" role="region" aria-label="Your cart">
+      {open && (
+        <ul id={listId} className="aq-cartbar-list">
+          {items.map((i) => (
+            <li key={i.id} data-out={!i.inStock || undefined}>
+              <button
+                type="button"
+                className="aq-cartbar-row"
+                disabled={!canView}
+                onClick={() => onView(i.id)}
+              >
+                <span className="aq-cartbar-img" aria-hidden="true">
+                  {i.photo && <img src={i.photo} alt="" />}
+                </span>
+                <span className="aq-cartbar-name">{i.title}</span>
+                <span className="aq-cartbar-qty">× {i.qty}</span>
+                <b>{i.inStock ? INR(i.price * i.qty) : "Out of stock"}</b>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="aq-cartbar-main">
+        <button
+          type="button"
+          className="aq-cartbar-sum"
+          aria-expanded={open}
+          aria-controls={open ? listId : undefined}
+          onClick={() => setOpen((v) => !v)}
+        >
+          <span className="aq-cartbar-stack" aria-hidden="true">
+            {shown.map((i) => (
+              <span key={i.id} className="aq-cartbar-img">
+                {i.photo && <img src={i.photo} alt="" />}
+              </span>
+            ))}
+            {items.length > shown.length && (
+              <span className="aq-cartbar-img aq-cartbar-more">
+                +{items.length - shown.length}
+              </span>
+            )}
+          </span>
+          <span className="aq-cartbar-text">
+            <span className="aq-cartbar-kicker">
+              {units} {units === 1 ? "item" : "items"} in cart
+              <ChevronUp
+                size={14}
+                aria-hidden="true"
+                className="aq-cartbar-chev"
+              />
+            </span>
+            <b className="aq-cartbar-total">{INR(subtotal)}</b>
+            <small>
+              {left > 0
+                ? `${left} out of stock, left out`
+                : "Delivery & coupons at checkout"}
+            </small>
+          </span>
+        </button>
+        <button
+          type="button"
+          className="aq-btn aq-cartbar-next"
+          disabled={!canCheckout || buyable.length === 0}
+          onClick={onCheckout}
+        >
+          Next: Checkout <ArrowRight size={16} aria-hidden="true" />
+        </button>
+      </div>
     </div>
   );
 }
