@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { mapReal } from "./catalogue";
 import {
+  fitsHome,
   readHome,
   sizeSofteners,
   softenerBadges,
@@ -128,21 +129,43 @@ describe("readHome", () => {
 });
 
 describe("sizeSofteners", () => {
-  it("sizes a 5-bathroom villa: whole-home automatic first, per-bathroom options to compare", () => {
+  it("sizes a 5-bathroom villa: whole-home automatic units only", () => {
     const s = sizeSofteners(live, { bathrooms: 5, kind: "house" })!;
     // 5 × 600 L/hr = 3,000 L/hr: the 25 fits, the 40 adds headroom.
-    expect(s.picks).toEqual(["auto25", "auto40", "auto8", "bath55"]);
-    expect(s.picks).not.toContain("wash");
+    expect(s.picks).toEqual(["auto25", "auto40"]);
     expect(s.reasons.auto25).toMatch(
       /Up to 3,000 L\/hr, enough for all 5 bathrooms at once \(5 × 600 L\/hr = 3,000 L\/hr\)/,
     );
-    expect(s.reasons.auto8).toMatch(/You'd fit 5, about ₹1,57,500 in all/);
-    expect(s.reasons.bath55).toMatch(
-      /Manual: you add salt and regenerate it by hand/,
-    );
+    expect(s.reasons.auto8).toBeUndefined();
+    expect(s.summary).not.toMatch(/Per-bathroom/);
     expect(s.summary).toMatch(
       /\*\*Kent Automatic Water Softener 25\*\* covers that, and \*\*Kent Automatic Water Softener 40\*\* adds headroom/,
     );
+  });
+
+  it("shows a villa the 25 and 40 even without a bathroom count", () => {
+    expect(sizeSofteners(live, { kind: "house" })!.picks).toEqual([
+      "auto25",
+      "auto40",
+    ]);
+  });
+
+  it("offers per-bathroom units to a one-bathroom home", () => {
+    const s = sizeSofteners(live, { bathrooms: 1 })!;
+    expect(s.picks).toEqual(expect.arrayContaining(["auto8", "bath55"]));
+    expect(s.reasons.bath55).toMatch(
+      /Manual: you add salt and regenerate it by hand/,
+    );
+  });
+
+  it("keeps bathroom and washing-machine units off a villa", () => {
+    const byId = (id: string) => live.find((p) => p.id === id)!;
+    const villa = { kind: "house" as const };
+    expect(fitsHome(byId("auto25"), villa)).toBe(true);
+    expect(fitsHome(byId("auto8"), villa)).toBe(false);
+    expect(fitsHome(byId("bath55"), villa)).toBe(false);
+    expect(fitsHome(byId("wash"), villa)).toBe(false);
+    expect(fitsHome(byId("auto8"), { kind: "apartment" })).toBe(true);
   });
 
   it("goes up a size when the bathrooms need more flow", () => {

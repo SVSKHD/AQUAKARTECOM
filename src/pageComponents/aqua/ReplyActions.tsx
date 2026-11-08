@@ -152,18 +152,18 @@ export default function ReplyActions({
     >
       <button
         type="button"
-        className="aq-btn-ghost"
+        className="aq-btn-ghost aq-ra-btn"
         onClick={copy}
         aria-label={copied ? "Copied" : "Copy reply"}
         style={{ ...btn, color: copied ? "var(--aq-mintink)" : btn.color }}
       >
         {copied ? <Check size={14} /> : <Copy size={14} />}
-        {copied ? "Copied" : "Copy"}
+        <span className="aq-ra-label">{copied ? "Copied" : "Copy"}</span>
       </button>
       {speakable && (
         <button
           type="button"
-          className="aq-btn-ghost"
+          className="aq-btn-ghost aq-ra-btn"
           onClick={() =>
             speaking ? stopSpeaking() : speak(id, replyPlainText(text))
           }
@@ -180,7 +180,7 @@ export default function ReplyActions({
           ) : (
             <Volume2 size={15} />
           )}
-          {speaking ? "Stop" : "Listen"}
+          <span className="aq-ra-label">{speaking ? "Stop" : "Listen"}</span>
         </button>
       )}
       <span aria-live="polite" className="aq-sr-only">

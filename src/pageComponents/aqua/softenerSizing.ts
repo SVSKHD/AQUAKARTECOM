@@ -113,8 +113,22 @@ export type Sizing = {
 
 const lph = (n: number) => `${n.toLocaleString("en-IN")} L/hr`;
 
-// Whole-home automatic units sized for the home, against fitting one softener per
-// bathroom (automatic and manual), so the customer sees both ways of doing it.
+// A villa, independent house or any home with 2+ bathrooms needs one softener
+// on the main line, so single-bathroom and washing-machine units don't fit it.
+export const wholeHomeOnly = (home: Home) =>
+  home.kind === "house" || (home.bathrooms ?? 0) >= 2;
+
+// False for a softener that can't serve this home (an 8 L bathroom unit for a
+// villa). Anything else, and any home that doesn't need a whole-home unit, fits.
+export function fitsHome(p: Product, home: Home) {
+  if (!wholeHomeOnly(home)) return true;
+  const f = softenerFacts(p);
+  return !f || f.scope === "whole-home" || f.scope === null;
+}
+
+// Whole-home automatic units sized for the home. A villa or a home with 2+
+// bathrooms sees only those (the size that fits, and one bigger); a single
+// bathroom also sees per-bathroom units (automatic and manual).
 export function sizeSofteners(products: Product[], home: Home): Sizing | null {
   if (!home.bathrooms && home.kind !== "house") return null;
   const rows = products
@@ -182,7 +196,15 @@ export function sizeSofteners(products: Product[], home: Home): Sizing | null {
       "Manual: you add salt and regenerate it by hand.",
     );
 
-  const picks = [best, headroom, autoBath, manualBath]
+  // Villas and multi-bathroom homes: whole-home units only, when there are any.
+  const wholeOnly = wholeHomeOnly(home) && !!best;
+  if (wholeOnly) {
+    if (autoBath) delete reasons[autoBath.p.id];
+    if (manualBath) delete reasons[manualBath.p.id];
+  }
+  const picks = (
+    wholeOnly ? [best, headroom] : [best, headroom, autoBath, manualBath]
+  )
     .filter((r): r is { p: Product; f: SoftenerFacts } => !!r)
     .map((r) => r.p.id)
     .filter((id, i, a) => a.indexOf(id) === i)
@@ -193,14 +215,16 @@ export function sizeSofteners(products: Product[], home: Home): Sizing | null {
     ? `a home with ${baths} bathrooms`
     : "a villa or independent house";
   const summary = [
-    `For ${where}, one automatic whole-home softener is usually simpler than a softener in every bathroom.`,
+    wholeOnly
+      ? `For ${where}, you need one automatic whole-home softener on the main line, not a softener in every bathroom.`
+      : `For ${where}, one automatic whole-home softener is usually simpler than a softener in every bathroom.`,
     peak
       ? `With all ${baths} bathrooms running (a shower uses about ${lph(LPH_PER_BATHROOM)}), you need roughly ${lph(peak)}.`
       : "Tell me how many bathrooms you have and I'll size it.",
     best
       ? `**${best.p.title}** covers that${headroom ? `, and **${headroom.p.title}** adds headroom` : ""}.`
       : "",
-    autoBath || manualBath
+    !wholeOnly && (autoBath || manualBath)
       ? "Per-bathroom units cost less each, but you'd fit one per bathroom, and manual ones need salt and regeneration by hand."
       : "",
     "A hardness test and a site visit confirm the final size.",

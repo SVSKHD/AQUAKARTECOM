@@ -25,7 +25,12 @@ import {
 } from "@/services/ai";
 import { INR } from "./catalogue";
 import { mentionedProducts } from "./replyProducts";
-import { readHome, sizeSofteners, type Sizing } from "./softenerSizing";
+import {
+  fitsHome,
+  readHome,
+  sizeSofteners,
+  type Sizing,
+} from "./softenerSizing";
 import { uid } from "./hooks";
 import type { ChatMessage, ChatStatus, Product } from "./types";
 import { findComparison } from "./compareReuse";
@@ -1169,10 +1174,21 @@ export function useAquaChat({
         sel || !(SHOPPING.test(lt) || NAMED.test(lt))
           ? null
           : sizedSofteners({ ...r, need: categoryOf(lt) || r.need });
+      // A villa's cards never include a softener that can't serve it, even if
+      // the answer names one (an 8 L bathroom unit).
+      const home = { bathrooms: r.bathrooms, kind: r.home };
       const picks = sel
         ? []
         : sized
-          ? [...new Set([...named, ...sized.picks])].slice(0, 4)
+          ? [
+              ...new Set([
+                ...named.filter((id) => {
+                  const p = productsRef.current.find((x) => x.id === id);
+                  return !p || fitsHome(p, home);
+                }),
+                ...sized.picks,
+              ]),
+            ].slice(0, 4)
           : named.length
             ? named
             : catalogueMatches(text, answer.reply, r);

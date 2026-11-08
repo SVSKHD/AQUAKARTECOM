@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { DEMO_PRODUCTS } from "./catalogue";
-import { mentionedProducts, namedProducts, splitReply } from "./replyProducts";
+import {
+  chatProducts,
+  mentionedProducts,
+  namedProducts,
+  splitReply,
+} from "./replyProducts";
 
 const byTitle = (t: string) => DEMO_PRODUCTS.find((p) => p.title === t)!;
 const compact = byTitle("Compact Water Softener 10 L");
@@ -109,5 +114,26 @@ describe("namedProducts", () => {
         catalogue,
       ),
     ).toEqual([]);
+  });
+});
+
+describe("chatProducts", () => {
+  it("collects the chat's products newest answer first, once each", () => {
+    const ids = chatProducts(
+      [
+        { role: "aqua", text: `Try the **${compact.title}**.` },
+        { role: "user", text: `What about **${home.title}**?` },
+        { role: "aqua", text: "Here you go", products: [home.id, "gone"] },
+        { role: "aqua", text: "Compared", table: [compact.id, home.id] },
+      ],
+      DEMO_PRODUCTS,
+    );
+    expect(ids).toEqual([compact.id, home.id]);
+  });
+
+  it("is empty for a chat without products", () => {
+    expect(chatProducts([{ role: "user", text: "hi" }], DEMO_PRODUCTS)).toEqual(
+      [],
+    );
   });
 });

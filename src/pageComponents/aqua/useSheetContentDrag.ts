@@ -61,8 +61,9 @@ type Options = {
   // The sheet's height while a finger drags it; null puts it back.
   onDrag: (height: number | null) => void;
   // Released: from the starting height, the distance moved (down is
-  // positive) and how long it took (ms).
-  onSettle: (startH: number, travel: number, ms: number) => void;
+  // positive), how long it took (ms) and the finger's speed over the last
+  // moments (px/ms, down is positive), so a quick flick at the end counts.
+  onSettle: (startH: number, travel: number, ms: number, v: number) => void;
 };
 
 export function useSheetContentDrag(opts: Options) {
@@ -86,6 +87,8 @@ export function useSheetContentDrag(opts: Options) {
       h: number;
       axis: "x" | "y" | null;
       scroller: HTMLElement | null;
+      // Recent finger positions, for the release speed.
+      trail: { y: number; t: number }[];
     } | null = null;
 
     const start = (e: TouchEvent) => {
@@ -102,6 +105,7 @@ export function useSheetContentDrag(opts: Options) {
         h: el.getBoundingClientRect().height,
         axis: null,
         scroller: scrollerOf(e.target, el),
+        trail: [],
       };
     };
 
@@ -128,6 +132,8 @@ export function useSheetContentDrag(opts: Options) {
       }
       // The sheet follows the finger now: the content mustn't scroll too.
       if (e.cancelable) e.preventDefault();
+      g.trail.push({ y: t.clientY, t: e.timeStamp });
+      if (g.trail.length > 6) g.trail.shift();
       const travel = t.clientY - g.baseY;
       live.current.onDrag(
         Math.min(live.current.fullH(), Math.max(80, g.h - travel)),
@@ -141,7 +147,14 @@ export function useSheetContentDrag(opts: Options) {
       const y = e.changedTouches[0]?.clientY ?? gg.lastY;
       const travel = y - gg.baseY;
       if (Math.abs(travel) < NUDGE_PX) return live.current.onDrag(null);
-      live.current.onSettle(gg.h, travel, e.timeStamp - gg.baseT);
+      // Speed over the last ~100 ms of the drag (0 if the finger rested).
+      const recent = gg.trail.filter((p) => e.timeStamp - p.t < 100);
+      const first = recent[0];
+      const v =
+        first && e.timeStamp - first.t > 0
+          ? (y - first.y) / (e.timeStamp - first.t)
+          : 0;
+      live.current.onSettle(gg.h, travel, e.timeStamp - gg.baseT, v);
     };
 
     const cancel = () => {

@@ -179,3 +179,30 @@ export function namedProducts(text: string, products: Product[]): string[] {
     if (!ids.includes(id)) ids.push(id);
   return ids.slice(0, 12);
 }
+
+// Every product Aqua has shown or named in this chat, newest answer first:
+// a comparison's products, then its cards, then the ones its text names.
+export function chatProducts(
+  messages: {
+    role: string;
+    text: string;
+    full?: string;
+    products?: string[];
+    table?: string[];
+  }[],
+  products: Product[],
+): string[] {
+  const known = new Set(products.map((p) => p.id));
+  const ids: string[] = [];
+  const add = (id: string) => {
+    if (known.has(id) && !ids.includes(id)) ids.push(id);
+  };
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const m = messages[i];
+    if (m.role !== "aqua") continue;
+    (m.table || []).forEach(add);
+    (m.products || []).forEach(add);
+    namedProducts(m.full || m.text || "", products).forEach(add);
+  }
+  return ids;
+}

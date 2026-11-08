@@ -40,6 +40,7 @@ import {
   toAddresses,
 } from "./profile";
 import { aquaConfig, pickDayTheme } from "./config";
+import { chatProducts } from "./replyProducts";
 import { addressHardness } from "./hardnessData";
 import { useAccountSync } from "./useAccountSync";
 import { useAquaAuth } from "./useAquaAuth";
@@ -327,6 +328,9 @@ export default function AquaWorkspace() {
   if (!token && profileTab !== null) setProfileTab(null);
   // The drawer listing every product an answer names (their ids).
   const [answerProducts, setAnswerProducts] = useState<string[] | null>(null);
+  // The products drawer lists an answer's products, or (asked to compare
+  // without picks) every product in the chat to pick from.
+  const [answerMode, setAnswerMode] = useState<"answer" | "compare">("answer");
   const [focused, setFocused] = useState(false);
   const [greeting, setGreeting] = useState(true);
   const greetT = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -721,6 +725,19 @@ export default function AquaWorkspace() {
   const needsComparePicks = (text: string) =>
     isCompareAction(text) && compare.length < 2;
   const hintComparePicks = () => {
+    // Asked to compare with too few picks: offer the products this chat has
+    // shown to pick from (the drawer, already open, just keeps the hint).
+    const fromChat = chatProducts(chat.messages, products);
+    if (!answerProducts && fromChat.length >= 2) {
+      setAnswerMode("compare");
+      setAnswerProducts(fromChat);
+      showToast(
+        compare.length === 1
+          ? "Pick one more to compare"
+          : "Pick 2 or more products to compare",
+      );
+      return;
+    }
     showToast(
       compare.length === 1
         ? "Select one more product to compare"
@@ -1488,6 +1505,7 @@ export default function AquaWorkspace() {
             onBuy={buy}
             onSend={sendMessage}
             onViewProducts={(ids) => {
+              setAnswerMode("answer");
               setDockOpen(false);
               setShop(null);
               setAnswerProducts(ids);
@@ -1804,6 +1822,7 @@ export default function AquaWorkspace() {
           favIds={favs.map((f) => f._id)}
           cartIds={cart.map((c) => c._id)}
           compare={compare}
+          mode={answerMode}
           canView={canDispatch(flow, "VIEW") && !locked}
           onView={(id) => {
             setAnswerProducts(null);
@@ -1813,6 +1832,7 @@ export default function AquaWorkspace() {
           onToggleCompare={toggleCompare}
           onAddToCart={(id) => addToCart(id)}
           onCompare={() => {
+            if (compare.length < 2) return hintComparePicks();
             setAnswerProducts(null);
             sendMessage("Compare these");
           }}

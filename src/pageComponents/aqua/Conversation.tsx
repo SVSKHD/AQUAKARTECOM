@@ -26,7 +26,7 @@ import HardnessCard from "./HardnessCard";
 import type { Place } from "./hardnessData";
 import ProductCard from "./ProductCard";
 import { namedProducts } from "./replyProducts";
-import ReplyActions from "./ReplyActions";
+import ReplyAccordion from "./ReplyAccordion";
 import WhileYouWait from "./WhileYouWait";
 import { aquaConfig } from "./config";
 import { useReducedMotion } from "./hooks";
@@ -367,6 +367,8 @@ export default function Conversation(p: Props) {
       inAnswer.length > 1 ||
       inAnswer.some((id) => !cards.some((c) => c.id === id));
     const streaming = !m.done && !m.typing;
+    // A finished reply shows as an accordion (see ReplyAccordion).
+    const accordion = !!m.text && !streaming && !!m.done && !m.thinkingLive;
     // The whole answer stays in its bubble; every product it suggests follows
     // as a portrait card in a grid that grows downwards.
     const bubble = {
@@ -404,6 +406,29 @@ export default function Conversation(p: Props) {
             animation: "aqAquaIn .5s cubic-bezier(.2,.8,.2,1) both",
           }}
         >
+          {/* Finished answers lead with their products; the text follows. */}
+          {m.done && cards.length > 0 && (
+            <ProductGrid isMobile={p.isMobile}>
+              {cards.map((c, i) => (
+                <ProductCard
+                  key={c.id}
+                  product={c}
+                  delay={i * 0.08}
+                  compact={p.isMobile}
+                  reason={p.chat.reasons[c.id]}
+                  selected={p.panelOpen && p.flow.productId === c.id}
+                  isFav={p.favIds.includes(c.id)}
+                  inCart={p.cartIds.includes(c.id)}
+                  inCompare={p.compare.includes(c.id)}
+                  hintCompare={!!p.compareHint}
+                  onOpen={p.onOpen}
+                  onToggleFav={p.onToggleFav}
+                  onToggleCompare={p.onToggleCompare}
+                  onAddToCart={p.onAddToCart}
+                />
+              ))}
+            </ProductGrid>
+          )}
           {m.typing ? (
             <div
               className="aq-card"
@@ -480,17 +505,42 @@ export default function Conversation(p: Props) {
                   width: m.thinkingLive ? "100%" : undefined,
                 }}
               >
-                {m.productId && (
+                {/* Finished replies carry the pill in their header row. */}
+                {m.productId && !accordion && (
                   <div style={{ marginBottom: 8 }}>
                     {productTag(m.productId)}
                   </div>
                 )}
-                {(m.thoughts || m.thinkingLive) && (
+                {/* Finished: the thinking chip moves into the accordion's header row. */}
+                {(m.thoughts || m.thinkingLive) && !accordion && (
                   <AquaThinking steps={m.thoughts} live={!!m.thinkingLive} />
                 )}
-                {/* Plain text while streaming (no half-parsed markdown), formatted once complete. */}
+                {/* Plain text while streaming (no half-parsed markdown); once
+                    complete, formatted in an accordion with Copy / Listen. */}
                 {m.text &&
-                  (streaming ? m.text : <AquaReply text={m.full || m.text} />)}
+                  (streaming ? (
+                    m.text
+                  ) : accordion ? (
+                    <ReplyAccordion
+                      id={m.id}
+                      text={m.full || m.text}
+                      defaultOpen={!(cards.length || inAnswer.length)}
+                      lead={
+                        m.thoughts?.length || productTag(m.productId) ? (
+                          <>
+                            {productTag(m.productId)}
+                            {!!m.thoughts?.length && (
+                              <AquaThinking steps={m.thoughts} live={false} />
+                            )}
+                          </>
+                        ) : undefined
+                      }
+                    >
+                      <AquaReply text={m.full || m.text} />
+                    </ReplyAccordion>
+                  ) : (
+                    <AquaReply text={m.full || m.text} />
+                  ))}
                 {streaming && m.text && (
                   <span
                     aria-hidden="true"
@@ -527,28 +577,6 @@ export default function Conversation(p: Props) {
             >
               {m.note}
             </div>
-          )}
-          {m.done && cards.length > 0 && (
-            <ProductGrid isMobile={p.isMobile}>
-              {cards.map((c, i) => (
-                <ProductCard
-                  key={c.id}
-                  product={c}
-                  delay={i * 0.08}
-                  compact={p.isMobile}
-                  reason={p.chat.reasons[c.id]}
-                  selected={p.panelOpen && p.flow.productId === c.id}
-                  isFav={p.favIds.includes(c.id)}
-                  inCart={p.cartIds.includes(c.id)}
-                  inCompare={p.compare.includes(c.id)}
-                  hintCompare={!!p.compareHint}
-                  onOpen={p.onOpen}
-                  onToggleFav={p.onToggleFav}
-                  onToggleCompare={p.onToggleCompare}
-                  onAddToCart={p.onAddToCart}
-                />
-              ))}
-            </ProductGrid>
           )}
           {m.done && table.length > 1 && (
             <CompareArtifact
@@ -662,14 +690,15 @@ export default function Conversation(p: Props) {
               </div>
             )}
           {/* Copy / Listen and Contact us on one line; Contact us opens below. */}
-          {m.done && !m.error && (m.full || m.text) && (
-            <div className="aq-reply-foot">
-              <ReplyActions id={m.id} text={m.full || m.text} />
-              {m.ai && m.id === latestAi?.id && (
+          {m.done &&
+            !m.error &&
+            (m.full || m.text) &&
+            m.ai &&
+            m.id === latestAi?.id && (
+              <div className="aq-reply-foot">
                 <AquaSupportNote question={latestAi.question} />
-              )}
-            </div>
-          )}
+              </div>
+            )}
         </div>
       </div>
     );

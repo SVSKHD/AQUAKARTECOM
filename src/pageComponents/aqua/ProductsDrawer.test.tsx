@@ -85,3 +85,32 @@ describe("ProductsDrawer", () => {
     expect(p.onClose).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("ProductsDrawer compare mode", () => {
+  it("asks to pick the chat's products, with the compare footer from the start", () => {
+    render(
+      <ProductsDrawer
+        products={[a, b]}
+        favIds={[]}
+        cartIds={[]}
+        compare={[]}
+        canView
+        mode="compare"
+        onView={vi.fn()}
+        onToggleFav={vi.fn()}
+        onToggleCompare={vi.fn()}
+        onAddToCart={vi.fn()}
+        onCompare={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Pick products to compare" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/from this chat/)).toBeInTheDocument();
+    expect(
+      screen.getByText("Tap ⇄ on 2 or more to compare"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Compare$/ })).toBeDisabled();
+  });
+});

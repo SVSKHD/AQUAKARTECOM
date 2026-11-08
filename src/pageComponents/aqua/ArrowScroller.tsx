@@ -72,17 +72,43 @@ export default function ArrowScroller({
     setEdges((e) => (e.back === back && e.fwd === fwd ? e : { back, fwd }));
   };
 
-  // Content changes with the parent's state (filters, forms opening, data
-  // arriving), so re-check after every render; the setter bails out when
-  // nothing moved.
-  useEffect(measure);
-
+  // Re-check when the area or its content changes size, or content is added
+  // or removed (filters, forms opening, data arriving) — not after every
+  // render. Measuring on render could loop: showing an arrow can nudge the
+  // layout (scroll padding, snapping), which flips the arrow back, which
+  // renders again ("Maximum update depth exceeded"). Checks are batched to
+  // one per frame.
   useEffect(() => {
     const el = ref.current;
-    if (!el || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
+    if (!el) return;
+    let frame = 0;
+    const soon = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    };
+    measure();
+    const ro =
+      typeof ResizeObserver !== "undefined" ? new ResizeObserver(soon) : null;
+    const watch = () => {
+      if (!ro) return;
+      ro.disconnect();
+      ro.observe(el);
+      for (const child of Array.from(el.children)) ro.observe(child);
+    };
+    watch();
+    const mo =
+      typeof MutationObserver !== "undefined"
+        ? new MutationObserver(() => {
+            watch();
+            soon();
+          })
+        : null;
+    mo?.observe(el, { childList: true, subtree: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      ro?.disconnect();
+      mo?.disconnect();
+    };
     // measure only reads the ref
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

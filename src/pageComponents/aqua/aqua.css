@@ -486,6 +486,16 @@ textarea::placeholder {
   overflow-y: auto;
   overscroll-behavior: contain;
 }
+/* No scrollbars anywhere in Aqua: scrolling still works (wheel, touch,
+   keys); arrows (ArrowScroller, the chat's jump to latest) show the way. */
+.aq-root,
+.aq-root * {
+  scrollbar-width: none;
+}
+.aq-root::-webkit-scrollbar,
+.aq-root *::-webkit-scrollbar {
+  display: none;
+}
 /* ArrowScroller: arrows float over the top/bottom edge of a scrollbar-less area. */
 .aq-scroll {
   position: relative;
@@ -8760,8 +8770,10 @@ button.aq-pf-buy {
   pointer-events: auto;
   border-radius: 24px;
   box-shadow: -18px 0 48px rgba(7, 26, 37, 0.18);
-  animation: aqDrawerIn 0.32s cubic-bezier(0.22, 0.8, 0.24, 1) both;
-  transition: transform 0.25s cubic-bezier(0.22, 0.8, 0.24, 1);
+  /* backwards, not both: a finished entrance mustn't hold the transform, or
+     the phone sheet couldn't follow a dragging finger (useDrawer). */
+  animation: aqDrawerIn 0.32s cubic-bezier(0.22, 0.8, 0.24, 1) backwards;
+  will-change: transform;
 }
 .aq-drawer[data-leaving="true"] {
   animation: aqDrawerOut 0.22s ease-in both;
@@ -8925,7 +8937,36 @@ button.aq-pf-buy {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 16px 16px 4px 20px;
+  padding: 14px 12px 4px 20px;
+}
+/* The drawer takes focus on open; it needs no ring of its own. */
+.aq-pd:focus {
+  outline: none;
+}
+/* Close: a quiet 32px icon, the same weight as the rest of the header. */
+.aq-pd-close {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(var(--aq-ln), 0.06);
+  color: var(--aq-mut);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.aq-pd-close:hover {
+  background: rgba(var(--aq-ln), 0.1);
+  color: var(--aq-ink);
+}
+.aq-pd-close:focus-visible {
+  outline: 2px solid var(--aq-mintink);
+  outline-offset: 1px;
 }
 .aq-pd-title {
   flex: 1;
@@ -8970,21 +9011,32 @@ button.aq-pf-buy {
   background: var(--aq-mint);
   color: var(--aq-mintink);
 }
+/* The list scrolls inside ArrowScroller: arrows, never a scrollbar. */
+.aq-pd-scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 .aq-pd-list {
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  container-type: inline-size;
+}
+.aq-pd-ul {
   margin: 0;
   padding: 10px 12px 14px;
   list-style: none;
-  overflow-y: auto;
-  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 .aq-pd-row {
+  flex: none;
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
   border: 1px solid var(--aq-bd);
   border-radius: 18px;
   background: var(--aq-surf);
@@ -8999,12 +9051,11 @@ button.aq-pf-buy {
   box-shadow: 0 8px 20px rgba(var(--aq-sh), 0.08);
 }
 .aq-pd-open {
-  flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 6px 10px 10px;
+  padding: 10px 10px 6px;
   border: 0;
   background: transparent;
   color: inherit;
@@ -9022,8 +9073,8 @@ button.aq-pf-buy {
 }
 .aq-pd-img {
   flex: none;
-  width: 76px;
-  height: 76px;
+  width: 64px;
+  height: 64px;
   border-radius: 14px;
   border: 1px solid rgba(var(--aq-ln), 0.06);
 }
@@ -9063,8 +9114,21 @@ button.aq-pf-buy {
   color: #008b68;
 }
 .aq-pd-stock {
-  font-size: 11px;
+  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
   color: #b42318;
+}
+.aq-pd-stock::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
 }
 .aq-pd-stock[data-in="true"] {
   color: var(--aq-mintink);
@@ -9073,18 +9137,63 @@ button.aq-pf-buy {
   flex: none;
   color: var(--aq-mut2);
 }
-/* Favourite / cart / compare: a column of solid chips at the row's edge. */
+/* Footer row, lined up under the details: stock, then save / cart / compare. */
 .aq-pd-tools {
-  flex: none;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  align-items: center;
   gap: 6px;
-  padding: 8px 10px 8px 4px;
+  padding: 6px 10px 10px 86px;
+  min-width: 0;
+}
+@container (max-width: 360px) {
+  .aq-pd-tools {
+    padding-left: 10px;
+  }
+}
+.aq-pd-cmp {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--aq-mintbd);
+  border-radius: 999px;
+  background: var(--aq-mint);
+  color: var(--aq-mintink);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    transform 0.15s;
+}
+.aq-pd-cmp:hover {
+  border-color: #10bfa4;
+}
+.aq-pd-cmp:active {
+  transform: scale(0.95);
+}
+.aq-pd-cmp:focus-visible {
+  outline: 2px solid #10bfa4;
+  outline-offset: 2px;
+}
+.aq-pd-cmp[data-on="true"] {
+  border-color: #008b68;
+  background: #008b68;
+  color: #fff;
+}
+.aq-pd-row:has(.aq-pd-cmp[data-on="true"]) {
+  border-color: #10bfa4;
+  box-shadow: 0 0 0 3px rgba(16, 191, 164, 0.14);
 }
 .aq-pd-tool {
-  width: 34px;
-  height: 34px;
+  flex: none;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   border: 1px solid var(--aq-bd);
@@ -9237,12 +9346,17 @@ button.aq-pf-buy {
 
 /* ---------- contact us: a smooth accordion under the latest answer ---------- */
 .aq-support {
-  /* Closed: a pill beside Copy / Listen. Open: the full width under them. */
+  /* One fixed width and shape, open or closed, so opening only grows the
+     height (no jump in width, position or corners). */
   flex: 0 1 auto;
   margin-left: auto;
-  max-width: 560px;
-  border-radius: 999px;
-  transition: border-radius 0.2s;
+  width: 400px;
+  max-width: 100%;
+  box-sizing: border-box;
+  border-radius: 18px;
+  transition:
+    background 0.25s ease,
+    box-shadow 0.25s ease;
   border: 1px solid #f2e2c2;
   background: rgba(255, 248, 236, 0.92);
   color: #5c4413;
@@ -9252,15 +9366,11 @@ button.aq-pf-buy {
   animation: aqCardIn 0.4s ease both;
 }
 .aq-support[data-open="true"] {
-  flex-basis: 100%;
-  margin-left: 0;
-  border-radius: 16px;
+  background: rgba(255, 248, 236, 0.98);
+  box-shadow: 0 8px 24px rgba(183, 121, 31, 0.12);
 }
 .aq-support-sub {
-  display: none;
-}
-.aq-support[data-open="true"] .aq-support-sub {
-  display: inline;
+  color: #8a6a2e;
 }
 .aq-support-head {
   width: 100%;
@@ -9303,13 +9413,16 @@ button.aq-pf-buy {
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
+  transform: translateY(-4px);
   transition:
-    grid-template-rows 0.32s cubic-bezier(0.22, 0.8, 0.24, 1),
-    opacity 0.24s ease;
+    grid-template-rows 0.38s cubic-bezier(0.22, 0.8, 0.24, 1),
+    opacity 0.28s ease,
+    transform 0.38s cubic-bezier(0.22, 0.8, 0.24, 1);
 }
 .aq-support[data-open="true"] .aq-support-body {
   grid-template-rows: 1fr;
   opacity: 1;
+  transform: none;
 }
 .aq-support-inner {
   min-height: 0;
@@ -9341,6 +9454,7 @@ button.aq-pf-buy {
   text-decoration: none;
 }
 @media (prefers-reduced-motion: reduce) {
+  .aq-support,
   .aq-support-body,
   .aq-support-chev {
     transition: none;
@@ -9354,6 +9468,177 @@ button.aq-pf-buy {
   align-items: center;
   gap: 8px;
   max-width: 100%;
+}
+/* A finished reply as an accordion: Copy / Listen and Show more on top. */
+.aq-acc {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.aq-acc-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px 8px;
+  margin: -4px -6px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(var(--aq-ln), 0.08);
+}
+/* No lead: no header row. The tools take the top-right corner and a float
+   of the same size inside the reply makes its first lines wrap around them. */
+.aq-acc[data-lead="false"] {
+  position: relative;
+}
+.aq-acc[data-lead="false"] .aq-acc-head {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.aq-acc-gap {
+  float: right;
+  width: 152px;
+  height: 26px;
+  margin-left: 6px;
+}
+.aq-acc-gap[data-long="true"] {
+  width: 222px;
+}
+.aq-acc-lead {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.aq-acc-lead .aq-ptag {
+  margin: 0;
+}
+/* Phones: Copy, Listen and More as clear icon buttons (names kept for
+   screen readers in their aria-labels). */
+@media (max-width: 640px) {
+  .aq-acc .aq-ra-label {
+    display: none;
+  }
+  .aq-acc .aq-ra-btn,
+  .aq-acc .aq-acc-toggle {
+    width: 32px;
+    height: 32px !important;
+    padding: 0 !important;
+    margin: 0;
+    justify-content: center;
+    border-radius: 50% !important;
+  }
+  .aq-acc .aq-ra-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  .aq-acc .aq-acc-toggle {
+    background: rgba(var(--aq-ln), 0.06);
+  }
+  .aq-acc-tools {
+    height: 32px;
+    gap: 0;
+  }
+  .aq-acc-gap {
+    width: 70px;
+    height: 24px;
+  }
+  .aq-acc-gap[data-long="true"] {
+    width: 102px;
+  }
+}
+/* Left: the thinking chip (its open steps drop below, full width). */
+.aq-acc-lead {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+}
+.aq-acc-lead > div {
+  width: auto !important;
+  flex: 1;
+  min-width: 0;
+}
+.aq-acc-lead .aq-chip {
+  margin-bottom: 0 !important;
+  height: 30px;
+}
+.aq-acc-lead ol {
+  margin: 8px 0 0 !important;
+}
+/* Right: Copy, Listen, More, always on the chip's line. */
+.aq-acc-tools {
+  flex: none;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 30px;
+}
+/* ReplyActions carries its own offsets for the old foot row. */
+.aq-acc-tools > div:first-child {
+  margin: 0 !important;
+}
+.aq-acc-toggle {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 28px;
+  margin-left: 4px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(var(--aq-ln), 0.05);
+  color: var(--aq-body);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.aq-acc-toggle:hover {
+  background: var(--aq-mint);
+  color: var(--aq-mintink);
+}
+.aq-acc-toggle:focus-visible {
+  outline: 2px solid var(--aq-mintink);
+  outline-offset: 2px;
+}
+.aq-acc-toggle svg {
+  transition: transform 0.25s;
+}
+.aq-acc-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+/* The height eases between the preview and the full reply (both in px, set
+   by ReplyAccordion), and the fade at the foot eases out with it. */
+@property --aq-fade {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+.aq-acc-body {
+  overflow: hidden;
+  --aq-fade: 0px;
+  -webkit-mask-image: linear-gradient(
+    #000 calc(100% - var(--aq-fade)),
+    transparent
+  );
+  mask-image: linear-gradient(#000 calc(100% - var(--aq-fade)), transparent);
+  transition:
+    max-height 0.42s cubic-bezier(0.22, 0.8, 0.24, 1),
+    --aq-fade 0.42s cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+.aq-acc[data-open="false"] .aq-acc-body {
+  cursor: pointer;
+  --aq-fade: 56px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aq-acc-body,
+  .aq-acc-toggle svg {
+    transition: none;
+  }
 }
 .aq-reply-foot {
   align-self: stretch;

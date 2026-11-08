@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 import { ArrowUp, Infinity as Unlimited, Mic, Square } from "lucide-react";
 import { AI_PROMPT_MAX, AI_VOICE_MAX_MS } from "@/services/ai";
 import { openExpert } from "./AquaHeader";
@@ -62,18 +68,51 @@ export default function Composer({
   const [transcribing, setTranscribing] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [focused, setFocused] = useState(false);
+  // The draft no longer fits beside the buttons (it wrapped, or has a new
+  // line). Only then does the box open up; it stays open until it's empty so
+  // it doesn't flip back and forth as the wider field fits the text again.
+  const [wrapped, setWrapped] = useState(false);
   const ta = useRef<HTMLTextAreaElement>(null);
+  const card = useRef<HTMLDivElement>(null);
+  // The card's last height, so a change in height can ease from it.
+  const cardH = useRef(0);
+  const cardAnim = useRef<Animation | null>(null);
   const rec = useRef<MediaRecorder | null>(null);
   // Set when the recording is thrown away instead of sent (unmount, limit hit).
   const discard = useRef(false);
   const hintTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  useEffect(() => {
+  const expanded = wrapped || listening || transcribing || !!hint;
+
+  // Before paint: size the field to its text, then ease the card from its old
+  // height to the new one (a new line, opening up, closing after send), so
+  // nothing jumps or flickers while typing.
+  useLayoutEffect(() => {
     const el = ta.current;
-    if (!el) return;
+    const box = card.current;
+    if (!el || !box) return;
     el.style.height = "auto";
     el.style.height = Math.min(168, el.scrollHeight) + "px";
-  }, [text, large, listening, transcribing, hint]);
+    const from = cardH.current;
+    const to = box.offsetHeight;
+    cardH.current = to;
+    if (!from || from === to || typeof box.animate !== "function") return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    cardAnim.current?.cancel();
+    box.style.overflow = "hidden";
+    const anim = box.animate([{ height: `${from}px` }, { height: `${to}px` }], {
+      duration: 180,
+      easing: "cubic-bezier(.2,.8,.2,1)",
+    });
+    cardAnim.current = anim;
+    const done = () => {
+      if (cardAnim.current !== anim) return;
+      box.style.overflow = "";
+      cardAnim.current = null;
+    };
+    anim.onfinish = done;
+    anim.oncancel = done;
+  }, [text, large, expanded]);
   const stopRecording = (keep: boolean) => {
     discard.current = !keep;
     if (rec.current?.state === "recording") rec.current.stop();
@@ -108,7 +147,22 @@ export default function Composer({
 
   const submit = (value = text) => {
     if (!value.trim()) return;
-    if (onSend(value)) setText("");
+    if (onSend(value)) {
+      setText("");
+      setWrapped(false);
+    }
+  };
+
+  const onChange = (el: HTMLTextAreaElement) => {
+    const v = el.value;
+    setText(v);
+    if (!v) setWrapped(false);
+    // Still one row: the text is already in the field, so check if it fits.
+    else if (
+      !expanded &&
+      (v.includes("\n") || el.scrollWidth > el.clientWidth + 1)
+    )
+      setWrapped(true);
   };
 
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -164,7 +218,10 @@ export default function Composer({
           new Blob(chunks, { type: r.mimeType || type || "audio/webm" }),
         );
         if (!words) return flash("Didn't catch that. Try again or type.");
-        if (!onSend(words)) setText(words);
+        if (!onSend(words)) {
+          setText(words);
+          setWrapped(true);
+        }
       } catch (e) {
         flash(
           (e as Error)?.message || "Couldn't hear that. Try again or type.",
@@ -183,9 +240,9 @@ export default function Composer({
   const replying = busy && !canSend && !disabled;
   const active = focused || listening;
   const showCount = text.length >= COUNT_FROM;
-  // Empty: one row (field, mic, send). Typing, listening or a hint opens it
-  // into the full text area with the toolbar underneath.
-  const expanded = !!text || listening || transcribing || !!hint;
+  // One row (field, mic, send) while the draft fits. A longer draft,
+  // listening or a hint opens it into the full text area with the toolbar
+  // underneath.
   // A full pill while it's one row; a rounded card once it opens up.
   const radius = expanded ? (large ? 26 : 22) : 999;
 
@@ -213,6 +270,7 @@ export default function Composer({
       }}
     >
       <div
+        ref={card}
         className="aq-composer"
         data-tour="composer"
         data-active={active}
@@ -240,7 +298,7 @@ export default function Composer({
           maxLength={AI_PROMPT_MAX}
           disabled={disabled}
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => onChange(e.target)}
           onKeyDown={onKey}
           onFocus={() => {
             setFocused(true);
@@ -274,8 +332,8 @@ export default function Composer({
             color: "var(--aq-ink)",
             padding: expanded
               ? large
-                ? "14px 18px 2px"
-                : "11px 16px 0"
+                ? "14px 20px 2px"
+                : "10px 18px 0"
               : large
                 ? "14px 6px 14px 20px"
                 : "10px 6px 10px 18px",

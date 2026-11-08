@@ -69,7 +69,7 @@ describe("useSheetContentDrag", () => {
     expect(move.defaultPrevented).toBe(true);
     expect(onDrag).toHaveBeenLastCalledWith(600 - 85);
     touch(content, "touchend", 101, 400, 200);
-    expect(onSettle).toHaveBeenCalledWith(600, 185, 180);
+    expect(onSettle).toHaveBeenCalledWith(600, 185, 180, expect.any(Number));
   });
 
   it("lets content mid-list scroll, then takes over once it's at the top", () => {
@@ -84,7 +84,7 @@ describe("useSheetContentDrag", () => {
     touch(content, "touchmove", 100, 380, 120);
     expect(onDrag).toHaveBeenLastCalledWith(600 - 100);
     touch(content, "touchend", 100, 380, 160);
-    expect(onSettle).toHaveBeenCalledWith(600, 100, 100);
+    expect(onSettle).toHaveBeenCalledWith(600, 100, 100, expect.any(Number));
   });
 
   it("ignores sideways swipes and the handle", () => {
@@ -110,7 +110,7 @@ describe("useSheetContentDrag", () => {
     touch(content, "touchmove", 100, 0, 150);
     expect(onDrag).toHaveBeenLastCalledWith(700);
     touch(content, "touchend", 100, 0, 200);
-    expect(onSettle).toHaveBeenCalledWith(600, -480, 180);
+    expect(onSettle).toHaveBeenCalledWith(600, -480, 180, expect.any(Number));
   });
 });
 
