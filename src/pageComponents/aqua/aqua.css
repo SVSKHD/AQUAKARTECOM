@@ -9670,3 +9670,48 @@ button.aq-pf-buy {
     min-height: 40px;
   }
 }
+
+/* ---------- the customer's question: selectable, with a Copy icon ---------- */
+.aq-user-bubble {
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
+}
+.aq-user-bubble:hover {
+  background: rgba(7, 26, 37, 0.8) !important;
+}
+.aq-copyq {
+  width: 28px;
+  height: 28px;
+  margin-top: -2px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--aq-mut2);
+  cursor: pointer;
+  transition:
+    opacity 0.2s,
+    color 0.2s,
+    background 0.2s;
+}
+.aq-copyq:hover,
+.aq-copyq:focus-visible {
+  background: rgba(var(--aq-ln), 0.06);
+  color: var(--aq-ink);
+}
+.aq-copyq[data-copied="true"] {
+  color: var(--aq-mintink);
+}
+/* With a mouse it shows on hover; on touch screens it's always there. */
+@media (hover: hover) {
+  .aq-copyq {
+    opacity: 0;
+  }
+  div:hover > .aq-copyq,
+  .aq-copyq:focus-visible,
+  .aq-copyq[data-copied="true"] {
+    opacity: 1;
+  }
+}

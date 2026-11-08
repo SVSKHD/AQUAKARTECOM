@@ -26,6 +26,7 @@ import HardnessCard from "./HardnessCard";
 import type { Place } from "./hardnessData";
 import ProductCard from "./ProductCard";
 import { namedProducts } from "./replyProducts";
+import { CopyQuestion } from "./ReplyActions";
 import ReplyAccordion from "./ReplyAccordion";
 import WhileYouWait from "./WhileYouWait";
 import { aquaConfig } from "./config";
@@ -301,7 +302,7 @@ export default function Conversation(p: Props) {
           }}
         >
           <div
-            className="aq-btn-dark"
+            className="aq-btn-dark aq-user-bubble"
             style={{
               opacity: m.stopped ? 0.6 : 1,
               transformOrigin: "100% 100%",
@@ -323,6 +324,7 @@ export default function Conversation(p: Props) {
             )}
             {m.text}
           </div>
+          {!!m.text && <CopyQuestion text={m.text} />}
           {m.stopped && (
             <span
               style={{

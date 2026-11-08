@@ -98,6 +98,48 @@ const btn = {
   cursor: "pointer",
 } as const;
 
+// Puts text on the clipboard.
+export async function copyText(plain: string) {
+  try {
+    await navigator.clipboard.writeText(plain);
+  } catch {
+    // Older browsers / insecure origins: fall back to a hidden textarea.
+    const ta = document.createElement("textarea");
+    ta.value = plain;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+}
+
+// A round Copy icon under the customer's own question, ticked once copied.
+export function CopyQuestion({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 1800);
+    return () => clearTimeout(t);
+  }, [copied]);
+  return (
+    <button
+      type="button"
+      className="aq-copyq"
+      data-copied={copied}
+      onClick={async () => {
+        await copyText(text);
+        setCopied(true);
+      }}
+      aria-label={copied ? "Question copied" : "Copy question"}
+      title={copied ? "Copied" : "Copy"}
+    >
+      {copied ? <Check size={14} /> : <Copy size={14} />}
+    </button>
+  );
+}
+
 export default function ReplyActions({
   id,
   text,
@@ -123,20 +165,7 @@ export default function ReplyActions({
   }, [copied]);
 
   const copy = async () => {
-    const plain = replyPlainText(text);
-    try {
-      await navigator.clipboard.writeText(plain);
-    } catch {
-      // Older browsers / insecure origins: fall back to a hidden textarea.
-      const ta = document.createElement("textarea");
-      ta.value = plain;
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      ta.remove();
-    }
+    await copyText(replyPlainText(text));
     setCopied(true);
   };
 
