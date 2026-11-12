@@ -16,6 +16,7 @@ import {
   Clock,
   Flame,
   GripVertical,
+  Map as MapIcon,
 } from "lucide-react";
 import { useDemandFeed } from "@/components/demand/useDemandFeed";
 import {
@@ -109,6 +110,7 @@ export default function DemandStrip({
   autoTuck,
   onOpenSidebar,
   onReady,
+  onShowMap,
 }: {
   products: Map<string, Product>;
   area: string | null;
@@ -120,6 +122,8 @@ export default function DemandStrip({
   autoTuck: boolean;
   onOpenSidebar?: () => void;
   onReady?: (ready: boolean) => void;
+  // Opens the hot-picks heatmap (orders by area).
+  onShowMap?: () => void;
 }) {
   const { status, result } = useDemandFeed({ area, limit: 8 });
   const reduced = useReducedMotion();
@@ -538,6 +542,18 @@ export default function DemandStrip({
           <span className="aq-demand-live" aria-hidden="true" />
           <span>Live on Aquakart</span>
         </button>
+        {onShowMap && (
+          <button
+            type="button"
+            className="aq-demand-map"
+            onClick={onShowMap}
+            aria-label="See hot picks on a map"
+            title="Hot picks by area"
+          >
+            <MapIcon size={14} aria-hidden="true" />
+            <span>Map</span>
+          </button>
+        )}
         <button
           type="button"
           className="aq-demand-btn"

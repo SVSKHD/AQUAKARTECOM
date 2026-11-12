@@ -59,7 +59,9 @@ describe("useAquaChat with the backend AI", () => {
   it("answers from POST /ai/chat and sends earlier turns as history", async () => {
     sendAiChat
       .mockResolvedValueOnce("Hello! How can I help?")
-      .mockResolvedValueOnce("A 20 L softener suits a family of 4.");
+      .mockResolvedValueOnce(
+        "The **Home Water Softener 20 L Auto** suits a family of 4.",
+      );
     const { result } = setup();
     await waitFor(() => expect(result.current.aiMode).toBe("live"));
 
@@ -84,16 +86,10 @@ describe("useAquaChat with the backend AI", () => {
       { role: "user", text: "Hi" },
       { role: "assistant", text: "Hello! How can I help?" },
     ]);
-    // Shopping question → catalogue cards attached locally, ranked for 4 people.
+    // The bold product name in the answer becomes its card.
     await waitFor(() =>
-      expect(
-        lastAqua(result.current.messages)?.products?.length,
-      ).toBeGreaterThan(0),
+      expect(lastAqua(result.current.messages)?.products).toEqual(["d2"]),
     );
-    const picks = lastAqua(result.current.messages)!.products!.map((id) =>
-      DEMO_PRODUCTS.find((p) => p.id === id)!,
-    );
-    expect(picks.every((p) => p.cat === "softener" && p.inStock)).toBe(true);
   });
 
   it("adds the open product as context to the user's message", async () => {
@@ -482,7 +478,7 @@ describe("sizing softeners for a home", () => {
 
   it("shows whole-home softeners for a villa with 5 bathrooms, ready to compare", async () => {
     sendAiChat.mockResolvedValueOnce(
-      "For a villa, a whole-home automatic softener is simplest.",
+      "For a villa, the **Whole-Home Softener 50 L** on the main line is simplest.",
     );
     const { result } = setup();
     await waitFor(() => expect(result.current.aiMode).toBe("live"));
@@ -496,9 +492,9 @@ describe("sizing softeners for a home", () => {
       expect(lastAqua(result.current.messages)?.done).toBe(true),
     );
     const answer = lastAqua(result.current.messages)!;
-    // The demo range tops out at 2,500 L/hr, below 5 × 600: the largest leads, flagged.
-    expect(answer.products?.[0]).toBe("d4");
-    expect(answer.products).not.toContain("d5");
+    // Cards are what the answer bolds; the sizing still explains them. The demo
+    // range tops out at 2,500 L/hr, below 5 × 600, so the largest is flagged.
+    expect(answer.products).toEqual(["d4"]);
     expect(result.current.reasons.d4).toMatch(/below all 5 bathrooms at once/);
     expect(answer.chips).toEqual([
       "Compare these",

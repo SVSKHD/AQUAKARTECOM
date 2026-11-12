@@ -19,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { storage } from "./hooks";
-import { podcastScript, type BlogRead } from "./blogReads";
+import { openBlogInArtifact, podcastScript, type BlogRead } from "./blogReads";
 import { MoreReads } from "./WhileYouWait";
 import {
   canSpeak,
@@ -245,7 +245,11 @@ export default function BlogBar({
           className="aq-blogbar-open"
           aria-expanded={expanded}
           aria-controls="aq-blogbar-body"
-          onClick={() => setExpanded((v) => !v)}
+          onClick={() => {
+            // Desktop: the post opens in the artifact box beside the chat.
+            if (!expanded && openBlogInArtifact(read)) return;
+            setExpanded((v) => !v);
+          }}
         >
           {read.image ? (
             <img

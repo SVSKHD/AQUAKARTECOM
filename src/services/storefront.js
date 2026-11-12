@@ -38,3 +38,19 @@ export const getRecentPurchases = async (
     return null;
   }
 };
+
+// Public orders per locality with each one's most-bought products (the
+// hot-picks map). Anonymous: area names and counts only. Optional like the
+// feed: any failure resolves null.
+export const getDemandAreas = async ({ days } = {}, config = {}) => {
+  try {
+    const response = await axios.get(`${API_BASE}/storefront/demand-areas`, {
+      timeout: 5000,
+      ...config,
+      params: days ? { days } : {},
+    });
+    return response?.data?.data || null;
+  } catch {
+    return null;
+  }
+};

@@ -166,8 +166,9 @@ export function mapReal(p: any): Product {
         : /filter/i.test(txt)
           ? "filter"
           : "other";
+  // Some products store the offer price as a string, and "0" means none.
   const sale =
-    p.discountPriceStatus && p.discountPrice
+    p.discountPriceStatus && Number(p.discountPrice) > 0
       ? Number(p.discountPrice)
       : Number(p.price);
   const oos = p.stock === 0 || p.inStock === false;

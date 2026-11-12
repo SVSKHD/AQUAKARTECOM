@@ -206,3 +206,32 @@ export function chatProducts(
   }
   return ids;
 }
+
+// The storefront contract (backend docs/STOREFRONT_AI_CHAT.md): every bold
+// span that names a catalogue product is a recommendation, so it gets a card.
+// Exact match on the normalised name first; otherwise only when exactly one
+// title contains the span (or the span the title). Bold text that isn't a
+// product (the NRV, made-to-order pumps, "Note:") gets nothing.
+const cardName = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/\s*\|\s*aquakart\s*$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+export function boldProducts(text: string, products: Product[]): string[] {
+  if (!products.length) return [];
+  const titles = products.map((p) => ({ p, t: cardName(p.title) }));
+  const ids: string[] = [];
+  for (const m of text.matchAll(/\*\*([^*\n]+)\*\*/g)) {
+    const span = cardName(m[1]);
+    if (span.length < 3) continue;
+    const exact = titles.find((x) => x.t === span);
+    const loose = exact
+      ? []
+      : titles.filter((x) => x.t.includes(span) || span.includes(x.t));
+    const hit = exact?.p || (loose.length === 1 ? loose[0].p : null);
+    if (hit && !ids.includes(hit.id)) ids.push(hit.id);
+  }
+  return ids;
+}

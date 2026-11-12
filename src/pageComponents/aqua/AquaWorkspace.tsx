@@ -94,6 +94,14 @@ const accountAddress = (
 import { tabTitle } from "./pageTitle";
 import BlogBar from "./BlogBar";
 import DemandStrip, { SHOW_HOT_PICKS } from "./DemandStrip";
+import HotPicksMap from "./HotPicksMap";
+import ChatWindow from "./ChatWindow";
+import BlogArtifact from "./BlogArtifact";
+import ProductCard from "./ProductCard";
+import BlogServiceOperations from "@/services/blog";
+import { OPEN_BLOG, loadAllReads, type BlogRead } from "./blogReads";
+import ProductStage from "./ProductStage";
+import { parseQuickQuestions } from "./quizParse";
 import { useBlogReads } from "./useBlogReads";
 import type { ProfileUser } from "./profile";
 
@@ -118,6 +126,9 @@ type RootState = {
 };
 
 const DEFAULT_SEL: Selection = { variant: 0, qty: 1 };
+// The chat / artifact divider, remembered per browser. Renamed with the
+// 40 / 60 split view, so a width saved from the old side panel doesn't carry.
+const SPLIT_KEY = "aqua.split.v2";
 const clampSplit = (n: number) =>
   Math.min(aquaConfig.splitMax, Math.max(aquaConfig.splitMin, n));
 const storePrice = (i: StoreItem) =>
@@ -300,7 +311,7 @@ export default function AquaWorkspace() {
     if (auth.error) showToast(auth.error);
   }, [auth.error]);
   const [split, setSplit] = useState(() =>
-    clampSplit(Number(storage.get("aqua.split")) || aquaConfig.splitDefault),
+    clampSplit(Number(storage.get(SPLIT_KEY)) || aquaConfig.splitDefault),
   );
   const [dragging, setDragging] = useState(false);
   // The hot-picks feed is showing (its bubble opens the sidebar on touch).
@@ -328,6 +339,21 @@ export default function AquaWorkspace() {
   if (!token && profileTab !== null) setProfileTab(null);
   // The drawer listing every product an answer names (their ids).
   const [answerProducts, setAnswerProducts] = useState<string[] | null>(null);
+  // The hot-picks heatmap (orders by area), opened from the Hot picks card.
+  const [hotMap, setHotMap] = useState(false);
+  // A blog post open in the artifact box, and every post for related reads.
+  const [blog, setBlog] = useState<BlogRead | null>(null);
+  const [allReads, setAllReads] = useState<BlogRead[]>([]);
+  // Split view: the chat popped out of its box into a floating window.
+  // Remembered per browser. Only used once a chat has messages (after mount),
+  // so the server's "docked" never meets a different first client render.
+  const [chatDetached, setChatDetached] = useState(
+    () => storage.get("aqua.chat.detached") === "1",
+  );
+  const detachChat = (v: boolean) => {
+    setChatDetached(v);
+    storage.set("aqua.chat.detached", v ? "1" : "0");
+  };
   // The products drawer lists an answer's products, or (asked to compare
   // without picks) every product in the chat to pick from.
   const [answerMode, setAnswerMode] = useState<"answer" | "compare">("answer");
@@ -1140,7 +1166,7 @@ export default function AquaWorkspace() {
   const onDividerUp = () => {
     if (!dragging) return;
     setDragging(false);
-    storage.set("aqua.split", String(Math.round(split)));
+    storage.set(SPLIT_KEY, String(Math.round(split)));
   };
 
   // ---------- purchases: invoices on the signed-in account (history dock, profile) ----------
@@ -1266,6 +1292,36 @@ export default function AquaWorkspace() {
   // fully open (the visitor is looking at the product, not chatting). Tucking
   // the sheet down to peek, Back to chat or × brings the composer back.
   const hideComposer = sheetLayout && (locked || (open && sheet === "full"));
+  // Desktop with a mouse, once a chat is under way: two bento boxes, the chat
+  // (left, with its input; it can pop out into a draggable window) and the
+  // artifact (right: the products it suggests, or the product / comparison
+  // open). The sidebar stays closed until asked for.
+  const bento =
+    !sheetLayout && !isMobile && !isTouch && chat.messages.length > 0;
+  const floatChat = bento && chatDetached;
+  // The right box: the workspace panel, a blog post, or the products in
+  // split view.
+  const side = open || bento || !!blog;
+  // A blog clicked anywhere (the reads under a slow answer, the reads bar, the
+  // sidebar) opens here when there's an artifact box, i.e. not on phones, and
+  // not while paying. Telling the caller (preventDefault) stops it opening the
+  // post in place too.
+  const blogTarget = !sheetLayout && !locked;
+  useEffect(() => {
+    if (!blogTarget) return;
+    const onOpenBlog = (e: Event) => {
+      const read = (e as CustomEvent<BlogRead>).detail;
+      if (!read) return;
+      e.preventDefault();
+      setDockOpen(false);
+      if (open) dispatch({ type: "CLOSE" });
+      setBlog(read);
+      void loadAllReads(BlogServiceOperations.AllBlogs).then(setAllReads);
+    };
+    window.addEventListener(OPEN_BLOG, onOpenBlog);
+    return () => window.removeEventListener(OPEN_BLOG, onOpenBlog);
+  }, [blogTarget, open, dispatch]);
+  const lastAqua = [...chat.messages].reverse().find((m) => m.role === "aqua");
   const mainPadB = isMobile ? 8 : 12;
 
   // Cart and favourites as list rows, with their actions: shared by the shop
@@ -1471,61 +1527,71 @@ export default function AquaWorkspace() {
       >
         <section
           aria-label="Conversation"
+          className={bento && !floatChat ? "aq-glass aq-bento-chat" : undefined}
           style={{
-            flex: "1 1 0",
+            flex: floatChat ? "0 0 0" : "1 1 0",
             minWidth: 0,
             display: "flex",
             flexDirection: "column",
             position: "relative",
           }}
         >
-          <Conversation
-            flow={flow}
-            dispatch={dispatch}
-            chat={chat}
-            products={byId}
-            mood={mood}
-            dark={theme === "dark"}
-            userName={userName}
-            isMobile={isMobile}
-            homeHardness={homeHardness}
-            panelOpen={open}
-            selectedProduct={selectedProduct}
-            favIds={favs.map((f) => f._id)}
-            cartIds={cart.map((c) => c._id)}
-            compare={compare}
-            compareHint={compareHint}
-            onOpen={view}
-            onToggleFav={toggleFav}
-            onToggleCompare={toggleCompare}
-            onClearCompare={clearCompare}
-            onOpenComparison={openComparison}
-            openComparison={comparison?.messageId ?? null}
-            onAddToCart={(id) => addToCart(id)}
-            onBuy={buy}
-            onSend={sendMessage}
-            onViewProducts={(ids) => {
-              setAnswerMode("answer");
-              setDockOpen(false);
-              setShop(null);
-              setAnswerProducts(ids);
-            }}
-            onSignIn={auth.signIn}
-            signingIn={auth.busy}
-            signInError={auth.error}
-            onFocusChange={setFocused}
-            hideComposer={hideComposer}
-            composerRef={composerRef}
-            peekText={peekText}
-            onPeekOpen={() => {
-              setSheet("peek");
-              setPeekFrom(null);
-            }}
-            onPeekDismiss={() => setPeekFrom(null)}
-          />
+          <ChatWindow
+            floating={floatChat}
+            detachable={bento}
+            onDetach={detachChat}
+            title={chat.title || "Chat with Aqua"}
+            activity={lastAqua?.done ? lastAqua.id : undefined}
+          >
+            <Conversation
+              productsAside={bento}
+              flow={flow}
+              dispatch={dispatch}
+              chat={chat}
+              products={byId}
+              mood={mood}
+              dark={theme === "dark"}
+              userName={userName}
+              isMobile={isMobile || bento}
+              homeHardness={homeHardness}
+              panelOpen={open}
+              selectedProduct={selectedProduct}
+              favIds={favs.map((f) => f._id)}
+              cartIds={cart.map((c) => c._id)}
+              compare={compare}
+              compareHint={compareHint}
+              onOpen={view}
+              onToggleFav={toggleFav}
+              onToggleCompare={toggleCompare}
+              onClearCompare={clearCompare}
+              onOpenComparison={openComparison}
+              openComparison={comparison?.messageId ?? null}
+              onAddToCart={(id) => addToCart(id)}
+              onBuy={buy}
+              onSend={sendMessage}
+              onViewProducts={(ids) => {
+                setAnswerMode("answer");
+                setDockOpen(false);
+                setShop(null);
+                setAnswerProducts(ids);
+              }}
+              onSignIn={auth.signIn}
+              signingIn={auth.busy}
+              signInError={auth.error}
+              onFocusChange={setFocused}
+              hideComposer={hideComposer}
+              composerRef={composerRef}
+              peekText={peekText}
+              onPeekOpen={() => {
+                setSheet("peek");
+                setPeekFrom(null);
+              }}
+              onPeekDismiss={() => setPeekFrom(null)}
+            />
+          </ChatWindow>
         </section>
 
-        {!sheetLayout && open && (
+        {!sheetLayout && side && !floatChat && (
           <div
             className="aq-divider"
             role="separator"
@@ -1542,7 +1608,7 @@ export default function AquaWorkspace() {
             onPointerCancel={onDividerUp}
             onDoubleClick={() => {
               setSplit(aquaConfig.splitDefault);
-              storage.set("aqua.split", String(aquaConfig.splitDefault));
+              storage.set(SPLIT_KEY, String(aquaConfig.splitDefault));
             }}
             onKeyDown={(e) => {
               const d =
@@ -1551,7 +1617,7 @@ export default function AquaWorkspace() {
               e.preventDefault();
               const next = clampSplit(split + d);
               setSplit(next);
-              storage.set("aqua.split", String(Math.round(next)));
+              storage.set(SPLIT_KEY, String(Math.round(next)));
             }}
           >
             <span />
@@ -1561,15 +1627,18 @@ export default function AquaWorkspace() {
         {!sheetLayout && (
           <aside
             aria-label="Workspace"
-            aria-hidden={!open}
-            className={open ? "aq-glass" : undefined}
+            aria-hidden={!side}
+            className={side ? "aq-glass aq-bento-side" : undefined}
             style={{
               // Pixel floors on both sides: on an iPad in portrait 40/60 would squeeze
-              // the panel under its 340px content and clip it.
-              width: open
-                ? `clamp(360px, ${100 - split}%, calc(100% - 320px))`
-                : 0,
-              opacity: open ? 1 : 0,
+              // the panel under its 340px content and clip it. With the chat
+              // popped out, the artifact takes the whole width.
+              width: floatChat
+                ? "100%"
+                : side
+                  ? `clamp(360px, ${100 - split}%, calc(100% - 320px))`
+                  : 0,
+              opacity: side ? 1 : 0,
               flexShrink: 0,
               overflow: "hidden",
               borderRadius: 28,
@@ -1579,7 +1648,61 @@ export default function AquaWorkspace() {
                 : "width 320ms ease, opacity 220ms ease",
             }}
           >
-            {panel}
+            {panel ||
+              (blog ? (
+                <BlogArtifact
+                  read={blog}
+                  allReads={allReads}
+                  products={[...byId.values()]}
+                  renderProduct={(v, i) => (
+                    <ProductCard
+                      key={v.id}
+                      product={v}
+                      delay={i * 0.05}
+                      compact
+                      selected={false}
+                      isFav={favs.some((f) => f._id === v.id)}
+                      inCart={cart.some((c) => c._id === v.id)}
+                      inCompare={compare.includes(v.id)}
+                      hintCompare={!!compareHint}
+                      onOpen={view}
+                      onToggleFav={toggleFav}
+                      onToggleCompare={toggleCompare}
+                      onAddToCart={(id) => addToCart(id)}
+                    />
+                  )}
+                  onOpenRead={setBlog}
+                  onAsk={(text) => void sendMessage(text)}
+                  onClose={() => setBlog(null)}
+                />
+              ) : (
+                bento && (
+                  <ProductStage
+                    messages={chat.messages}
+                    products={byId}
+                    reasons={chat.reasons}
+                    favIds={favs.map((f) => f._id)}
+                    cartIds={cart.map((c) => c._id)}
+                    compare={compare}
+                    compareHint={!!compareHint}
+                    selectedId={open ? flow.productId || null : null}
+                    busy={chat.status !== "idle"}
+                    onOpen={view}
+                    onToggleFav={toggleFav}
+                    onToggleCompare={toggleCompare}
+                    onAddToCart={(id) => addToCart(id)}
+                    onCompare={() => sendMessage("Compare these")}
+                    onAsk={(text) => void sendMessage(text)}
+                    reads={reads}
+                    awaitingAnswers={
+                      !!lastAqua?.done &&
+                      lastAqua.id ===
+                        chat.messages[chat.messages.length - 1]?.id &&
+                      !!parseQuickQuestions(lastAqua.full || lastAqua.text)
+                    }
+                  />
+                )
+              ))}
           </aside>
         )}
       </main>
@@ -1845,6 +1968,9 @@ export default function AquaWorkspace() {
       {!readsDocked &&
         !isMobile &&
         !tourOpen &&
+        // Split view: the reads live in the artifact box instead.
+        !blog &&
+        !bento &&
         !profileTab &&
         !(sheetLayout && open) &&
         !["checkout", "payment_pending", "payment_failed"].includes(
@@ -1881,10 +2007,23 @@ export default function AquaWorkspace() {
                   }
                 : undefined
             }
-            autoTuck={(isTouch || isMobile) && flow.state !== "welcome"}
+            // Split view: tucked into its edge bubble so it doesn't sit on
+            // the chat or the artifact.
+            autoTuck={
+              (isTouch || isMobile || bento) && flow.state !== "welcome"
+            }
             onReady={setHotPicks}
+            onShowMap={() => setHotMap(true)}
           />
         )}
+      {hotMap && (
+        <HotPicksMap
+          products={byId}
+          area={areaFromUser(userData?.user)}
+          onOpen={view}
+          onClose={() => setHotMap(false)}
+        />
+      )}
 
       <AquaTour open={tourOpen} onClose={closeTour} />
     </div>

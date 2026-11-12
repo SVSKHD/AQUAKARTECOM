@@ -20,6 +20,7 @@ import {
 } from "./ReplyActions";
 import {
   BLOG_URL,
+  openBlogInArtifact,
   podcastScript,
   toBlogReads,
   type BlogRead,
@@ -64,11 +65,14 @@ export function Read({
   open,
   onToggle,
   onListen,
+  onOpened,
   full = false,
 }: {
   read: BlogRead;
   open: boolean;
   onToggle: () => void;
+  // Opened in the artifact box instead of in place.
+  onOpened?: () => void;
   onListen?: () => void;
   full?: boolean;
 }) {
@@ -83,7 +87,11 @@ export function Read({
         className="aq-read-head"
         aria-expanded={open}
         aria-controls={bodyId}
-        onClick={onToggle}
+        // Desktop: the post opens in the artifact box beside the chat.
+        onClick={() => {
+          if (!open && openBlogInArtifact(read)) return onOpened?.();
+          onToggle();
+        }}
       >
         {read.image ? (
           <img src={read.image} alt="" className="aq-read-img" loading="lazy" />
@@ -174,7 +182,15 @@ export function Read({
 // Shown under a slow answer: a vertical list of blog posts, each opening to
 // read in place or listen to as a podcast. Once the visitor opens or plays one
 // it stays after the answer lands, until they close it.
-export default function WhileYouWait({ waiting }: { waiting: boolean }) {
+export default function WhileYouWait({
+  waiting,
+  latest = false,
+}: {
+  waiting: boolean;
+  // Under the newest answer: once shown, the reads stay until the next
+  // question (or the ×), instead of vanishing when the answer lands.
+  latest?: boolean;
+}) {
   const [due, setDue] = useState(false);
   const [list, setList] = useState<BlogRead[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -204,7 +220,8 @@ export default function WhileYouWait({ waiting }: { waiting: boolean }) {
     [list],
   );
 
-  const visible = !closed && list.length > 0 && ((waiting && due) || engaged);
+  const visible =
+    !closed && list.length > 0 && (((waiting || latest) && due) || engaged);
   if (!visible) return null;
 
   const close = () => {
@@ -245,6 +262,8 @@ export default function WhileYouWait({ waiting }: { waiting: boolean }) {
               setEngaged(true);
               setOpenId(r.id);
             }}
+            // Read beside the chat: the list stays after the answer lands.
+            onOpened={() => setEngaged(true)}
           />
         ))}
         <MoreReads />

@@ -27,6 +27,8 @@ import type { Place } from "./hardnessData";
 import ProductCard from "./ProductCard";
 import { namedProducts } from "./replyProducts";
 import { CopyQuestion } from "./ReplyActions";
+import QuickQuestions from "./QuickQuestions";
+import { parseQuickQuestions } from "./quizParse";
 import ReplyAccordion from "./ReplyAccordion";
 import WhileYouWait from "./WhileYouWait";
 import { aquaConfig } from "./config";
@@ -57,6 +59,9 @@ function ProductGrid({
 }
 
 type Props = {
+  // Desktop split view: the answers' products show in the artifact box beside
+  // the chat, so the chat leaves their cards out.
+  productsAside?: boolean;
   flow: Flow;
   dispatch: FlowDispatch;
   chat: AquaChat;
@@ -175,6 +180,17 @@ export default function Conversation(p: Props) {
   // shop, a product, a comparison) was opened straight from it.
   const isWelcome = p.flow.state === "welcome" || !p.chat.messages.length;
   const busy = p.chat.status !== "idle";
+  // The latest answer, if it ends with quick questions: they float above the
+  // input until answered (the next message moves the chat on) or hidden.
+  const last = p.chat.messages[p.chat.messages.length - 1];
+  const lastQuiz =
+    last?.role === "aqua" && last.ai && last.done && !last.error
+      ? parseQuickQuestions(last.full || last.text)
+      : null;
+  const pendingQuiz = lastQuiz
+    ? { id: last.id, questions: lastQuiz.questions }
+    : null;
+  const [quizHidden, setQuizHidden] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const stickRef = useRef(true);
   const [showJump, setShowJump] = useState(false);
@@ -369,6 +385,11 @@ export default function Conversation(p: Props) {
       inAnswer.length > 1 ||
       inAnswer.some((id) => !cards.some((c) => c.id === id));
     const streaming = !m.done && !m.typing;
+    // A finished answer ending in "Quick questions:" shows them as a form
+    // under the reply, and the reply without them. Unparseable: plain text.
+    const quiz =
+      m.done && !m.error && m.ai ? parseQuickQuestions(m.full || m.text) : null;
+    const replyText = quiz ? quiz.body : m.full || m.text;
     // A finished reply shows as an accordion (see ReplyAccordion).
     const accordion = !!m.text && !streaming && !!m.done && !m.thinkingLive;
     // The whole answer stays in its bubble; every product it suggests follows
@@ -409,7 +430,7 @@ export default function Conversation(p: Props) {
           }}
         >
           {/* Finished answers lead with their products; the text follows. */}
-          {m.done && cards.length > 0 && (
+          {m.done && cards.length > 0 && !p.productsAside && (
             <ProductGrid isMobile={p.isMobile}>
               {cards.map((c, i) => (
                 <ProductCard
@@ -525,7 +546,7 @@ export default function Conversation(p: Props) {
                   ) : accordion ? (
                     <ReplyAccordion
                       id={m.id}
-                      text={m.full || m.text}
+                      text={replyText}
                       defaultOpen={!(cards.length || inAnswer.length)}
                       lead={
                         m.thoughts?.length || productTag(m.productId) ? (
@@ -538,10 +559,10 @@ export default function Conversation(p: Props) {
                         ) : undefined
                       }
                     >
-                      <AquaReply text={m.full || m.text} />
+                      <AquaReply text={replyText} />
                     </ReplyAccordion>
                   ) : (
-                    <AquaReply text={m.full || m.text} />
+                    <AquaReply text={replyText} />
                   ))}
                 {streaming && m.text && (
                   <span
@@ -562,8 +583,16 @@ export default function Conversation(p: Props) {
               </div>
             )
           )}
+          {quiz && m.id !== pendingQuiz?.id && (
+            <span className="aq-quiz-done">
+              Quick questions · {quiz.questions.length}
+            </span>
+          )}
           {/* Slow answer: blog reads to read or listen to meanwhile. */}
-          <WhileYouWait waiting={!m.done && !m.error && !m.text} />
+          <WhileYouWait
+            waiting={!m.done && !m.error && !m.text}
+            latest={m.id === last?.id}
+          />
           {m.done && m.note && (
             <div
               style={{
@@ -1145,6 +1174,29 @@ export default function Conversation(p: Props) {
                   {c}
                 </button>
               ))}
+            </div>
+          )}
+          {/* The latest answer's quick questions rise from the input. */}
+          {!p.hideComposer && pendingQuiz && !p.chat.limit && (
+            <div className="aq-quiz-dock">
+              {quizHidden === pendingQuiz.id ? (
+                <button
+                  type="button"
+                  className="aq-quiz-pill"
+                  onClick={() => setQuizHidden(null)}
+                >
+                  Answer {pendingQuiz.questions.length} quick questions
+                </button>
+              ) : (
+                <QuickQuestions
+                  key={pendingQuiz.id}
+                  className="aq-quiz-float"
+                  questions={pendingQuiz.questions}
+                  locked={busy}
+                  onSend={(text) => p.onSend(text)}
+                  onDismiss={() => setQuizHidden(pendingQuiz.id)}
+                />
+              )}
             </div>
           )}
           {!p.hideComposer && (

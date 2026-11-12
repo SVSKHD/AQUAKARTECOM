@@ -24,7 +24,7 @@ import {
   type AiTurn,
 } from "@/services/ai";
 import { INR } from "./catalogue";
-import { mentionedProducts } from "./replyProducts";
+import { boldProducts } from "./replyProducts";
 import {
   fitsHome,
   readHome,
@@ -309,17 +309,14 @@ export function useAquaChat({
     ])
       if (m.role === "aqua" && m.products?.length)
         shown.set((m.full || m.text).trim(), m.products);
-    let asked = "";
     setMessages(
       chat.messages.map((t): ChatMessage => {
         if (t.role === "user") {
-          asked = t.text;
           return { id: uid("u"), role: "user", text: t.text };
         }
-        const named = mentionedProducts(t.text, productsRef.current);
+        // Cards are the products the answer bolds (the backend contract).
         const products =
-          shown.get(t.text.trim()) ||
-          (named.length ? named : catalogueMatches(asked, t.text, {}));
+          shown.get(t.text.trim()) || boldProducts(t.text, productsRef.current);
         if (products.length) lastPicks.current = products;
         return {
           id: uid("a"),
@@ -1017,35 +1014,6 @@ export function useAquaChat({
             ? "filter"
             : null;
 
-  // Cards for shopping questions, from the live catalogue (the AI won't quote stock).
-  const catalogueMatches = (text: string, reply: string, r: Req): string[] => {
-    const t = text.toLowerCase();
-    if (!SHOPPING.test(t) && !NAMED.test(t)) return [];
-    const need =
-      categoryOf(t) || categoryOf(reply.toLowerCase()) || r.need || null;
-    if (need === "softener") {
-      const sized = sizedSofteners({ ...r, need });
-      if (sized) return sized.picks;
-    }
-    let pool = productsRef.current.filter(
-      (p) => (need ? p.cat === need : !!r.budget) && p.inStock,
-    );
-    if (r.budget) {
-      const inBudget = pool.filter((p) => p.price <= r.budget!);
-      if (inBudget.length) pool = inBudget;
-    }
-    const picks = pool
-      .slice()
-      .sort((a, b) => fit(a, r) - fit(b, r) || a.price - b.price)
-      .slice(0, 3);
-    if (!picks.length) return [];
-    const rs: Record<string, string> = {};
-    picks.forEach((p) => (rs[p.id] = reasonFor(p, r)));
-    addReasons(rs);
-    lastPicks.current = picks.map((p) => p.id);
-    return lastPicks.current;
-  };
-
   const settle = () => {
     statusRef.current = "idle";
     setStatus("idle");
@@ -1161,38 +1129,23 @@ export function useAquaChat({
         { role: "user" as const, text: prompt },
         { role: "assistant" as const, text: answer.reply },
       ].slice(-AI_HISTORY_MAX);
-      // Products the answer writes about by name come first, so the cards match
-      // the text; otherwise ranked catalogue picks for shopping questions.
-      const named = sel
-        ? []
-        : mentionedProducts(answer.reply, productsRef.current);
-      if (named.length) lastPicks.current = named;
-      // A sized home gets the sized softeners too (after any the answer names), so
-      // whole-home and per-bathroom options are always there to compare.
+      // Cards are exactly the products the answer bolds, in its order (the
+      // backend contract: a bold catalogue name is a recommendation). A sized
+      // home still drops any softener that can't serve it, and gets the sizing
+      // reasons on its cards.
       const lt = text.toLowerCase();
       const sized =
         sel || !(SHOPPING.test(lt) || NAMED.test(lt))
           ? null
           : sizedSofteners({ ...r, need: categoryOf(lt) || r.need });
-      // A villa's cards never include a softener that can't serve it, even if
-      // the answer names one (an 8 L bathroom unit).
       const home = { bathrooms: r.bathrooms, kind: r.home };
       const picks = sel
         ? []
-        : sized
-          ? [
-              ...new Set([
-                ...named.filter((id) => {
-                  const p = productsRef.current.find((x) => x.id === id);
-                  return !p || fitsHome(p, home);
-                }),
-                ...sized.picks,
-              ]),
-            ].slice(0, 4)
-          : named.length
-            ? named
-            : catalogueMatches(text, answer.reply, r);
-      if (sized) lastPicks.current = picks;
+        : boldProducts(answer.reply, productsRef.current).filter((id) => {
+            const p = productsRef.current.find((x) => x.id === id);
+            return !p || fitsHome(p, home);
+          });
+      if (picks.length) lastPicks.current = picks;
       patch(tid, (m) => ({
         ...m,
         typing: false,
@@ -1207,7 +1160,7 @@ export function useAquaChat({
           ? sel.inStock
             ? ["Capacity", "Maintenance", "Buy now"]
             : ["Show alternatives"]
-          : sized
+          : sized && picks.length
             ? SIZED_CHIPS
             : picks.length > 1
               ? ["Compare these"]
