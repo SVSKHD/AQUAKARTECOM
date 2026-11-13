@@ -1672,6 +1672,9 @@ export default function AquaWorkspace() {
                     />
                   )}
                   onOpenRead={setBlog}
+                  onOpenProduct={view}
+                  onAddToCart={(id) => addToCart(id)}
+                  cartIds={cart.map((c) => c._id)}
                   onAsk={(text) => void sendMessage(text)}
                   onClose={() => setBlog(null)}
                 />

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { DEMO_PRODUCTS } from "./catalogue";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { DEMO_PRODUCTS, INR } from "./catalogue";
 import ProductStage from "./ProductStage";
 import type { ChatMessage } from "./types";
 
@@ -61,6 +61,30 @@ describe("ProductStage", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: /Compare 2/ }));
     expect(onCompare).toHaveBeenCalled();
+  });
+
+  it("sums up the picks in the rail and offers follow-up questions", () => {
+    const onAsk = vi.fn();
+    render(
+      <ProductStage
+        {...base}
+        messages={msgs}
+        compare={[]}
+        onCompare={vi.fn()}
+        onAsk={onAsk}
+      />,
+    );
+    const rail = screen.getByRole("complementary", {
+      name: "About your picks",
+    });
+    const prices = ["d1", "d3", "d4"].map((id) => products.get(id)!.price);
+    expect(rail).toHaveTextContent(
+      `${INR(Math.min(...prices))} – ${INR(Math.max(...prices))}`,
+    );
+    fireEvent.click(
+      within(rail).getByRole("button", { name: /suits my home best/ }),
+    );
+    expect(onAsk).toHaveBeenCalledWith("Which of these suits my home best?");
   });
 
   it("invites a question before there are products", () => {

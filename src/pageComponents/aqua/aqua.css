@@ -10392,7 +10392,7 @@ button.aq-pf-buy {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 22px clamp(18px, 2.4vw, 32px) 28px;
+  padding: 22px clamp(18px, 3vw, 40px) 32px;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -10440,19 +10440,28 @@ button.aq-pf-buy {
   color: #fff;
   box-shadow: 0 8px 20px rgba(0, 139, 104, 0.25);
 }
+/* Section labels in the blog reader's rail style: mint, with a count. */
 .aq-stage-kicker {
-  margin: 0 0 10px;
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 12px;
+  font-size: 11.5px;
   font-weight: 800;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--aq-mut2);
+  color: var(--aq-mintink);
+}
+.aq-stage-kicker .aq-rail-count {
+  margin-left: 0;
 }
 .aq-stage-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 14px;
-  align-items: start;
+  /* Cards in a row share one height; .aq-pc-acts pins every Buy button to
+     the same line even when one card carries badges or Aqua's reason. */
+  align-items: stretch;
 }
 .aq-stage-empty {
   display: grid;
@@ -10999,7 +11008,7 @@ button.aq-pf-buy {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 12px;
-  align-items: start;
+  align-items: stretch;
 }
 .aq-blogart-reads {
   display: grid;
@@ -11072,11 +11081,436 @@ button.aq-pf-buy {
   font-weight: 700;
   color: var(--aq-mintink);
 }
+/* Content + sticky rail, shared by the blog reader and Aqua's picks. The
+   panel's own width decides (it is resizable), not the viewport: narrow
+   panels stack the rail's content under the main column instead. */
+.aq-blogart,
+.aq-stage {
+  container: aq-split / inline-size;
+}
+.aq-blogart {
+  --aq-rail-top: 74px;
+}
+.aq-stage {
+  --aq-rail-top: 4px;
+}
+.aq-split {
+  display: block;
+}
+.aq-split-main {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+.aq-split-rail {
+  display: none;
+}
+@container aq-split (min-width: 940px) {
+  .aq-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(280px, 30cqi, 340px);
+    gap: clamp(24px, 3cqi, 40px);
+    align-items: start;
+  }
+  .aq-blogart-head,
+  .aq-blogart-takeaways,
+  .aq-blogart-ask {
+    max-width: none;
+  }
+  .aq-split-inline {
+    display: none;
+  }
+  .aq-split-rail {
+    position: sticky;
+    top: var(--aq-rail-top);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-height: calc(100dvh - 190px);
+    overflow-y: auto;
+    padding: 2px 4px 12px;
+    margin: 0 -4px;
+    scrollbar-width: none;
+    animation: aqRailIn 0.42s 0.08s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .aq-split-rail::-webkit-scrollbar {
+    display: none;
+  }
+}
+@keyframes aqRailIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.aq-rail-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 22px;
+  border: 1px solid rgba(var(--aq-gl), 0.9);
+  background: rgba(var(--aq-gl), 0.62);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: 0 10px 28px rgba(var(--aq-sh), 0.07);
+}
+.aq-rail-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 0 2px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--aq-mintink);
+}
+.aq-rail-count {
+  margin-left: auto;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--aq-mint);
+  font-size: 11px;
+  letter-spacing: 0;
+}
+
+/* Shop this read: compact product rows */
+.aq-rail-products {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+.aq-rail-product {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--aq-surf);
+  border: 1px solid rgba(var(--aq-ln), 0.06);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+.aq-rail-product:hover {
+  border-color: rgba(16, 191, 164, 0.45);
+  box-shadow: 0 10px 22px rgba(var(--aq-sh), 0.09);
+  transform: translateY(-1px);
+}
+.aq-rail-product-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--aq-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.aq-rail-product-main:disabled {
+  cursor: default;
+}
+.aq-rail-product-img {
+  width: 62px;
+  height: 62px;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--aq-mintink);
+  box-shadow: inset 0 0 0 1px rgba(var(--aq-ln), 0.06);
+}
+.aq-rail-product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  transition: transform 0.3s;
+}
+.aq-rail-product:hover .aq-rail-product-img img {
+  transform: scale(1.06);
+}
+.aq-rail-product-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.aq-rail-product-text small {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--aq-mut);
+}
+.aq-rail-product-text b {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+.aq-rail-price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+}
+.aq-rail-price strong {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--aq-ink);
+}
+.aq-rail-price s {
+  color: var(--aq-mut);
+}
+.aq-rail-price em {
+  font-style: normal;
+  font-weight: 800;
+  color: #0a9a72;
+}
+.aq-rail-oos {
+  font-size: 11px;
+  font-weight: 700;
+  color: #c2410c;
+}
+.aq-rail-cart {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  align-self: flex-end;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #10bfa4, #008b68);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0, 139, 104, 0.28);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+.aq-rail-cart:hover:not(:disabled) {
+  transform: scale(1.06);
+  box-shadow: 0 8px 18px rgba(0, 139, 104, 0.36);
+}
+.aq-rail-cart[data-on] {
+  background: var(--aq-mint);
+  color: var(--aq-mintink);
+  box-shadow: inset 0 0 0 1px rgba(16, 191, 164, 0.45);
+}
+.aq-rail-cart:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Aqua's picks rail: at a glance + follow-up questions */
+.aq-rail-stats {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.aq-rail-stats > div {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--aq-surf);
+  border: 1px solid rgba(var(--aq-ln), 0.06);
+}
+.aq-rail-stats .aq-rail-stat-wide {
+  grid-column: 1 / -1;
+}
+.aq-rail-stats dt {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--aq-mut);
+}
+.aq-rail-stats dd {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--aq-ink);
+}
+.aq-rail-stats dd small {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--aq-mut);
+}
+.aq-rail-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 9px 11px;
+  border-radius: 12px;
+  background: rgba(16, 191, 164, 0.08);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--aq-mintink);
+}
+.aq-rail-hint svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.aq-rail-asks {
+  display: grid;
+  gap: 6px;
+}
+.aq-rail-ask {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(var(--aq-ln), 0.06);
+  border-radius: 14px;
+  background: var(--aq-surf);
+  color: var(--aq-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
+}
+.aq-rail-ask span {
+  flex: 1;
+}
+.aq-rail-ask svg {
+  flex-shrink: 0;
+  color: var(--aq-mintink);
+  transition: transform 0.2s;
+}
+.aq-rail-ask:hover:not(:disabled) {
+  border-color: rgba(16, 191, 164, 0.45);
+}
+.aq-rail-ask:hover:not(:disabled) svg {
+  transform: translateX(2px);
+}
+.aq-rail-ask:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+/* On this page */
+.aq-rail-toc ol {
+  margin: 0;
+  padding: 0 0 0 2px;
+  list-style: none;
+  display: grid;
+  gap: 1px;
+  border-left: 2px solid rgba(var(--aq-ln), 0.08);
+}
+.aq-rail-toc button {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin-left: -2px;
+  padding: 6px 8px 6px 12px;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0 10px 10px 0;
+  background: none;
+  color: var(--aq-mut);
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.4;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    background 0.2s,
+    border-color 0.2s;
+}
+.aq-rail-toc button:hover {
+  color: var(--aq-ink);
+  background: rgba(var(--aq-ln), 0.04);
+}
+.aq-rail-toc button[aria-current] {
+  color: var(--aq-mintink);
+  border-left-color: #10bfa4;
+  background: rgba(16, 191, 164, 0.08);
+  font-weight: 750;
+}
+
+/* Keep reading, rail size */
+.aq-rail-reads {
+  display: grid;
+  gap: 8px;
+}
+.aq-blogart-read--rail {
+  padding: 7px;
+  gap: 10px;
+  border-radius: 16px;
+  background: var(--aq-surf);
+  border-color: rgba(var(--aq-ln), 0.06);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.aq-blogart-read--rail .aq-blogart-read-img {
+  width: 52px;
+  height: 52px;
+  border-radius: 11px;
+}
+.aq-blogart-read--rail .aq-blogart-read-text {
+  font-size: 12.5px;
+  gap: 4px;
+}
+.aq-blogart-read--rail .aq-blogart-read-text b {
+  -webkit-line-clamp: 2;
+}
+.aq-blogart-read--rail .aq-blogart-read-text > span {
+  font-size: 11px;
+}
+.aq-rail-more {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 4px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--aq-mintink);
+  text-decoration: none;
+}
+.aq-rail-more:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .aq-blogart {
+  .aq-blogart,
+  .aq-split-rail {
     animation: none;
   }
-  .aq-blogart-progress {
+  .aq-blogart-progress,
+  .aq-rail-product,
+  .aq-rail-product-img img {
     transition: none;
   }
 }
