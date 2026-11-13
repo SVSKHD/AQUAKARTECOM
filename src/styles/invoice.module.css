@@ -3639,3 +3639,58 @@
     -webkit-print-color-adjust: exact;
   }
 }
+
+/* Discounted quotations: original price struck through, the saving in red
+   and the offer price that GST is worked out on. */
+.struckPrice {
+  color: var(--invoice-muted) !important;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.lineFigures > .lineFigureDiscount {
+  background: #fef2f2;
+  box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.15);
+}
+.lineFigureDiscount dd {
+  color: #b91c1c;
+}
+.discountRows {
+  display: grid;
+  margin-bottom: 12px;
+  padding: 12px;
+  gap: 8px;
+  border: 1px solid var(--aq-bd);
+  border-radius: 14px;
+  background: var(--aq-tint);
+}
+.discountRows > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--invoice-muted);
+  font-size: 0.74rem;
+}
+.discountRows strong {
+  color: var(--invoice-ink);
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+.discountRows > .discountRowSaving strong {
+  color: #b91c1c;
+}
+.discountRows > .discountRowOffer {
+  padding-top: 8px;
+  border-top: 1px dashed var(--aq-bd);
+  color: var(--invoice-ink);
+  font-weight: 800;
+}
+.discountRows > .discountRowOffer strong {
+  color: var(--invoice-green);
+  font-size: 0.95rem;
+}
+.discountRows p {
+  margin: 0;
+  color: var(--aq-mut2);
+  font-size: 0.64rem;
+}

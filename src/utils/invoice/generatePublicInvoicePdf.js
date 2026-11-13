@@ -730,7 +730,7 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
       doc.roundedRect(margin, y, contentWidth, rowHeight, 5, 5, "F");
     }
 
-    const lineTotal = product.productPrice * product.productQuantity;
+    const line = priceUtils.getLineAmounts(product);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(...INK);
@@ -767,8 +767,17 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
     doc.text(formatPdfAmount(product.productPrice), width - 125, y + 19, {
       align: "right",
     });
+    if (line.hasDiscount) {
+      doc.setFontSize(6.6);
+      doc.setTextColor(185, 28, 28);
+      doc.text(`- ${formatPdfAmount(line.discount)} off`, width - 125, y + 30, {
+        align: "right",
+      });
+      doc.setFontSize(8);
+      doc.setTextColor(...INK);
+    }
     doc.setFont("helvetica", "bold");
-    doc.text(formatPdfAmount(lineTotal), width - 56, y + 19, {
+    doc.text(formatPdfAmount(line.offerTotal), width - 56, y + 19, {
       align: "right",
     });
     y += rowHeight + 3;
@@ -782,7 +791,15 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
     y += 46;
   }
 
-  const summaryCardHeight = invoice.gst ? 166 : 146;
+  const discountRows = amounts.hasDiscount
+    ? [
+        ["Original price", amounts.originalTotal],
+        ["Less discount", amounts.discountTotal],
+        ["Offer price", amounts.grandTotal],
+      ]
+    : [];
+  const summaryCardHeight =
+    (invoice.gst ? 166 : 146) + discountRows.length * 20;
   if (y + summaryCardHeight + 78 > height) addContinuationPage(false);
   y += 18;
 
@@ -816,17 +833,20 @@ export const createPublicInvoicePdfDocument = (JsPdf, invoice) => {
   const summaryWidth = contentWidth - wordsWidth - gap;
   doc.setFillColor(...INK);
   doc.roundedRect(summaryX, y, summaryWidth, summaryCardHeight, 10, 10, "F");
-  const summaryRows = invoice.gst
-    ? [
-        ["Base price", amounts.basePrice],
-        ["GST included (18%)", amounts.gstValue],
-        ["CGST share (9%)", amounts.cgstValue],
-        ["SGST share (9%)", amounts.sgstValue],
-      ]
-    : [
-        ["Base price", amounts.basePrice],
-        ["GST (18%)", amounts.gstValue],
-      ];
+  const summaryRows = [
+    ...discountRows,
+    ...(invoice.gst
+      ? [
+          ["Base price", amounts.basePrice],
+          ["GST included (18%)", amounts.gstValue],
+          ["CGST share (9%)", amounts.cgstValue],
+          ["SGST share (9%)", amounts.sgstValue],
+        ]
+      : [
+          ["Base price", amounts.basePrice],
+          ["GST (18%)", amounts.gstValue],
+        ]),
+  ];
   let rowY = y + 25;
   summaryRows.forEach(([label, value]) => {
     doc.setFont("helvetica", "normal");

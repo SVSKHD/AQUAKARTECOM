@@ -44,4 +44,37 @@ describe("priceUtils", () => {
       "One Lakh Twenty Five Thousand and Fifty Rupees and Fifty Paise Only",
     );
   });
+
+  it("works out GST on the offer price after line and overall discounts", () => {
+    const result = priceUtils.getInvoiceAmounts({
+      products: [
+        { productPrice: 20_000, productQuantity: 1, productDiscount: 2_000 },
+        { productPrice: 1_000, productQuantity: 2 },
+      ],
+      discount_amount: 1_000,
+    });
+
+    expect(result.originalTotal).toBe(22_000);
+    expect(result.discountTotal).toBe(3_000);
+    expect(result.hasDiscount).toBe(true);
+    expect(result.grandTotal).toBe(19_000);
+    expect(result.basePrice).toBe(16_101.69);
+    expect(result.gstValue).toBe(2_898.31);
+  });
+
+  it("splits a discounted line into original, discount and offer", () => {
+    const line = priceUtils.getLineAmounts({
+      productPrice: 10_000,
+      productQuantity: 2,
+      productDiscount: 3_000,
+    });
+
+    expect(line).toMatchObject({
+      originalTotal: 20_000,
+      discount: 3_000,
+      offerTotal: 17_000,
+      offerUnitPrice: 8_500,
+      hasDiscount: true,
+    });
+  });
 });

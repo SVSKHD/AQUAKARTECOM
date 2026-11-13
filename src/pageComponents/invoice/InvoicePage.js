@@ -319,7 +319,7 @@ const copyProductLink = async (href) => {
 // One compact line item: picture, name, the arithmetic and quick actions.
 const ProductRow = ({ product, index, onAsk }) => {
   const href = getProductHref(product);
-  const lineTotal = product.productPrice * product.productQuantity;
+  const line = priceUtils.getLineAmounts(product);
   const tags = [product.productCategory, product.productSubcategory].filter(
     Boolean,
   );
@@ -355,16 +355,30 @@ const ProductRow = ({ product, index, onAsk }) => {
         ) : null}
         <dl className={styles.lineFigures}>
           <div>
-            <dt>Unit price</dt>
-            <dd>{priceUtils.formatAmount(product.productPrice)}</dd>
+            <dt>{line.hasDiscount ? "Original price" : "Unit price"}</dt>
+            <dd className={line.hasDiscount ? styles.struckPrice : undefined}>
+              {priceUtils.formatAmount(product.productPrice)}
+            </dd>
           </div>
           <div>
             <dt>Qty</dt>
             <dd>× {product.productQuantity}</dd>
           </div>
+          {line.hasDiscount ? (
+            <>
+              <div className={styles.lineFigureDiscount}>
+                <dt>Discount</dt>
+                <dd>− {priceUtils.formatAmount(line.discount)}</dd>
+              </div>
+              <div>
+                <dt>Offer price</dt>
+                <dd>{priceUtils.formatAmount(line.offerUnitPrice)}</dd>
+              </div>
+            </>
+          ) : null}
           <div className={styles.lineFigureTotal}>
-            <dt>Line total</dt>
-            <dd>{priceUtils.formatAmount(lineTotal)}</dd>
+            <dt>{line.hasDiscount ? "Offer total" : "Line total"}</dt>
+            <dd>{priceUtils.formatAmount(line.offerTotal)}</dd>
           </div>
         </dl>
       </div>
@@ -1121,11 +1135,39 @@ const InvoicePage = ({
                 <FileText size={21} />
               </div>
 
+              {amounts.hasDiscount ? (
+                <div className={styles.discountRows}>
+                  <div>
+                    <span>Original price</span>
+                    <strong className={styles.struckPrice}>
+                      {priceUtils.formatAmount(amounts.originalTotal)}
+                    </strong>
+                  </div>
+                  <div className={styles.discountRowSaving}>
+                    <span>Discount</span>
+                    <strong>
+                      − {priceUtils.formatAmount(amounts.discountTotal)}
+                    </strong>
+                  </div>
+                  <div className={styles.discountRowOffer}>
+                    <span>Offer price</span>
+                    <strong>
+                      {priceUtils.formatAmount(amounts.grandTotal)}
+                    </strong>
+                  </div>
+                  <p>GST below is calculated on the offer price.</p>
+                </div>
+              ) : null}
+
               <div className={styles.summaryRows}>
                 <div className={styles.summaryPriceCell}>
                   <span>Base price</span>
                   <strong>{priceUtils.formatAmount(amounts.basePrice)}</strong>
-                  <small>Before applicable GST</small>
+                  <small>
+                    {amounts.hasDiscount
+                      ? "Offer price before GST"
+                      : "Before applicable GST"}
+                  </small>
                 </div>
                 <div className={styles.summaryPriceCell}>
                   <span>
@@ -1163,6 +1205,9 @@ const InvoicePage = ({
                 <span>Total amount</span>
                 <strong>{priceUtils.formatAmount(amounts.grandTotal)}</strong>
                 <small>
+                  {amounts.hasDiscount
+                    ? `You save ${priceUtils.formatAmount(amounts.discountTotal)} · `
+                    : ""}
                   {invoice.gst
                     ? "Base price + 18% GST"
                     : "Base price + included GST 18%"}

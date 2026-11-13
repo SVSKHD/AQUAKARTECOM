@@ -63,6 +63,18 @@ export const mapInvoiceFromApi = (payload) => {
         const rawQuantity = Math.trunc(
           toFiniteNumber(product?.productQuantity ?? product?.quantity, 1),
         );
+        const quantity = Math.max(rawQuantity, 1);
+        const unitPrice = Math.max(
+          toFiniteNumber(product?.productPrice ?? product?.unit_price, 0),
+          0,
+        );
+        const grossTotal = unitPrice * quantity;
+        // Quotations carry a discount amount for the whole line; the offer
+        // price is what the customer pays and GST is worked out on it.
+        const productDiscount = Math.min(
+          Math.max(toFiniteNumber(product?.productDiscount, 0), 0),
+          grossTotal,
+        );
 
         return {
           id: normalizeText(product?.id ?? product?._id, `item-${index + 1}`),
@@ -70,11 +82,10 @@ export const mapInvoiceFromApi = (payload) => {
             product?.productName ?? product?.name,
             `Product ${index + 1}`,
           ),
-          productQuantity: Math.max(rawQuantity, 1),
-          productPrice: Math.max(
-            toFiniteNumber(product?.productPrice ?? product?.unit_price, 0),
-            0,
-          ),
+          productQuantity: quantity,
+          productPrice: unitPrice,
+          productDiscount,
+          productTax: Math.max(toFiniteNumber(product?.productTax, 0), 0),
           productSerialNo: normalizeText(
             product?.productSerialNo ?? product?.serial_no,
           ),
@@ -97,10 +108,18 @@ export const mapInvoiceFromApi = (payload) => {
       })
     : [];
 
-  const computedTotal = products.reduce(
-    (sum, product) => sum + product.productPrice * product.productQuantity,
+  const discountAmount = Math.max(toFiniteNumber(inv.discount, 0), 0);
+  const taxAmount = Math.max(toFiniteNumber(inv.tax, 0), 0);
+  const linesTotal = products.reduce(
+    (sum, product) =>
+      sum +
+      product.productPrice * product.productQuantity -
+      product.productDiscount +
+      product.productTax,
     0,
   );
+  // Same arithmetic as the backend quotation totals.
+  const computedTotal = Math.max(linesTotal - discountAmount, 0) + taxAmount;
   const suppliedTotal = Number(inv.total_amount ?? inv.total);
   const totalAmount =
     products.length > 0
@@ -146,6 +165,8 @@ export const mapInvoiceFromApi = (payload) => {
     aquakart_invoice: normalizeBoolean(
       inv.aquakart_invoice ?? inv.aquakartInvoice,
     ),
+    discount_amount: discountAmount,
+    tax_amount: taxAmount,
     total_amount: totalAmount,
     created_at: createdAt,
   };

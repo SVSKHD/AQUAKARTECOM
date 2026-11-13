@@ -111,27 +111,74 @@ const priceUtils = {
 
   getInvoiceAmounts(invoice) {
     const products = Array.isArray(invoice?.products) ? invoice.products : [];
-    const itemsTotalPaise = products.reduce((total, product) => {
+    let itemsTotalPaise = 0;
+    let lineDiscountPaise = 0;
+    let linesPayablePaise = 0;
+    products.forEach((product) => {
       const unitPrice = toFiniteNumber(product?.productPrice);
       const rawQuantity = toFiniteNumber(product?.productQuantity, 1);
       const quantity = rawQuantity > 0 ? rawQuantity : 1;
-      return total + toPaise(unitPrice * quantity);
-    }, 0);
+      const grossPaise = toPaise(unitPrice * quantity);
+      const discountPaise = this.getLineAmounts(product).discountPaise;
+      itemsTotalPaise += grossPaise;
+      lineDiscountPaise += discountPaise;
+      linesPayablePaise +=
+        grossPaise - discountPaise + Math.max(toPaise(product?.productTax), 0);
+    });
+
+    // An overall discount (quotations) comes off after the line discounts.
+    const overallDiscountPaise = Math.min(
+      Math.max(toPaise(invoice?.discount_amount), 0),
+      linesPayablePaise,
+    );
+    const extraTaxPaise = Math.max(toPaise(invoice?.tax_amount), 0);
+    const payablePaise =
+      linesPayablePaise - overallDiscountPaise + extraTaxPaise;
 
     const suppliedTotal = Number(invoice?.total_amount);
     const grandTotalPaise =
       itemsTotalPaise > 0
-        ? itemsTotalPaise
+        ? payablePaise
         : Number.isFinite(suppliedTotal) && suppliedTotal >= 0
           ? toPaise(suppliedTotal)
           : 0;
+    // GST is always worked out on the offer (discounted) price.
     const tax = this.getGSTBreakdown(fromPaise(grandTotalPaise));
     const grandTotal = tax.basePrice + tax.gstValue;
+    const discountTotalPaise = lineDiscountPaise + overallDiscountPaise;
 
     return {
       itemsTotal: fromPaise(itemsTotalPaise),
+      originalTotal: fromPaise(
+        itemsTotalPaise > 0 ? itemsTotalPaise : grandTotalPaise,
+      ),
+      discountTotal: fromPaise(discountTotalPaise),
+      hasDiscount: discountTotalPaise > 0,
       grandTotal,
       ...tax,
+    };
+  },
+
+  /** Original, discount and offer totals for one line item. */
+  getLineAmounts(product) {
+    const unitPrice = toFiniteNumber(product?.productPrice);
+    const rawQuantity = toFiniteNumber(product?.productQuantity, 1);
+    const quantity = rawQuantity > 0 ? rawQuantity : 1;
+    const grossPaise = toPaise(unitPrice * quantity);
+    const discountPaise = Math.min(
+      Math.max(toPaise(product?.productDiscount), 0),
+      grossPaise,
+    );
+    const offerPaise =
+      grossPaise - discountPaise + Math.max(toPaise(product?.productTax), 0);
+
+    return {
+      discountPaise,
+      originalTotal: fromPaise(grossPaise),
+      discount: fromPaise(discountPaise),
+      offerTotal: fromPaise(offerPaise),
+      offerUnitPrice: fromPaise(Math.round(offerPaise / quantity)),
+      hasDiscount: discountPaise > 0,
     };
   },
 
