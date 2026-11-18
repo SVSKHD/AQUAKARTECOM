@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import logo from "@/assests/logo.png";
+import AssistantLauncher from "./AssistantLauncher";
 import AssistantReply from "./AssistantReply";
 import ThinkingSteps from "./ThinkingSteps";
 import SupportNote from "./SupportNote";
@@ -292,6 +293,10 @@ const AssistantWidget = ({ pathname = "" }) => {
   // Logged-in customers send their token (5 questions a day); guests get 3.
   const token = useSelector((state) => state.userData?.token) || null;
   const reduceMotion = useReducedMotion();
+  const openFromLauncher = useCallback(
+    () => dispatch({ type: "OPEN_ASSISTANT", payload: {} }),
+    [dispatch],
+  );
   const titleId = useId();
   const panelId = useId();
 
@@ -731,28 +736,14 @@ const AssistantWidget = ({ pathname = "" }) => {
 
       <AnimatePresence>
         {!open && (
-          <motion.button
+          <AssistantLauncher
             key="fab"
             ref={fabRef}
-            type="button"
-            onClick={() => dispatch({ type: "OPEN_ASSISTANT", payload: {} })}
-            aria-label="Open AquaKart assistant"
-            aria-haspopup="dialog"
-            aria-expanded={false}
-            aria-controls={panelId}
-            initial={reduceMotion ? false : { opacity: 0, y: 16, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={
-              reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.9 }
-            }
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="aq-assist-fab group fixed right-4 print:hidden z-[80] inline-flex h-14 items-center gap-2 rounded-full bg-slate-950 pl-2 pr-2 text-white shadow-[0_18px_45px_rgba(2,6,23,0.35)] ring-1 ring-white/10 transition hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/60 sm:right-6 sm:pr-5"
-          >
-            <AssistantAvatar size="h-10 w-10" />
-            <span className="hidden text-sm font-black tracking-tight sm:inline">
-              Ask AquaKart
-            </span>
-          </motion.button>
+            avatar={<AssistantAvatar size="h-10 w-10" />}
+            onOpen={openFromLauncher}
+            reduceMotion={reduceMotion}
+            panelId={panelId}
+          />
         )}
       </AnimatePresence>
 

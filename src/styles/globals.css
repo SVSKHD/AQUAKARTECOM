@@ -697,3 +697,172 @@ body {
 body:has([data-invoice-mobile-bar]) .aq-assist-fab {
   display: none;
 }
+
+/* "Slide to ask" launcher (AssistantLauncher.jsx). */
+.aq-launch {
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+.aq-launch-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+}
+.aq-launch-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #10bfa4, #34d399);
+  opacity: 0.28;
+  pointer-events: none;
+}
+.aq-launch-knob {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+}
+/* The avatar image must not start a native image drag (it cancels the
+   slide's pointer events). */
+.aq-launch-knob * {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.aq-launch-knob:active {
+  cursor: grabbing;
+}
+.aq-launch-knob > span:last-child {
+  position: relative;
+  z-index: 1;
+}
+/* A ring rolling out from the avatar every few seconds. */
+.aq-launch-ping {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55);
+  animation: aqLaunchPing 2.8s ease-out infinite;
+}
+@keyframes aqLaunchPing {
+  0% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 14px rgba(52, 211, 153, 0);
+  }
+}
+.aq-launch-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 220px;
+  padding-right: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition:
+    max-width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.3s;
+}
+.aq-launch-hint {
+  position: relative;
+  display: inline-grid;
+  min-width: 128px;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 20px;
+}
+/* "Slide to unlock" shimmer across the words. */
+.aq-launch-text {
+  display: block;
+  background: linear-gradient(
+    100deg,
+    #ffffff 0%,
+    #ffffff 40%,
+    #6ee7b7 50%,
+    #ffffff 60%,
+    #ffffff 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: aqLaunchShimmer 2.6s linear infinite;
+}
+@keyframes aqLaunchShimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+.aq-launch-chevrons {
+  display: inline-flex;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  color: #6ee7b7;
+}
+.aq-launch-chevrons i {
+  font-style: normal;
+  margin-left: -2px;
+  opacity: 0.25;
+  animation: aqLaunchChevron 1.4s ease-in-out infinite;
+}
+.aq-launch-chevrons i:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.aq-launch-chevrons i:nth-child(3) {
+  animation-delay: 0.36s;
+}
+@keyframes aqLaunchChevron {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(3px);
+  }
+}
+/* Phones, after a moment: just the round avatar. */
+.aq-launch[data-compact="true"] .aq-launch-label {
+  max-width: 0;
+  padding-right: 0;
+  opacity: 0 !important;
+}
+.aq-launch[data-compact="true"] .aq-launch-track {
+  gap: 0;
+}
+.aq-launch[data-opening="true"] .aq-launch-fill {
+  opacity: 0.5;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aq-launch-ping,
+  .aq-launch-text,
+  .aq-launch-chevrons i {
+    animation: none;
+  }
+  .aq-launch-text {
+    color: #fff;
+    background: none;
+  }
+  .aq-launch-chevrons i {
+    opacity: 0.8;
+  }
+}

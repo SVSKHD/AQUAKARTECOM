@@ -3,6 +3,10 @@ export const SUPPORT_PHONE_DISPLAY = "+91 90147 74667";
 export const SUPPORT_TEL = "tel:+919014774667";
 const SUPPORT_WHATSAPP = "919014774667";
 
+// A WhatsApp chat with support, with this message pre-filled.
+export const supportWhatsAppMessageUrl = (text: string) =>
+  `https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent(text.slice(0, 500))}`;
+
 // Shown with AI answers: the assistant shortlists, support confirms.
 export const AI_SUPPORT_NOTE =
   "AI suggestions help you shortlist models. For accurate prices, stock, sizing and installation, please confirm with AquaKart support.";

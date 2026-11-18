@@ -118,7 +118,7 @@ export function startCheckoutPayment(
   token: string | null | undefined,
   idempotencyKey: string,
 ) {
-  const popup = window.open("", "aquakart-phonepe", "width=480,height=760");
+  const popup = openPaymentWindow();
   const started = (async () => {
     try {
       const body = await prepare();
@@ -219,7 +219,7 @@ export type PollOptions = {
   onCheck?: (r: Check) => void;
 };
 
-function pollUntilSettled(
+export function pollUntilSettled(
   check: (signal: AbortSignal) => Promise<Check>,
   { intervalMs = 3000, timeoutMs = 15 * 60000, onCheck }: PollOptions = {},
 ) {
@@ -280,3 +280,10 @@ export const waitForCheckoutPayment = (
 // Message the PhonePe window sends back to the Aqua tab (see pages/order/[id].js).
 export const PAYMENT_RETURN_MESSAGE = "aqua-payment-return";
 export const PAYMENT_WINDOW_NAME = "aquakart-phonepe";
+const PAYMENT_WINDOW_FEATURES = "width=480,height=760";
+
+// The named PhonePe window, opened empty. Call synchronously from a click
+// handler (before any await) or popup blockers refuse it; null when blocked.
+export function openPaymentWindow(url = ""): Window | null {
+  return window.open(url, PAYMENT_WINDOW_NAME, PAYMENT_WINDOW_FEATURES);
+}

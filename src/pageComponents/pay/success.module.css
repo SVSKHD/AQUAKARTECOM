@@ -1,0 +1,748 @@
+/* /pay/[token]/success (PaidReceipt.tsx). Tokens (--aq-*, --pay-*) come from
+   .page in pay.module.css, which wraps this page. */
+
+.wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- hero: check, confetti, amount ---------- */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding-bottom: 6px;
+}
+.seal {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin-bottom: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+}
+.seal:hover {
+  transform: scale(1.05);
+}
+.seal:active {
+  transform: scale(0.95);
+}
+.seal:focus-visible {
+  outline: 3px solid rgba(16, 191, 164, 0.5);
+  outline-offset: 6px;
+}
+.checkSvg {
+  position: relative;
+  z-index: 1;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10bfa4, #008b68);
+  box-shadow: 0 18px 40px -12px rgba(0, 139, 104, 0.7);
+  animation: sealPop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+.checkCircle {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.45);
+  stroke-width: 2;
+  stroke-dasharray: 151;
+  stroke-dashoffset: 151;
+  animation: draw 0.7s 0.15s ease-out forwards;
+}
+.checkMark {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 36;
+  stroke-dashoffset: 36;
+  animation: draw 0.45s 0.55s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+.ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(16, 191, 164, 0.45);
+  animation: ripple 2.6s 0.6s ease-out infinite;
+}
+.ripple2 {
+  animation-delay: 1.9s;
+}
+.confetti {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.confetti i {
+  position: absolute;
+  left: -4px;
+  top: -6px;
+  width: 8px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--c);
+  opacity: 0;
+  animation: burst 1.3s var(--delay) cubic-bezier(0.15, 0.7, 0.35, 1) forwards;
+}
+.confetti i:nth-child(3n) {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pay-green);
+  animation: rise 0.5s 0.3s both;
+}
+.title {
+  margin: 0;
+  font-family:
+    var(--font-bricolage), var(--font-jakarta), system-ui, sans-serif;
+  font-size: clamp(26px, 6vw, 32px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  animation: rise 0.5s 0.38s both;
+}
+.amount {
+  margin: 4px 0 2px;
+  font-family:
+    var(--font-bricolage), var(--font-jakarta), system-ui, sans-serif;
+  font-size: clamp(34px, 9vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(100deg, #006e53, #10bfa4 50%, #1565c0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: rise 0.5s 0.45s both;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  animation: rise 0.5s 0.52s both;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--aq-body);
+  background: var(--aq-tint);
+  border: 1px solid var(--aq-bd);
+}
+.chip svg {
+  width: 14px;
+  height: 14px;
+  color: var(--pay-green);
+}
+
+/* ---------- cards ---------- */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid var(--aq-bd);
+  box-shadow: 0 10px 30px -22px rgba(8, 74, 84, 0.5);
+  animation: rise 0.55s both;
+}
+.card:nth-of-type(2) {
+  animation-delay: 0.6s;
+}
+.card:nth-of-type(3) {
+  animation-delay: 0.7s;
+}
+.card:nth-of-type(4) {
+  animation-delay: 0.8s;
+}
+.cardTitle {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--aq-ink);
+}
+.cardTitle svg {
+  width: 18px;
+  height: 18px;
+  color: var(--pay-green);
+}
+.cardToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: -6px;
+  padding: 6px;
+  width: calc(100% + 12px);
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cardToggle:hover {
+  background: var(--aq-tint);
+}
+.cardToggle:focus-visible {
+  outline: 3px solid rgba(16, 191, 164, 0.45);
+}
+.chev {
+  width: 20px;
+  height: 20px;
+  color: var(--aq-mut);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.chevOpen {
+  transform: rotate(180deg);
+}
+.collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.collapse > * {
+  overflow: hidden;
+}
+.collapse.open {
+  grid-template-rows: 1fr;
+}
+
+/* ---------- timeline ---------- */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.tStep {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding-bottom: 18px;
+  animation: rise 0.45s calc(0.7s + var(--i) * 0.12s) both;
+}
+.tStep:last-child {
+  padding-bottom: 0;
+}
+/* The line joining one dot to the next. */
+.tStep:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 17px;
+  top: 38px;
+  bottom: 2px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--aq-bd);
+}
+.tStep.done:not(:last-child)::after {
+  background: linear-gradient(180deg, #10bfa4, var(--aq-bd));
+}
+.tDot {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--aq-mut2);
+  background: var(--aq-tint);
+  border: 2px solid var(--aq-bd);
+  transition:
+    background 0.3s,
+    color 0.3s,
+    border-color 0.3s;
+}
+.tDot svg {
+  width: 17px;
+  height: 17px;
+}
+.done .tDot {
+  color: #fff;
+  background: linear-gradient(135deg, #10bfa4, #008b68);
+  border-color: transparent;
+  animation: sealPop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+.active .tDot {
+  color: var(--pay-green);
+  background: var(--aq-mint);
+  border-color: var(--aq-mintbd);
+  box-shadow: 0 0 0 0 rgba(16, 191, 164, 0.4);
+  animation: glow 2s ease-out infinite;
+}
+.tSpin {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(0, 139, 104, 0.25);
+  border-top-color: var(--pay-green);
+  animation: spin 0.9s linear infinite;
+}
+.tText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 7px;
+  min-width: 0;
+}
+.tText strong {
+  font-size: 14.5px;
+  font-weight: 800;
+}
+.tText span {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--aq-mut);
+}
+.next .tText strong {
+  color: var(--aq-mut);
+}
+
+/* ---------- order items ---------- */
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 2px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.items li {
+  animation: rise 0.4s calc(var(--i) * 0.06s) both;
+}
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+}
+a.item:hover {
+  background: var(--aq-tint);
+  border-color: var(--aq-bd);
+  transform: translateX(2px);
+}
+a.item:focus-visible {
+  outline: 3px solid rgba(16, 191, 164, 0.45);
+}
+.thumb {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  padding: 5px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid var(--aq-bd);
+  overflow: hidden;
+  color: var(--aq-mut2);
+}
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.thumb svg {
+  width: 24px;
+  height: 24px;
+}
+.itemText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.itemText strong {
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.itemText span {
+  font-size: 12.5px;
+  color: var(--aq-mut);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qty {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--aq-mintink);
+  background: var(--aq-mint);
+}
+
+/* ---------- receipt facts ---------- */
+.facts {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+.fact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px dashed var(--aq-bd);
+}
+.fact:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.fact dt {
+  font-size: 13.5px;
+  color: var(--aq-mut);
+}
+.fact dd {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.factValue {
+  font-size: 14px;
+  font-weight: 800;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.pending {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--aq-mut);
+  animation: breathe 1.6s ease-in-out infinite;
+}
+.copy {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--aq-bd);
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--aq-body);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+.copy svg {
+  width: 13px;
+  height: 13px;
+}
+.copy:hover {
+  border-color: var(--aq-mintbd);
+  color: var(--aq-mintink);
+}
+.copy:focus-visible {
+  outline: 3px solid rgba(16, 191, 164, 0.45);
+}
+.copied {
+  color: #fff;
+  background: var(--pay-green);
+  border-color: var(--pay-green);
+  animation: sealPop 0.3s both;
+}
+.copied:hover {
+  color: #fff;
+}
+
+/* ---------- actions ---------- */
+.actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  animation: rise 0.5s 0.9s both;
+}
+.btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    box-shadow 0.2s,
+    background 0.2s;
+}
+.btn svg {
+  width: 18px;
+  height: 18px;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn:focus-visible {
+  outline: 3px solid rgba(16, 191, 164, 0.5);
+  outline-offset: 2px;
+}
+.primary {
+  color: #fff;
+  border: 0;
+  background: linear-gradient(135deg, #10bfa4, #008b68);
+  box-shadow: 0 12px 26px -12px rgba(0, 139, 104, 0.8);
+}
+.primary:hover {
+  box-shadow: 0 16px 32px -12px rgba(0, 139, 104, 0.9);
+}
+/* A light sweep across the main button. */
+.primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  animation: sweep 3.2s 1.4s ease-in-out infinite;
+}
+.ghost {
+  color: var(--aq-ink);
+  border: 1px solid var(--aq-bd);
+  background: #fff;
+}
+.ghost:hover {
+  background: var(--aq-tint);
+  border-color: var(--aq-mintbd);
+}
+
+.help {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 14px;
+  font-size: 13.5px;
+  color: var(--aq-mut);
+  animation: rise 0.5s 1s both;
+}
+.helpLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  color: var(--aq-mintink);
+  text-decoration: none;
+  background: var(--aq-mint);
+  transition: transform 0.15s;
+}
+.helpLink:hover {
+  transform: translateY(-1px);
+}
+.helpLink svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ---------- motion ---------- */
+@keyframes sealPop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes ripple {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+@keyframes burst {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0) scale(0.6);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), calc(var(--dy) + 60px)) rotate(var(--rot))
+      scale(1);
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 191, 164, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(16, 191, 164, 0);
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes breathe {
+  50% {
+    opacity: 0.45;
+  }
+}
+@keyframes sweep {
+  0%,
+  60% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrap *,
+  .wrap *::before,
+  .wrap *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .checkCircle,
+  .checkMark {
+    stroke-dashoffset: 0;
+  }
+  .confetti {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 14px;
+  }
+  .actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Print: just the receipt. */
+@media print {
+  .confetti,
+  .ripple,
+  .actions,
+  .help,
+  .copy,
+  .chev {
+    display: none !important;
+  }
+  .wrap *,
+  .wrap *::before,
+  .wrap *::after {
+    animation: none !important;
+  }
+  .checkCircle,
+  .checkMark {
+    stroke-dashoffset: 0;
+  }
+  .collapse {
+    grid-template-rows: 1fr;
+  }
+  .card {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+}
