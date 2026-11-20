@@ -4267,3 +4267,124 @@
     display: none !important;
   }
 }
+
+/* Logged-out quick view on the "Login to download invoice" screen. */
+.quickView {
+  margin: 22px 0 0;
+  padding: 16px 18px;
+  border: 1px solid #dce8e5;
+  border-radius: 20px;
+  text-align: left;
+  background: white;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.quickViewHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quickViewLabel {
+  display: block;
+  color: var(--invoice-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.quickViewNumber {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  color: var(--invoice-ink);
+  font-size: 1rem;
+  word-break: break-all;
+}
+
+.quickViewMeta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.quickViewMeta div {
+  min-width: 0;
+}
+
+.quickViewMeta dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--invoice-muted);
+  font-size: 0.7rem;
+}
+
+.quickViewMeta dd {
+  margin: 2px 0 0;
+  color: var(--invoice-ink);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.quickViewItems {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px dashed #dce8e5;
+  list-style: none;
+}
+
+.quickViewItems li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--invoice-ink);
+  font-size: 0.8rem;
+}
+
+.quickViewItems li > span:first-of-type {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quickViewItems svg {
+  flex: none;
+  color: var(--invoice-green);
+}
+
+.quickViewQty {
+  flex: none;
+  color: var(--invoice-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.quickViewMore {
+  color: var(--invoice-muted);
+  font-size: 0.74rem;
+}
+
+.quickViewTotal {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #dce8e5;
+  color: var(--invoice-muted);
+  font-size: 0.78rem;
+}
+
+.quickViewTotal strong {
+  color: var(--invoice-ink);
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+}

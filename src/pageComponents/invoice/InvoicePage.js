@@ -45,6 +45,11 @@ import { useAuth } from "@/context/AuthContext";
 import InvoiceServiceOperations from "@/services/invoice";
 import { openDirectInvoiceAccess } from "@/features/invoiceAccess/directInvoice";
 import {
+  clearDownloadAfterLogin,
+  consumeDownloadAfterLogin,
+  requestDownloadAfterLogin,
+} from "@/features/invoiceAccess/autoDownload";
+import {
   bankCopyDetails,
   bankPaymentMethods,
   customerCare,
@@ -71,6 +76,7 @@ import {
 } from "@/utils/invoice/recommendProducts";
 import {
   closePdfDownloadTarget,
+  needsTapToDownloadPdf,
   preparePdfDownloadTarget,
 } from "@/utils/pdfDownload";
 import styles from "@/styles/invoice.module.css";
@@ -93,9 +99,83 @@ const titleCase = (value) =>
     .replace(/[_-]+/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
+const PREVIEW_PRODUCTS = 3;
+
+// Logged-out quick view shown above "Login to download invoice": number,
+// date, status, items and total. Contact details appear only after login.
+const InvoiceQuickView = ({ preview }) => {
+  const asInvoice = {
+    paid_status: String(preview.paidStatus || "unpaid").toLowerCase(),
+    quotation: preview.documentType === "quotation",
+    po: preview.documentType === "purchase-order",
+    gst: preview.gst,
+  };
+  const { name: documentName } = getDocumentKind(asInvoice);
+  const status = getDocumentStatus(asInvoice);
+  const products = preview.products || [];
+  const shown = products.slice(0, PREVIEW_PRODUCTS);
+  const more = Math.max(0, (preview.itemCount || 0) - shown.length);
+
+  return (
+    <section
+      className={styles.quickView}
+      aria-label={`${documentName} quick view`}
+      data-invoice-quick-view
+    >
+      <header className={styles.quickViewHeader}>
+        <div>
+          <span className={styles.quickViewLabel}>{documentName}</span>
+          <strong className={styles.quickViewNumber}>
+            <Hash size={14} aria-hidden="true" />
+            {preview.invoiceNo}
+          </strong>
+        </div>
+        {status ? <StatusPill status={status} /> : null}
+      </header>
+      <dl className={styles.quickViewMeta}>
+        <div>
+          <dt>
+            <CalendarDays size={14} aria-hidden="true" /> Date
+          </dt>
+          <dd>{formatDate(preview.date)}</dd>
+        </div>
+        {preview.customerName ? (
+          <div>
+            <dt>
+              <BadgeCheck size={14} aria-hidden="true" /> Billed to
+            </dt>
+            <dd>{preview.customerName}</dd>
+          </div>
+        ) : null}
+      </dl>
+      {shown.length ? (
+        <ul className={styles.quickViewItems}>
+          {shown.map((product, index) => (
+            <li key={`${product.name}-${index}`}>
+              <Package size={14} aria-hidden="true" />
+              <span>{product.name}</span>
+              <span className={styles.quickViewQty}>× {product.quantity}</span>
+            </li>
+          ))}
+          {more ? (
+            <li className={styles.quickViewMore}>
+              + {more} more item{more === 1 ? "" : "s"}
+            </li>
+          ) : null}
+        </ul>
+      ) : null}
+      <footer className={styles.quickViewTotal}>
+        <span>Total</span>
+        <strong>{priceUtils.formatAmount(preview.total_price)}</strong>
+      </footer>
+    </section>
+  );
+};
+
 const InvoiceError = ({ statusCode, onAccessGranted }) => {
   const router = useRouter();
   const { adoptGoogleSession } = useAuth();
+  const [preview, setPreview] = useState(null);
   const [checkingSession, setCheckingSession] = useState(true);
   const [hasGoogleSession, setHasGoogleSession] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
@@ -184,19 +264,36 @@ const InvoiceError = ({ statusCode, onAccessGranted }) => {
     };
   }, [requestDirectAccess, routeId, unauthorized]);
 
+  // Quick view for the sign-in screen; the screen works without it.
+  useEffect(() => {
+    if (!unauthorized || !routeId) return undefined;
+    const controller = new AbortController();
+    InvoiceServiceOperations.getInvoicePreview?.(routeId, controller.signal)
+      .then((result) => {
+        if (!controller.signal.aborted) setPreview(result || null);
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [routeId, unauthorized]);
+
   const continueWithGoogle = async () => {
     if (authBusy) return;
 
     setSigningIn(true);
     setAccessError("");
+    // The full invoice starts the PDF once this login grants access, also
+    // after a Google redirect round-trip.
+    requestDownloadAfterLogin(routeId);
     try {
       const result = await loginWithGoogleForInvoice();
       if (!result?.redirecting) {
         setHasGoogleSession(true);
         attemptedDirectAccess.current = false;
-        await requestDirectAccess(result.firebaseIdToken);
+        const opened = await requestDirectAccess(result.firebaseIdToken);
+        if (!opened) clearDownloadAfterLogin();
       }
     } catch (error) {
+      clearDownloadAfterLogin();
       setAccessError(
         error?.response?.data?.message ||
           error?.message ||
@@ -214,8 +311,8 @@ const InvoiceError = ({ statusCode, onAccessGranted }) => {
       : signingIn
         ? "Continuing with Google…"
         : hasGoogleSession
-          ? "Open invoice"
-          : "Continue with Google";
+          ? "Open invoice to download"
+          : "Login to download invoice";
 
   return (
     <div className={styles.errorPage}>
@@ -249,11 +346,14 @@ const InvoiceError = ({ statusCode, onAccessGranted }) => {
               ? "We are checking your existing Google session and will open the invoice automatically."
               : hasGoogleSession
                 ? "You are signed in. We are securely opening this invoice with your verified email."
-                : "Continue with Google once to securely view and download your invoice."
+                : preview
+                  ? "Here is a quick look. Log in with Google to see the full invoice and download the PDF."
+                  : "Continue with Google once to securely view and download your invoice."
             : notFound
               ? "Check the invoice link and try again. The ID may be incomplete or no longer available."
               : "We could not reach the invoice service. Please wait a moment and try again."}
         </p>
+        {unauthorized && preview ? <InvoiceQuickView preview={preview} /> : null}
         {clientAccessMessage ? (
           <p className={styles.accessError} role="alert">
             {clientAccessMessage}
@@ -786,7 +886,10 @@ const InvoicePage = ({
   statusCode = 200,
   onAccessGranted,
 }) => {
+  const router = useRouter();
   const [isDownloading, setIsDownloading] = useState(false);
+  const downloadingRef = useRef(false);
+  const autoDownloadChecked = useRef(false);
   const [copied, setCopied] = useState(false);
   const [copiedPayment, setCopiedPayment] = useState("");
   const {
@@ -822,23 +925,10 @@ const InvoicePage = ({
     return () => setAssistantContext(null);
   }, [hasInvoice, invoice, recommendations, setAssistantContext]);
 
-  if (!hasInvoice) {
-    return (
-      <InvoiceError statusCode={statusCode} onAccessGranted={onAccessGranted} />
-    );
-  }
-
-  const amounts = priceUtils.getInvoiceAmounts(invoice);
-  // Unpaid sales read as an invoice, paid ones as a receipt.
-  const { name: documentName, title: documentTitle } = getDocumentKind(invoice);
-  const docStatus = getDocumentStatus(invoice);
-  const isPaid = docStatus.key === "paid";
-  const documentLabel = invoice.invoice_no || invoice.id || documentName;
-  const customerDisplayName =
-    invoice.customer_name || invoice.gst_name || "valued customer";
-
-  const handleDownload = async () => {
-    if (isDownloading) return;
+  const downloadPdf = useCallback(async () => {
+    if (!hasInvoice || downloadingRef.current) return;
+    downloadingRef.current = true;
+    const { name: documentName } = getDocumentKind(invoice);
 
     // Preserve the original tap on iOS before dynamic import/PDF generation.
     // WebKit can otherwise discard a download that starts after async work.
@@ -861,9 +951,48 @@ const InvoicePage = ({
       console.error("Invoice PDF download failed", error);
       toast.error("PDF download failed. Please use Print instead.");
     } finally {
+      downloadingRef.current = false;
       setIsDownloading(false);
     }
-  };
+  }, [hasInvoice, invoice]);
+
+  // "Login to download invoice": once that login opens the invoice, start
+  // the PDF. iOS and in-app browsers need a tap to save a file, so they get
+  // a one-tap prompt instead.
+  const routeId = Array.isArray(router.query.id)
+    ? router.query.id[0]
+    : router.query.id;
+  useEffect(() => {
+    if (!hasInvoice || autoDownloadChecked.current) return;
+    autoDownloadChecked.current = true;
+    if (!consumeDownloadAfterLogin(routeId)) return;
+    if (needsTapToDownloadPdf()) {
+      toast("Your invoice is ready", {
+        description: "Tap Download PDF to save it.",
+        action: { label: "Download PDF", onClick: () => void downloadPdf() },
+        duration: 20000,
+      });
+      return;
+    }
+    void downloadPdf();
+  }, [downloadPdf, hasInvoice, routeId]);
+
+  if (!hasInvoice) {
+    return (
+      <InvoiceError statusCode={statusCode} onAccessGranted={onAccessGranted} />
+    );
+  }
+
+  const amounts = priceUtils.getInvoiceAmounts(invoice);
+  // Unpaid sales read as an invoice, paid ones as a receipt.
+  const { name: documentName, title: documentTitle } = getDocumentKind(invoice);
+  const docStatus = getDocumentStatus(invoice);
+  const isPaid = docStatus.key === "paid";
+  const documentLabel = invoice.invoice_no || invoice.id || documentName;
+  const customerDisplayName =
+    invoice.customer_name || invoice.gst_name || "valued customer";
+
+  const handleDownload = downloadPdf;
 
   // Opens the drawer on its purchase questions; nothing is sent until the
   // customer taps a question or presses send.

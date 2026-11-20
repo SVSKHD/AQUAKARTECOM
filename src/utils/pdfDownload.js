@@ -32,6 +32,11 @@ const getBrowserInfo = () => {
 
 const isIosBrowser = () => getBrowserInfo().isIos;
 
+// iOS and in-app browsers only save a file from a user tap, so a download
+// started automatically (after login) needs a tap there instead.
+export const needsTapToDownloadPdf = () =>
+  getBrowserInfo().needsPreparedTarget;
+
 export const normalizePdfFileName = (fileName) => {
   const safeName = String(fileName || "Aquakart-Invoice.pdf")
     .trim()
