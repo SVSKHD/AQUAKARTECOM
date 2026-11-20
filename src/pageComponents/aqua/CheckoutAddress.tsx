@@ -35,15 +35,35 @@ type Props = {
   // Guests type straight into the order's address.
   onChange: (patch: Partial<Address>) => void;
   // Saves a new address to the account; resolves with the stored copy.
-  onSave?: (address: Address) => Promise<Address>;
+  // `makeDefault` also makes it the account's default.
+  onSave?: (address: Address, makeDefault?: boolean) => Promise<Address>;
   // Edit or delete a saved address (by its place in `saved`).
-  onEdit?: (index: number, address: Address) => Promise<Address>;
+  onEdit?: (
+    index: number,
+    address: Address,
+    makeDefault?: boolean,
+  ) => Promise<Address>;
   onRemove?: (index: number) => Promise<Address[]>;
+  // Makes a saved address the account's default (the "Default" switch).
+  onMakeDefault?: (index: number) => Promise<Address[]>;
   // The new-address form is open (checkout waits for it to be confirmed).
   onAddingChange: (adding: boolean) => void;
 };
 
 const filled = hasAddress;
+
+// On/off switch, styled like the other Aqua switches.
+function Switch({ on }: { on: boolean }) {
+  return (
+    <span
+      className="aq-dock-switch aq-addr-switch"
+      data-on={on}
+      aria-hidden="true"
+    >
+      <span />
+    </span>
+  );
+}
 const trimmed = (a: Address): Address => {
   const c = cleanAddress(a);
   return {
@@ -139,6 +159,7 @@ export default function CheckoutAddress({
   onSave,
   onEdit,
   onRemove,
+  onMakeDefault,
   onAddingChange,
 }: Props) {
   // Account data can hold partial addresses: normalise before any `.trim()`.
@@ -151,6 +172,10 @@ export default function CheckoutAddress({
   );
   const [form, setForm] = useState<Address>(emptyAddress);
   const [keep, setKeep] = useState(true);
+  // The form's "Make this my default address" switch.
+  const [asDefault, setAsDefault] = useState(false);
+  // The saved address being made the default (its index).
+  const [defaulting, setDefaulting] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [touched, setTouched] = useState(false);
@@ -187,6 +212,7 @@ export default function CheckoutAddress({
   const openForm = (start: Address, edit: number | "draft" | null) => {
     setForm(trimmed(start));
     setKeep(true);
+    setAsDefault(false);
     setError("");
     setRowError("");
     setDeleting(null);
@@ -214,10 +240,12 @@ export default function CheckoutAddress({
     setBusy(true);
     setError("");
     try {
+      // The default flag is passed only when the switch is on.
+      const flag: [] | [true] = asDefault ? [true] : [];
       const stored =
         index !== null && onEdit
-          ? await onEdit(index, trimmed(form))
-          : await onSave!(trimmed(form));
+          ? await onEdit(index, trimmed(form), ...flag)
+          : await onSave!(trimmed(form), ...flag);
       onPick(stored, stored._id ?? null);
       closeForm();
     } catch (e) {
@@ -255,8 +283,30 @@ export default function CheckoutAddress({
     }
   };
 
+  const makeDefault = async (i: number) => {
+    if (!onMakeDefault || defaulting !== null) return;
+    setDefaulting(i);
+    setRowError("");
+    try {
+      await onMakeDefault(i);
+    } catch (e) {
+      setRowError(
+        (e as Error)?.message ||
+          "Couldn't change the default address just now.",
+      );
+    } finally {
+      setDefaulting(null);
+    }
+  };
+
   const formIssues = touched ? deliveryIssues(form) : [];
   const editingSaved = typeof editing === "number";
+  // The form can make the address the default unless it already is.
+  const canMakeFormDefault =
+    !!onMakeDefault &&
+    (editing === null
+      ? !!onSave && keep
+      : editingSaved && !sameAddress(saved[editing], defaultAddress));
 
   return (
     <fieldset className="aq-addr" aria-labelledby={legendId}>
@@ -282,6 +332,7 @@ export default function CheckoutAddress({
                 key={a._id || addressLine(a) || i}
                 className="aq-addr-item"
                 data-undeliverable={issues.length > 0}
+                data-has-default={!!onMakeDefault && deleting !== i}
               >
                 <button
                   type="button"
@@ -315,6 +366,28 @@ export default function CheckoutAddress({
                     <Issue issues={issues} />
                   </span>
                 </button>
+
+                {onMakeDefault && deleting !== i && (
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isDefault}
+                    aria-label={`Default address: ${label}`}
+                    className="aq-addr-default"
+                    // There is always one default: turn another one on instead.
+                    disabled={isDefault || defaulting !== null || rowBusy}
+                    aria-busy={defaulting === i}
+                    title={
+                      isDefault
+                        ? "Your default address. Turn on another one to change it."
+                        : "Make this my default address"
+                    }
+                    onClick={() => void makeDefault(i)}
+                  >
+                    <Switch on={isDefault || defaulting === i} />
+                    <span>{defaulting === i ? "Saving…" : "Default"}</span>
+                  </button>
+                )}
 
                 {deleting === i ? (
                   <div className="aq-addr-confirm" role="alert">
@@ -427,6 +500,11 @@ export default function CheckoutAddress({
           )}
         </div>
       )}
+      {rowError && deleting === null && (
+        <span className="aq-addr-error" role="alert">
+          {rowError}
+        </span>
+      )}
 
       {adding ? (
         <form
@@ -460,6 +538,18 @@ export default function CheckoutAddress({
               />
               Save to my addresses for next time
             </label>
+          )}
+          {canMakeFormDefault && (
+            <button
+              type="button"
+              role="switch"
+              aria-checked={asDefault}
+              className="aq-addr-default aq-addr-default-form"
+              onClick={() => setAsDefault((v) => !v)}
+            >
+              <Switch on={asDefault} />
+              <span>Make this my default address</span>
+            </button>
           )}
           {missing.length > 0 && (
             <span className="aq-addr-error" role="alert">

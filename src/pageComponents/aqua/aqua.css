@@ -8324,6 +8324,59 @@ button.aq-pf-buy {
   outline: 2px solid var(--aq-mintink);
   outline-offset: 1px;
 }
+/* "Default" switch: bottom of a saved card, lined up with its text. */
+.aq-addr-item[data-has-default="true"] > .aq-addr-card {
+  padding-bottom: 40px;
+}
+.aq-addr-default {
+  position: absolute;
+  left: 34px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 6px 4px 4px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--aq-mut);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.aq-addr-default[aria-checked="true"] {
+  color: var(--aq-mintink);
+}
+.aq-addr-default:not(:disabled):hover {
+  background: rgba(var(--aq-ln), 0.07);
+  color: var(--aq-ink);
+}
+.aq-addr-default:disabled {
+  cursor: default;
+}
+.aq-addr-default:focus-visible {
+  outline: 2px solid var(--aq-mintink);
+  outline-offset: 1px;
+}
+.aq-addr-default .aq-addr-switch {
+  width: 30px;
+  height: 17px;
+}
+.aq-addr-default .aq-addr-switch span {
+  width: 13px;
+  height: 13px;
+}
+.aq-addr-default .aq-addr-switch[data-on="true"] span {
+  left: 15px;
+}
+/* In the add / edit form it sits in the flow, under the save checkbox. */
+.aq-addr-default-form {
+  position: static;
+  align-self: flex-start;
+  font-size: 13px;
+  color: var(--aq-ink);
+}
 .aq-addr-issue {
   display: flex;
   align-items: flex-start;
