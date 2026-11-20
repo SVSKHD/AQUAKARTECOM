@@ -12,6 +12,7 @@ import {
   getGoogleProvider,
   isFirebaseConfigured,
 } from "@/lib/firebase/client";
+import { disableGoogleAutoSelect } from "@/services/googleOneTap";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
 const AUTH_REQUEST_TIMEOUT_MS = 6_000;
@@ -149,7 +150,41 @@ export const completeGoogleRedirectLogin = async () => {
   return credential ? exchangeGoogleUser(credential.user) : null;
 };
 
-export const restoreExistingGoogleLogin = async () => {
+// A stored Aquakart session is reused on page load (no new exchange with the
+// backend) while it has more than this left; nearer expiry it is renewed.
+export const SESSION_RENEW_BEFORE_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Expiry (ms since epoch) of an Aquakart session token, read from the JWT
+// payload; null when it can't be read. Only used to decide when to renew:
+// the backend still verifies every token.
+export const sessionExpiresAt = (token) => {
+  try {
+    const part = String(token || "").split(".")[1];
+    if (!part) return null;
+    const json = JSON.parse(
+      atob(
+        part
+          .replace(/-/g, "+")
+          .replace(/_/g, "/")
+          .padEnd(Math.ceil(part.length / 4) * 4, "="),
+      ),
+    );
+    return typeof json.exp === "number" ? json.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+};
+
+// The stored session can be used as is for this Firebase user: same Google
+// account and not close to expiry.
+export const canReuseSession = (session, firebaseUid, now = Date.now()) => {
+  if (!session?.token || !firebaseUid) return false;
+  if (session.user?.firebaseUid !== firebaseUid) return false;
+  const expiresAt = sessionExpiresAt(session.token);
+  return Boolean(expiresAt && expiresAt - now > SESSION_RENEW_BEFORE_MS);
+};
+
+const currentGoogleUser = async () => {
   if (!isFirebaseConfigured()) return null;
   const firebaseAuth = getFirebaseAuth();
   await withTimeout(
@@ -157,9 +192,24 @@ export const restoreExistingGoogleLogin = async () => {
     FIREBASE_OPERATION_TIMEOUT_MS,
     "Google session check took too long.",
   );
-  return firebaseAuth.currentUser
-    ? exchangeGoogleUser(firebaseAuth.currentUser)
-    : null;
+  return firebaseAuth.currentUser || null;
+};
+
+// On page load: with Firebase still signed in, reuse the stored session when
+// it belongs to the same Google account ({ reused: true }, no network call),
+// otherwise exchange the Google sign-in for a new Aquakart session.
+export const restoreExistingGoogleLogin = async (session = null) => {
+  const user = await currentGoogleUser();
+  if (!user) return null;
+  if (canReuseSession(session, user.uid)) return { reused: true };
+  return exchangeGoogleUser(user);
+};
+
+// A fresh Aquakart session for the Google account Firebase still has (after
+// the backend refused the stored one). Null when Firebase is signed out.
+export const renewGoogleSession = async () => {
+  const user = await currentGoogleUser();
+  return user ? exchangeGoogleUser(user) : null;
 };
 
 // Clears the Firebase session (IndexedDB + localStorage). Without this the SDK
@@ -200,6 +250,29 @@ export const getCurrentFirebaseIdToken = async () => {
   );
 };
 
+// Is the stored session still accepted? "ok" (with the account as the server
+// has it), "invalid" (expired, signed out or unknown user) or "unknown"
+// (offline, server error): only "invalid" should end or renew the session.
+export const checkBackendSession = async (token) => {
+  if (!token) return { state: "invalid" };
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), AUTH_REQUEST_TIMEOUT_MS);
+  try {
+    const response = await fetch(authUrl("/auth/me"), {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: controller.signal,
+    });
+    if (response.status === 401) return { state: "invalid" };
+    if (!response.ok) return { state: "unknown" };
+    const data = await response.json().catch(() => ({}));
+    return { state: "ok", user: data.user || null };
+  } catch {
+    return { state: "unknown" };
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
 // The signed-in account as the server has it now (GET /auth/me): profile and
 // address book, so every device and page works from the same saved addresses.
 export const getCurrentUser = async (token) => {
@@ -209,10 +282,56 @@ export const getCurrentUser = async (token) => {
   return parseResponse(response);
 };
 
+// Cancels the session token on the backend so it stops working at once.
+// keepalive lets it finish when sign-out navigates away.
 export const logoutBackendUser = async (token) => {
   if (!token) return;
-  await fetch(authUrl("/auth/logout"), {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), AUTH_REQUEST_TIMEOUT_MS);
+  try {
+    await fetch(authUrl("/auth/logout"), {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      keepalive: true,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+// Per-user data kept in this tab (open chat, paid-link receipts) that must not
+// carry over to the next person who signs in on this browser.
+const SIGNED_IN_TAB_KEYS = [/^aqua\.chat\.tab$/, /^aq-pay-paid:/];
+const clearSignedInTabData = () => {
+  try {
+    const store = window.sessionStorage;
+    for (let i = store.length - 1; i >= 0; i -= 1) {
+      const key = store.key(i);
+      if (key && SIGNED_IN_TAB_KEYS.some((re) => re.test(key)))
+        store.removeItem(key);
+    }
+  } catch {
+    // Storage blocked: nothing stored either.
+  }
+};
+
+// The one sign-out every page uses. Firebase goes first: while its session
+// lives, the next page load would sign the shopper straight back in. Each step
+// is independent, so one failing never leaves the others undone.
+export const signOutEverywhere = async (token) => {
+  try {
+    disableGoogleAutoSelect();
+  } catch {
+    // One Tap not loaded.
+  }
+  const [firebase, backend] = await Promise.allSettled([
+    logoutGoogleUser(),
+    logoutBackendUser(token),
+  ]);
+  if (typeof window !== "undefined") clearSignedInTabData();
+  if (firebase.status === "rejected")
+    console.error("Firebase sign-out failed", firebase.reason);
+  if (backend.status === "rejected")
+    console.error("Backend sign-out failed", backend.reason);
 };

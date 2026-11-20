@@ -22,6 +22,28 @@ card (no Google session in the browser, recently dismissed, or
 and to a redirect only if popups are blocked. Signing out calls
 `disableAutoSelect()` so the shopper isn't signed straight back in.
 
+Staying signed in (`src/context/AuthContext.js`, `src/services/googleAuth.js`):
+
+- The Aquakart session (`userData`, a 30-day JWT) is kept by redux-persist.
+  On page load the restore waits for it (up to 1.5 s), then, if Firebase still
+  has the same Google account and the token has more than 7 days left, reuses
+  it with no call to `POST /auth/google`. The page is usable at once.
+- The reused session is confirmed in the background with `GET /auth/me`. If the
+  backend refuses it (expired or signed out), a new one is made from the
+  Google sign-in Firebase still holds; if Firebase is signed out too, the
+  session ends. Offline or server errors keep it.
+- Pages that get a 401 can call `refreshSession()` from `useAuth()` for a new
+  session without asking the shopper; `/pay/[token]` does this once before
+  showing "Your sign-in has expired".
+
+Signing out (`signOutEverywhere` in `src/services/googleAuth.js`, used by
+`AuthContext.signOut` and `/aqua`'s `useAquaAuth`): turns off One Tap
+auto-select, signs Firebase out, calls `POST /auth/logout` (the backend
+records the token as revoked, so it stops working at once; see
+AQUAKARTBACKEND `src/services/auth/sessionRevocation.js`) and removes this
+tab's per-user data (open Aqua chat, paid-link receipts). Each step runs even
+if another fails. `/pay/[token]` shows "Signed in as … · Sign out".
+
 Saved addresses live on the account in the backend (`addresses` and
 `selectedAddress` on the user). `POST /auth/google` and `GET /auth/me` both
 return them, and edits go through `POST /user/update-details/:id`, which only

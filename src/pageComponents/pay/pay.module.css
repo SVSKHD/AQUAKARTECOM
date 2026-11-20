@@ -960,6 +960,46 @@
   line-height: 1.55;
   color: var(--aq-mut);
 }
+/* "Signed in as … · Sign out" above the delivery details. */
+.signedIn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--aq-mut);
+}
+.signedIn b {
+  color: var(--aq-ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.linkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--aq-mintink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.linkBtn:hover:not(:disabled) {
+  background: rgba(var(--aq-ln), 0.07);
+}
+.linkBtn:focus-visible {
+  outline: 2px solid var(--aq-mintink);
+  outline-offset: 1px;
+}
+.linkBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
 .small {
   margin: 0;
   font-size: 12.5px;

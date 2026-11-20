@@ -14,8 +14,7 @@ vi.mock("@/services/googleAuth", () => ({
   completeGoogleRedirectLogin: vi.fn(() => Promise.resolve(null)),
   loginWithGoogle: vi.fn(),
   loginWithGoogleIdToken: vi.fn(),
-  logoutBackendUser: vi.fn(),
-  logoutGoogleUser: vi.fn(),
+  signOutEverywhere: vi.fn(),
 }));
 vi.mock("@/services/googleOneTap", () => ({
   cancelGoogleOneTap: vi.fn(),
