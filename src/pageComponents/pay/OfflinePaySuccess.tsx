@@ -197,13 +197,10 @@ export default function OfflinePaySuccess() {
     );
 
   const gaveUp = !invoiceReady && tries >= INVOICE_RETRIES;
-  const invoiceHref =
-    invoiceReady && status.invoiceId
-      ? `/invoice/${encodeURIComponent(status.invoiceId)}`
-      : null;
+  const invoiceId = (invoiceReady && status.invoiceId) || null;
   const firstName = (auth.session?.user?.name || "").trim().split(/\s+/)[0];
   return (
-    <PayShell>
+    <PayShell compact wide>
       <PaidReceipt
         status={status}
         summary={order?.summary ?? null}
@@ -211,7 +208,8 @@ export default function OfflinePaySuccess() {
         firstName={firstName}
         invoiceReady={invoiceReady}
         gaveUp={gaveUp}
-        invoiceHref={invoiceHref}
+        invoiceId={invoiceId}
+        sessionToken={authToken}
       />
     </PayShell>
   );

@@ -154,12 +154,27 @@ function Bubbles() {
   );
 }
 
+export function CardWaves() {
+  return (
+    <div className={styles.waves} aria-hidden="true">
+      <div className={`${styles.wave} ${styles.wave1}`} />
+      <div className={`${styles.wave} ${styles.wave2}`} />
+    </div>
+  );
+}
+
 export function PayShell({
   children,
   aside,
+  compact = false,
+  wide = false,
 }: {
   children: ReactNode;
   aside?: ReactNode;
+  /** Tighter frame for pages meant to fit one screen (the paid receipt). */
+  compact?: boolean;
+  /** Checkout-width page whose children lay out their own cards. */
+  wide?: boolean;
 }) {
   return (
     <>
@@ -168,7 +183,9 @@ export function PayShell({
         <meta name="robots" content="noindex, nofollow, noarchive" />
         <meta name="referrer" content="no-referrer" />
       </Head>
-      <main className={`${styles.page} ${aside ? styles.withPanel : ""}`}>
+      <main
+        className={`${styles.page} ${aside ? styles.withPanel : ""} ${compact ? styles.compact : ""} ${wide ? styles.wide : ""}`}
+      >
         <Bubbles />
         <div className={styles.shell}>
           <header className={styles.brandBar}>
@@ -183,14 +200,15 @@ export function PayShell({
               Secure payment
             </span>
           </header>
-          <div className={styles.card}>
-            <div className={styles.waves} aria-hidden="true">
-              <div className={`${styles.wave} ${styles.wave1}`} />
-              <div className={`${styles.wave} ${styles.wave2}`} />
+          {wide ? (
+            children
+          ) : (
+            <div className={styles.card}>
+              <CardWaves />
+              {children}
             </div>
-            {children}
-          </div>
-          <SupportLine />
+          )}
+          {!compact && <SupportLine />}
         </div>
       </main>
       {/* Portalled to <body>: the app's page wrapper is its own stacking
