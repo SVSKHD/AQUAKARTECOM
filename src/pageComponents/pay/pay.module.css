@@ -1536,3 +1536,41 @@
     -webkit-backdrop-filter: none;
   }
 }
+
+/* ---------- compact frame: the paid receipt fits one screen ---------- */
+.compact {
+  padding: 12px 14px 14px;
+}
+.compact .shell {
+  gap: 10px;
+}
+.compact .brandMark {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+}
+.compact .brandMark img {
+  width: 24px;
+  height: 24px;
+}
+.compact .brandName {
+  font-size: 18px;
+}
+.compact .card {
+  gap: 0;
+  padding: 26px 18px 16px;
+  border-radius: 24px;
+}
+@media (min-height: 760px) {
+  .compact {
+    padding-top: 24px;
+  }
+  .compact .card {
+    padding: 32px 22px 20px;
+  }
+}
+
+/* ---------- wide frame: checkout-width, the page lays out its own cards ---------- */
+.wide .shell {
+  max-width: 1160px;
+}
