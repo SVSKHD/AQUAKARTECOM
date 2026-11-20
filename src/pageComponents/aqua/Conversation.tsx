@@ -774,113 +774,77 @@ export default function Conversation(p: Props) {
               padding: p.isMobile ? "4px 0 8px" : "8px 0 16px",
             }}
           >
+            {/* Quiet hero, chat-app style: a small droplet, one greeting
+                line, the question and a single line of help. No card. */}
             <div
+              style={{
+                position: "relative",
+                display: "grid",
+                placeItems: "center",
+                width: p.isMobile ? 76 : 96,
+                height: p.isMobile ? 76 : 96,
+              }}
+            >
+              <div
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  inset: p.isMobile ? -24 : -32,
+                  borderRadius: "50%",
+                  background: p.dark
+                    ? "radial-gradient(circle, rgba(255,255,255,.12) 0%, rgba(255,255,255,0) 68%)"
+                    : "radial-gradient(circle, rgba(16,191,164,.18) 0%, rgba(16,191,164,0) 68%)",
+                }}
+              />
+              <AquaDroplet
+                mood={p.mood}
+                size={p.isMobile ? 68 : 86}
+                dark={p.dark}
+                label="Aqua, the Aquakart assistant"
+              />
+            </div>
+            <div
+              className="aq-hero"
               style={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: p.isMobile ? 2 : 6,
+                gap: p.isMobile ? 6 : 10,
+                maxWidth: 620,
               }}
             >
-              <div
-                style={{
-                  height: p.isMobile ? undefined : 46,
-                  display: "flex",
-                  alignItems: "flex-end",
-                }}
-              >
-                <div
-                  className="aq-glass aq-bubble-tail"
-                  style={{
-                    position: "relative",
-                    padding: "9px 18px",
-                    borderRadius: 18,
-                    fontSize: 14,
-                    fontWeight: 700,
-                    whiteSpace: "nowrap",
-                    overflow: "visible",
-                    transformOrigin: "50% 100%",
-                    animation:
-                      "aqGreetIn .85s cubic-bezier(.2,1.5,.4,1) both, aqGreetFloat 4.5s ease-in-out .85s infinite",
-                  }}
-                >
-                  {firstName
-                    ? `Welcome back, ${firstName}! 👋`
-                    : "Hi, I'm Aqua 👋"}
-                </div>
-              </div>
-              <div
-                style={{
-                  position: "relative",
-                  display: "grid",
-                  placeItems: "center",
-                  width: 240,
-                  // Phones: just the droplet (plus its bob); larger screens
-                  // give it room to breathe.
-                  height: p.isMobile ? 116 : "clamp(120px, 21vh, 190px)",
-                }}
-              >
-                <div
-                  aria-hidden="true"
-                  style={{
-                    position: "absolute",
-                    width: p.isMobile ? 200 : 260,
-                    height: p.isMobile ? 200 : 260,
-                    borderRadius: "50%",
-                    // Dark: a soft white halo for the white droplet.
-                    background: p.dark
-                      ? "radial-gradient(circle, rgba(255,255,255,.16) 0%, rgba(190,214,228,.06) 45%, rgba(255,255,255,0) 70%)"
-                      : "radial-gradient(circle, rgba(16,191,164,.22) 0%, rgba(118,206,240,.08) 45%, rgba(16,191,164,0) 70%)",
-                  }}
-                />
-                <AquaDroplet
-                  mood={p.mood}
-                  size={p.isMobile ? 104 : 150}
-                  dark={p.dark}
-                  label="Aqua, the Aquakart assistant"
-                />
-              </div>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: p.isMobile ? 8 : 12,
-                maxWidth: 660,
-              }}
-            >
+              <p className="aq-hero-greet">
+                {firstName ? `Welcome back, ${firstName}` : "Hi, I'm Aqua"}{" "}
+                <span aria-hidden="true" className="aq-wave">
+                  👋
+                </span>
+              </p>
               <h1
                 className="aq-display"
                 style={{
                   margin: 0,
-                  fontSize: p.isMobile ? 25 : "clamp(28px, 3.4vw, 40px)",
-                  lineHeight: p.isMobile ? 1.22 : 1.15,
+                  fontSize: p.isMobile ? 26 : "clamp(30px, 3.4vw, 40px)",
+                  lineHeight: 1.15,
                   fontWeight: 700,
-                  letterSpacing: p.isMobile ? "-0.02em" : "-0.03em",
+                  letterSpacing: "-0.03em",
                   textWrap: "balance",
                 }}
               >
-                {/* On phones the bubble above already greets by name. */}
-                {p.isMobile
-                  ? "What can I find for you today?"
-                  : firstName
-                    ? `Welcome back, ${firstName}. What can I find for you today?`
-                    : "Hi, I'm Aqua. What can I find for you today?"}{" "}
-                <span aria-hidden="true">💧</span>
+                What can I find for you today?
               </h1>
               <p
                 style={{
-                  margin: "0 auto",
-                  maxWidth: 620,
-                  fontSize: p.isMobile ? 14 : "clamp(15px, 1.4vw, 17px)",
-                  lineHeight: 1.6,
-                  color: "var(--aq-body)",
+                  margin: 0,
+                  maxWidth: 500,
+                  fontSize: p.isMobile ? 14 : 15.5,
+                  lineHeight: 1.55,
+                  color: "var(--aq-mut)",
                   textWrap: "pretty",
                 }}
               >
                 {firstName
-                  ? "This is a new chat. Your earlier chats are in History: open one to pick up where you left off, or ask me something new."
-                  : "Tell me about your water and your home. I'll suggest what fits, and you can buy without leaving this chat."}
+                  ? "A fresh chat. Your earlier ones are in History."
+                  : "Tell me about your water and home. I'll suggest what fits, and you can buy right here."}
               </p>
             </div>
             <HardnessCard

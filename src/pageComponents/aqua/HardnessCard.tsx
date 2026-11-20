@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   ArrowRight,
   Building2,
@@ -17,6 +18,7 @@ import {
   Drill,
   Droplets,
   Flame,
+  Info,
   LocateFixed,
   MapPin,
   Search,
@@ -24,6 +26,7 @@ import {
   ShowerHead,
   Sparkles,
   Waves,
+  X,
 } from "lucide-react";
 import ArrowScroller from "./ArrowScroller";
 import { storage, useReducedMotion } from "./hooks";
@@ -104,6 +107,9 @@ const card = {
   // Not clipped, so the search results can hang below the card.
   animation: "aqCardIn .5s cubic-bezier(.22,.8,.24,1) .15s both",
 };
+
+// The folded pill: slimmer than the full card so the welcome screen stays calm.
+const mini = { ...card, maxWidth: 440, borderRadius: 18 };
 
 // Counts up to the reading so the number lands rather than appears.
 function useCountUp(target: number, run: boolean) {
@@ -375,7 +381,30 @@ const verdictTag = (step: number) =>
 // The folded card. With a place already known: the area, the reading in its
 // level colour, a mini meter and the verdict. Without one: an invitation.
 // Either way one tap opens the full card.
-function HardnessSummary({ view, onOpen }: { view: View; onOpen: () => void }) {
+// Every reading here is an area-wise estimate, not a test of the shopper's tap.
+function AreaNote({ compact = false }: { compact?: boolean }) {
+  return (
+    <p className="aq-hard-note" role="note">
+      <Info size={compact ? 14 : 15} aria-hidden="true" />
+      <span>
+        <strong>Area-wise estimate.</strong>{" "}
+        {compact
+          ? "Can vary within the same area. Test your water for an exact reading."
+          : "Hardness can differ even within the same area (borewell or municipal supply, borewell depth, season). Test your water for an exact reading."}
+      </span>
+    </p>
+  );
+}
+
+function HardnessSummary({
+  view,
+  onOpen,
+  expanded = false,
+}: {
+  view: View;
+  onOpen: () => void;
+  expanded?: boolean;
+}) {
   if (view.step !== "report") {
     const locating = view.step === "locating";
     return (
@@ -383,9 +412,10 @@ function HardnessSummary({ view, onOpen }: { view: View; onOpen: () => void }) {
         type="button"
         className="aq-glass aq-hard-card aq-hard-mini"
         data-tour="hardness"
-        aria-expanded={false}
+        aria-expanded={expanded}
+        aria-haspopup="dialog"
         onClick={onOpen}
-        style={card}
+        style={mini}
       >
         <span className="aq-hard-icon" aria-hidden="true">
           <Droplets size={18} />
@@ -422,11 +452,12 @@ function HardnessSummary({ view, onOpen }: { view: View; onOpen: () => void }) {
       type="button"
       className="aq-glass aq-hard-card aq-hard-mini aq-hard-report"
       data-tour="hardness"
-      aria-expanded={false}
-      aria-label={`Water hardness in ${place}: about ${ppm} ppm, ${lv.label.toLowerCase()}. ${verdictTag(lv.step)}. Show details`}
+      aria-expanded={expanded}
+      aria-haspopup="dialog"
+      aria-label={`Water hardness in ${place}: about ${ppm} ppm, ${lv.label.toLowerCase()}. ${verdictTag(lv.step)}. Area-wise estimate, can vary within the same area. Show details`}
       onClick={onOpen}
       style={{
-        ...card,
+        ...mini,
         ["--lv" as string]: lv.ink,
         ["--lvt" as string]: lv.tint,
       }}
@@ -457,6 +488,9 @@ function HardnessSummary({ view, onOpen }: { view: View; onOpen: () => void }) {
             className="aq-hard-marker"
             style={{ left: `${gaugePct(ppm)}%`, borderColor: lv.ink }}
           />
+        </span>
+        <span className="aq-hard-mini-sub" aria-hidden="true">
+          Area-wise estimate · may vary within the same area
         </span>
       </span>
       <ChevronDown size={18} className="aq-hard-mini-chev" aria-hidden="true" />
@@ -489,19 +523,65 @@ export default function HardnessCard({
   const reduced = useReducedMotion();
   // Folded on every visit; the place it found is still shown in the summary.
   const [open, setOpen] = useState(false);
+  // The full card opens in a centred dialog (a bottom sheet on phones), so the
+  // welcome layout never jumps. It renders into .aq-root for the theme tokens.
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const [host, setHost] = useState<Element | null>(null);
+  useEffect(() => {
+    setHost(anchorRef.current?.closest(".aq-root") ?? document.body);
+  }, []);
+  const close = () => {
+    setOpen(false);
+    anchorRef.current?.querySelector<HTMLElement>("button")?.focus();
+  };
+  useEffect(() => {
+    if (!open) return;
+    sheetRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   const withCollapse = (node: ReactNode) => (
-    <div className="aq-hard-wrap">
-      {node}
-      <button
-        type="button"
-        className="aq-hard-collapse"
-        aria-expanded={true}
-        aria-label="Hide water hardness"
-        title="Hide"
-        onClick={() => setOpen(false)}
-      >
-        <ChevronUp size={16} />
-      </button>
+    <div ref={anchorRef} className="aq-hard-anchor">
+      <HardnessSummary
+        view={view}
+        expanded={open}
+        onOpen={() => setOpen(true)}
+      />
+      {open &&
+        node &&
+        host &&
+        createPortal(
+          <div
+            className="aq-hard-modal"
+            onMouseDown={(e) => e.target === e.currentTarget && close()}
+          >
+            <div
+              ref={sheetRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Water hardness"
+              tabIndex={-1}
+              className="aq-hard-sheet aq-hard-wrap"
+            >
+              {node}
+              <button
+                type="button"
+                className="aq-hard-collapse"
+                aria-label="Hide water hardness"
+                title="Close"
+                onClick={close}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>,
+          host,
+        )}
     </div>
   );
 
@@ -579,8 +659,7 @@ export default function HardnessCard({
       );
   }
 
-  if (!open)
-    return <HardnessSummary view={view} onOpen={() => setOpen(true)} />;
+  if (!open) return withCollapse(null);
 
   // ---------- pick a city ----------
   if (view.step === "pick" || view.step === "locating") {
@@ -808,6 +887,7 @@ export default function HardnessCard({
           >
             Area not listed? Use the {city.name} average (~{avg} ppm)
           </button>
+          <AreaNote compact />
         </div>
         <Legend />
       </div>,
@@ -1124,6 +1204,10 @@ function Report({
         </button>
       </div>
 
+      <div style={{ padding: "0 16px 12px" }}>
+        <AreaNote compact={compact} />
+      </div>
+
       {/* follow-ups + change place */}
       <div
         style={{
@@ -1160,7 +1244,7 @@ function Report({
       </div>
       <div className="aq-hard-foot">
         <span style={{ flex: 1, minWidth: 0 }}>
-          Estimate from typical supply here, not a test of your water.
+          Area-wise estimate, not a test of your water.
         </span>
         {city.areas?.length ? (
           <button
