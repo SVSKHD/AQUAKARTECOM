@@ -52,7 +52,17 @@ import {
 } from "@/constants/invoiceStaticData";
 import priceUtils from "@/utils/priceUtils";
 import useAssistant from "@/utils/assistant";
-import { getDocumentKind, isPaidStatus } from "@/utils/invoice/documentKind";
+import {
+  getDocumentKind,
+  getDocumentStatus,
+} from "@/utils/invoice/documentKind";
+import InvoiceAiPanel from "@/pageComponents/invoice/InvoiceAiPanel";
+import {
+  CountUp,
+  InvoiceStamp,
+  StatusLegend,
+  StatusPill,
+} from "@/pageComponents/invoice/InvoiceStamp";
 import {
   otherProductQuestion,
   ownedProductQuestions,
@@ -82,19 +92,6 @@ const titleCase = (value) =>
   String(value || "Not available")
     .replace(/[_-]+/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
-
-const StatusPill = ({ status }) => {
-  const isPaid = isPaidStatus(status);
-
-  return (
-    <span
-      className={`${styles.statusPill} ${isPaid ? styles.statusPaid : styles.statusPending}`}
-    >
-      <span className={styles.statusDot} />
-      {titleCase(status)}
-    </span>
-  );
-};
 
 const InvoiceError = ({ statusCode, onAccessGranted }) => {
   const router = useRouter();
@@ -317,12 +314,16 @@ const copyProductLink = async (href) => {
 };
 
 // One compact line item: picture, name, the arithmetic and quick actions.
-const ProductRow = ({ product, index, onAsk }) => {
+const ProductRow = ({ product, index, onAsk, grandTotal }) => {
   const href = getProductHref(product);
   const line = priceUtils.getLineAmounts(product);
   const tags = [product.productCategory, product.productSubcategory].filter(
     Boolean,
   );
+  const share =
+    grandTotal > 0
+      ? Math.min(100, Math.round((line.offerTotal / grandTotal) * 100))
+      : 0;
 
   return (
     <article className={styles.lineItem}>
@@ -381,6 +382,16 @@ const ProductRow = ({ product, index, onAsk }) => {
             <dd>{priceUtils.formatAmount(line.offerTotal)}</dd>
           </div>
         </dl>
+        {share > 0 ? (
+          <div
+            className={styles.lineShare}
+            title={`${share}% of the total`}
+            aria-label={`${share}% of the total`}
+          >
+            <span style={{ "--share": `${share}%` }} />
+            <small>{share}% of total</small>
+          </div>
+        ) : null}
       </div>
 
       <div className={styles.lineActions}>
@@ -820,7 +831,8 @@ const InvoicePage = ({
   const amounts = priceUtils.getInvoiceAmounts(invoice);
   // Unpaid sales read as an invoice, paid ones as a receipt.
   const { name: documentName, title: documentTitle } = getDocumentKind(invoice);
-  const isPaid = isPaidStatus(invoice.paid_status);
+  const docStatus = getDocumentStatus(invoice);
+  const isPaid = docStatus.key === "paid";
   const documentLabel = invoice.invoice_no || invoice.id || documentName;
   const customerDisplayName =
     invoice.customer_name || invoice.gst_name || "valued customer";
@@ -871,6 +883,15 @@ const InvoicePage = ({
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
       toast.error(`Could not copy the ${documentName.toLowerCase()} link`);
+    }
+  };
+
+  const handleCopyNumber = async () => {
+    try {
+      await navigator.clipboard.writeText(documentLabel);
+      toast.success(`${documentName} number copied`);
+    } catch {
+      toast.error("Could not copy the number");
     }
   };
 
@@ -992,15 +1013,7 @@ const InvoicePage = ({
         <section className={styles.invoiceHero}>
           <div className={styles.heroTop}>
             <div className={styles.heroBrand}>
-              <div className={styles.heroLogo}>
-                <Image
-                  src={logo}
-                  alt="Aquakart"
-                  width={64}
-                  height={64}
-                  priority
-                />
-              </div>
+              <InvoiceStamp status={docStatus} documentLabel={documentLabel} />
               <div>
                 <span className={styles.eyebrow}>Premium water solutions</span>
                 <h1>{documentTitle}</h1>
@@ -1009,9 +1022,17 @@ const InvoicePage = ({
             </div>
 
             <div className={styles.heroInvoice}>
-              <StatusPill status={invoice.paid_status} />
+              <StatusPill status={docStatus} />
               <span>{documentName} number</span>
-              <strong>{documentLabel}</strong>
+              <button
+                type="button"
+                className={styles.heroNumber}
+                onClick={handleCopyNumber}
+                title={`Copy ${documentName.toLowerCase()} number`}
+              >
+                <strong>{documentLabel}</strong>
+                <Copy size={14} aria-hidden="true" />
+              </button>
               <small>Issued {formatDate(invoice.date)}</small>
             </div>
           </div>
@@ -1067,6 +1088,8 @@ const InvoicePage = ({
           </div>
         </section>
 
+        <StatusLegend status={docStatus} documentName={documentName} />
+
         <div className={styles.invoiceGrid}>
           <section className={styles.productsColumn}>
             <div className={styles.sectionHeading}>
@@ -1092,6 +1115,7 @@ const InvoicePage = ({
                     key={product.id || `${product.productName}-${index}`}
                     product={product}
                     index={index}
+                    grandTotal={amounts.grandTotal}
                     onAsk={assistantAvailable ? askAboutPurchased : null}
                   />
                 ))
@@ -1203,7 +1227,12 @@ const InvoicePage = ({
 
               <div className={styles.grandTotal}>
                 <span>Total amount</span>
-                <strong>{priceUtils.formatAmount(amounts.grandTotal)}</strong>
+                <strong>
+                  <CountUp
+                    value={amounts.grandTotal}
+                    format={(value) => priceUtils.formatAmount(value)}
+                  />
+                </strong>
                 <small>
                   {amounts.hasDiscount
                     ? `You save ${priceUtils.formatAmount(amounts.discountTotal)} · `
@@ -1215,12 +1244,22 @@ const InvoicePage = ({
               </div>
 
               <div className={styles.paymentState}>
-                <StatusPill status={invoice.paid_status} />
+                <StatusPill status={docStatus} />
                 <span>via {titleCase(invoice.payment_type)}</span>
               </div>
             </section>
           </aside>
         </div>
+
+        {assistantAvailable ? (
+          <InvoiceAiPanel
+            invoice={invoice}
+            status={docStatus}
+            amounts={amounts}
+            documentName={documentName}
+            openAssistant={openAssistant}
+          />
+        ) : null}
 
         {recommendations.length ? (
           <section
@@ -1369,7 +1408,13 @@ const InvoicePage = ({
 
       <div className={styles.mobileDownloadBar} data-invoice-mobile-bar>
         <div>
-          <span>{isPaid ? "Amount paid" : "Amount due"}</span>
+          <span>
+            {isPaid
+              ? "Amount paid"
+              : docStatus.key === "quotation"
+                ? "Quoted amount"
+                : "Amount due"}
+          </span>
           <strong>
             {priceUtils.formatAmount(amounts.grandTotal, { showPaise: false })}
           </strong>

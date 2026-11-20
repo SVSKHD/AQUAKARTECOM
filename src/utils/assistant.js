@@ -5,11 +5,15 @@ const useAssistant = () => {
   const dispatch = useDispatch();
   const available = useSelector((state) => state.assistant?.available);
 
-  // `prefill` goes into the composer; it is not sent until the customer presses send.
+  // `prefill` goes into the composer; it is not sent until the customer presses
+  // send, unless `autoSend` is set (a tapped question goes straight out).
   // `tab` ("chat" | "products") picks the drawer tab when a page set a context.
   const openAssistant = useCallback(
-    (prefill = "", { tab } = {}) => {
-      dispatch({ type: "OPEN_ASSISTANT", payload: { prefill, tab } });
+    (prefill = "", { tab, autoSend = false } = {}) => {
+      dispatch({
+        type: "OPEN_ASSISTANT",
+        payload: { prefill, tab, autoSend },
+      });
     },
     [dispatch],
   );

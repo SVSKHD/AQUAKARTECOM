@@ -273,6 +273,7 @@ const AssistantWidget = ({ pathname = "" }) => {
   const {
     open = false,
     prefill = "",
+    autoSend = false,
     available = false,
     tab: requestedTab = "chat",
     context = null,
@@ -488,18 +489,19 @@ const AssistantWidget = ({ pathname = "" }) => {
 
   // "Ask about this product" hands over a prompt to edit, not to send.
   // The text is copied into the composer during render; the effect below then
-  // clears the store and focuses the field.
+  // clears the store and focuses the field. An `autoSend` prompt skips the
+  // composer and is sent by the effect after `send` (unless a limit holds it).
   const pendingPrefill = open && prefill ? prefill : "";
   const [appliedPrefill, setAppliedPrefill] = useState("");
   if (pendingPrefill !== appliedPrefill) {
     setAppliedPrefill(pendingPrefill);
     if (pendingPrefill) {
-      setInput(pendingPrefill.slice(0, AI_PROMPT_MAX));
+      if (!autoSend || limit) setInput(pendingPrefill.slice(0, AI_PROMPT_MAX));
       setError(null);
     }
   }
   useEffect(() => {
-    if (!open || !prefill) return;
+    if (!open || !prefill || autoSend) return;
     dispatch({ type: "CLEAR_ASSISTANT_PREFILL" });
     window.requestAnimationFrame(() => {
       const el = inputRef.current;
@@ -507,7 +509,7 @@ const AssistantWidget = ({ pathname = "" }) => {
       el.focus();
       el.setSelectionRange(el.value.length, el.value.length);
     });
-  }, [open, prefill, dispatch]);
+  }, [open, prefill, autoSend, dispatch]);
 
   // The phone sheet and the drawer behave as modals: lock page scroll behind them.
   const modal = isSmall || drawer;
@@ -629,6 +631,18 @@ const AssistantWidget = ({ pathname = "" }) => {
       }
     }
   };
+
+  // A tapped question (autoSend) goes out as soon as the panel opens. A daily
+  // limit leaves it in the composer instead (copied there during render).
+  const sendRef = useRef(send);
+  useEffect(() => {
+    sendRef.current = send;
+  });
+  useEffect(() => {
+    if (!open || !prefill || !autoSend) return;
+    dispatch({ type: "CLEAR_ASSISTANT_PREFILL" });
+    if (!limit) void sendRef.current(prefill.slice(0, AI_PROMPT_MAX));
+  }, [open, prefill, autoSend, limit, dispatch]);
 
   const toggleThinking = () => {
     setShowThinking((on) => {
