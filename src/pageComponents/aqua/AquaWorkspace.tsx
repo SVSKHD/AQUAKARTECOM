@@ -901,13 +901,16 @@ export default function AquaWorkspace() {
     }
   };
   // "Add a new address": saved, then used for the order (the stored copy).
-  const saveCheckoutAddress = async (address: Address): Promise<Address> => {
+  const saveCheckoutAddress = async (
+    address: Address,
+    makeDefault?: boolean,
+  ): Promise<Address> => {
     const addresses = await changeCheckoutAddresses(
       (list) => ({
         kind: "save",
         index: null,
         address,
-        makeDefault: list.length === 0,
+        makeDefault: Boolean(makeDefault) || list.length === 0,
       }),
       "Address saved to your account",
     );
@@ -916,15 +919,22 @@ export default function AquaWorkspace() {
   const editCheckoutAddress = async (
     index: number,
     address: Address,
+    makeDefault?: boolean,
   ): Promise<Address> => {
     const addresses = await changeCheckoutAddresses(
-      { kind: "save", index, address },
+      { kind: "save", index, address, makeDefault },
       "Address updated",
     );
     return addresses[index] || address;
   };
   const removeCheckoutAddress = (index: number) =>
     changeCheckoutAddresses({ kind: "remove", index }, "Address deleted");
+  // The "Default" switch on a saved address.
+  const makeDefaultCheckoutAddress = (index: number) =>
+    changeCheckoutAddresses(
+      { kind: "default", index },
+      "Default address updated",
+    );
 
   // Shipping address in the shape POST /payments requires (state is mandatory there).
   const paymentAddress = (d: CheckoutDraft) => {
@@ -1438,6 +1448,7 @@ export default function AquaWorkspace() {
       onSaveAddress={saveCheckoutAddress}
       onEditAddress={editCheckoutAddress}
       onRemoveAddress={removeCheckoutAddress}
+      onMakeDefaultAddress={makeDefaultCheckoutAddress}
       coupons={coupons}
       categoryOf={(id) => {
         const p = byId.get(id);

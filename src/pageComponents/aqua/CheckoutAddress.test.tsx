@@ -229,4 +229,92 @@ describe("CheckoutAddress: undeliverable, edit and delete", () => {
     await user.click(screen.getByRole("button", { name: "Keep it" }));
     expect(onRemove).not.toHaveBeenCalled();
   });
+
+  describe("default address switch", () => {
+    it("shows the default switched on and locked, the others off", () => {
+      setup({ onMakeDefault: vi.fn(async () => [home, office]) });
+      const [first, second] = screen.getAllByRole("switch");
+      expect(first).toHaveAttribute("aria-checked", "true");
+      expect(first).toBeDisabled();
+      expect(second).toHaveAttribute("aria-checked", "false");
+      expect(second).toBeEnabled();
+    });
+
+    it("makes another saved address the default without changing the order's address", async () => {
+      const user = userEvent.setup();
+      const onMakeDefault = vi.fn(async () => [home, office]);
+      const p = setup({ onMakeDefault });
+      await user.click(
+        screen.getByRole("switch", { name: /Default address: Tower B/ }),
+      );
+      expect(onMakeDefault).toHaveBeenCalledWith(1);
+      expect(p.onPick).not.toHaveBeenCalled();
+    });
+
+    it("says so when the default can't be changed", async () => {
+      const user = userEvent.setup();
+      const onMakeDefault = vi.fn(async () => {
+        throw new Error("Your session expired, so it couldn't be saved.");
+      });
+      setup({ onMakeDefault });
+      await user.click(screen.getAllByRole("switch")[1]);
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "Your session expired",
+      );
+    });
+
+    it("has no switch when the account can't be changed", () => {
+      setup();
+      expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+    });
+
+    it("saves a new address as the default when the form switch is on", async () => {
+      const user = userEvent.setup();
+      const p = setup({ onMakeDefault: vi.fn(async () => []) });
+      await user.click(
+        screen.getByRole("button", { name: /Add a new address/ }),
+      );
+      await fillNew(user);
+      await user.click(
+        screen.getByRole("switch", { name: "Make this my default address" }),
+      );
+      await user.click(
+        screen.getByRole("button", { name: /Use this address/ }),
+      );
+      expect(p.onSave).toHaveBeenCalledWith(
+        expect.objectContaining({ street: "Flat 4, Kondapur" }),
+        true,
+      );
+    });
+
+    it("hides the form switch when the address isn't being saved", async () => {
+      const user = userEvent.setup();
+      setup({ onMakeDefault: vi.fn(async () => []) });
+      await user.click(
+        screen.getByRole("button", { name: /Add a new address/ }),
+      );
+      await user.click(
+        screen.getByRole("checkbox", { name: /Save to my addresses/ }),
+      );
+      expect(
+        screen.queryByRole("switch", { name: "Make this my default address" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("offers the form switch when editing a non-default address, not the default", async () => {
+      const user = userEvent.setup();
+      const onEdit = vi.fn(async (_i: number, a: Address) => a);
+      setup({ onEdit, onMakeDefault: vi.fn(async () => []) });
+      await user.click(screen.getByRole("button", { name: /^Edit Plot 12/ }));
+      expect(
+        screen.queryByRole("switch", { name: "Make this my default address" }),
+      ).not.toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: /^Edit Tower B/ }));
+      await user.click(
+        screen.getByRole("switch", { name: "Make this my default address" }),
+      );
+      await user.click(screen.getByRole("button", { name: /Save and use/ }));
+      expect(onEdit).toHaveBeenCalledWith(1, expect.any(Object), true);
+    });
+  });
 });

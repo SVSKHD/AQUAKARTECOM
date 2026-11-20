@@ -94,9 +94,14 @@ export type WorkspacePanelProps = {
   emailAuth?: EmailAuth;
   authBusy?: boolean;
   defaultAddress?: Address | null;
-  onSaveAddress?: (address: Address) => Promise<Address>;
-  onEditAddress?: (index: number, address: Address) => Promise<Address>;
+  onSaveAddress?: (address: Address, makeDefault?: boolean) => Promise<Address>;
+  onEditAddress?: (
+    index: number,
+    address: Address,
+    makeDefault?: boolean,
+  ) => Promise<Address>;
   onRemoveAddress?: (index: number) => Promise<Address[]>;
+  onMakeDefaultAddress?: (index: number) => Promise<Address[]>;
   onRetry: () => void;
   onRetryWith: (method: PayMethod) => void;
   onRecheck: () => void;
@@ -364,6 +369,7 @@ export default function WorkspacePanel(props: WorkspacePanelProps) {
           onSaveAddress={props.onSaveAddress}
           onEditAddress={props.onEditAddress}
           onRemoveAddress={props.onRemoveAddress}
+          onMakeDefaultAddress={props.onMakeDefaultAddress}
         />
       )}
       {(flow.state === "payment_pending" ||

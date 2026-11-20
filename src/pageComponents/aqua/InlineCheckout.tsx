@@ -58,9 +58,14 @@ type Props = {
   // The account's default address (tagged in the list).
   defaultAddress?: Address | null;
   // Adds a new address to the account from checkout; resolves with the stored copy.
-  onSaveAddress?: (address: Address) => Promise<Address>;
-  onEditAddress?: (index: number, address: Address) => Promise<Address>;
+  onSaveAddress?: (address: Address, makeDefault?: boolean) => Promise<Address>;
+  onEditAddress?: (
+    index: number,
+    address: Address,
+    makeDefault?: boolean,
+  ) => Promise<Address>;
   onRemoveAddress?: (index: number) => Promise<Address[]>;
+  onMakeDefaultAddress?: (index: number) => Promise<Address[]>;
 };
 
 const SLOTS = ["9 am – 12 pm", "12 pm – 3 pm", "3 pm – 6 pm"];
@@ -233,6 +238,7 @@ export default function InlineCheckout({
   onSaveAddress,
   onEditAddress,
   onRemoveAddress,
+  onMakeDefaultAddress,
 }: Props) {
   // Signed in from here: say the details came from the account, for a while.
   const [filled, setFilled] = useState(false);
@@ -483,6 +489,7 @@ export default function InlineCheckout({
                 onSave={signedIn ? onSaveAddress : undefined}
                 onEdit={signedIn ? onEditAddress : undefined}
                 onRemove={signedIn ? onRemoveAddress : undefined}
+                onMakeDefault={signedIn ? onMakeDefaultAddress : undefined}
                 onAddingChange={setAddingAddress}
               />
             </Section>
