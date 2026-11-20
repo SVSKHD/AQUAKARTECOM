@@ -160,15 +160,20 @@ describe("/pay/[token]", () => {
     expect(screen.queryByText("Your order")).not.toBeInTheDocument();
   });
 
-  it("shows the order at once, without waiting for the sign-in check", async () => {
+  it("shows the order and a ready sign-in button without waiting for the sign-in check", async () => {
+    const user = userEvent.setup();
     auth = { ...signedOut(), authReady: false, loading: true };
     api.getOfflineSummary.mockResolvedValueOnce(summary());
     render(<OfflinePayPage />);
     expect(await screen.findByText("Your order")).toBeInTheDocument();
     expect(screen.getByText("Ref. AQPI|20261118|0001")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /checking sign-in/i }),
-    ).toBeDisabled();
+    const google = screen.getByRole("button", {
+      name: /continue with google/i,
+    });
+    expect(google).toBeEnabled();
+    expect(screen.queryByText(/checking sign-in/i)).toBeNull();
+    await user.click(google);
+    expect(auth.signInWithGoogle).toHaveBeenCalled();
     expect(api.getOfflineSummary).toHaveBeenCalledWith(
       "tok",
       expect.anything(),

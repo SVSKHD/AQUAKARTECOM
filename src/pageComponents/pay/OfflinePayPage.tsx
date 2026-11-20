@@ -731,19 +731,17 @@ function SignIn({ auth, note }: { auth: PayAuth; note?: string }) {
         {note ||
           "Sign in with Google so this purchase and its invoice are saved to your Aquakart account."}
       </p>
+      {/* Never waits for the background sign-in check: this panel only shows
+          when no session is stored, so the visitor has to sign in anyway. */}
       <button
         type="button"
         className={`aq-btn ${styles.googleBtn}`}
-        disabled={busy || auth.loading}
-        aria-busy={busy || !auth.authReady}
+        disabled={busy}
+        aria-busy={busy}
         onClick={() => void signIn()}
       >
         <GoogleMark />
-        {busy
-          ? "Opening Google…"
-          : auth.authReady
-            ? "Continue with Google"
-            : "Checking sign-in…"}
+        {busy ? "Opening Google…" : "Continue with Google"}
       </button>
       {refused && <OpenInBrowser />}
     </section>

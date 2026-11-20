@@ -30,10 +30,13 @@ process.env.NEXT_PUBLIC_API_URL = "https://api.example.test";
 const {
   canReuseSession,
   checkBackendSession,
+  completeGoogleRedirectLogin,
   restoreExistingGoogleLogin,
   sessionExpiresAt,
   signOutEverywhere,
+  takeRedirectPending,
 } = await import("./googleAuth");
+const { getRedirectResult } = await import("firebase/auth");
 
 const DAY = 24 * 60 * 60 * 1000;
 const jwtWith = (payload) =>
@@ -151,5 +154,27 @@ describe("signOutEverywhere", () => {
     await expect(signOutEverywhere("t")).resolves.toBeUndefined();
     expect(signOutMock).toHaveBeenCalled();
     error.mockRestore();
+  });
+});
+
+describe("redirect sign-in result", () => {
+  it("is read only after a redirect sign-in started in this tab", async () => {
+    sessionStorage.clear();
+    getRedirectResult.mockClear();
+    expect(await completeGoogleRedirectLogin()).toBeNull();
+    expect(getRedirectResult).not.toHaveBeenCalled();
+
+    sessionStorage.setItem("aquakart_google_redirect", String(Date.now()));
+    getRedirectResult.mockResolvedValueOnce(null);
+    expect(await completeGoogleRedirectLogin()).toBeNull();
+    expect(getRedirectResult).toHaveBeenCalledTimes(1);
+    // Read once: the flag is gone.
+    expect(sessionStorage.getItem("aquakart_google_redirect")).toBeNull();
+  });
+
+  it("ignores a stale flag", () => {
+    sessionStorage.setItem("aquakart_google_redirect", "1000");
+    expect(takeRedirectPending(1000 + 11 * 60 * 1000)).toBe(false);
+    expect(takeRedirectPending()).toBe(false);
   });
 });

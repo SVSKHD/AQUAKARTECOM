@@ -103,6 +103,34 @@ export const shouldUseRedirectFallback = (error) =>
     "auth/web-storage-unsupported",
   ].includes(error?.code);
 
+// Set just before a redirect sign-in leaves the page (this tab only), so the
+// page it comes back to knows to read the result. Reading it otherwise costs
+// a hidden Google frame and seconds of "Checking sign-in…" on every load.
+const REDIRECT_PENDING_KEY = "aquakart_google_redirect";
+const REDIRECT_MAX_AGE_MS = 10 * 60 * 1000;
+
+const startRedirectSignIn = (firebaseAuth) => {
+  try {
+    window.sessionStorage.setItem(REDIRECT_PENDING_KEY, String(Date.now()));
+  } catch {
+    // Storage blocked: the return check below then always looks.
+  }
+  return signInWithRedirect(firebaseAuth, getGoogleProvider());
+};
+
+// Was a redirect sign-in started in this tab (and not read yet)? Clears it.
+// When storage can't be read, assume yes so a sign-in is never lost.
+export const takeRedirectPending = (now = Date.now()) => {
+  try {
+    const store = window.sessionStorage;
+    const startedAt = Number(store.getItem(REDIRECT_PENDING_KEY));
+    store.removeItem(REDIRECT_PENDING_KEY);
+    return Boolean(startedAt) && now - startedAt < REDIRECT_MAX_AGE_MS;
+  } catch {
+    return true;
+  }
+};
+
 export const loginWithGoogle = async () => {
   const firebaseAuth = getFirebaseAuth();
   try {
@@ -110,7 +138,7 @@ export const loginWithGoogle = async () => {
     return exchangeGoogleUser(credential.user);
   } catch (error) {
     if (!shouldUseRedirectFallback(error)) throw error;
-    await signInWithRedirect(firebaseAuth, getGoogleProvider());
+    await startRedirectSignIn(firebaseAuth);
     return { redirecting: true };
   }
 };
@@ -139,13 +167,13 @@ export const loginWithGoogleForInvoice = async () => {
     };
   } catch (error) {
     if (!shouldUseRedirectFallback(error)) throw error;
-    await signInWithRedirect(firebaseAuth, getGoogleProvider());
+    await startRedirectSignIn(firebaseAuth);
     return { redirecting: true };
   }
 };
 
 export const completeGoogleRedirectLogin = async () => {
-  if (!isFirebaseConfigured()) return null;
+  if (!isFirebaseConfigured() || !takeRedirectPending()) return null;
   const credential = await getRedirectResult(getFirebaseAuth());
   return credential ? exchangeGoogleUser(credential.user) : null;
 };
