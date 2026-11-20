@@ -11,23 +11,28 @@ import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import {
+  checkBackendSession,
   completeGoogleRedirectLogin,
   loginWithGoogle,
-  logoutBackendUser,
-  logoutGoogleUser,
   observeGoogleAuthState,
+  renewGoogleSession,
   restoreExistingGoogleLogin,
+  signOutEverywhere,
 } from "@/services/googleAuth";
 import { isGoogleSession } from "@/utils/user";
 
 const AuthContext = createContext(null);
 const AUTH_RESTORE_TIMEOUT_MS = 12_000;
+// redux-persist rehydrates after mount; the restore waits for the stored
+// session this long at most (storage blocked or slow).
+const STORED_SESSION_WAIT_MS = 1_500;
 const RETURN_PATH_KEY = "aquakart_auth_return_to";
 
-const restoreGoogleLogin = () =>
+const restoreGoogleLogin = (storedSession) =>
   Promise.race([
     completeGoogleRedirectLogin().then(
-      (redirectResult) => redirectResult || restoreExistingGoogleLogin(),
+      (redirectResult) =>
+        redirectResult || restoreExistingGoogleLogin(storedSession),
     ),
     new Promise((resolve) =>
       setTimeout(() => resolve(null), AUTH_RESTORE_TIMEOUT_MS),
@@ -43,6 +48,8 @@ export const AuthProvider = ({ children }) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const session = useSelector((state) => state.userData);
+  const rehydrated = useSelector((state) => state._persist?.rehydrated);
+  const [storageWaitOver, setStorageWaitOver] = useState(false);
   const [loading, setLoading] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   const redirectChecked = useRef(false);
@@ -78,14 +85,52 @@ export const AuthProvider = ({ children }) => {
   );
 
   useEffect(() => {
-    if (redirectChecked.current) return undefined;
+    const timer = setTimeout(
+      () => setStorageWaitOver(true),
+      STORED_SESSION_WAIT_MS,
+    );
+    return () => clearTimeout(timer);
+  }, []);
+
+  // The stored session was reused: confirm it in the background (the page is
+  // already usable). Refused (expired or signed out elsewhere) → renew it from
+  // the Google sign-in, or end it; offline → keep it.
+  const confirmStoredSession = useCallback(
+    async (token) => {
+      const check = await checkBackendSession(token);
+      if (signedOutRef.current || sessionRef.current?.token !== token) return;
+      if (check.state === "ok") {
+        if (check.user)
+          dispatch({ type: "UPDATE_USER_DETAILS", payload: check.user });
+        return;
+      }
+      if (check.state !== "invalid") return;
+      const renewed = await renewGoogleSession().catch(() => null);
+      if (signedOutRef.current) return;
+      if (renewed) dispatch({ type: "LOGGED_IN_USER", payload: renewed });
+      else dispatch({ type: "LOGOUT", payload: null });
+    },
+    [dispatch],
+  );
+
+  // Runs once the stored session is back from storage (or the wait is over),
+  // so a still-valid session is reused instead of signing in again.
+  useEffect(() => {
+    if (redirectChecked.current || !(rehydrated || storageWaitOver))
+      return undefined;
     redirectChecked.current = true;
     let active = true;
-    restoreGoogleLogin()
+    const stored = sessionRef.current;
+    restoreGoogleLogin(stored)
       .then((result) => {
         // A sign-out that landed while the restore was in flight must win,
         // otherwise the resolved session logs the user straight back in.
         if (!active || !result || signedOutRef.current) return null;
+        if (result.reused) {
+          signedOutRef.current = false;
+          void confirmStoredSession(stored.token);
+          return null;
+        }
         return applyLoginResult(result, undefined, false);
       })
       .catch((error) => {
@@ -99,7 +144,17 @@ export const AuthProvider = ({ children }) => {
     return () => {
       active = false;
     };
-  }, [applyLoginResult]);
+  }, [applyLoginResult, confirmStoredSession, rehydrated, storageWaitOver]);
+
+  // A new Aquakart session from the Google sign-in Firebase still holds, when
+  // the backend refused the current one (a page saw a 401). Null when Firebase
+  // is signed out too: the shopper has to sign in again.
+  const refreshSession = useCallback(async () => {
+    const renewed = await renewGoogleSession().catch(() => null);
+    if (!renewed || signedOutRef.current) return null;
+    dispatch({ type: "LOGGED_IN_USER", payload: renewed });
+    return renewed;
+  }, [dispatch]);
 
   const signInWithGoogle = useCallback(async () => {
     setLoading(true);
@@ -132,14 +187,9 @@ export const AuthProvider = ({ children }) => {
       signedOutRef.current = true;
       setLoading(true);
 
-      // Clear Firebase first: while its session lives, the restore on the next
-      // page load re-exchanges the ID token and signs the user back in.
-      await logoutGoogleUser().catch((error) => {
-        console.error("Firebase sign-out failed", error);
-      });
-      await logoutBackendUser(token).catch((error) => {
-        console.error("Backend sign-out failed", error);
-      });
+      // Google auto sign-in off, Firebase cleared (or the next page load signs
+      // the user back in), the backend token cancelled, this tab's data gone.
+      await signOutEverywhere(token);
 
       dispatch({ type: "LOGOUT", payload: null });
       dispatch({ type: "SET_AUTH_DIALOG_VISIBLE", payload: false });
@@ -181,10 +231,12 @@ export const AuthProvider = ({ children }) => {
       signInWithGoogle,
       switchGoogleAccount: signInWithGoogle,
       adoptGoogleSession,
+      refreshSession,
       signOut,
     }),
     [
       adoptGoogleSession,
+      refreshSession,
       authReady,
       loading,
       session,

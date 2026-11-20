@@ -18,6 +18,7 @@ type AuthMock = {
   loading: boolean;
   session: { token?: string; user?: Record<string, unknown> } | null;
   signInWithGoogle: ReturnType<typeof vi.fn>;
+  refreshSession?: ReturnType<typeof vi.fn>;
   signOut: ReturnType<typeof vi.fn>;
 };
 let auth: AuthMock;
@@ -551,5 +552,66 @@ describe("/pay/[token]", () => {
     ).toHaveAttribute("href", "/product/kent-auto-8l");
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  describe("session", () => {
+    it("shows who is signed in, with a sign-out", async () => {
+      const user = userEvent.setup();
+      auth = signedIn({ email: "ravi@example.com" });
+      toForm();
+      render(<OfflinePayPage />);
+      await payButton();
+      expect(screen.getByText("ravi@example.com")).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: /sign out/i }));
+      expect(auth.signOut).toHaveBeenCalledWith({
+        redirectTo: null,
+        notify: true,
+      });
+    });
+
+    it("renews a refused session from the Google sign-in instead of asking again", async () => {
+      auth = signedIn();
+      // Like AuthContext: the renewed session replaces the stored one.
+      const refreshSession = vi.fn(async () => {
+        auth = { ...signedIn(), refreshSession };
+        auth.session = { ...auth.session, token: "jwt2" };
+        return { token: "jwt2" };
+      });
+      auth.refreshSession = refreshSession;
+      api.getOfflineSummary.mockResolvedValueOnce(summary());
+      api.getOfflineStatus
+        .mockRejectedValueOnce(
+          new OfflinePaymentError("Please sign in again.", "auth", 401),
+        )
+        .mockRejectedValueOnce(unbound());
+      render(<OfflinePayPage />);
+      await payButton();
+      expect(refreshSession).toHaveBeenCalledTimes(1);
+      expect(api.getOfflineStatus).toHaveBeenLastCalledWith(
+        "tok",
+        "jwt2",
+        expect.anything(),
+      );
+      expect(
+        screen.queryByText("Your sign-in has expired. Please sign in again."),
+      ).toBeNull();
+    });
+
+    it("asks to sign in again only when renewing fails", async () => {
+      auth = signedIn();
+      auth.refreshSession = vi.fn(async () => null);
+      api.getOfflineSummary.mockResolvedValueOnce(summary());
+      api.getOfflineStatus.mockRejectedValueOnce(
+        new OfflinePaymentError("Please sign in again.", "auth", 401),
+      );
+      render(<OfflinePayPage />);
+      expect(
+        await screen.findByText(
+          "Your sign-in has expired. Please sign in again.",
+        ),
+      ).toBeInTheDocument();
+      expect(auth.refreshSession).toHaveBeenCalledTimes(1);
+      expect(screen.queryByRole("button", { name: /^sign out/i })).toBeNull();
+    });
   });
 });

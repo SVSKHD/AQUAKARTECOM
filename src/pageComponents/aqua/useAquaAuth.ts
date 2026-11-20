@@ -6,13 +6,11 @@ import {
   completeGoogleRedirectLogin,
   loginWithGoogle,
   loginWithGoogleIdToken,
-  logoutBackendUser,
-  logoutGoogleUser,
+  signOutEverywhere,
 } from "@/services/googleAuth";
 import UserServiceOperations from "@/services/user";
 import {
   cancelGoogleOneTap,
-  disableGoogleAutoSelect,
   promptGoogleOneTap,
 } from "@/services/googleOneTap";
 
@@ -114,10 +112,9 @@ export function useAquaAuth(token: string | null) {
 
   const signOut = useCallback(async () => {
     setBusy(true);
-    disableGoogleAutoSelect();
-    // Firebase first, or the next load would sign the user straight back in.
-    await logoutGoogleUser().catch(() => {});
-    await logoutBackendUser(token).catch(() => {});
+    // The shared sign-out: One Tap auto-select off, Firebase cleared, the
+    // backend token cancelled, this tab's per-user data removed.
+    await signOutEverywhere(token);
     dispatch({ type: "LOGOUT", payload: null });
     setBusy(false);
   }, [dispatch, token]);

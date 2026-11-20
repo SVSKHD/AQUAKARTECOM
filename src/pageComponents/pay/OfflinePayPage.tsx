@@ -93,6 +93,8 @@ export type PayAuth = {
   loading: boolean;
   session: { token?: string; user?: PayUser } | null;
   signInWithGoogle: () => Promise<unknown>;
+  // New session from the Google sign-in Firebase still holds (null if none).
+  refreshSession?: () => Promise<unknown>;
   signOut: (o?: {
     redirectTo?: string | null;
     notify?: boolean;
@@ -748,6 +750,35 @@ function SignIn({ auth, note }: { auth: PayAuth; note?: string }) {
   );
 }
 
+// Who is paying, with a way out on a shared phone or the wrong account.
+function SignedInAs({ auth, email }: { auth: PayAuth; email?: string }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <p className={styles.signedIn}>
+      <UserRound aria-hidden="true" width={14} height={14} />
+      <span>
+        Signed in{email ? " as " : ""}
+        {email && <b>{email}</b>}
+      </span>
+      <button
+        type="button"
+        className={styles.linkBtn}
+        disabled={busy}
+        aria-busy={busy}
+        onClick={() => {
+          setBusy(true);
+          void auth
+            .signOut({ redirectTo: null, notify: true })
+            .finally(() => setBusy(false));
+        }}
+      >
+        <LogOut aria-hidden="true" width={14} height={14} />
+        {busy ? "Signing out…" : "Sign out"}
+      </button>
+    </p>
+  );
+}
+
 function BoundElsewhere({ auth }: { auth: PayAuth }) {
   return (
     <Notice
@@ -902,6 +933,23 @@ export default function OfflinePayPage() {
       ? accountLoaded.account
       : null;
   const accountError = account?.kind === "error" ? account.error : null;
+
+  // The backend refused the stored session (expired, or signed out on this
+  // device elsewhere): renew it once from the Google sign-in Firebase still
+  // holds, so the customer isn't asked to sign in again.
+  const { refreshSession } = auth;
+  const renewStarted = useRef<string | null>(null);
+  const [renewDone, setRenewDone] = useState<string | null>(null);
+  const canRenew = accountError?.kind === "auth" && !!refreshSession;
+  const renewing = canRenew && renewDone !== authToken;
+  useEffect(() => {
+    if (!canRenew || renewStarted.current === authToken) return;
+    renewStarted.current = authToken;
+    const tried = authToken;
+    void refreshSession!()
+      .catch(() => null)
+      .finally(() => setRenewDone(tried));
+  }, [canRenew, authToken, refreshSession]);
   const lastStatus = account?.kind === "yours" ? account.status.status : null;
 
   // ---------- details ----------
@@ -1167,6 +1215,7 @@ export default function OfflinePayPage() {
   const step = !authToken ? 0 : waiting ? 2 : 1;
   let body: ReactNode;
   if (!authToken) body = <SignIn auth={auth} />;
+  else if (renewing) body = <Loading label="Checking your sign-in…" />;
   else if (accountError?.kind === "auth")
     body = (
       <SignIn
@@ -1365,6 +1414,12 @@ export default function OfflinePayPage() {
         onSelect={(i) => setSelected((cur) => (cur === i ? null : i))}
       />
       <Steps current={step} />
+      {authToken &&
+        step === 1 &&
+        !renewing &&
+        accountError?.kind !== "auth" && (
+          <SignedInAs auth={auth} email={user?.email} />
+        )}
       {body}
     </PayShell>
   );
