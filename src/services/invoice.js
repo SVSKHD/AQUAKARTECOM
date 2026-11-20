@@ -65,6 +65,22 @@ export const directInvoiceLoginPath = (invoiceId) =>
 export const invoiceByIdPath = (invoiceId) =>
   `/invoice-gateway/${encodeURIComponent(String(invoiceId || ""))}`;
 
+// Logged-out quick view (number, date, status, total, product names).
+// Returns null when it isn't available; the sign-in screen still works.
+const getInvoicePreview = async (invoiceId, signal) => {
+  if (!invoiceId) return null;
+  try {
+    const response = await invoiceRequest({
+      method: "get",
+      url: `${invoiceByIdPath(invoiceId)}/preview`,
+      signal,
+    });
+    return response.data?.preview || null;
+  } catch {
+    return null;
+  }
+};
+
 const getInvoiceById = async (invoiceId, signal) => {
   if (!invoiceId) throw new Error("Invoice ID is required.");
   const response = await invoiceRequest({
@@ -183,6 +199,7 @@ const InvoiceServiceOperations = {
   loginInvoiceAccess,
   loginDirectInvoiceAccess,
   getInvoiceById,
+  getInvoicePreview,
   getAccessibleInvoices,
   getMyInvoices,
   emailInvoice,

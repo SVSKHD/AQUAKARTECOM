@@ -70,3 +70,33 @@ export const isSameOriginRequest = (req) => {
     return false;
   }
 };
+
+// Visitor IP for per-visitor limits behind the hosting proxy.
+export const clientIp = (req) =>
+  String(req.headers["x-forwarded-for"] || "")
+    .split(",")[0]
+    .trim() ||
+  String(req.headers["x-real-ip"] || "").trim() ||
+  req.socket?.remoteAddress ||
+  "unknown";
+
+// Small in-memory fixed-window limiter. Per server instance only (best
+// effort); the backend keeps its own cap. Returns true when allowed.
+export const createVisitorLimiter = ({ windowMs, limit, maxKeys = 5000 }) => {
+  const hits = new Map();
+  return (key, now = Date.now()) => {
+    const entry = hits.get(key);
+    if (!entry || now - entry.start >= windowMs) {
+      if (hits.size >= maxKeys) {
+        for (const [oldKey, old] of hits) {
+          if (now - old.start >= windowMs) hits.delete(oldKey);
+        }
+        if (hits.size >= maxKeys) hits.delete(hits.keys().next().value);
+      }
+      hits.set(key, { start: now, count: 1 });
+      return true;
+    }
+    entry.count += 1;
+    return entry.count <= limit;
+  };
+};
