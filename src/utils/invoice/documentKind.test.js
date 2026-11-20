@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getDocumentKind, isPaidStatus } from "./documentKind";
+import {
+  getDocumentKind,
+  getDocumentStatus,
+  isPaidStatus,
+} from "./documentKind";
 
 describe("getDocumentKind", () => {
   it("calls a paid sale a receipt and an unpaid one an invoice", () => {
@@ -30,5 +34,21 @@ describe("getDocumentKind", () => {
     expect(isPaidStatus("SUCCESS")).toBe(true);
     expect(isPaidStatus("pending")).toBe(false);
     expect(isPaidStatus(undefined)).toBe(false);
+  });
+});
+
+describe("getDocumentStatus", () => {
+  it("stamps each kind of bill", () => {
+    const key = (invoice) => getDocumentStatus(invoice).key;
+    expect(key({ paid_status: "paid" })).toBe("paid");
+    expect(key({ paid_status: "unpaid" })).toBe("unpaid");
+    expect(key({})).toBe("unpaid");
+    expect(key({ paid_status: "Partially_Paid" })).toBe("partial");
+    expect(key({ quotation: true, paid_status: "paid" })).toBe("quotation");
+    expect(key({ po: true, paid_status: "unpaid" })).toBe("po");
+    expect(key({ po: true, paid_status: "paid" })).toBe("paid");
+    expect(key({ paid_status: "cancelled", quotation: true })).toBe(
+      "cancelled",
+    );
   });
 });

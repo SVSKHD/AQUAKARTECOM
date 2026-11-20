@@ -3694,3 +3694,576 @@
   color: var(--aq-mut2);
   font-size: 0.64rem;
 }
+
+/* ═══════════════ Status stamp, legend and AI panel ═══════════════
+   One colour per status, set as tokens by a tone_* class so the stamp,
+   pills, legend and AI panel always agree:
+   paid green · unpaid red · partial amber · quotation blue · PO violet ·
+   cancelled slate. */
+.tone_paid {
+  --tone: #047857;
+  --tone-soft: #d1fae5;
+  --tone-line: #6ee7b7;
+  --tone-glow: rgba(16, 185, 129, 0.35);
+}
+.tone_unpaid {
+  --tone: #c81e1e;
+  --tone-soft: #fee2e2;
+  --tone-line: #fca5a5;
+  --tone-glow: rgba(239, 68, 68, 0.32);
+}
+.tone_partial {
+  --tone: #b45309;
+  --tone-soft: #fef3c7;
+  --tone-line: #fcd34d;
+  --tone-glow: rgba(245, 158, 11, 0.32);
+}
+.tone_quotation {
+  --tone: #1d4ed8;
+  --tone-soft: #dbeafe;
+  --tone-line: #93c5fd;
+  --tone-glow: rgba(59, 130, 246, 0.32);
+}
+.tone_po {
+  --tone: #6d28d9;
+  --tone-soft: #ede9fe;
+  --tone-line: #c4b5fd;
+  --tone-glow: rgba(139, 92, 246, 0.32);
+}
+.tone_cancelled {
+  --tone: #475569;
+  --tone-soft: #f1f5f9;
+  --tone-line: #cbd5e1;
+  --tone-glow: rgba(100, 116, 139, 0.28);
+}
+
+.statusPill[class*="tone_"] {
+  border-color: var(--tone-line);
+  color: var(--tone);
+  background: var(--tone-soft);
+}
+.statusPill[class*="tone_"] .statusDot {
+  box-shadow: 0 0 0 4px var(--tone-glow);
+}
+
+/* The stamp: logo in the middle, status text running round the ring. */
+.stamp {
+  position: relative;
+  display: grid;
+  width: 128px;
+  height: 128px;
+  flex: 0 0 auto;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--tone);
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.stamp:focus-visible {
+  outline: 3px solid var(--tone-line);
+  outline-offset: 4px;
+}
+.stampRing {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.stampOuter {
+  fill: none;
+  stroke: currentcolor;
+  stroke-dasharray: 3 3;
+  stroke-width: 2;
+  opacity: 0.8;
+}
+.stampInner {
+  fill: var(--tone-soft);
+  stroke: currentcolor;
+  stroke-width: 2.5;
+}
+.stampText {
+  fill: currentcolor;
+  font-family: var(--app-display-font, inherit);
+  font-size: 11.5px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+.stampLogo {
+  position: relative;
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 0 3px #fff,
+    0 10px 24px var(--tone-glow);
+}
+.stampLogo img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+.stampBadge {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  padding: 4px 10px;
+  border: 2px solid currentcolor;
+  border-radius: 6px;
+  color: var(--tone);
+  background: var(--tone-soft);
+  font-family: var(--app-display-font, inherit);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px var(--tone-glow);
+  transform: translateX(-50%) rotate(-8deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stampRing {
+    animation: stampSpin 22s linear infinite;
+  }
+  .stamp:hover .stampRing {
+    animation-duration: 6s;
+  }
+  .stampBadge {
+    animation: stampSlam 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) 0.35s both;
+  }
+  .tone_unpaid .stampBadge,
+  .tone_partial .stampBadge {
+    animation:
+      stampSlam 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) 0.35s both,
+      stampNudge 2.6s ease-in-out 1.4s infinite;
+  }
+  .tone_paid.stamp::after {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 var(--tone-glow);
+    animation: stampPulse 2.8s ease-out 1s infinite;
+    content: "";
+    pointer-events: none;
+  }
+}
+
+@keyframes stampSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes stampSlam {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(2.6) rotate(-24deg);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(-50%) scale(0.92) rotate(-6deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1) rotate(-8deg);
+  }
+}
+@keyframes stampNudge {
+  0%,
+  86%,
+  100% {
+    transform: translateX(-50%) rotate(-8deg);
+  }
+  90% {
+    transform: translateX(-50%) rotate(-3deg) scale(1.06);
+  }
+  95% {
+    transform: translateX(-50%) rotate(-12deg) scale(1.06);
+  }
+}
+@keyframes stampPulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--tone-glow);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 18px transparent;
+  }
+}
+
+/* Click-to-copy number in the hero. */
+.heroNumber {
+  display: inline-flex;
+  max-width: 100%;
+  margin: 5px 0 7px;
+  padding: 2px 6px;
+  align-items: center;
+  gap: 8px;
+  border: 1px dashed transparent;
+  border-radius: 10px;
+  color: inherit;
+  background: transparent;
+  cursor: copy;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.heroNumber strong {
+  overflow-wrap: anywhere;
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  letter-spacing: -0.04em;
+  text-align: right;
+}
+.heroNumber svg {
+  opacity: 0.35;
+  transition: opacity 0.2s;
+}
+.heroNumber:hover,
+.heroNumber:focus-visible {
+  border-color: var(--aq-mintbd, #bfe6da);
+  background: rgba(255, 255, 255, 0.6);
+}
+.heroNumber:hover svg,
+.heroNumber:focus-visible svg {
+  opacity: 1;
+}
+
+/* Status guide under the meta strip. */
+.statusLegend {
+  display: flex;
+  padding: 14px clamp(20px, 4vw, 48px);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  border-bottom: 1px solid var(--aq-bd, #e7eeec);
+  background: rgba(255, 255, 255, 0.55);
+}
+.statusLegendChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.legendChip {
+  display: inline-flex;
+  padding: 5px 10px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--tone-line);
+  border-radius: 999px;
+  color: var(--tone);
+  background: #fff;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  cursor: pointer;
+  transition:
+    opacity 0.2s,
+    transform 0.2s,
+    background 0.2s;
+}
+.legendChip:hover,
+.legendChipSelected {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+.legendChipCurrent {
+  background: var(--tone-soft);
+  opacity: 1;
+  box-shadow: 0 0 0 3px var(--tone-glow);
+}
+.statusLegendHint {
+  min-width: 0;
+  margin: 0;
+  flex: 1 1 240px;
+  color: var(--aq-body, #3d4f58);
+  font-size: 0.8rem;
+}
+.statusLegendHint strong {
+  color: var(--tone);
+}
+
+/* Each line's share of the bill. */
+.lineShare {
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+  gap: 10px;
+}
+.lineShare span {
+  position: relative;
+  height: 5px;
+  flex: 1 1 auto;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--aq-tint, #f3f8f7);
+}
+.lineShare span::after {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--share);
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--invoice-mint), var(--aq-go));
+  content: "";
+}
+.lineShare small {
+  flex: 0 0 auto;
+  color: var(--invoice-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lineShare span::after {
+    animation: shareGrow 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both;
+  }
+  .lineItem {
+    transition:
+      transform 0.2s,
+      box-shadow 0.2s;
+  }
+  .lineItem:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(8, 74, 84, 0.08);
+  }
+}
+@keyframes shareGrow {
+  from {
+    width: 0;
+  }
+}
+
+/* Ask AI about this bill. */
+/* Signed out, the panel keeps Aqua's own green. */
+.aiPanel:not([class*="tone_"]) {
+  --tone: var(--aq-go, #008b68);
+  --tone-soft: var(--aq-mint, #e5f8f2);
+  --tone-line: var(--aq-mintbd, #bfe6da);
+}
+.aiPanel {
+  display: grid;
+  margin: clamp(16px, 3vw, 28px) clamp(20px, 4vw, 48px) 0;
+  padding: clamp(18px, 3vw, 26px);
+  gap: 16px;
+  border: 1px solid var(--tone-line);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 100% 0%, var(--tone-soft), transparent 18rem),
+    rgba(255, 255, 255, 0.82);
+  box-shadow: 0 18px 40px rgba(8, 74, 84, 0.06);
+}
+.aiHead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.aiHead h2,
+.aiLockedCopy h2 {
+  margin: 4px 0 0;
+  padding: 0;
+  border: 0;
+  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+}
+.aiOrb {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--tone), var(--invoice-mint));
+  box-shadow: 0 10px 22px var(--tone-glow, rgba(16, 185, 129, 0.3));
+}
+.aiChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.aiChip {
+  display: inline-flex;
+  min-height: 36px;
+  padding: 0 14px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--tone-line);
+  border-radius: 999px;
+  color: var(--tone);
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 0.18s,
+    background 0.18s,
+    box-shadow 0.18s;
+}
+.aiChip:hover,
+.aiChip:focus-visible {
+  background: var(--tone-soft);
+  box-shadow: 0 8px 18px var(--tone-glow, rgba(16, 185, 129, 0.2));
+  transform: translateY(-2px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .aiChip {
+    animation: chipIn 0.4s ease-out both;
+  }
+  .aiOrb {
+    animation: orbFloat 3.4s ease-in-out infinite;
+  }
+}
+@keyframes chipIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes orbFloat {
+  50% {
+    transform: translateY(-3px) rotate(-4deg);
+  }
+}
+.aiForm {
+  display: flex;
+  padding: 5px 5px 5px 16px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--aq-bd, #dfe9e7);
+  border-radius: 999px;
+  background: #fff;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.aiForm:focus-within {
+  border-color: var(--tone-line);
+  box-shadow: 0 0 0 4px var(--tone-soft);
+}
+.aiForm input {
+  min-width: 0;
+  flex: 1 1 auto;
+  border: 0;
+  outline: 0;
+  color: var(--invoice-ink);
+  background: transparent;
+  font: inherit;
+  font-size: 16px;
+}
+.aiForm button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--tone);
+  cursor: pointer;
+}
+.aiForm button:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+.aiNote {
+  margin: -6px 0 0 16px;
+  color: var(--invoice-muted);
+  font-size: 0.7rem;
+}
+.aiPanelLocked {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+}
+.aiPanelLocked .aiOrb {
+  background: linear-gradient(135deg, #64748b, #94a3b8);
+}
+.aiLockedCopy p {
+  margin: 4px 0 0;
+  color: var(--aq-body, #3d4f58);
+  font-size: 0.84rem;
+}
+.aiPanelLocked .googleSignInButton {
+  display: inline-flex;
+  min-height: 44px;
+  padding: 0 18px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #d5e0de;
+  border-radius: 999px;
+  color: #243b43;
+  background: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+.aiPanelLocked .googleSignInButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .stamp {
+    width: 96px;
+    height: 96px;
+  }
+  .stampLogo {
+    width: 48px;
+    height: 48px;
+  }
+  .stampLogo img {
+    width: 34px;
+    height: 34px;
+  }
+  .stampBadge {
+    font-size: 0.58rem;
+  }
+  .heroNumber strong {
+    font-size: 1.2rem;
+  }
+  .statusLegend {
+    padding: 12px 18px;
+  }
+  .aiPanel {
+    margin: 16px 12px 0;
+  }
+  .aiPanelLocked {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .aiPanelLocked .googleSignInButton {
+    justify-content: center;
+    grid-column: 1 / -1;
+  }
+}
+
+@media print {
+  .stampRing,
+  .stampBadge,
+  .tone_paid.stamp::after {
+    animation: none !important;
+  }
+  .stamp,
+  .statusPill,
+  .stampBadge {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .heroNumber svg,
+  .statusLegend,
+  .aiPanel {
+    display: none !important;
+  }
+}

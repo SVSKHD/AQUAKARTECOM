@@ -386,6 +386,32 @@ describe("AssistantWidget", () => {
     expect(ai.sendAiChat).not.toHaveBeenCalled();
   });
 
+  it("sends an autoSend question straight away instead of pre-filling it", async () => {
+    const { store } = setup();
+    await screen.findByRole(
+      "button",
+      { name: "Open AquaKart assistant" },
+      { timeout: 3000 },
+    );
+    act(() =>
+      store.dispatch({
+        type: "OPEN_ASSISTANT",
+        payload: { prefill: "How do I pay invoice AQ-101?", autoSend: true },
+      }),
+    );
+    await waitFor(() =>
+      expect(ai.streamAiChat).toHaveBeenCalledWith(
+        "How do I pay invoice AQ-101?",
+        expect.any(Array),
+        expect.any(Object),
+      ),
+    );
+    expect(screen.getByLabelText("Message the AquaKart assistant")).toHaveValue(
+      "",
+    );
+    expect(store.getState().assistant.autoSend).toBe(false);
+  });
+
   it("clears the chat and its stored history", async () => {
     ai.sendAiChat.mockResolvedValueOnce("Sure.");
     await openWidget();
