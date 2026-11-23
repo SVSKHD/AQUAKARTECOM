@@ -85,6 +85,19 @@ describe("HotPicksMap", () => {
     ).toBeInTheDocument();
   });
 
+  it("keeps the map up while another window loads, and outlines the picked area", async () => {
+    const { container } = render(
+      <HotPicksMap products={products} onOpen={vi.fn()} onClose={vi.fn()} />,
+    );
+    await screen.findByRole("img");
+    expect(container.querySelector(".aq-hm-region")).not.toBeNull();
+    getDemandAreas.mockReturnValueOnce(new Promise(() => {}));
+    fireEvent.click(screen.getByRole("button", { name: "30 days" }));
+    expect(screen.getByRole("img")).toBeInTheDocument();
+    expect(screen.queryByText("Loading the map…")).toBeNull();
+    expect(screen.getByText("Loading the last 30 days…")).toBeInTheDocument();
+  });
+
   it("asks again for another window, and says when there's nothing", async () => {
     render(
       <HotPicksMap products={products} onOpen={vi.fn()} onClose={vi.fn()} />,
