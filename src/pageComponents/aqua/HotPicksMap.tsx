@@ -9,6 +9,7 @@ import {
   heatLabel,
   placeDemand,
   projector,
+  regionOutline,
   type AreaDemand,
   type HotSpot,
 } from "./demandMap";
@@ -47,6 +48,10 @@ export default function HotPicksMap(p: Props) {
   });
   const [days, setDays] = useState<(typeof WINDOWS)[number]>(90);
   const [load, setLoad] = useState<Load>({ status: "loading" });
+  // Switching 30 ↔ 90 days keeps the current map up (dimmed) until the new
+  // one lands: swapping it for a short skeleton made the phone sheet shrink
+  // and grow back, which read as the drawer closing and reopening.
+  const [pending, setPending] = useState(false);
   const [picked, setPicked] = useState<string | null>(null);
 
   useEffect(() => {
@@ -66,6 +71,7 @@ export default function HotPicksMap(p: Props) {
       if (!alive) return;
       const areas = (data?.areas || []) as AreaDemand[];
       setLoad(areas.length ? { status: "ready", areas } : { status: "empty" });
+      setPending(false);
     });
     return () => {
       alive = false;
@@ -88,6 +94,16 @@ export default function HotPicksMap(p: Props) {
   const current: HotSpot | null =
     map?.spots.find((s) => s.area === picked) || mine || map?.spots[0] || null;
   const total = map?.spots.reduce((n, s) => n + s.orders, 0) || 0;
+
+  // The picked area's outline, against every area the city map knows.
+  const outline = useMemo(() => {
+    if (!map || !proj || !current) return "";
+    const at = proj.at(current);
+    const others = (map.city.areas || map.spots).map((a) => proj.at(a));
+    return regionOutline(at, others, proj.width * 0.075)
+      .map((q) => `${q.x.toFixed(1)},${q.y.toFixed(1)}`)
+      .join(" ");
+  }, [map, proj, current]);
 
   return (
     <>
@@ -124,9 +140,11 @@ export default function HotPicksMap(p: Props) {
           </header>
           <div className="aq-pd-bar">
             <span className="aq-pd-sub">
-              {map
-                ? `${total} orders across ${map.spots.length} areas of ${map.city.name}`
-                : "Where people are buying"}
+              {pending
+                ? `Loading the last ${days} days…`
+                : map
+                  ? `${total} orders across ${map.spots.length} areas of ${map.city.name}`
+                  : "Where people are buying"}
             </span>
             <div className="aq-hm-days" role="group" aria-label="Time window">
               {WINDOWS.map((d) => (
@@ -136,7 +154,7 @@ export default function HotPicksMap(p: Props) {
                   aria-pressed={days === d}
                   onClick={() => {
                     if (d === days) return;
-                    setLoad({ status: "loading" });
+                    setPending(true);
                     setDays(d);
                   }}
                 >
@@ -146,7 +164,11 @@ export default function HotPicksMap(p: Props) {
             </div>
           </div>
 
-          <div className="aq-hm-body">
+          <div
+            className="aq-hm-body"
+            data-pending={pending}
+            aria-busy={pending || load.status === "loading"}
+          >
             {load.status === "loading" ? (
               <div className="aq-hm-skel" role="status">
                 Loading the map…
@@ -207,6 +229,13 @@ export default function HotPicksMap(p: Props) {
                         );
                       })}
                     </g>
+                    {outline && (
+                      <polygon
+                        key={current?.area}
+                        points={outline}
+                        className="aq-hm-region"
+                      />
+                    )}
                     {map.spots.map((s, i) => {
                       const { x, y } = proj.at(s);
                       const on = current?.area === s.area;

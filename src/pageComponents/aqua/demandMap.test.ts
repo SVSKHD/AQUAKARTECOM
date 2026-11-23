@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { heatLabel, placeDemand, projector } from "./demandMap";
+import { heatLabel, placeDemand, projector, regionOutline } from "./demandMap";
 
 const row = (area: string, orders: number) => ({
   area,
@@ -51,6 +51,23 @@ describe("projector", () => {
       expect(q.y).toBeGreaterThan(0);
       expect(q.y).toBeLessThan(p.height);
     }
+  });
+});
+
+describe("regionOutline", () => {
+  it("stops halfway to a neighbour and stays within reach elsewhere", () => {
+    const poly = regionOutline({ x: 0, y: 0 }, [{ x: 10, y: 0 }], 20);
+    expect(poly.length).toBeGreaterThan(3);
+    for (const p of poly) {
+      expect(p.x).toBeLessThanOrEqual(5 + 1e-9);
+      expect(Math.hypot(p.x, p.y)).toBeLessThanOrEqual(20 + 1e-9);
+    }
+    expect(Math.min(...poly.map((p) => p.x))).toBeCloseTo(-20);
+  });
+
+  it("is a plain circle with no neighbours near", () => {
+    const poly = regionOutline({ x: 0, y: 0 }, [{ x: 500, y: 0 }], 10, 12);
+    expect(poly).toHaveLength(12);
   });
 });
 

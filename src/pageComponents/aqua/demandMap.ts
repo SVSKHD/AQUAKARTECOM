@@ -96,6 +96,47 @@ export function projector(points: { lat: number; lon: number }[], width = 320) {
   };
 }
 
+type XY = { x: number; y: number };
+
+// The outline of a locality: the ground closer to it than to any other known
+// area (its Voronoi cell), kept within `reach` of its centre so an area on the
+// city's edge doesn't spill across the map. Our data has a centre per area,
+// not its boundary, so this is the honest shape we can draw.
+export function regionOutline(
+  at: XY,
+  others: XY[],
+  reach: number,
+  sides = 28,
+): XY[] {
+  let poly: XY[] = Array.from({ length: sides }, (_, i) => {
+    const t = (i / sides) * Math.PI * 2;
+    return { x: at.x + reach * Math.cos(t), y: at.y + reach * Math.sin(t) };
+  });
+  for (const o of others) {
+    const dx = o.x - at.x;
+    const dy = o.y - at.y;
+    if (dx * dx + dy * dy < 1e-6 || Math.hypot(dx, dy) > reach * 2) continue;
+    // Keep the half of the plane nearer `at`: (p - mid) · d <= 0.
+    const mx = (at.x + o.x) / 2;
+    const my = (at.y + o.y) / 2;
+    const side = (p: XY) => (p.x - mx) * dx + (p.y - my) * dy;
+    const next: XY[] = [];
+    poly.forEach((p, i) => {
+      const q = poly[(i + 1) % poly.length];
+      const sp = side(p);
+      const sq = side(q);
+      if (sp <= 0) next.push(p);
+      if (sp <= 0 !== sq <= 0) {
+        const t = sp / (sp - sq);
+        next.push({ x: p.x + (q.x - p.x) * t, y: p.y + (q.y - p.y) * t });
+      }
+    });
+    poly = next;
+    if (poly.length < 3) return [];
+  }
+  return poly;
+}
+
 // "Hot", "Warm" or "Active" for a spot's heat, as the legend reads.
 export const heatLabel = (heat: number) =>
   heat >= 0.66 ? "Hot" : heat >= 0.33 ? "Warm" : "Active";

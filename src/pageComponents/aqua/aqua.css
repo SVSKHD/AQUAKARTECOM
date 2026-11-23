@@ -10118,10 +10118,17 @@ button.aq-pf-buy {
 
 /* ---------- Hot picks map (drawer) ---------- */
 .aq-hm {
-  --aq-hm-hot: #e5484d;
-  --aq-hm-warm: #f5a524;
-  --aq-hm-cool: #10bfa4;
+  /* Heat in the list chips and badge: one navy scale, deepest = busiest. */
+  --aq-hm-hot: #0f2a66;
+  --aq-hm-warm: #3a5ca8;
+  --aq-hm-cool: #dbe6fb;
+  --aq-hm-cool-ink: #0f2a66;
   --aq-hm-ground: rgba(var(--aq-ln), 0.035);
+  /* The map itself: deep navy with white light, same in both themes. Heat is
+     told by brightness, not hue, so the map stays calm. */
+  --aq-hm-sea: #0f2a66;
+  --aq-hm-sea-deep: #07163a;
+  --aq-hm-ice: #a9c8ff;
 }
 .aq-hm-days {
   display: inline-flex;
@@ -10184,12 +10191,27 @@ button.aq-pf-buy {
   overflow: hidden;
   background:
     radial-gradient(
-      circle at 50% 50%,
-      rgba(16, 191, 164, 0.06),
+      ellipse at 50% 42%,
+      rgba(120, 160, 255, 0.16),
       transparent 70%
     ),
-    var(--aq-hm-ground);
-  border: 1px solid var(--aq-bd);
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px) 0 0 / 100%
+      28px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px) 0
+      0 / 28px 100%,
+    linear-gradient(165deg, var(--aq-hm-sea), var(--aq-hm-sea-deep));
+  border: 1px solid rgba(7, 22, 58, 0.6);
+  box-shadow:
+    inset 0 0 60px rgba(3, 10, 30, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.aq-hm-body > * {
+  transition: opacity 0.2s;
+}
+.aq-hm-body[data-pending="true"] > .aq-hm-map,
+.aq-hm-body[data-pending="true"] > .aq-hm-areas,
+.aq-hm-body[data-pending="true"] > .aq-hm-picks {
+  opacity: 0.5;
 }
 .aq-hm-map svg {
   display: block;
@@ -10198,22 +10220,36 @@ button.aq-pf-buy {
   max-height: 46vh;
 }
 .aq-hm-base {
-  fill: rgba(var(--aq-ln), 0.22);
+  fill: rgba(255, 255, 255, 0.28);
 }
 .aq-hm-heat {
-  mix-blend-mode: multiply;
+  mix-blend-mode: screen;
 }
 .aq-hm-stop-hot {
-  stop-color: var(--aq-hm-hot);
-  stop-opacity: 0.75;
+  stop-color: #fff;
+  stop-opacity: 0.55;
 }
 .aq-hm-stop-warm {
-  stop-color: var(--aq-hm-warm);
-  stop-opacity: 0.7;
+  stop-color: #d6e4ff;
+  stop-opacity: 0.38;
 }
 .aq-hm-stop-cool {
-  stop-color: var(--aq-hm-cool);
-  stop-opacity: 0.6;
+  stop-color: var(--aq-hm-ice);
+  stop-opacity: 0.24;
+}
+/* The picked area's ground, outlined. */
+.aq-hm-region {
+  fill: rgba(255, 255, 255, 0.07);
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+  pointer-events: none;
+  animation: aqHmRegion 0.3s ease-out both;
+}
+@keyframes aqHmRegion {
+  from {
+    opacity: 0;
+  }
 }
 .aq-hm-spot {
   cursor: pointer;
@@ -10222,22 +10258,26 @@ button.aq-pf-buy {
   fill: transparent;
 }
 .aq-hm-core {
-  fill: var(--aq-surf);
-  stroke: var(--aq-ink);
-  stroke-width: 1.5;
-  transition: r 0.2s;
+  fill: #fff;
+  stroke: none;
+  opacity: 0.85;
+  transition:
+    r 0.2s,
+    opacity 0.2s;
 }
 .aq-hm-spot[data-on="true"] .aq-hm-core {
-  fill: var(--aq-ink);
-  stroke: var(--aq-surf);
-  stroke-width: 2;
+  opacity: 1;
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 4;
+  paint-order: stroke;
 }
 .aq-hm-label {
-  font-size: 9.5px;
-  font-weight: 800;
-  fill: var(--aq-ink);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  fill: rgba(255, 255, 255, 0.92);
   paint-order: stroke;
-  stroke: var(--aq-surf);
+  stroke: var(--aq-hm-sea-deep);
   stroke-width: 3px;
   stroke-linejoin: round;
   pointer-events: none;
@@ -10251,12 +10291,13 @@ button.aq-pf-buy {
   gap: 5px;
   padding: 4px 9px;
   border-radius: 999px;
-  background: rgba(var(--aq-gl), 0.75);
+  background: rgba(7, 22, 58, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   font-size: 11px;
   font-weight: 700;
-  color: var(--aq-mut);
+  color: rgba(255, 255, 255, 0.8);
 }
 .aq-hm-key {
   width: 9px;
@@ -10268,15 +10309,30 @@ button.aq-pf-buy {
 .aq-hm-key:first-child {
   margin-left: 0;
 }
+/* The map's legend reads in the map's light, not the list's colours. */
+.aq-hm-legend .aq-hm-key[data-tone="cool"] {
+  background: rgba(169, 200, 255, 0.45);
+}
+.aq-hm-legend .aq-hm-key[data-tone="warm"] {
+  background: rgba(214, 228, 255, 0.75);
+}
+.aq-hm-legend .aq-hm-key[data-tone="hot"] {
+  background: #fff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
+}
 .aq-hm-key[data-tone="warm"],
 .aq-hm-area[data-tone="warm"] .aq-hm-count,
 .aq-hm-badge[data-tone="warm"] {
   background: var(--aq-hm-warm);
+  color: #fff;
 }
 .aq-hm-key[data-tone="hot"],
 .aq-hm-area[data-tone="hot"] .aq-hm-count,
 .aq-hm-badge[data-tone="hot"] {
   background: var(--aq-hm-hot);
+  color: #fff;
+  /* Keeps the deepest navy visible on the dark theme's surface. */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
 .aq-hm-areas {
   display: flex;
@@ -10317,7 +10373,7 @@ button.aq-pf-buy {
   place-items: center;
   border-radius: 999px;
   background: var(--aq-hm-cool);
-  color: #fff;
+  color: var(--aq-hm-cool-ink);
   font-size: 11px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -10341,15 +10397,16 @@ button.aq-pf-buy {
   padding: 2px 8px;
   border-radius: 999px;
   background: var(--aq-hm-cool);
-  color: #fff;
+  color: var(--aq-hm-cool-ink);
   font-size: 11px;
   font-weight: 800;
 }
 .aq-hm-you {
-  padding: 2px 8px;
+  padding: 1px 8px;
   border-radius: 999px;
-  background: var(--aq-mint);
-  color: var(--aq-mintink);
+  border: 1px solid var(--aq-hm-warm);
+  background: transparent;
+  color: var(--aq-hm-warm);
   font-size: 11px;
   font-weight: 800;
 }
@@ -10359,15 +10416,18 @@ button.aq-pf-buy {
   color: var(--aq-mut2);
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .aq-hm-heat {
-    mix-blend-mode: screen;
+  :root:not([data-theme="light"]) .aq-hm-you {
+    border-color: #a9c8ff;
+    color: #a9c8ff;
   }
 }
-:root[data-theme="dark"] .aq-hm-heat {
-  mix-blend-mode: screen;
+:root[data-theme="dark"] .aq-hm-you {
+  border-color: #a9c8ff;
+  color: #a9c8ff;
 }
 @media (prefers-reduced-motion: reduce) {
   .aq-hm-skel,
+  .aq-hm-region,
   .aq-hm-picks {
     animation: none;
   }
