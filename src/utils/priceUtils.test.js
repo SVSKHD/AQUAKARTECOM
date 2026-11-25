@@ -39,6 +39,22 @@ describe("priceUtils", () => {
     expect(result.grandTotal).toBe(3_500);
   });
 
+  it("uses a normalized line total as-is (CRM invoices/POs are never multiplied)", () => {
+    const product = {
+      productPrice: 31_500,
+      productQuantity: 3,
+      productLineTotal: 94_500,
+    };
+    expect(
+      priceUtils.getInvoiceAmounts({ products: [product] }).grandTotal,
+    ).toBe(94_500);
+    expect(priceUtils.getLineAmounts(product)).toMatchObject({
+      originalTotal: 94_500,
+      offerTotal: 94_500,
+      offerUnitPrice: 31_500,
+    });
+  });
+
   it("formats Indian amount words", () => {
     expect(priceUtils.numberToWords(125_050.5)).toBe(
       "One Lakh Twenty Five Thousand and Fifty Rupees and Fifty Paise Only",

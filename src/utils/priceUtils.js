@@ -8,6 +8,18 @@ const toFiniteNumber = (value, fallback = 0) => {
 const toPaise = (value) => Math.round(toFiniteNumber(value) * 100);
 const fromPaise = (value) => value / 100;
 
+/**
+ * Gross line value in paise. Normalized products carry productLineTotal
+ * (CRM invoices/POs: the stored line total; quotations: unit x qty). Only
+ * when it is missing is productPrice treated as a unit price.
+ */
+const lineGrossPaise = (product, quantity) => {
+  const lineTotal = Number(product?.productLineTotal);
+  return Number.isFinite(lineTotal) && lineTotal >= 0
+    ? toPaise(lineTotal)
+    : toPaise(toFiniteNumber(product?.productPrice) * quantity);
+};
+
 const belowHundredToWords = (value) => {
   const ones = [
     "",
@@ -115,10 +127,9 @@ const priceUtils = {
     let lineDiscountPaise = 0;
     let linesPayablePaise = 0;
     products.forEach((product) => {
-      const unitPrice = toFiniteNumber(product?.productPrice);
       const rawQuantity = toFiniteNumber(product?.productQuantity, 1);
       const quantity = rawQuantity > 0 ? rawQuantity : 1;
-      const grossPaise = toPaise(unitPrice * quantity);
+      const grossPaise = lineGrossPaise(product, quantity);
       const discountPaise = this.getLineAmounts(product).discountPaise;
       itemsTotalPaise += grossPaise;
       lineDiscountPaise += discountPaise;
@@ -161,10 +172,9 @@ const priceUtils = {
 
   /** Original, discount and offer totals for one line item. */
   getLineAmounts(product) {
-    const unitPrice = toFiniteNumber(product?.productPrice);
     const rawQuantity = toFiniteNumber(product?.productQuantity, 1);
     const quantity = rawQuantity > 0 ? rawQuantity : 1;
-    const grossPaise = toPaise(unitPrice * quantity);
+    const grossPaise = lineGrossPaise(product, quantity);
     const discountPaise = Math.min(
       Math.max(toPaise(product?.productDiscount), 0),
       grossPaise,

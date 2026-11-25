@@ -48,15 +48,19 @@ const PublicQuotationRoute = () => {
             status: response.status,
           });
         const quotation = payload?.data ?? payload;
-        const document = mapInvoiceFromApi({
-          ...quotation,
-          invoiceNo: quotation?.quotationNo,
-          total: quotation?.totalAmount,
-          quotation: true,
-          paidStatus:
-            quotation?.payment?.status || quotation?.status || "unpaid",
-          paymentType: quotation?.payment?.method || "quotation",
-        });
+        const document = mapInvoiceFromApi(
+          {
+            ...quotation,
+            invoiceNo: quotation?.quotationNo,
+            total: quotation?.totalAmount,
+            quotation: true,
+            paidStatus:
+              quotation?.payment?.status || quotation?.status || "unpaid",
+            paymentType: quotation?.payment?.method || "quotation",
+          },
+          // Quotation lines store a unit price, unlike CRM invoices.
+          { unitPrices: true },
+        );
         if (!controller.signal.aborted)
           setState({
             document,
