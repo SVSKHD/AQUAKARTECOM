@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mapInvoiceFromApi } from "@/utils/invoice/normalizeInvoice";
 
 describe("mapInvoiceFromApi", () => {
-  it("normalizes the invoice contract and multiplies unit prices by quantity", () => {
+  it("normalizes the invoice contract and keeps the stored line total (CRM rule)", () => {
     const invoice = mapInvoiceFromApi({
       data: {
         _id: "invoice-id",
@@ -19,7 +19,8 @@ describe("mapInvoiceFromApi", () => {
           {
             productName: "Water Softener",
             quantity: 2,
-            unit_price: 15_000,
+            // CRM invoices/POs store the LINE TOTAL, never a unit price.
+            productPrice: 30_000,
             category: { title: "Softeners" },
             subCategory: "Automatic",
           },
@@ -35,10 +36,49 @@ describe("mapInvoiceFromApi", () => {
       productName: "Water Softener",
       productQuantity: 2,
       productPrice: 15_000,
+      productLineTotal: 30_000,
       productCategory: "Softeners",
       productSubcategory: "Automatic",
     });
     expect(invoice.total_amount).toBe(30_000);
+  });
+
+  it("does not multiply a PO line total by quantity", () => {
+    const po = mapInvoiceFromApi({
+      po: true,
+      products: [
+        {
+          productName: "Kent Automatic 8L",
+          productQuantity: 3,
+          productPrice: 94_500,
+        },
+      ],
+    });
+    expect(po.products[0].productPrice).toBe(31_500);
+    expect(po.total_amount).toBe(94_500);
+  });
+
+  it("multiplies unit prices only for quotations", () => {
+    const quotation = mapInvoiceFromApi(
+      {
+        quotation: true,
+        products: [
+          {
+            productName: "Softener",
+            productQuantity: 2,
+            productPrice: 15_000,
+            productDiscount: 1_000,
+          },
+        ],
+      },
+      { unitPrices: true },
+    );
+    expect(quotation.products[0]).toMatchObject({
+      productPrice: 15_000,
+      productLineTotal: 30_000,
+      productDiscount: 1_000,
+    });
+    expect(quotation.total_amount).toBe(29_000);
   });
 
   it("does not treat the string false as a true boolean", () => {

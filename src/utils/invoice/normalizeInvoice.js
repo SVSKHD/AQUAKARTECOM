@@ -47,7 +47,12 @@ export const unwrapInvoicePayload = (payload) => {
   return payload.data ?? payload.invoice ?? payload;
 };
 
-export const mapInvoiceFromApi = (payload) => {
+/**
+ * `unitPrices`: true only for quotations (the quotations collection stores a
+ * unit price per line). CRM invoices and POs store the LINE TOTAL in
+ * productPrice, so their price must never be multiplied by quantity.
+ */
+export const mapInvoiceFromApi = (payload, { unitPrices = false } = {}) => {
   const inv = unwrapInvoicePayload(payload);
   if (!inv || typeof inv !== "object" || Array.isArray(inv)) return null;
 
@@ -64,11 +69,15 @@ export const mapInvoiceFromApi = (payload) => {
           toFiniteNumber(product?.productQuantity ?? product?.quantity, 1),
         );
         const quantity = Math.max(rawQuantity, 1);
-        const unitPrice = Math.max(
+        const storedPrice = Math.max(
           toFiniteNumber(product?.productPrice ?? product?.unit_price, 0),
           0,
         );
-        const grossTotal = unitPrice * quantity;
+        const grossTotal = unitPrices ? storedPrice * quantity : storedPrice;
+        // Display only; totals always use productLineTotal.
+        const unitPrice = unitPrices
+          ? storedPrice
+          : Math.round((storedPrice / quantity) * 100) / 100;
         // Quotations carry a discount amount for the whole line; the offer
         // price is what the customer pays and GST is worked out on it.
         const productDiscount = Math.min(
@@ -84,6 +93,7 @@ export const mapInvoiceFromApi = (payload) => {
           ),
           productQuantity: quantity,
           productPrice: unitPrice,
+          productLineTotal: grossTotal,
           productDiscount,
           productTax: Math.max(toFiniteNumber(product?.productTax, 0), 0),
           productSerialNo: normalizeText(
@@ -113,7 +123,7 @@ export const mapInvoiceFromApi = (payload) => {
   const linesTotal = products.reduce(
     (sum, product) =>
       sum +
-      product.productPrice * product.productQuantity -
+      product.productLineTotal -
       product.productDiscount +
       product.productTax,
     0,
