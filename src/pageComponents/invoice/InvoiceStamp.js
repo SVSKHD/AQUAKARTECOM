@@ -12,15 +12,15 @@ const prefersReducedMotion = () =>
 
 /**
  * The Aquakart logo inside a rubber-stamp ring that reads the bill's status
- * ("PAID · AQUAKART · …") in that status's colour. The ring turns slowly and
- * the status badge stamps down on load; tapping it stamps it again.
+ * ("PAID · AQUAKART · …") in that status's colour. The status badge settles
+ * once on load; tapping it stamps it again.
  */
 export const InvoiceStamp = ({ status, documentLabel }) => {
   const rawId = useId();
   const pathId = `stamp-${rawId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const [takes, setTakes] = useState(0);
   const word = status.label.toUpperCase();
-  const ring = `${word} ✦ AQUAKART ✦ ${word} ✦ AQUAKART ✦ `;
+  const ring = `${word} · AQUAKART · ${word} · AQUAKART · `;
 
   return (
     <button
@@ -101,7 +101,7 @@ export const StatusLegend = ({ status, documentName }) => {
       <p className={`${styles.statusLegendHint} ${toneClass(active.key)}`}>
         <strong>
           {active.key === status.key
-            ? `This ${documentName.toLowerCase()} is ${active.label.toLowerCase()}.`
+            ? `This ${documentName.toLowerCase()}: ${active.label}.`
             : `${active.label}:`}
         </strong>{" "}
         {active.hint}
