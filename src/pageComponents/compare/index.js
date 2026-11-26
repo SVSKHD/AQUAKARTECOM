@@ -96,7 +96,9 @@ const AquaCompareComponent = () => {
 
                 <h1 className="mt-5 text-4xl font-black tracking-[-0.055em] sm:text-5xl lg:text-6xl">
                   Compare water solutions
-                  <span className="block text-emerald-300">without the guesswork.</span>
+                  <span className="block text-emerald-300">
+                    without the guesswork.
+                  </span>
                 </h1>
                 <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
                   See price, capacity, coverage, warranty and technical details
@@ -118,16 +120,18 @@ const AquaCompareComponent = () => {
                 </div>
               </div>
 
-              <div className="min-w-[260px] rounded-[1.75rem] border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+              <div className="min-w-[260px] rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
                 {authenticated ? (
                   <>
                     <div className="flex items-center gap-2 text-emerald-300">
                       <CheckCircle2 className="h-5 w-5" />
-                      <span className="text-sm font-black">You’re signed in</span>
+                      <span className="text-sm font-black">
+                        You’re signed in
+                      </span>
                     </div>
                     <p className="mt-2 text-xs leading-5 text-slate-400">
-                      Compare freely and continue to your account whenever you’re
-                      ready.
+                      Compare freely and continue to your account whenever
+                      you’re ready.
                     </p>
                   </>
                 ) : (
@@ -162,7 +166,7 @@ const AquaCompareComponent = () => {
           </div>
         </section>
 
-        <div className="sticky top-0 z-30 border-b border-slate-200/80 bg-[#f7f9f8]/95 backdrop-blur-xl">
+        <div className="sticky top-0 z-30 border-b border-slate-200/80 bg-[#f7f9f8]">
           <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8">
             {tabs.map((tab) => {
               const Icon = tab.icon;

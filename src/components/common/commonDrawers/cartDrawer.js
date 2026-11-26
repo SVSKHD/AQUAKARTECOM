@@ -49,7 +49,7 @@ const AquaCartDrawer = () => {
             <button
               type="button"
               onClick={EmptyCart}
-              className="btn-glass rounded-full bg-rose-50/80 px-3 py-1.5 text-xs font-medium text-rose-600 backdrop-blur-sm hover:bg-rose-100 active:scale-95"
+              className="btn-glass rounded-full bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-100 active:scale-95"
               disabled={!cartData.length}
             >
               Clear cart
@@ -57,7 +57,7 @@ const AquaCartDrawer = () => {
           </div>
           {cartData.length > 0 && (
             <div
-              className={`rounded-2xl border px-3 py-2.5 text-xs font-medium backdrop-blur-sm ${
+              className={`rounded-2xl border px-3 py-2.5 text-xs font-medium ${
                 qualifiesForFreeShipping
                   ? "border-emerald-200/50 bg-emerald-50/60 text-emerald-700"
                   : "border-slate-200/50 bg-slate-50/60 text-slate-500"
@@ -74,7 +74,7 @@ const AquaCartDrawer = () => {
         <div className="flex-1 overflow-y-auto px-4 py-4">
           {cartData.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100/60 backdrop-blur-sm">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
                 <span className="text-2xl">🛒</span>
               </div>
               <p className="text-lg font-semibold text-slate-900">
@@ -165,7 +165,7 @@ const AquaCartDrawer = () => {
                       </div>
 
                       <div className="flex items-center justify-between gap-3">
-                        <div className="inline-flex items-center rounded-full border border-white/50 bg-white/40 backdrop-blur-sm text-xs shadow-sm">
+                        <div className="inline-flex items-center rounded-full border border-slate-200 bg-white text-xs shadow-sm">
                           <button
                             type="button"
                             onClick={() =>

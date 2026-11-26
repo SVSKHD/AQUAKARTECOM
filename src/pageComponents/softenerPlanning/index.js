@@ -225,7 +225,7 @@ const InstallationGallery = ({ sections = [], loading = false }) => {
             loading="eager"
             decoding="async"
           />
-          <figcaption className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-slate-950/75 px-3 py-2 text-[10px] font-bold text-white backdrop-blur">
+          <figcaption className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-slate-950/75 px-3 py-2 text-[10px] font-bold text-white">
             <FaMapMarkerAlt /> {active.area}
           </figcaption>
         </motion.figure>

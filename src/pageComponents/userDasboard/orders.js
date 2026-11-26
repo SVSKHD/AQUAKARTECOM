@@ -715,7 +715,7 @@ const AquaOrdersPageComponent = () => {
                               </p>
                             </div>
 
-                            <div className="rounded-2xl bg-white/10 px-4 py-3 text-right backdrop-blur">
+                            <div className="rounded-2xl bg-white/10 px-4 py-3 text-right">
                               <p className="text-xs text-emerald-100">
                                 Paid / Payable
                               </p>
@@ -893,7 +893,7 @@ const AquaOrdersPageComponent = () => {
       </div>
 
       {trackingOrder ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 px-4 pb-6 pt-10 backdrop-blur-sm sm:items-center">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 px-4 pb-6 pt-10 sm:items-center">
           <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] bg-white shadow-2xl">
             <button
               type="button"

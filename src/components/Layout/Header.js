@@ -119,7 +119,7 @@ const AquaHeader = () => {
     >
       {({ open }) => (
         <>
-          <div className="aqua-site-header-panel relative rounded-full border border-white/65 backdrop-blur-2xl shadow-[0_8px_32px_rgba(15,23,42,0.07),inset_0_1px_0_rgba(255,255,255,0.75)] transition-all duration-500 hover:border-white/80 hover:shadow-[0_12px_40px_rgba(15,23,42,0.09),inset_0_1px_0_rgba(255,255,255,0.85)]">
+          <div className="aqua-site-header-panel relative rounded-full border border-slate-200 shadow-[0_8px_32px_rgba(15,23,42,0.07),inset_0_1px_0_rgba(255,255,255,0.75)] transition-all duration-500 hover:border-slate-300 hover:shadow-[0_12px_40px_rgba(15,23,42,0.09),inset_0_1px_0_rgba(255,255,255,0.85)]">
             <div className="relative flex h-16 items-center justify-between px-4 sm:px-6 md:px-4 lg:px-8">
               {/* Mobile Menu Button */}
               {/* Phones and small tablets: a menu button. The full row needs ~720px. */}
@@ -249,7 +249,7 @@ const AquaHeader = () => {
                       leaveFrom="transform opacity-100 scale-100 translate-y-0"
                       leaveTo="transform opacity-0 scale-95 translate-y-2"
                     >
-                      <MenuItems className="absolute right-0 z-20 mt-4 w-56 origin-top-right rounded-[1.5rem] bg-white/90 backdrop-blur-xl py-2 shadow-2xl ring-1 ring-slate-900/5 focus:outline-none border border-white/50">
+                      <MenuItems className="absolute right-0 z-20 mt-4 w-56 origin-top-right rounded-[1.5rem] bg-white py-2 shadow-2xl ring-1 ring-slate-900/5 focus:outline-none border border-slate-200">
                         <div className="px-4 py-3 border-b border-indigo-50 mb-1">
                           <p className="text-xs font-semibold text-slate-400">
                             Signed in as
@@ -325,7 +325,7 @@ const AquaHeader = () => {
             leaveTo="transform scale-95 opacity-0 -translate-y-2"
           >
             <DisclosurePanel className="md:hidden mt-2">
-              <div className="aqua-site-mobile-menu space-y-2 rounded-[2rem] border border-white/65 p-4 shadow-[0_8px_40px_rgba(15,23,42,0.09)] ring-1 ring-white/70 backdrop-blur-3xl">
+              <div className="aqua-site-mobile-menu space-y-2 rounded-[2rem] border border-slate-200 p-4 shadow-[0_8px_40px_rgba(15,23,42,0.09)] ring-1 ring-slate-900/5">
                 {navigation.map((item) => (
                   <DisclosureButton
                     key={item.name}

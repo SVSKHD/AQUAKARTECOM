@@ -78,7 +78,7 @@ export default function AquaShippingPolicyComponent() {
             {shippingPolicy.map((item) => (
               <div
                 key={item.title}
-                className="relative flex flex-col gap-6 rounded-3xl border border-white/60 bg-white/60 p-8 shadow-xl shadow-slate-200/50 backdrop-blur-xl transition-all hover:-translate-y-1 hover:shadow-2xl hover:border-emerald-200/50"
+                className="relative flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:-translate-y-1 hover:shadow-2xl hover:border-emerald-200/50"
               >
                 <div
                   className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${item.color}`}

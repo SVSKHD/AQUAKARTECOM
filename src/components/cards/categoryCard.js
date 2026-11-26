@@ -48,7 +48,7 @@ const AquaCategoryCard = ({ category, variant = "catalog" }) => {
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-white/10" />
-          <span className="absolute left-3 top-3 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-sm backdrop-blur-xl">
+          <span className="absolute left-3 top-3 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-sm">
             Aquakart collection
           </span>
         </div>

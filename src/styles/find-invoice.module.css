@@ -41,13 +41,12 @@
   min-height: 0;
   overflow: hidden;
   grid-template-columns: 1fr;
-  border: 1px solid rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 34px;
-  background: rgba(255, 255, 255, 0.68);
+  background: #ffffff;
   box-shadow:
     0 30px 90px rgba(25, 65, 58, 0.13),
     inset 0 1px 0 rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(28px) saturate(145%);
 }
 
 .intro {

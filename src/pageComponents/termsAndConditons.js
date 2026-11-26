@@ -96,7 +96,7 @@ export default function AquaTermsAndConditionsComponent() {
             {termsAndConditons.map((item) => (
               <div
                 key={item.title}
-                className="relative flex flex-col gap-4 rounded-3xl border border-white/60 bg-white/60 p-8 shadow-xl shadow-slate-200/50 backdrop-blur-xl transition-all hover:-translate-y-1 hover:shadow-2xl hover:border-slate-300"
+                className="relative flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:-translate-y-1 hover:shadow-2xl hover:border-slate-300"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">

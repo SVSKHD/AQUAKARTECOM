@@ -1230,7 +1230,7 @@ const AquaDynamicBlogComponent = ({
             ) : ready ? (
               <>
                 {/* Reader toolbar */}
-                <div className="sticky top-20 z-20 flex items-center justify-between gap-3 border-b border-[var(--reader-border)] bg-[var(--reader-page)]/90 px-4 py-2.5 backdrop-blur-md sm:px-6 lg:top-0 lg:rounded-t-3xl">
+                <div className="sticky top-20 z-20 flex items-center justify-between gap-3 border-b border-[var(--reader-border)] bg-[var(--reader-page)] px-4 py-2.5 sm:px-6 lg:top-0 lg:rounded-t-3xl">
                   <p className="truncate text-xs font-medium text-[var(--reader-muted)]">
                     {speech.section >= 0
                       ? `Reading part ${speech.section + 1} of ${sections.length}`

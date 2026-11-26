@@ -594,7 +594,7 @@ const AquaCheckoutComponent = () => {
                 </p>
               </div>
 
-              <nav className="rounded-[2rem] bg-white/60 backdrop-blur-xl border border-white/50 p-4 shadow-xl">
+              <nav className="rounded-[2rem] bg-white border border-slate-200 p-4 shadow-xl">
                 <ol className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   {steps.map((step, index) => (
                     <li
@@ -637,7 +637,7 @@ const AquaCheckoutComponent = () => {
 
               <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
                 <div className="space-y-8">
-                  <section className="rounded-[2.5rem] bg-white/60 backdrop-blur-2xl border border-white/50 p-6 shadow-xl transition-all duration-500 hover:shadow-2xl">
+                  <section className="rounded-[2.5rem] bg-white border border-slate-200 p-6 shadow-xl transition-all duration-500 hover:shadow-2xl">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <h2 className="text-xl font-semibold text-gray-900">
@@ -783,7 +783,7 @@ const AquaCheckoutComponent = () => {
                         })}
                       </ul>
                     ) : (
-                      <div className="mt-6 rounded-[2rem] border-2 border-dashed border-slate-200 bg-white/30 p-10 text-center backdrop-blur-sm">
+                      <div className="mt-6 rounded-[2rem] border-2 border-dashed border-slate-200 bg-white p-10 text-center">
                         <h3 className="text-lg font-semibold text-gray-900">
                           Your cart is empty
                         </h3>
@@ -801,7 +801,7 @@ const AquaCheckoutComponent = () => {
                     )}
                   </section>
 
-                  <section className="rounded-[2.5rem] bg-white/60 backdrop-blur-2xl border border-white/50 p-6 shadow-xl transition-all duration-500 hover:shadow-2xl">
+                  <section className="rounded-[2.5rem] bg-white border border-slate-200 p-6 shadow-xl transition-all duration-500 hover:shadow-2xl">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <h2 className="text-xl font-semibold text-gray-900">
@@ -823,7 +823,7 @@ const AquaCheckoutComponent = () => {
                     </div>
 
                     <dl className="mt-6 grid gap-4 sm:grid-cols-2">
-                      <div className="rounded-2xl border border-white/40 bg-white/40 p-4 shadow-sm backdrop-blur-sm">
+                      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                         <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                           Email
                         </dt>
@@ -840,7 +840,7 @@ const AquaCheckoutComponent = () => {
                           {userData?.user?.email ? "Verified" : "Required"}
                         </span>
                       </div>
-                      <div className="rounded-2xl border border-white/40 bg-white/40 p-4 shadow-sm backdrop-blur-sm">
+                      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                         <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                           Phone
                         </dt>
@@ -857,7 +857,7 @@ const AquaCheckoutComponent = () => {
                           {userData?.user?.phone ? "Verified" : "Required"}
                         </span>
                       </div>
-                      <div className="rounded-2xl border border-white/40 bg-white/40 p-4 shadow-sm backdrop-blur-sm">
+                      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                         <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                           Alternate phone
                         </dt>
@@ -866,7 +866,7 @@ const AquaCheckoutComponent = () => {
                             "Optional"}
                         </dd>
                       </div>
-                      <div className="rounded-2xl border border-white/40 bg-white/40 p-4 shadow-sm backdrop-blur-sm">
+                      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                         <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                           Date of birth
                         </dt>
@@ -886,7 +886,7 @@ const AquaCheckoutComponent = () => {
                     )}
                   </section>
 
-                  <section className="rounded-[2.5rem] bg-white/60 backdrop-blur-2xl border border-white/50 p-6 shadow-xl transition-all duration-500 hover:shadow-2xl">
+                  <section className="rounded-[2.5rem] bg-white border border-slate-200 p-6 shadow-xl transition-all duration-500 hover:shadow-2xl">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <h2 className="text-xl font-semibold text-gray-900">
@@ -937,7 +937,7 @@ const AquaCheckoutComponent = () => {
                               key={address._id || address.street}
                               className={`relative flex cursor-default flex-col gap-3 rounded-2xl border p-4 transition-all duration-300 ease-out hover:cursor-pointer ${
                                 isSelected
-                                  ? "border-emerald-500/50 bg-emerald-50/50 shadow-lg ring-4 ring-emerald-500/10 backdrop-blur-sm"
+                                  ? "border-emerald-500/50 bg-emerald-50 shadow-lg ring-4 ring-emerald-500/10 "
                                   : "border-white/40 bg-white/40 hover:bg-white/60 hover:shadow-md"
                               }`}
                             >
@@ -1006,7 +1006,7 @@ const AquaCheckoutComponent = () => {
                           );
                         })
                       ) : (
-                        <div className="col-span-full rounded-[2rem] border-2 border-dashed border-slate-200 bg-white/30 p-10 text-center backdrop-blur-sm">
+                        <div className="col-span-full rounded-[2rem] border-2 border-dashed border-slate-200 bg-white p-10 text-center">
                           <h3 className="text-lg font-semibold text-gray-900">
                             No address added
                           </h3>
@@ -1028,7 +1028,7 @@ const AquaCheckoutComponent = () => {
                 </div>
 
                 <aside className="space-y-6 lg:sticky lg:top-28">
-                  <section className="rounded-[2.5rem] bg-white/70 backdrop-blur-3xl border border-white/60 p-6 shadow-2xl transition-all">
+                  <section className="rounded-[2.5rem] bg-white border border-slate-200 p-6 shadow-2xl transition-all">
                     <h2 className="text-lg font-semibold text-gray-900">
                       Order summary
                     </h2>
@@ -1076,7 +1076,7 @@ const AquaCheckoutComponent = () => {
                             setCouponCode(event.target.value.toUpperCase())
                           }
                           placeholder="Enter coupon"
-                          className="w-full rounded-full border border-white/40 bg-white/50 px-4 py-2 text-sm text-slate-900 shadow-inner focus:bg-white focus:ring-4 focus:ring-emerald-500/20 backdrop-blur-sm placeholder:text-slate-400 focus:outline-none focus:border-emerald-500/50"
+                          className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 shadow-inner focus:bg-white focus:ring-4 focus:ring-emerald-500/20 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500/50"
                         />
                         <button
                           type="button"
@@ -1137,7 +1137,7 @@ const AquaCheckoutComponent = () => {
                           className={`inline-flex w-full items-center justify-center rounded-full border px-4 py-3 text-sm font-semibold transition ${
                             codDisabledReason
                               ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400"
-                              : "border border-white/60 bg-white/70 backdrop-blur-sm text-slate-900 shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-50/50 hover:shadow-md"
+                              : "border border-slate-200 bg-white text-slate-900 shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-50/50 hover:shadow-md"
                           }`}
                         >
                           {buttonStatus.cod ? (
@@ -1177,7 +1177,7 @@ const AquaCheckoutComponent = () => {
                     )}
                   </section>
 
-                  <section className="rounded-3xl border border-indigo-100 bg-white/60 backdrop-blur-md p-5 text-sm text-indigo-900 shadow-lg">
+                  <section className="rounded-3xl border border-indigo-100 bg-white p-5 text-sm text-indigo-900 shadow-lg">
                     <h3 className="text-base font-semibold">Need help?</h3>
                     <p className="mt-2 text-sm text-indigo-800">
                       Call or WhatsApp us at{" "}

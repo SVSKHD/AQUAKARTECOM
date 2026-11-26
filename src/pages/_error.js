@@ -42,10 +42,10 @@ const AquaError = ({ statusCode }) => {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative z-10 w-full max-w-lg overflow-hidden rounded-[3rem] border border-white/60 bg-white/40 p-8 text-center shadow-2xl backdrop-blur-2xl ring-1 ring-black/5"
+          className="relative z-10 w-full max-w-lg overflow-hidden rounded-[3rem] border border-slate-200 bg-white p-8 text-center shadow-2xl ring-1 ring-black/5"
         >
           {/* Logo */}
-          <div className="mx-auto mb-8 w-24 rounded-2xl bg-white/50 p-4 shadow-lg ring-1 ring-white/60 backdrop-blur-sm">
+          <div className="mx-auto mb-8 w-24 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-900/5">
             <AquaImage
               src={logo}
               alt="Aquakart"

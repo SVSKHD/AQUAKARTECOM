@@ -22,7 +22,7 @@ const AquaResponsiveDialog = ({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/25 backdrop-blur-sm transition-opacity" />
+          <div className="fixed inset-0 bg-black/25 transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -36,14 +36,14 @@ const AquaResponsiveDialog = ({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative w-full max-w-md transform overflow-hidden rounded-t-3xl sm:rounded-3xl border-t border-white/50 sm:border border-white/50 bg-white/80 backdrop-blur-2xl px-5 pb-6 pt-5 text-left shadow-[0_-10px_40px_rgba(0,0,0,0.08)] sm:shadow-[0_8px_40px_rgba(0,0,0,0.1)] transition-all sm:mx-auto sm:my-8">
+              <Dialog.Panel className="relative w-full max-w-md transform overflow-hidden rounded-t-3xl sm:rounded-3xl border-t border-slate-200 sm:border border-slate-200 bg-white px-5 pb-6 pt-5 text-left shadow-[0_-10px_40px_rgba(0,0,0,0.08)] sm:shadow-[0_8px_40px_rgba(0,0,0,0.1)] transition-all sm:mx-auto sm:my-8">
                 {/* Drag handle on mobile */}
                 <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-slate-300/60 sm:hidden" />
 
                 <div className="absolute right-3 top-3 sm:right-4 sm:top-4">
                   <button
                     type="button"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/60 text-slate-400 backdrop-blur-sm transition hover:bg-white hover:text-slate-600 active:scale-90"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-400 transition hover:bg-white hover:text-slate-600 active:scale-90"
                     onClick={close}
                   >
                     <span className="sr-only">Close</span>

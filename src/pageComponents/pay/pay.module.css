@@ -265,10 +265,8 @@
   gap: 22px;
   padding: 44px 26px 26px;
   border-radius: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #ffffff;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.9) inset,
     0 24px 60px -20px rgba(var(--aq-sh), 0.28),
@@ -635,7 +633,6 @@
   inset: 0;
   z-index: 90;
   background: rgba(7, 26, 37, 0.38);
-  backdrop-filter: blur(2px);
   animation: fade-in 0.2s ease-out both;
 }
 @keyframes fade-in {

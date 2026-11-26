@@ -75,13 +75,10 @@ body {
   background-image: none !important;
 }
 
+/* Solid surfaces: the header and its menu are not see-through glass. */
 .aqua-site-header-panel,
 .aqua-site-mobile-menu {
-  background: rgba(var(--aqua-page-surface-rgb), 0.84);
-}
-
-.aqua-site-header-panel:hover {
-  background: rgba(var(--aqua-page-surface-rgb), 0.94);
+  background: #ffffff;
 }
 
 .aqua-site-footer-edge {
@@ -92,33 +89,22 @@ body {
   body {
     background-attachment: scroll;
   }
-
-  .aqua-site-header-panel,
-  .aqua-site-mobile-menu {
-    background: rgba(var(--aqua-page-surface-rgb), 0.9);
-  }
 }
 
 /* ── Glass Utility Classes ─────────────────────────────── */
 .glass {
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .glass-dark {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  background: rgba(15, 23, 42, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
@@ -132,20 +118,12 @@ body {
 }
 
 .glass-subtle {
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: #ffffff;
 }
 
 /* ── Tinted Glass Cards ────────────────────────────────── */
 .glass-tint-emerald {
-  background: linear-gradient(
-    135deg,
-    rgba(236, 253, 245, 0.6),
-    rgba(255, 255, 255, 0.45)
-  );
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  background: #f4fef9;
   border: 1px solid rgba(167, 243, 208, 0.4);
   box-shadow:
     0 4px 24px rgba(16, 185, 129, 0.06),
@@ -153,13 +131,7 @@ body {
 }
 
 .glass-tint-indigo {
-  background: linear-gradient(
-    135deg,
-    rgba(238, 242, 255, 0.6),
-    rgba(255, 255, 255, 0.45)
-  );
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  background: #f5f7ff;
   border: 1px solid rgba(199, 210, 254, 0.4);
   box-shadow:
     0 4px 24px rgba(99, 102, 241, 0.06),
@@ -167,13 +139,7 @@ body {
 }
 
 .glass-tint-rose {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 241, 242, 0.6),
-    rgba(255, 255, 255, 0.45)
-  );
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  background: #fff7f7;
   border: 1px solid rgba(253, 164, 175, 0.3);
   box-shadow:
     0 4px 24px rgba(244, 63, 94, 0.05),
@@ -181,13 +147,7 @@ body {
 }
 
 .glass-tint-amber {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 251, 235, 0.6),
-    rgba(255, 255, 255, 0.45)
-  );
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  background: #fffdf3;
   border: 1px solid rgba(253, 230, 138, 0.4);
   box-shadow:
     0 4px 24px rgba(245, 158, 11, 0.05),
@@ -270,10 +230,8 @@ body {
 }
 
 .btn-glass-secondary {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
   color: #334155;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
@@ -395,20 +353,14 @@ body {
 
 /* Hero glass card — lighter than .glass-card for mobile LCP */
 .hero-glass-card {
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 /* Only apply backdrop-blur on devices that can handle it (desktop) */
-@media (min-width: 1024px) {
-  .hero-glass-card {
-    backdrop-filter: blur(16px) saturate(160%);
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
-  }
-}
 
 /* ── Shop desktop: fixed search, product-only scrolling ────────────────
    Desktop Shop is a viewport-height workspace. The left filters and the

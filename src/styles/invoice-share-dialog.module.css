@@ -7,7 +7,6 @@
   position: fixed;
   inset: 0;
   background: rgba(7, 26, 37, 0.38);
-  backdrop-filter: blur(14px) saturate(120%);
 }
 
 .viewport {
@@ -30,19 +29,12 @@
   width: min(100%, 560px);
   overflow: hidden;
   padding: 34px;
-  border: 1px solid rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 30px;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.92),
-      rgba(242, 251, 248, 0.8)
-    ),
-    rgba(255, 255, 255, 0.82);
+  background: #ffffff;
   box-shadow:
     0 32px 90px rgba(7, 26, 37, 0.24),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(28px) saturate(150%);
 }
 
 .closeButton {

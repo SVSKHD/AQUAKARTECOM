@@ -773,7 +773,7 @@ const AssistantWidget = ({ pathname = "" }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[94] bg-slate-950/40 backdrop-blur-[2px] print:hidden"
+            className="fixed inset-0 z-[94] bg-slate-950/40 print:hidden"
           />
         )}
         {open && (
@@ -799,7 +799,7 @@ const AssistantWidget = ({ pathname = "" }) => {
             }`}
           >
             {/* header */}
-            <header className="flex flex-none items-center gap-3 border-b border-slate-200/70 bg-white/80 px-4 py-3 backdrop-blur-xl">
+            <header className="flex flex-none items-center gap-3 border-b border-slate-200/70 bg-white px-4 py-3">
               <AssistantAvatar size="h-10 w-10" />
               <div className="min-w-0 flex-1">
                 <h2
@@ -1077,7 +1077,7 @@ const AssistantWidget = ({ pathname = "" }) => {
 
             {/* composer */}
             <form
-              className={`flex-none border-t border-slate-200/70 bg-white/85 px-3 pb-3 pt-2.5 backdrop-blur-xl ${tab === "products" && contextProducts.length ? "hidden" : ""}`}
+              className={`flex-none border-t border-slate-200/70 bg-white px-3 pb-3 pt-2.5 ${tab === "products" && contextProducts.length ? "hidden" : ""}`}
               onSubmit={(e) => {
                 e.preventDefault();
                 send();

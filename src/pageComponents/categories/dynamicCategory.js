@@ -120,7 +120,7 @@ const AquaDynamicCategoryComponent = ({
         {isLoading ? (
           <LoadingState />
         ) : errorMessage ? (
-          <div className="rounded-3xl border border-rose-200 bg-rose-50/50 p-12 text-center backdrop-blur-sm">
+          <div className="rounded-3xl border border-rose-200 bg-rose-50 p-12 text-center">
             <p className="text-rose-600 font-semibold text-lg">
               {errorMessage}
             </p>
@@ -128,7 +128,7 @@ const AquaDynamicCategoryComponent = ({
         ) : (
           <div className="space-y-16">
             <section className="grid gap-8 lg:grid-cols-2">
-              <div className="flex flex-col justify-center rounded-[2rem] border border-white/60 bg-white/60 p-8 shadow-xl backdrop-blur-xl lg:p-12">
+              <div className="flex flex-col justify-center rounded-[2rem] border border-slate-200 bg-white p-8 shadow-xl lg:p-12">
                 <div className="mb-6 inline-flex self-start rounded-full bg-emerald-100/50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-700 border border-emerald-200/50">
                   <SparklesIcon className="mr-1.5 h-3.5 w-3.5 inline-block" />{" "}
                   Collection

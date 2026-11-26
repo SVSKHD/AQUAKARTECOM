@@ -95,7 +95,7 @@ const AquaContactComponent = () => {
                 rel={
                   method.action.startsWith("http") ? "noopener noreferrer" : ""
                 }
-                className="group relative flex flex-col gap-6 rounded-[2rem] border border-white/60 bg-white/60 p-10 shadow-xl shadow-slate-200/50 backdrop-blur-xl transition-all hover:-translate-y-2 hover:shadow-2xl hover:border-indigo-200/50"
+                className="group relative flex flex-col gap-6 rounded-[2rem] border border-slate-200 bg-white p-10 shadow-xl shadow-slate-200/50 transition-all hover:-translate-y-2 hover:shadow-2xl hover:border-indigo-200/50"
               >
                 <div className="flex items-start justify-between">
                   <div
@@ -146,16 +146,16 @@ const AquaContactComponent = () => {
                 <strong>Telangana</strong> and <strong>Andhra Pradesh</strong>.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <span className="px-6 py-2 rounded-full bg-white/10 border border-white/20 text-white backdrop-blur-md">
+                <span className="px-6 py-2 rounded-full bg-white/10 border border-white/20 text-white">
                   Hyderabad
                 </span>
-                <span className="px-6 py-2 rounded-full bg-white/10 border border-white/20 text-white backdrop-blur-md">
+                <span className="px-6 py-2 rounded-full bg-white/10 border border-white/20 text-white">
                   Vijayawada
                 </span>
-                <span className="px-6 py-2 rounded-full bg-white/10 border border-white/20 text-white backdrop-blur-md">
+                <span className="px-6 py-2 rounded-full bg-white/10 border border-white/20 text-white">
                   Visakhapatnam
                 </span>
-                <span className="px-6 py-2 rounded-full bg-white/10 border border-white/20 text-white backdrop-blur-md">
+                <span className="px-6 py-2 rounded-full bg-white/10 border border-white/20 text-white">
                   Warangal
                 </span>
               </div>

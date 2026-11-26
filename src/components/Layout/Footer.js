@@ -80,7 +80,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
             <div
               className={`relative overflow-hidden rounded-full p-[1px] bg-gradient-to-r ${festival.gradient}`}
             >
-              <div className="relative rounded-full bg-slate-950/80 backdrop-blur-xl px-6 py-2">
+              <div className="relative rounded-full bg-slate-950/80 px-6 py-2">
                 <p
                   className={`text-sm font-bold bg-gradient-to-r ${festival.gradient} bg-clip-text text-transparent flex items-center gap-2`}
                 >
@@ -97,7 +97,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
           <div className="flex flex-col justify-between gap-10">
             <div>
               <div className="flex items-center gap-4 mb-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md ring-1 ring-white/20">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/20">
                   <LazyImage
                     src={LW}
                     alt="Aquakart"
@@ -123,7 +123,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
             </div>
 
             {!userData && (
-              <div className="group relative rounded-[2rem] border border-white/10 bg-white/5 p-2 backdrop-blur-xl transition-all hover:bg-white/10">
+              <div className="group relative rounded-[2rem] border border-white/10 bg-white/5 p-2 transition-all hover:bg-white/10">
                 <div className="absolute inset-0 -z-10 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 opacity-0 transition-opacity group-hover:opacity-100 rounded-[2rem]" />
                 <div className="px-6 py-6">
                   <h4 className="text-lg font-bold text-white flex items-center gap-2">
@@ -228,7 +228,7 @@ const AquaFooter = ({ categories = [], subcategories = [] }) => {
                       className="absolute inset-0 h-full w-full"
                       imgClassName="object-cover object-center transition-transform duration-500 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/40 backdrop-blur-sm">
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/40">
                       <FaInstagram className="h-5 w-5 text-white" />
                     </div>
                   </a>

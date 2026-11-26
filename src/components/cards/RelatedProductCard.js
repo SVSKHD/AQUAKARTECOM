@@ -126,7 +126,7 @@ const AquaRelatedProductCard = ({ product }) => {
         >
           <button
             type="button"
-            className={`rounded-full border border-slate-200 p-2.5 shadow-none backdrop-blur-xl transition-all duration-300 ${
+            className={`rounded-full border border-slate-200 p-2.5 shadow-none transition-all duration-300 ${
               isFavorite ? "bg-rose-100/95" : "bg-white/80"
             } hover:bg-white`}
           >
@@ -153,7 +153,7 @@ const AquaRelatedProductCard = ({ product }) => {
 
         {/* Timeline Indicators */}
         {displayPhotos.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 space-x-1.5 rounded-full border border-slate-200 bg-white/85 px-2.5 py-2 backdrop-blur-xl">
+          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 space-x-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-2">
             {displayPhotos.slice(0, 5).map((_, index) => (
               <button
                 type="button"

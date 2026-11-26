@@ -508,7 +508,7 @@ const ReusableProductCard = ({
           {renderRatingBadge("overlay")}
 
           {discountPercent > 0 && (
-            <span className="absolute left-4 top-4 z-20 rounded-full bg-black/35 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-md">
+            <span className="absolute left-4 top-4 z-20 rounded-full bg-black/70 px-3 py-1.5 text-xs font-bold text-white">
               {discountPercent}% off
             </span>
           )}
@@ -587,7 +587,7 @@ const ReusableProductCard = ({
               <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                    <span className="whitespace-nowrap rounded-full bg-black/35 px-3 py-1 text-lg font-black leading-tight backdrop-blur-md">
+                    <span className="whitespace-nowrap rounded-full bg-black/70 px-3 py-1 text-lg font-black leading-tight">
                       {discountPriceStatus
                         ? formatCurrencyINR(discountPrice)
                         : formatCurrencyINR(price)}
@@ -666,7 +666,7 @@ const ReusableProductCard = ({
             {renderRatingBadge("light")}
 
             {discountPercent > 0 && (
-              <span className="absolute left-3 top-3 z-20 rounded-full bg-slate-950/80 px-3 py-1.5 text-xs font-bold text-white backdrop-blur">
+              <span className="absolute left-3 top-3 z-20 rounded-full bg-slate-950/80 px-3 py-1.5 text-xs font-bold text-white">
                 {discountPercent}% off
               </span>
             )}

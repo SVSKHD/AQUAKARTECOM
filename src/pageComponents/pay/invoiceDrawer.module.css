@@ -53,8 +53,6 @@
   position: absolute;
   inset: 0;
   background: rgba(7, 26, 37, 0.18);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
   opacity: 0;
   transition: opacity 0.35s ease;
 }
@@ -74,15 +72,7 @@
   overflow: hidden;
   border-radius: 26px;
   border: 1px solid var(--glass-bd);
-  background:
-    linear-gradient(
-      160deg,
-      rgba(255, 255, 255, 0.55),
-      rgba(229, 248, 242, 0.35)
-    ),
-    var(--glass);
-  backdrop-filter: blur(28px) saturate(1.7);
-  -webkit-backdrop-filter: blur(28px) saturate(1.7);
+  background: #ffffff;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.9) inset,
     0 30px 80px -24px rgba(8, 74, 84, 0.45),

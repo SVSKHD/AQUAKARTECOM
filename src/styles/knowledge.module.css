@@ -107,9 +107,8 @@
   padding: 11px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.94);
+  background: #ffffff;
   box-shadow: 0 14px 40px rgba(24, 61, 57, 0.09);
-  backdrop-filter: blur(18px);
 }
 
 .search {

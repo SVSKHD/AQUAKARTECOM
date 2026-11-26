@@ -768,7 +768,7 @@ const AquaShopPageComponent = ({
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="flex min-h-[44vh] flex-col items-center justify-center rounded-[2.25rem] border border-dashed border-slate-300 bg-white/65 p-8 text-center backdrop-blur-xl"
+                      className="flex min-h-[44vh] flex-col items-center justify-center rounded-[2.25rem] border border-dashed border-slate-300 bg-white p-8 text-center"
                     >
                       <span className="grid h-16 w-16 place-items-center rounded-2xl bg-emerald-50 text-emerald-700">
                         <Funnel size={26} />

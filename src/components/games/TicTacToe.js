@@ -98,7 +98,7 @@ const TicTacToe = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 rounded-2xl bg-white/30 p-3 backdrop-blur-md shadow-inner border border-white/40">
+      <div className="grid grid-cols-3 gap-3 rounded-2xl bg-white p-3 shadow-inner border border-slate-200">
         {board.map((cell, index) => (
           <button
             key={index}

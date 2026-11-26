@@ -104,7 +104,7 @@ const ReviewCard = ({
   };
 
   return (
-    <article className="relative overflow-hidden rounded-[1.4rem] border border-white/80 bg-white/82 p-4 shadow-[0_18px_55px_rgba(15,23,42,0.07)] backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_65px_rgba(15,23,42,0.1)] sm:p-5">
+    <article className="relative overflow-hidden rounded-[1.4rem] border border-slate-200 bg-white p-4 shadow-[0_18px_55px_rgba(15,23,42,0.07)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_65px_rgba(15,23,42,0.1)] sm:p-5">
       <div className="absolute -right-10 -top-12 h-28 w-28 rounded-full bg-emerald-200/30 blur-3xl" />
       <div className="relative flex items-start gap-3">
         <div className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-sm font-black text-white shadow-lg shadow-emerald-500/20">
@@ -467,7 +467,7 @@ const ProductReviews = ({
             {existingReview ? "Update your review" : "Write a review"}
           </button>
         ) : (
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/80 bg-white/65 p-3 pl-4 shadow-sm backdrop-blur-xl">
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3 pl-4 shadow-sm">
             <div>
               <p className="text-xs font-black text-slate-800">
                 Used this product?
@@ -524,7 +524,7 @@ const ProductReviews = ({
                   placeholder="Share the details of your experience — what you liked, what stood out, anything others should know..."
                   rows={5}
                   maxLength={1000}
-                  className="w-full rounded-xl border border-white/50 bg-white/40 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 backdrop-blur-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 transition-all resize-none"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 transition-all resize-none"
                 />
               </div>
 

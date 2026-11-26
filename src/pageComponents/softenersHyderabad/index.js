@@ -57,10 +57,10 @@ const GlassCard = ({ children, className = "", hoverEffect = true }) => (
   <div
     className={`
       relative overflow-hidden rounded-[2.5rem] 
-      border border-white/60
-      bg-white/60
-      backdrop-blur-2xl shadow-xl hover:shadow-2xl
-      ${hoverEffect ? "transition-all duration-500 hover:scale-[1.02] hover:bg-white/80" : ""}
+      border border-slate-200
+      bg-white
+       shadow-xl hover:shadow-2xl
+      ${hoverEffect ? "transition-all duration-500 hover:bg-slate-50" : ""}
       ${className}
     `}
   >
@@ -132,7 +132,7 @@ const AquaSoftenerHyderabadComponent = ({
           {/* Header */}
           <header className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between mb-20 animate-fade-in-up">
             <div className="space-y-6 max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white/50 backdrop-blur-md shadow-sm">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white shadow-sm">
                 <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-xs font-bold uppercase tracking-widest text-slate-600">
                   Hyderabad Edition
@@ -309,7 +309,7 @@ const AquaSoftenerHyderabadComponent = ({
                   </div>
 
                   {/* Glass container for products */}
-                  <div className="rounded-[3rem] border border-white/60 bg-white/40 p-8 backdrop-blur-xl shadow-sm">
+                  <div className="rounded-[3rem] border border-slate-200 bg-white p-8 shadow-sm">
                     <ProductGrid products={initialProducts} viewMode="grid" />
                   </div>
                 </section>
@@ -375,7 +375,7 @@ const AquaSoftenerHyderabadComponent = ({
                   </a>
                   <a
                     href="tel:9014774667"
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-800/50 border border-white/20 px-8 py-4 text-lg font-bold text-white backdrop-blur-md shadow-xl transition-transform hover:bg-emerald-800/70 hover:scale-105 active:scale-95"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-800 border border-white/20 px-8 py-4 text-lg font-bold text-white shadow-xl transition-transform hover:bg-emerald-800/70 hover:scale-105 active:scale-95"
                   >
                     <PhoneIcon className="h-6 w-6" />
                     Call 9014774667

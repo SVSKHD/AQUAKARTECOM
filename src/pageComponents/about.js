@@ -101,7 +101,7 @@ const AquaAbout = ({ storefrontStats = null }) => {
             {timeline.map((item) => (
               <div
                 key={item.name}
-                className="relative flex flex-col gap-4 rounded-3xl border border-white/60 bg-white/60 p-8 shadow-xl shadow-slate-200/50 backdrop-blur-xl transition-all hover:-translate-y-1 hover:shadow-2xl hover:border-emerald-200"
+                className="relative flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50 transition-all hover:-translate-y-1 hover:shadow-2xl hover:border-emerald-200"
               >
                 <time
                   dateTime={item.dateTime}
@@ -133,13 +133,13 @@ const AquaAbout = ({ storefrontStats = null }) => {
                 Measured in purity.
               </h2>
               <p className="mt-6 text-lg leading-8 text-indigo-200">
-                We keep these numbers grounded in our actual invoice records,
-                so the milestones you see here grow with the customers we serve.
+                We keep these numbers grounded in our actual invoice records, so
+                the milestones you see here grow with the customers we serve.
               </p>
             </div>
 
             <div className="relative mt-16 w-full lg:mt-0 lg:w-[500px]">
-              <div className="grid min-h-80 w-full grid-cols-2 gap-6 rounded-2xl bg-white/10 p-6 ring-1 ring-white/20 backdrop-blur-md sm:gap-8 sm:p-8">
+              <div className="grid min-h-80 w-full grid-cols-2 gap-6 rounded-2xl bg-white/10 p-6 ring-1 ring-white/20 sm:gap-8 sm:p-8">
                 <div className="flex flex-col justify-center text-center">
                   <p className="text-4xl font-bold text-white">
                     {totalInvoices}
@@ -158,14 +158,10 @@ const AquaAbout = ({ storefrontStats = null }) => {
                 </div>
                 <div className="flex flex-col justify-center text-center">
                   <p className="text-4xl font-bold text-white">2021</p>
-                  <p className="text-indigo-200 text-sm mt-1">
-                    Serving Since
-                  </p>
+                  <p className="text-indigo-200 text-sm mt-1">Serving Since</p>
                 </div>
                 <div className="flex flex-col justify-center text-center">
-                  <p className="text-2xl font-bold text-emerald-400">
-                    Live
-                  </p>
+                  <p className="text-2xl font-bold text-emerald-400">Live</p>
                   <p className="text-indigo-200 text-sm mt-1">
                     Invoice-backed Metrics
                   </p>

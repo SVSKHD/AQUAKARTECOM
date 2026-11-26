@@ -355,7 +355,7 @@ const buildProcessStory = (product) => {
 
 const ProductInfo = ({ icon: Icon, title, description, className = "" }) => (
   <div
-    className={`group rounded-[1.5rem] border border-white/70 bg-white/72 p-4 shadow-[0_18px_55px_rgba(15,23,42,0.06)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_24px_70px_rgba(15,23,42,0.1)] sm:p-5 ${className}`}
+    className={`group rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-[0_18px_55px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_24px_70px_rgba(15,23,42,0.1)] sm:p-5 ${className}`}
   >
     <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 transition group-hover:rotate-6 group-hover:scale-105">
       <Icon size={21} />
@@ -374,7 +374,7 @@ const StoryPanel = ({ id, number, eyebrow, title, children }) => (
     transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
     className="scroll-mt-36 py-2 sm:py-4 lg:flex lg:min-h-[78svh] lg:items-center lg:py-10"
   >
-    <div className="relative w-full overflow-hidden rounded-[1.75rem] border border-white/75 bg-white/82 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-2xl sm:rounded-[2rem] sm:p-7 lg:rounded-[2.5rem] lg:p-9">
+    <div className="relative w-full overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:rounded-[2rem] sm:p-7 lg:rounded-[2.5rem] lg:p-9">
       <div className="absolute -right-16 -top-20 h-44 w-44 rounded-full bg-gradient-to-br from-cyan-200/35 to-emerald-200/25 blur-3xl" />
       <div className="relative flex items-center gap-3">
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-[10px] font-black text-white sm:h-9 sm:w-9 sm:text-xs">
@@ -431,7 +431,7 @@ const MobileStoryNav = () => {
       aria-label="Product story chapters"
       className="sticky top-[5.35rem] z-50 -mx-1 mb-2 lg:hidden"
     >
-      <div className="no-scrollbar flex snap-x gap-1.5 overflow-x-auto rounded-2xl border border-white/80 bg-white/88 p-1.5 shadow-[0_14px_45px_rgba(15,23,42,0.12)] backdrop-blur-2xl">
+      <div className="no-scrollbar flex snap-x gap-1.5 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_14px_45px_rgba(15,23,42,0.12)]">
         {MOBILE_CHAPTERS.map((chapter) => {
           const isActive = activeChapter === chapter.id;
           return (
@@ -517,7 +517,7 @@ const MobileScrollIdentity = ({ image, title, price }) => {
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: -28, scale: 0.97 }}
           transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-          className="pointer-events-none fixed left-0 top-[34%] z-[85] w-[10.5rem] overflow-hidden rounded-r-[1.4rem] border border-l-0 border-white/15 bg-slate-950/94 p-2.5 text-white shadow-[0_20px_65px_rgba(2,6,23,0.38)] backdrop-blur-2xl lg:hidden"
+          className="pointer-events-none fixed left-0 top-[34%] z-[85] w-[10.5rem] overflow-hidden rounded-r-[1.4rem] border border-l-0 border-white/15 bg-slate-950/94 p-2.5 text-white shadow-[0_20px_65px_rgba(2,6,23,0.38)] lg:hidden"
         >
           <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-emerald-400/20 blur-2xl" />
           <div className="relative flex items-center gap-2.5">
@@ -647,7 +647,7 @@ const ScrollProductStage = ({
       <div className="absolute left-1/2 top-1/2 h-[42%] w-[42%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/90 shadow-[0_0_80px_rgba(34,211,238,0.2)]" />
 
       <div className="absolute left-5 right-5 top-5 z-30 flex items-center justify-between lg:left-8 lg:right-8 lg:top-8">
-        <div className="flex items-center gap-2 rounded-full border border-white/70 bg-white/65 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-700 shadow-sm backdrop-blur-xl sm:text-xs">
+        <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-700 shadow-sm sm:text-xs">
           <Rotate3d size={15} className="text-emerald-600" />
           <span className="lg:hidden">Swipe gallery</span>
           <span className="hidden lg:inline">Scroll view</span>
@@ -696,7 +696,7 @@ const ScrollProductStage = ({
               initial={{ opacity: 0, x: 18 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.25 + index * 0.1 }}
-              className="rounded-2xl border border-white/80 bg-white/72 px-4 py-3 shadow-[0_14px_35px_rgba(15,23,42,0.08)] backdrop-blur-xl"
+              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-[0_14px_35px_rgba(15,23,42,0.08)]"
             >
               <p className="text-[8px] font-black uppercase tracking-[0.17em] text-slate-400">
                 {fact.label}
@@ -719,7 +719,7 @@ const ScrollProductStage = ({
             transformPerspective: 1400,
             transformStyle: "preserve-3d",
           }}
-          className="relative h-full w-full before:absolute before:inset-[7%] before:-rotate-3 before:rounded-[2.4rem] before:border before:border-white/80 before:bg-white/22 before:shadow-[0_24px_60px_rgba(14,116,144,0.12)] before:backdrop-blur-sm after:absolute after:inset-[10%] after:rotate-2 after:rounded-[2.2rem] after:border after:border-cyan-100/80 after:bg-cyan-100/15"
+          className="relative h-full w-full before:absolute before:inset-[7%] before:-rotate-3 before:rounded-[2.4rem] before:border before:border-white/80 before:bg-white/22 before:shadow-[0_24px_60px_rgba(14,116,144,0.12)] after:absolute after:inset-[10%] after:rotate-2 after:rounded-[2.2rem] after:border after:border-cyan-100/80 after:bg-cyan-100/15"
         >
           <div className="absolute bottom-[8%] left-1/2 h-[12%] w-[58%] -translate-x-1/2 rounded-[50%] bg-slate-900/18 blur-2xl" />
           <AnimatePresence mode="wait">
@@ -744,7 +744,7 @@ const ScrollProductStage = ({
             type="button"
             aria-label="Previous product image"
             onClick={showPreviousImage}
-            className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-white/75 text-slate-800 shadow-lg backdrop-blur-xl active:scale-95"
+            className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-lg active:scale-95"
           >
             <ChevronLeft size={20} />
           </button>
@@ -752,7 +752,7 @@ const ScrollProductStage = ({
             type="button"
             aria-label="Next product image"
             onClick={showNextImage}
-            className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-white/75 text-slate-800 shadow-lg backdrop-blur-xl active:scale-95"
+            className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-lg active:scale-95"
           >
             <ChevronRight size={20} />
           </button>
@@ -775,7 +775,7 @@ const ScrollProductStage = ({
             />
           ))}
         </div>
-        <div className="rounded-full border border-white/70 bg-white/55 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 backdrop-blur-lg lg:border-0 lg:bg-transparent lg:p-0">
+        <div className="rounded-full border border-slate-200 bg-white px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 lg:border-0 lg:bg-transparent lg:p-0">
           <span className="lg:hidden">
             {String(activeImageIndex + 1).padStart(2, "0")} /{" "}
             {String(images.length).padStart(2, "0")}
@@ -845,7 +845,7 @@ const StickyPurchaseBar = ({
       transition={{ delay: 0.2, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
       className="pointer-events-none fixed inset-x-0 bottom-[calc(4.8rem+env(safe-area-inset-bottom))] z-[90] px-3 sm:bottom-5 sm:px-5"
     >
-      <div className="pointer-events-auto mx-auto grid max-w-5xl grid-cols-[minmax(62px,auto)_1fr_1fr] items-center gap-2 overflow-hidden rounded-[1.35rem] border border-white/15 bg-slate-950/95 p-2 shadow-[0_24px_90px_rgba(15,23,42,0.4)] ring-1 ring-slate-950/20 backdrop-blur-2xl sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:gap-3 sm:rounded-[1.8rem] sm:border-white/80 sm:bg-white/92 sm:p-3 sm:shadow-[0_24px_90px_rgba(15,23,42,0.28)] sm:ring-slate-900/5">
+      <div className="pointer-events-auto mx-auto grid max-w-5xl grid-cols-[minmax(62px,auto)_1fr_1fr] items-center gap-2 overflow-hidden rounded-[1.35rem] border border-white/15 bg-slate-950/95 p-2 shadow-[0_24px_90px_rgba(15,23,42,0.4)] ring-1 ring-slate-950/20 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:gap-3 sm:rounded-[1.8rem] sm:border-white/80 sm:bg-white/92 sm:p-3 sm:shadow-[0_24px_90px_rgba(15,23,42,0.28)] sm:ring-slate-900/5">
         <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
         <div className="flex min-w-0 items-center gap-3 px-1 sm:px-2">
           <div className="relative hidden h-14 w-14 flex-none overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-50 to-emerald-50 ring-1 ring-slate-200 sm:block">

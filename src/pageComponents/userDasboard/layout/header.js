@@ -179,7 +179,7 @@ export const DashboardSidebar = ({ pathname, user, counts, onSignOut }) => (
 /** Mobile chrome: compact top bar plus a labelled bottom tab bar. */
 export const DashboardMobileNav = ({ pathname, user, counts, title }) => (
   <>
-    <header className="sticky top-0 z-40 -mx-4 mb-4 flex items-center gap-3 border-b border-slate-200/70 bg-slate-50/90 px-4 py-3 backdrop-blur lg:hidden">
+    <header className="sticky top-0 z-40 -mx-4 mb-4 flex items-center gap-3 border-b border-slate-200/70 bg-slate-50 px-4 py-3 lg:hidden">
       <Link
         href="/"
         aria-label="Aquakart home"
@@ -214,7 +214,7 @@ export const DashboardMobileNav = ({ pathname, user, counts, title }) => (
     </header>
 
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label="Account sections"
     >
       <div className="mx-auto grid max-w-md grid-cols-5">
