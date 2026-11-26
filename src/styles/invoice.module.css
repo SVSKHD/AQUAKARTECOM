@@ -219,14 +219,6 @@
 
 .brandMark {
   display: inline-flex;
-  width: 32px;
-  height: 32px;
-}
-
-.brandMark img {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
 }
 
 .brand strong {
@@ -641,15 +633,6 @@
 
 .stampLogo {
   position: relative;
-  display: inline-flex;
-  width: 44px;
-  height: 44px;
-}
-
-.stampLogo img {
-  width: 44px;
-  height: 44px;
-  object-fit: contain;
 }
 
 .stampBadge {
@@ -1838,12 +1821,6 @@
   margin-bottom: 16px;
 }
 
-.errorLogo img {
-  width: 56px;
-  height: 56px;
-  object-fit: contain;
-}
-
 .errorCard h1 {
   margin: 0;
   font-family: var(--app-display-font);
@@ -2415,6 +2392,139 @@
   font-weight: 600;
 }
 
+/* ---------- Motion ----------
+ * Moving, but light: only transform and opacity animate, nothing loops
+ * except the water, and everything stops with reduced motion.
+ */
+.invoiceHero {
+  position: relative;
+  overflow: hidden;
+}
+
+.heroTop,
+.greetingCard {
+  position: relative;
+  z-index: 1;
+}
+
+/* A soft light that drifts across the green band. */
+.invoiceHero::before {
+  position: absolute;
+  top: -40%;
+  left: -30%;
+  width: 60%;
+  height: 180%;
+  pointer-events: none;
+  content: "";
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0)
+  );
+}
+
+/* A liquid wave running along the bottom of the band. */
+.invoiceHero::after {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 200%;
+  height: 16px;
+  pointer-events: none;
+  content: "";
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 16' preserveAspectRatio='none'%3E%3Cpath d='M0 10 Q30 2 60 10 T120 10 T180 10 T240 10 V16 H0Z' fill='%2310b981' fill-opacity='0.55'/%3E%3C/svg%3E")
+    repeat-x;
+  background-size: 50% 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .invoiceHero::before {
+    animation: bandLight 14s ease-in-out infinite alternate;
+  }
+
+  .invoiceHero::after {
+    animation: bandWave 9s linear infinite;
+  }
+
+  /* Scroll reveal (the class is added by JS only). */
+  .revealReady [data-reveal] {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 600ms var(--ease),
+      transform 600ms var(--ease);
+  }
+
+  .revealReady [data-reveal][data-shown] {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Product rows arrive one after another. */
+  .revealReady [data-shown] .lineItem {
+    animation: rowIn 500ms var(--ease) both;
+  }
+  .revealReady [data-shown] .lineItem:nth-child(2) {
+    animation-delay: 80ms;
+  }
+  .revealReady [data-shown] .lineItem:nth-child(3) {
+    animation-delay: 160ms;
+  }
+  .revealReady [data-shown] .lineItem:nth-child(4) {
+    animation-delay: 240ms;
+  }
+  .revealReady [data-shown] .lineItem:nth-child(n + 5) {
+    animation-delay: 320ms;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .partyCard,
+  .summaryCard,
+  .termItem,
+  .careCard,
+  .bankCard,
+  .recoCard,
+  .lineThumb {
+    transition:
+      transform 250ms var(--ease),
+      box-shadow 250ms var(--ease);
+  }
+
+  .termItem:hover,
+  .careCard:hover,
+  .bankCard:hover,
+  .recoCard:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 12px 32px rgba(15, 23, 42, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  }
+
+  .lineItem:hover .lineThumb {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes bandLight {
+  to {
+    transform: translateX(200%);
+  }
+}
+
+@keyframes bandWave {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes rowIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 1240px) {
@@ -2540,10 +2650,8 @@
     height: 88px;
   }
 
-  .stampLogo,
-  .stampLogo img {
-    width: 34px;
-    height: 34px;
+  .stampLogo {
+    --size: 48px !important;
   }
 
   .stampText {
@@ -2727,6 +2835,18 @@
   .page {
     padding: 0;
     background: #ffffff;
+  }
+
+  .revealReady [data-reveal],
+  .lineItem {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  .invoiceHero::before,
+  .invoiceHero::after {
+    display: none;
   }
 
   .invoiceShell,

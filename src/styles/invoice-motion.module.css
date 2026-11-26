@@ -1,0 +1,276 @@
+/*
+ * Liquid 3D logo and the invoice loading screen.
+ * Only transform and opacity animate, so it stays smooth on phones.
+ */
+
+/* ---------- Liquid logo: the mark inside a glass sphere of water ---------- */
+.liquid {
+  --size: 112px;
+  --level: 0.58;
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--size);
+  height: var(--size);
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 28%,
+    #ffffff 0%,
+    #f0fdfa 42%,
+    #ccfbf1 100%
+  );
+  box-shadow:
+    inset 0 calc(var(--size) * -0.08) calc(var(--size) * 0.16)
+      rgba(4, 120, 87, 0.2),
+    inset 0 calc(var(--size) * 0.05) calc(var(--size) * 0.1)
+      rgba(255, 255, 255, 0.95),
+    0 calc(var(--size) * 0.08) calc(var(--size) * 0.2) rgba(4, 47, 46, 0.18);
+}
+
+/* The water body: full height, moved down so its top sits at --level. */
+.liquidWater {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, #2dd4bf 0%, #10b981 45%, #047857 100%);
+  transform: translateY(calc((1 - var(--level)) * 100%));
+}
+
+.wave {
+  position: absolute;
+  bottom: calc(100% - 1px);
+  left: 0;
+  width: 200%;
+  height: calc(var(--size) * 0.14);
+  fill: #2dd4bf;
+}
+
+.waveBack {
+  bottom: calc(100% + 1px);
+  fill: #99f6e4;
+  opacity: 0.7;
+}
+
+.liquidLogo {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+}
+
+.liquidLogo img {
+  width: 50%;
+  height: auto;
+  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.9))
+    drop-shadow(0 2px 6px rgba(4, 47, 46, 0.2));
+}
+
+/* Glossy highlight that makes it read as a sphere. */
+.liquidShine {
+  position: absolute;
+  top: 7%;
+  left: 16%;
+  z-index: 3;
+  width: 44%;
+  height: 28%;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  border-radius: 50%;
+  transform: rotate(-18deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .wave {
+    animation: waveDrift 3.4s linear infinite;
+  }
+
+  .waveBack {
+    animation-duration: 5.2s;
+    animation-direction: reverse;
+  }
+
+  .liquidWater {
+    animation: waterBob 4s ease-in-out infinite alternate;
+  }
+
+  .liquidFilling .liquidWater {
+    animation:
+      waterFill 2.4s cubic-bezier(0.2, 0, 0, 1) both,
+      waterBob 4s ease-in-out 2.4s infinite alternate;
+  }
+}
+
+@keyframes waveDrift {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes waterBob {
+  to {
+    transform: translateY(calc((1 - var(--level)) * 100% + 3%));
+  }
+}
+
+@keyframes waterFill {
+  from {
+    transform: translateY(94%);
+  }
+}
+
+/* ---------- Loading screen ---------- */
+.loader {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 24px 16px;
+  font-family: var(--app-font);
+  color: #18181b;
+}
+
+.loaderCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 360px;
+  padding: 32px 28px 28px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 28px;
+  box-shadow:
+    0 8px 32px rgba(15, 23, 42, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.loaderTitle {
+  margin: 20px 0 16px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #52525b;
+  font-size: 14px;
+}
+
+.stepIcon {
+  position: relative;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d4d4d8;
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loaderCard {
+    animation: loaderIn 360ms cubic-bezier(0.2, 0, 0, 1) 120ms both;
+  }
+
+  .steps li {
+    opacity: 0.45;
+    animation: stepOn 280ms ease-out both;
+    animation-delay: calc(400ms + var(--i) * 650ms);
+  }
+
+  .steps li .stepIcon {
+    animation: stepDone 280ms ease-out both;
+    animation-delay: calc(1000ms + var(--i) * 650ms);
+  }
+
+  /* The last step keeps working until the invoice arrives. */
+  .steps li:last-child .stepIcon {
+    border-color: #a7f3d0;
+    border-top-color: #059669;
+    animation: stepSpin 0.9s linear infinite;
+    animation-delay: calc(400ms + var(--i) * 650ms);
+  }
+}
+
+.steps li .stepIcon::after {
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  content: "";
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  opacity: 0;
+  transform: rotate(45deg);
+}
+
+@keyframes loaderIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes stepOn {
+  to {
+    color: #18181b;
+    opacity: 1;
+  }
+}
+
+@keyframes stepDone {
+  to {
+    background: #059669;
+    border-color: #059669;
+  }
+}
+
+.steps li:not(:last-child) .stepIcon {
+  animation-fill-mode: both;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .steps li:not(:last-child) .stepIcon::after {
+    animation: checkIn 200ms ease-out both;
+    animation-delay: calc(1080ms + var(--i) * 650ms);
+  }
+}
+
+@keyframes checkIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes stepSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .steps li {
+    color: #18181b;
+  }
+}

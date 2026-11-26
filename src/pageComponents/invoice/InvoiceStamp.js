@@ -1,6 +1,5 @@
-import Image from "next/image";
 import { useEffect, useId, useRef, useState } from "react";
-import logo from "@/assests/logo.png";
+import LiquidLogo from "@/pageComponents/invoice/LiquidLogo";
 import { DOCUMENT_STATUSES } from "@/utils/invoice/documentKind";
 import styles from "@/styles/invoice.module.css";
 
@@ -50,9 +49,7 @@ export const InvoiceStamp = ({ status, documentLabel }) => {
           </textPath>
         </text>
       </svg>
-      <span className={styles.stampLogo} aria-hidden="true">
-        <Image src={logo} alt="" width={56} height={56} priority />
-      </span>
+      <LiquidLogo size={64} level={0.5} className={styles.stampLogo} />
       <span key={takes} className={styles.stampBadge} aria-hidden="true">
         {word}
       </span>

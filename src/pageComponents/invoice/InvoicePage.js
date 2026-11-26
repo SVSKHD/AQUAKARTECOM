@@ -1,5 +1,4 @@
 import Head from "next/head";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -32,7 +31,6 @@ import {
   Truck,
 } from "lucide-react";
 import { toast } from "sonner";
-import logo from "@/assests/logo.png";
 import GoogleMark from "@/components/auth/GoogleMark";
 import {
   exchangeFirebaseIdToken,
@@ -60,7 +58,9 @@ import {
   getDocumentStatus,
 } from "@/utils/invoice/documentKind";
 import InvoiceAiPanel from "@/pageComponents/invoice/InvoiceAiPanel";
+import LiquidLogo from "@/pageComponents/invoice/LiquidLogo";
 import {
+  CountUp,
   InvoiceStamp,
   StatusLegend,
   StatusPill,
@@ -327,7 +327,7 @@ const InvoiceError = ({ statusCode, onAccessGranted }) => {
       </Head>
       <div className={styles.errorCard}>
         <div className={styles.errorLogo}>
-          <Image src={logo} alt="Aquakart" width={68} height={68} priority />
+          <LiquidLogo size={80} level={0.55} filling />
         </div>
         <span className={styles.eyebrow}>Aquakart invoices</span>
         <h1>
@@ -705,7 +705,7 @@ const PartyCard = ({ invoice }) => {
     : [];
 
   return (
-    <section className={styles.partyCard}>
+    <section className={styles.partyCard} data-reveal>
       <header className={styles.partyHead}>
         <span className={styles.partyAvatar} aria-hidden="true">
           {initialsOf(name)}
@@ -880,6 +880,35 @@ const InvoicePage = ({
     setAssistantContext,
   } = useAssistant();
   const hasInvoice = Boolean(invoice) && statusCode === 200;
+  const pageRef = useRef(null);
+
+  // Sections fade and rise in as they scroll into view. The class that hides
+  // them is only added here, so without JS or with reduced motion nothing
+  // is ever hidden.
+  useEffect(() => {
+    const root = pageRef.current;
+    if (!hasInvoice || !root || typeof IntersectionObserver === "undefined") {
+      return undefined;
+    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return undefined;
+    }
+    root.classList.add(styles.revealReady);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.setAttribute("data-shown", "");
+          observer.unobserve(entry.target);
+        });
+      },
+      { rootMargin: "0px 0px -8% 0px" },
+    );
+    root
+      .querySelectorAll("[data-reveal]")
+      .forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [hasInvoice]);
 
   const recommendations = useMemo(
     () => (hasInvoice ? recommendProducts(invoice, catalogue) : []),
@@ -1018,7 +1047,7 @@ const InvoicePage = ({
   };
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} ref={pageRef}>
       <Head>
         <title>
           {documentLabel} | Aquakart {documentName}
@@ -1034,7 +1063,7 @@ const InvoicePage = ({
       <header className={styles.commandBar}>
         <Link href="/" className={styles.brand} aria-label="Aquakart home">
           <span className={styles.brandMark}>
-            <Image src={logo} alt="" width={40} height={40} priority />
+            <LiquidLogo size={36} level={0.5} />
           </span>
           <span>
             <strong>Aquakart</strong>
@@ -1170,7 +1199,7 @@ const InvoicePage = ({
           </div>
         </section>
 
-        <section className={styles.metaStrip}>
+        <section className={styles.metaStrip} data-reveal>
           <div>
             <CalendarDays size={18} />
             <span>{documentName} date</span>
@@ -1199,7 +1228,7 @@ const InvoicePage = ({
 
         <div className={styles.invoiceGrid}>
           <PartyCard invoice={invoice} />
-          <section className={styles.productsColumn}>
+          <section className={styles.productsColumn} data-reveal>
             <div className={styles.sectionHeading}>
               <h2>Products</h2>
               <span className={styles.itemCount}>
@@ -1250,7 +1279,7 @@ const InvoicePage = ({
           </section>
 
           <aside className={styles.detailsRail}>
-            <section className={styles.summaryCard}>
+            <section className={styles.summaryCard} data-reveal>
               <div className={styles.summaryTopline}>
                 <div>
                   <small>
@@ -1334,7 +1363,12 @@ const InvoicePage = ({
 
               <div className={styles.grandTotal}>
                 <span>Total amount</span>
-                <strong>{priceUtils.formatAmount(amounts.grandTotal)}</strong>
+                <strong>
+                  <CountUp
+                    value={amounts.grandTotal}
+                    format={(value) => priceUtils.formatAmount(value)}
+                  />
+                </strong>
                 <small>
                   {amounts.hasDiscount
                     ? `You save ${priceUtils.formatAmount(amounts.discountTotal)} · `
@@ -1356,6 +1390,7 @@ const InvoicePage = ({
         {recommendations.length ? (
           <section
             className={styles.recoSection}
+            data-reveal
             aria-labelledby="invoice-recommendations"
           >
             <div className={styles.recoHeading}>
@@ -1392,7 +1427,7 @@ const InvoicePage = ({
           </section>
         ) : null}
 
-        <section className={styles.legalSection}>
+        <section className={styles.legalSection} data-reveal>
           <div className={styles.legalHeading}>
             <div className={styles.legalTitleGroup}>
               <h2>Terms and conditions</h2>
@@ -1436,7 +1471,7 @@ const InvoicePage = ({
         </section>
 
         {invoice.po ? (
-          <section className={styles.paymentInstructions}>
+          <section className={styles.paymentInstructions} data-reveal>
             <div className={styles.paymentHeading}>
               <div className={styles.paymentTitleGroup}>
                 <h2>Bank details</h2>
@@ -1469,7 +1504,7 @@ const InvoicePage = ({
           </section>
         ) : null}
 
-        <footer className={styles.invoiceFooter}>
+        <footer className={styles.invoiceFooter} data-reveal>
           <div>
             <strong>Thank you for choosing Aquakart</strong>
             <span>support@aquakart.co.in · +91 90147 74667</span>
