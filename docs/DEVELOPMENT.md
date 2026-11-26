@@ -2,7 +2,7 @@
 
 ## Local setup
 
-1. Install dependencies with `npm install`. Both npm and pnpm lockfiles exist; preserve the lockfile convention used by the task and avoid incidental dependency updates.
+1. Install dependencies with `npm install` (or `npm ci` for an exact copy of the lockfile). npm is the only package manager: `package-lock.json` is committed and Docker installs from it; pnpm/yarn lockfiles are ignored and must not come back. Avoid incidental dependency updates.
 2. Copy `.env.example` to `.env.local` and fill only needed settings. Existing `.env` values may already be present; do not overwrite them blindly.
 3. Set `MODE=dev` for the local backend and start that backend separately on port 5300.
 4. Run `npm run dev`; the storefront normally opens at `http://localhost:3000`.
@@ -24,28 +24,36 @@ On Windows, `npm.cmd` and `npx.cmd` work when PowerShell blocks the `.ps1` wrapp
 
 Restart development after env changes. Public client values are fixed at build time; set production values before building and rebuild when changing targets. Next.js env precedence puts `.env.local` ahead of `.env` (environment-specific files and process variables can also take precedence).
 
-Docker currently declares public API and Firebase build arguments but does not declare a MODE build argument. It copies the source before building. Ensure files copied into a production image do not accidentally select `MODE=dev`; verify deployment env handling before changing that workflow.
+## Docker / Jenkins build
+
+The `Dockerfile` has three stages:
+
+1. **deps**: `npm ci --legacy-peer-deps` from `package.json` + `package-lock.json`. Docker caches this layer until either file changes, so most deploys skip the install entirely.
+2. **builder**: takes the Jenkins build args (`MODE`, default `prod`, plus the public API and Firebase values), refuses to build without the Firebase config, then runs `npm run build`.
+3. **runner**: only `.next/standalone` (`output: "standalone"` in `next.config.mjs`), `public/` and `.next/static`, started with `pm2-runtime start server.js` as the `node` user on `0.0.0.0:3000`. No full `node_modules` in the image.
+
+`.dockerignore` keeps `.git`, `node_modules`, `.next`, docs and every `.env*` file out of the build context, so a local `.env` with `MODE=dev` can never reach a production image. Runtime-only server secrets are passed to the container at run time as before.
 
 For Google login setup, see [AUTH_GOOGLE_FIREBASE.md](AUTH_GOOGLE_FIREBASE.md). That guide lists `NEXT_PUBLIC_API_URL` as required for the flow; this app now derives it from MODE. Firebase must authorize localhost for local Google login. Never put backend credentials in `NEXT_PUBLIC_*` variables.
 
 ## Commands
 
-| Command                                    | Purpose                                                                                         |
-| ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| `npm run dev`                              | Next development using Webpack                                                                  |
-| `npm run build`                            | Production build (Turbopack); `prebuild` runs `typecheck` + `lint` first and stops on any error |
-| `npm start`                                | Serve an existing production build                                                              |
-| `npm test`                                 | Run Vitest suite once                                                                           |
-| `npm test -- src/utils/priceUtils.test.js` | Run one relevant test file                                                                      |
-| `npm run test:watch`                       | Watch tests                                                                                     |
-| `npm run test:coverage`                    | Coverage; current coverage include targets UI primitives                                        |
-| `npm run lint`                             | Repository ESLint check; fails on any error or warning                                          |
-| `npx eslint src/path/to/changed-file.js`   | Focused lint check                                                                              |
-| `npm run typecheck`                        | `tsc --noEmit --incremental false`                                                              |
-| `npm run verify`                           | typecheck + lint + full Vitest run (`--maxWorkers=2`); run before pushing                       |
-| `npm run pretty`                           | Formats the whole repo; prefer targeted formatting for small changes                            |
+| Command                                    | Purpose                                                                                                                                      |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                              | Next development using Webpack                                                                                                               |
+| `npm run build`                            | Production build (Turbopack, standalone output); `prebuild` runs `lint`, and `next build` type-checks, so it stops on any lint or type error |
+| `npm start`                                | Serve an existing production build (`next start`; Docker uses `.next/standalone/server.js`)                                                  |
+| `npm test`                                 | Run Vitest suite once                                                                                                                        |
+| `npm test -- src/utils/priceUtils.test.js` | Run one relevant test file                                                                                                                   |
+| `npm run test:watch`                       | Watch tests                                                                                                                                  |
+| `npm run test:coverage`                    | Coverage; current coverage include targets UI primitives                                                                                     |
+| `npm run lint`                             | Repository ESLint check; fails on any error or warning                                                                                       |
+| `npx eslint src/path/to/changed-file.js`   | Focused lint check                                                                                                                           |
+| `npm run typecheck`                        | `tsc --noEmit --incremental false`                                                                                                           |
+| `npm run verify`                           | typecheck + lint + full Vitest run (`--maxWorkers=2`); run before pushing                                                                    |
+| `npm run pretty`                           | Formats the whole repo; prefer targeted formatting for small changes                                                                         |
 
-Vitest uses jsdom, `vitest.setup.js`, and discovers `src/**/*.{test,spec}.{js,jsx,ts,tsx}`. Keep useful regression tests beside related code. Do not claim a successful check without running it. The build (including the Jenkins Docker build) refuses to start while type or lint errors exist, and the pre-commit hook lints staged JS/TS files.
+Vitest uses jsdom, `vitest.setup.js`, and discovers `src/**/*.{test,spec}.{js,jsx,ts,tsx}`. Keep useful regression tests beside related code. Do not claim a successful check without running it. The build (including the Jenkins Docker build) fails on lint errors (`prebuild`) and type errors (`next build`'s own TypeScript step), and the pre-commit hook lints staged JS/TS files. On Windows, run Vitest from a shell whose working directory uses an uppercase drive letter (`C:\...`, e.g. PowerShell); from Git Bash's `/c/...` it can load Vitest twice and every file fails with "Cannot read properties of undefined (reading 'config')".
 
 ESLint 10 notes: `eslint.config.mjs` pins `settings.react.version` (the plugin's `detect` crashes on ESLint 10) and parses JS/JSX with `espree` (Next's bundled Babel parser crashes on ESLint 10). Keep both until `eslint-config-next` supports ESLint 10 natively. Running the full Vitest suite with default parallelism can crash workers on smaller machines; use `--maxWorkers=2`.
 

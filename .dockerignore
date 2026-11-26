@@ -1,0 +1,28 @@
+# Keep the Docker build context small; dependencies are installed in the image.
+node_modules
+.next
+out
+build
+coverage
+.git
+.github
+.husky
+.claude
+.vscode
+docs
+*.md
+*.log
+npm-debug.log*
+Dockerfile
+.dockerignore
+
+# Never bake local secrets into the image (Jenkins passes build args instead).
+.env
+.env.*
+*.pem
+aquakart.json
+
+# Local-only artifacts
+pnpm-lock.yaml
+yarn.lock
+*.tsbuildinfo

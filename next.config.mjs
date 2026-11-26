@@ -102,6 +102,10 @@ const nextConfig = {
 
   reactStrictMode: true,
 
+  // Docker runs .next/standalone/server.js: only the traced runtime files, no
+  // full node_modules in the image (see Dockerfile).
+  output: "standalone",
+
   env: {
     NEXT_PUBLIC_URL: "https://aquakart.co.in",
     NEXT_PUBLIC_API_URL: apiBaseUrl,

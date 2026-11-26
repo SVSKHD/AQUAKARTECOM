@@ -22,7 +22,7 @@ Versions below are declared ranges from `package.json`, not a guarantee of insta
 | HTTP / auth          | Axios ^1; Firebase ^12 Google authentication plus backend sessions                                                     |
 | Other UI             | Embla, Swiper; Lucide, Heroicons, React Icons; jsPDF for PDF generation                                                |
 | Verification         | Vitest ^4, jsdom, Testing Library; ESLint ^10, Prettier ^3                                                             |
-| Runtime / deployment | Docker defaults to Node 22 Alpine; PM2 runs `next start` on port 3000                                                  |
+| Runtime / deployment | Docker (Node 22 Alpine, 3 stages) runs the standalone build: PM2 starts `server.js` on port 3000; see DEVELOPMENT.md   |
 
 ## Where to change things
 

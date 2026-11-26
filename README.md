@@ -17,12 +17,8 @@ First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
+
+npm is the only package manager for this repo (`package-lock.json` is committed).
 
 Open [http://localhost:3000](http://localhost:3000)

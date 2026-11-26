@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "prebuild": "npm run typecheck && npm run lint",
+    "prebuild": "npm run lint",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
