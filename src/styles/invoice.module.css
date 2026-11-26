@@ -2180,6 +2180,241 @@
   border-color: rgba(255, 255, 255, 0.7);
 }
 
+/* ---------- Rich layer: bold hierarchy and a colour per section ----------
+ * Each section has its own colour (--sec). It tints the section's title
+ * strip and icon chips, so every block reads as its own thing at a glance.
+ */
+.partyCard,
+.recoSection {
+  --sec: #0369a1;
+}
+.productsColumn {
+  --sec: #047857;
+}
+.summaryCard {
+  --sec: #0f172a;
+}
+.aiPanel {
+  --sec: #0d9488;
+}
+.legalSection {
+  --sec: #475569;
+}
+.careSection {
+  --sec: #b45309;
+}
+.paymentInstructions {
+  --sec: #6d28d9;
+}
+
+/* Bold hierarchy */
+.heroBrand h1 {
+  font-weight: 700;
+}
+.heroNumber strong,
+.grandTotal strong {
+  font-weight: 700;
+}
+.sectionHeading h2,
+.recoHeading h2,
+.legalHeading h2,
+.paymentHeading h2,
+.aiHead h2,
+.aiLockedCopy h2,
+.partyHead h2,
+.summaryTopline h2,
+.careHeading h3 {
+  font-weight: 600;
+}
+.lineBody h3,
+.termItem h3,
+.careCard strong,
+.bankCard h3,
+.greetingCopy h2,
+.metaStrip strong,
+.amountWords strong,
+.lineFigureTotal dd,
+.discountRowOffer strong,
+.grandTotal span {
+  font-weight: 600;
+}
+.statusPill,
+.legendChipCurrent {
+  font-weight: 600;
+}
+
+/* Section headings outside cards get a short bar in the section colour. */
+.recoHeading h2,
+.legalHeading h2,
+.paymentHeading h2,
+.careHeading h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.recoHeading h2::before,
+.legalHeading h2::before,
+.paymentHeading h2::before,
+.careHeading h3::before {
+  width: 4px;
+  height: 20px;
+  content: "";
+  background: var(--sec);
+  border-radius: 2px;
+}
+
+/* Title strips: the top of each card, tinted in the section colour. */
+.sectionHeading,
+.summaryTopline,
+.aiHead,
+.invoiceGrid > .partyCard > .partyHead,
+.bankTopline {
+  background: color-mix(in srgb, var(--sec) 8%, white);
+  border-bottom: 1px solid color-mix(in srgb, var(--sec) 16%, white);
+}
+
+/* Products: the heading strip sits on top of the list as one card. */
+.sectionHeading {
+  align-items: center;
+  margin-bottom: 0;
+  padding: 12px 16px;
+  border: 1px solid var(--glass-edge, var(--line));
+  border-bottom-color: color-mix(in srgb, var(--sec) 16%, white);
+  border-radius: 12px 12px 0 0;
+}
+.sectionHeading h2 {
+  font-size: 16px;
+  line-height: 24px;
+}
+.itemCount {
+  padding: 2px 8px;
+  color: var(--sec);
+  font-size: 12px;
+  font-weight: 600;
+  background: #ffffff;
+  border-radius: 6px;
+}
+.sectionHeading + .lineItems {
+  border-top: 0;
+  border-radius: 0 0 12px 12px;
+}
+
+.summaryTopline {
+  margin: -20px -20px 16px;
+  padding: 12px 20px;
+  border-radius: 12px 12px 0 0;
+}
+.summaryTopline small,
+.partyHead small {
+  color: var(--sec);
+  font-weight: 600;
+}
+
+.invoiceGrid > .partyCard > .partyHead {
+  grid-column: 1 / -1;
+  margin: -20px -20px 16px;
+  padding: 12px 20px;
+  border-radius: 12px 12px 0 0;
+}
+.invoiceGrid > .partyCard > .partyFacts {
+  grid-row: 2 / span 5;
+}
+.partyAvatar {
+  color: #ffffff;
+  font-weight: 600;
+  background: var(--sec);
+}
+.partyBadge {
+  color: var(--sec);
+  font-weight: 600;
+  background: #ffffff;
+  border-color: color-mix(in srgb, var(--sec) 25%, white);
+}
+
+.aiHead {
+  margin: -20px -20px 16px;
+  padding: 12px 20px;
+  border-radius: 12px 12px 0 0;
+}
+.aiOrb {
+  color: #ffffff;
+  background: var(--sec);
+}
+
+.bankTopline {
+  margin: -16px -16px 0;
+  padding: 10px 16px;
+  color: var(--sec);
+  font-weight: 600;
+  border-radius: 12px 12px 0 0;
+}
+.bankDetails dd {
+  font-weight: 600;
+}
+
+/* Icon chips in the section colour */
+.metaStrip svg {
+  box-sizing: content-box;
+  padding: 8px;
+  color: var(--band);
+  background: color-mix(in srgb, var(--band) 10%, white);
+  border-radius: 8px;
+}
+.termIcon,
+.careIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  color: var(--sec);
+  background: color-mix(in srgb, var(--sec) 10%, white);
+  border-radius: 8px;
+}
+.termTopline {
+  color: var(--sec);
+}
+
+/* Terms: each one is its own small card. */
+.termItem {
+  padding: 16px;
+  background: var(--glass-card, var(--surface));
+  border: 1px solid var(--glass-edge, var(--line));
+  border-radius: 12px;
+}
+.termItem h3 {
+  margin-top: 12px;
+}
+.termsGrid {
+  gap: 12px;
+}
+
+/* Products: numbered badge, figures in fixed columns so rows line up. */
+.lineThumb span {
+  color: #ffffff;
+  font-weight: 600;
+  background: var(--sec);
+}
+.lineFigures {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  max-width: 560px;
+  gap: 8px 16px;
+}
+.lineFigures dd {
+  color: var(--ink);
+}
+.lineFigureTotal dd {
+  color: var(--sec);
+}
+.lineItem:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.careCard a {
+  font-weight: 600;
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 1240px) {
@@ -2271,6 +2506,15 @@
 
   .aiPanel {
     padding: 16px;
+  }
+
+  .aiHead {
+    margin: -16px -16px 16px;
+    padding: 12px 16px;
+  }
+
+  .invoiceGrid > .partyCard > .partyFacts {
+    grid-row: auto;
   }
 
   .invoiceFooter {
