@@ -740,8 +740,8 @@
   width: 64px;
   height: 64px;
   overflow: hidden;
-  color: var(--ink-4);
-  background: var(--sunk);
+  color: var(--band);
+  background: color-mix(in srgb, var(--band) 8%, white);
   border-radius: 8px;
 }
 
@@ -875,6 +875,31 @@
   padding: 20px;
   border: 1px solid var(--line);
   border-radius: 12px;
+}
+
+/* Billed to spans the sheet: contact on the left, GST profile on the right. */
+.invoiceGrid > .partyCard {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-auto-flow: dense;
+  align-content: start;
+  column-gap: 32px;
+}
+
+.invoiceGrid > .partyCard > :not(.partyFacts) {
+  grid-column: 1;
+}
+
+.invoiceGrid > .partyCard > .partyFacts {
+  grid-column: 2;
+  grid-row: 1 / span 6;
+  align-self: start;
+  margin-top: 0;
+  padding-top: 0;
+  padding-left: 32px;
+  border-top: 0;
+  border-left: 1px solid var(--line);
 }
 
 .partyHead {
@@ -1116,8 +1141,10 @@
 /* ---------- Ask AI ---------- */
 
 .aiPanel {
-  padding: 24px 32px;
-  border-top: 1px solid var(--line);
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
 }
 
 .aiHead {
@@ -1234,9 +1261,14 @@
 
 .aiPanelLocked {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 16px;
+}
+
+.aiPanelLocked .googleSignInButton {
+  grid-column: 2;
+  justify-self: start;
 }
 
 .aiPanelLocked .aiOrb {
@@ -1325,8 +1357,8 @@
   display: grid;
   place-items: center;
   aspect-ratio: 1;
-  color: var(--ink-4);
-  background: var(--sunk);
+  color: var(--band);
+  background: color-mix(in srgb, var(--band) 6%, white);
 }
 
 .recoPoster img {
@@ -2031,9 +2063,6 @@
 
   .detailsRail {
     position: static;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
   }
 
   .commandIdentity {
@@ -2109,7 +2138,7 @@
   }
 
   .aiPanel {
-    padding: 20px;
+    padding: 16px;
   }
 
   .invoiceFooter {
@@ -2198,12 +2227,27 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .invoiceGrid > .partyCard {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .invoiceGrid > .partyCard > .partyFacts {
+    grid-column: 1;
+    grid-row: auto;
+    margin-top: 16px;
+    padding-top: 16px;
+    padding-left: 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
   .aiPanelLocked {
     grid-template-columns: auto minmax(0, 1fr);
   }
 
   .aiPanelLocked .googleSignInButton {
     grid-column: 1 / -1;
+    justify-self: stretch;
   }
 
   .recoHeading {

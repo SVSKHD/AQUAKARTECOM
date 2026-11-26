@@ -94,7 +94,8 @@ const formatDate = (value) => {
 const titleCase = (value) =>
   String(value || "Not available")
     .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+    .replace(/\b(Upi|Neft|Rtgs|Imps|Emi)\b/g, (word) => word.toUpperCase());
 
 const PREVIEW_PRODUCTS = 3;
 
@@ -1197,6 +1198,7 @@ const InvoicePage = ({
         <StatusLegend status={docStatus} documentName={documentName} />
 
         <div className={styles.invoiceGrid}>
+          <PartyCard invoice={invoice} />
           <section className={styles.productsColumn}>
             <div className={styles.sectionHeading}>
               <h2>Products</h2>
@@ -1234,11 +1236,20 @@ const InvoicePage = ({
               <span>Amount in words</span>
               <strong>{priceUtils.numberToWords(amounts.grandTotal)}</strong>
             </div>
+
+            {/* Questions about the bill sit next to what was bought. */}
+            {assistantAvailable ? (
+              <InvoiceAiPanel
+                invoice={invoice}
+                status={docStatus}
+                amounts={amounts}
+                documentName={documentName}
+                openAssistant={openAssistant}
+              />
+            ) : null}
           </section>
 
           <aside className={styles.detailsRail}>
-            <PartyCard invoice={invoice} />
-
             <section className={styles.summaryCard}>
               <div className={styles.summaryTopline}>
                 <div>
@@ -1341,16 +1352,6 @@ const InvoicePage = ({
             </section>
           </aside>
         </div>
-
-        {assistantAvailable ? (
-          <InvoiceAiPanel
-            invoice={invoice}
-            status={docStatus}
-            amounts={amounts}
-            documentName={documentName}
-            openAssistant={openAssistant}
-          />
-        ) : null}
 
         {recommendations.length ? (
           <section
