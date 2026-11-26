@@ -19,6 +19,10 @@
   --accent: #05845f;
   --accent-hover: #04704f;
   --accent-ink: #04704f;
+  --band: #047857;
+  --band-rule: #10b981;
+  --navy: #0f172a;
+  --mint: #34d399;
   --bad: #b42318;
   --ease: cubic-bezier(0.2, 0, 0, 1);
   --tone: #c2410c;
@@ -137,6 +141,10 @@
 .page :is(button, a, input):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+.invoiceHero :is(button, a):focus-visible {
+  outline-color: #ffffff;
 }
 
 .page button:disabled {
@@ -334,8 +342,16 @@
 }
 
 /* Hero: stamp, document title, number. */
+/* The one rich moment at the top: the PDF's green header band. */
 .invoiceHero {
   padding: 32px;
+  color: #ffffff;
+  background: var(--band);
+  border-bottom: 4px solid var(--band-rule);
+}
+
+.invoiceHero .eyebrow {
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .heroTop {
@@ -360,7 +376,7 @@
 
 .heroBrand p {
   margin-top: 4px;
-  color: var(--ink-2);
+  color: rgba(255, 255, 255, 0.8);
   font-family: var(--app-mono-font);
   font-size: 13px;
 }
@@ -375,12 +391,16 @@
 
 .heroInvoice > span:not(.statusPill) {
   margin-top: 8px;
-  color: var(--ink-3);
+  color: rgba(255, 255, 255, 0.72);
   font-size: 13px;
 }
 
+.heroInvoice .statusPill {
+  background: #ffffff;
+}
+
 .heroInvoice small {
-  color: var(--ink-2);
+  color: rgba(255, 255, 255, 0.8);
   font-size: 13px;
 }
 
@@ -389,7 +409,7 @@
   align-items: center;
   gap: 8px;
   padding: 0;
-  color: var(--ink);
+  color: #ffffff;
   font: inherit;
   cursor: pointer;
   background: none;
@@ -405,12 +425,12 @@
 }
 
 .heroNumber svg {
-  color: var(--ink-4);
+  color: rgba(255, 255, 255, 0.6);
   transition: color 150ms var(--ease);
 }
 
 .heroNumber:hover svg {
-  color: var(--ink);
+  color: #ffffff;
 }
 
 .greetingCard {
@@ -420,7 +440,7 @@
   gap: 24px;
   margin-top: 24px;
   padding: 16px 20px;
-  background: var(--sunk);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
 }
 
@@ -433,7 +453,7 @@
 .greetingCopy p {
   max-width: 64ch;
   margin-top: 4px;
-  color: var(--ink-2);
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .greetingFacts {
@@ -447,7 +467,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--ink-2);
+  color: rgba(255, 255, 255, 0.86);
   font-size: 13px;
   white-space: nowrap;
 }
@@ -455,7 +475,7 @@
 .greetingFacts svg {
   width: 16px;
   height: 16px;
-  color: var(--ink-3);
+  color: #a7f3d0;
 }
 
 /* Facts strip. */
@@ -589,6 +609,7 @@
   background: none;
   border: 0;
   border-radius: 50%;
+  box-shadow: 0 4px 16px rgba(2, 44, 34, 0.28);
 }
 
 .stampRing {
@@ -599,7 +620,7 @@
 }
 
 .stampOuter {
-  fill: color-mix(in srgb, var(--tone) 5%, white);
+  fill: #ffffff;
   stroke: var(--tone);
   stroke-width: 2.5;
 }
@@ -1047,22 +1068,28 @@
   border-left: 1px solid var(--line);
 }
 
+/* Second moment: the PDF's dark total band. */
 .grandTotal {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
   column-gap: 12px;
   margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
+  padding: 16px;
+  color: #ffffff;
+  background: var(--navy);
+  border-radius: 8px;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
 }
 
 .grandTotal span {
+  color: rgba(255, 255, 255, 0.82);
   font-weight: 500;
 }
 
 .grandTotal strong {
-  color: var(--accent-ink);
+  color: var(--mint);
   font-family: var(--app-display-font);
   font-size: 28px;
   font-weight: 500;
@@ -1073,7 +1100,7 @@
 .grandTotal small {
   grid-column: 1 / -1;
   margin-top: 4px;
-  color: var(--ink-3);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 12px;
 }
 
@@ -2321,6 +2348,7 @@
     break-before: page;
   }
 
+  .invoiceHero,
   .stamp,
   .stampBadge,
   .statusPill,
