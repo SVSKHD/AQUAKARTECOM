@@ -9,8 +9,8 @@
 # testing
 /coverage
 
-# package-lock.json is an auto-generated file for npm, yarn is using yarn.lock instead
-/package-lock.json
+# npm is the package manager: package-lock.json is committed so Docker can
+# run a fast, reproducible `npm ci`. Other lockfiles must not come back.
 /pnpm-lock.yaml
 /yarn.lock
 
