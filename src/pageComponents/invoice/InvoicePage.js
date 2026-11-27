@@ -1333,11 +1333,6 @@ const InvoicePage = ({
                   </div>
                 )}
               </div>
-
-              <div className={styles.amountWords}>
-                <span>Amount in words</span>
-                <strong>{priceUtils.numberToWords(amounts.grandTotal)}</strong>
-              </div>
             </section>
           </section>
 
@@ -1454,9 +1449,17 @@ const InvoicePage = ({
                 </small>
               </div>
 
+              {/* The total in words sits right under the total amount. */}
+              <div className={styles.amountWords}>
+                <span>Amount in words</span>
+                <strong>{priceUtils.numberToWords(amounts.grandTotal)}</strong>
+              </div>
+
               <div className={styles.paymentState}>
                 <StatusPill status={docStatus} />
-                <span>via {titleCase(invoice.payment_type)}</span>
+                {invoice.payment_type ? (
+                  <span>via {titleCase(invoice.payment_type)}</span>
+                ) : null}
               </div>
             </section>
           </section>
