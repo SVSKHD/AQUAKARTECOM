@@ -1059,6 +1059,11 @@ const InvoicePage = ({
 
   return (
     <div className={styles.page}>
+      {/* A faint logo fixed in the middle of the screen, like a watermark:
+          it stays visible while the page scrolls and never blocks a tap. */}
+      <div className={styles.watermark} aria-hidden="true">
+        <Image src={logo} alt="" width={420} height={420} />
+      </div>
       <Head>
         <title>
           {documentLabel} | Aquakart {documentName}
@@ -1185,16 +1190,18 @@ const InvoicePage = ({
                   type="button"
                   className={`${styles.numberCopy} ${numberCopied ? styles.numberCopied : ""}`}
                   onClick={handleCopyNumber}
+                  aria-label={
+                    numberCopied
+                      ? `${documentName} number copied`
+                      : `Copy ${documentName.toLowerCase()} number`
+                  }
                   aria-live="polite"
                 >
                   {numberCopied ? (
-                    <Check size={16} aria-hidden="true" />
+                    <Check size={14} aria-hidden="true" />
                   ) : (
-                    <Copy size={16} aria-hidden="true" />
+                    <Copy size={14} aria-hidden="true" />
                   )}
-                  {numberCopied
-                    ? "Copied"
-                    : `Copy ${documentName.toLowerCase()} number`}
                 </button>
               </div>
               <small>Issued {formatDate(invoice.date)}</small>

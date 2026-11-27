@@ -4634,8 +4634,8 @@
 .numberCopy {
   display: flex;
   width: 100%;
-  min-height: 44px;
-  padding: 10px 16px;
+  min-height: 34px;
+  padding: 6px 16px;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -4667,15 +4667,43 @@
 
 /* Phones: the status pill moves up beside the label so the number card
    gets the full width. */
+/* Number block: status on top, then label, number card and date. */
+.heroInvoice {
+  gap: 6px;
+}
+
+.heroInvoice > span:not(.statusPill) {
+  margin-top: 6px;
+}
+
 @media (max-width: 720px) {
-  .heroInvoice > .statusPill {
-    grid-row: 1;
+  .heroInvoice {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .heroInvoice > .numberCard {
-    grid-column: 1 / -1;
     max-width: none;
   }
+}
+
+/* Watermark logo, fixed at the centre of the screen. */
+.watermark {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 5;
+  width: min(62vw, 420px);
+  pointer-events: none;
+  opacity: 0.06;
+  transform: translate(-50%, -50%);
+}
+
+.watermark img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 @media print {
