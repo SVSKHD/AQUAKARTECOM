@@ -4676,3 +4676,139 @@
     font-size: 2.1rem;
   }
 }
+
+/* ---------- Compact steps: no big cards, no numbers, details at once ---------- */
+.story {
+  gap: clamp(18px, 2.5vw, 26px);
+  padding-top: clamp(14px, 2.5vw, 28px);
+}
+
+.storyStep {
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.storyHead {
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+.storyTitle {
+  margin: 0;
+  color: var(--invoice-ink);
+  font-size: clamp(1.05rem, 2vw, 1.2rem);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.storyMeta {
+  flex-shrink: 0;
+  color: var(--invoice-green);
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* How to pay: the original dark panel, on its own. */
+.storyStep:has(> .paymentInstructions) {
+  background: none;
+}
+
+.storyStep:has(> .paymentInstructions) .storyTitle {
+  color: var(--invoice-ink);
+}
+
+.storyStep > .paymentInstructions {
+  padding: clamp(18px, 3vw, 28px);
+  border-radius: 24px;
+  background:
+    radial-gradient(
+      circle at 12% 0,
+      rgba(56, 189, 248, 0.17),
+      transparent 20rem
+    ),
+    radial-gradient(
+      circle at 90% 15%,
+      rgba(16, 185, 129, 0.2),
+      transparent 24rem
+    ),
+    linear-gradient(135deg, #07111f, #0b2430 65%, #064e3b 145%);
+}
+
+/* Customer card: contacts as chips, GST details beside them on wide screens. */
+.storyStep > .partyCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 20px;
+  align-content: start;
+  padding: 16px;
+}
+
+.storyStep > .partyCard > * {
+  grid-column: 1;
+}
+
+.storyStep > .partyCard > .partyHead {
+  grid-column: 1 / -1;
+}
+
+.storyStep > .partyCard > .partyFacts {
+  grid-column: 2;
+  grid-row: 2 / span 4;
+  align-self: start;
+  margin-top: 12px;
+  padding: 0 0 0 20px;
+  border-top: 0;
+  border-left: 1px dashed #d7e5e1;
+}
+
+.storyStep > .partyCard .partyAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+}
+
+.storyStep > .partyCard .partyContacts {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.storyStep > .partyCard .partyContacts a {
+  min-height: 34px;
+}
+
+.storyStep > .partyCard .partyAddress {
+  padding: 8px 10px;
+}
+
+.storyStep > .summaryCard,
+.storyStep > .partyCard,
+.storyStep > .productsColumn {
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+}
+
+@media (max-width: 720px) {
+  .story {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .storyStep > .partyCard {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .storyStep > .partyCard > .partyFacts {
+    grid-column: 1;
+    grid-row: auto;
+    padding: 12px 0 0;
+    border-top: 1px dashed #d7e5e1;
+    border-left: 0;
+  }
+}

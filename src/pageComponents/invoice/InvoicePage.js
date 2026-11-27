@@ -794,20 +794,14 @@ const PartyCard = ({ invoice }) => {
 };
 
 // One step of the story: a big number, a short label and a huge headline.
-const StoryHead = ({ number, id, kicker, headline, text = false }) => (
+// A slim step title with an optional summary on the right. The cards below
+// carry the details, so nothing is repeated in a big headline.
+const StoryHead = ({ id, title, meta }) => (
   <header className={styles.storyHead}>
-    <span className={styles.storyNumber} aria-hidden="true">
-      {number}
-    </span>
-    <div className={styles.storyTitles}>
-      <span className={styles.storyKicker}>{kicker}</span>
-      <h2
-        id={id}
-        className={`${styles.storyHeadline} ${text ? styles.storyHeadlineText : ""}`}
-      >
-        {headline}
-      </h2>
-    </div>
+    <h2 id={id} className={styles.storyTitle}>
+      {title}
+    </h2>
+    {meta ? <span className={styles.storyMeta}>{meta}</span> : null}
   </header>
 );
 
@@ -1252,13 +1246,10 @@ const InvoicePage = ({
         <div className={styles.story}>
           <section className={styles.storyStep} aria-labelledby="story-billed">
             <StoryHead
-              number={1}
               id="story-billed"
-              kicker={
+              title={
                 invoice.gst ? "Customer and GST details" : "Customer details"
               }
-              text
-              headline={customerDisplayName}
             />
             <PartyCard invoice={invoice} />
           </section>
@@ -1268,11 +1259,9 @@ const InvoicePage = ({
             aria-labelledby="story-products"
           >
             <StoryHead
-              number={2}
               id="story-products"
-              kicker="Products, quantity and price breakup"
-              text
-              headline={`${invoice.products.length} ${invoice.products.length === 1 ? "product" : "products"} · ${unitCount} ${unitCount === 1 ? "unit" : "units"}`}
+              title="Products, quantity and price breakup"
+              meta={`${invoice.products.length} ${invoice.products.length === 1 ? "product" : "products"} · ${unitCount} ${unitCount === 1 ? "unit" : "units"}`}
             />
             <section className={styles.productsColumn}>
               <div className={styles.sectionHeading}>
@@ -1325,16 +1314,15 @@ const InvoicePage = ({
 
           <section className={styles.storyStep} aria-labelledby="story-amount">
             <StoryHead
-              number={3}
               id="story-amount"
-              kicker={
+              title={
                 docStatus.key === "quotation"
                   ? "Quoted amount"
                   : isPaid
                     ? "You paid"
                     : "Amount due"
               }
-              headline={priceUtils.formatAmount(amounts.grandTotal)}
+              meta={priceUtils.formatAmount(amounts.grandTotal)}
             />
             <section className={styles.summaryCard}>
               <div className={styles.summaryTopline}>
@@ -1445,13 +1433,7 @@ const InvoicePage = ({
           </section>
 
           <section className={styles.storyStep} aria-labelledby="story-support">
-            <StoryHead
-              number={4}
-              id="story-support"
-              kicker="Warranty and support"
-              text
-              headline="Terms and care"
-            />
+            <StoryHead id="story-support" title="Warranty and support" />
             <section className={styles.legalSection}>
               <div className={styles.legalHeading}>
                 <div className={styles.legalTitleGroup}>
@@ -1510,13 +1492,7 @@ const InvoicePage = ({
 
           {invoice.po ? (
             <section className={styles.storyStep} aria-labelledby="story-pay">
-              <StoryHead
-                number={5}
-                id="story-pay"
-                kicker="How to pay"
-                text
-                headline="Bank transfer or UPI"
-              />
+              <StoryHead id="story-pay" title="How to pay" />
               <section className={styles.paymentInstructions}>
                 <div className={styles.paymentHeading}>
                   <div className={styles.paymentTitleGroup}>
