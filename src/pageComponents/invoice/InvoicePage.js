@@ -1010,6 +1010,10 @@ const InvoicePage = ({
   const docStatus = getDocumentStatus(invoice);
   const isPaid = docStatus.key === "paid";
   const documentLabel = invoice.invoice_no || invoice.id || documentName;
+  const unitCount = invoice.products.reduce(
+    (sum, product) => sum + (Number(product.productQuantity) || 0),
+    0,
+  );
   const customerDisplayName =
     invoice.customer_name || invoice.gst_name || "valued customer";
 
@@ -1181,7 +1185,10 @@ const InvoicePage = ({
                 title={`Copy ${documentName.toLowerCase()} number`}
               >
                 <strong>{documentLabel}</strong>
-                <Copy size={14} aria-hidden="true" />
+                <span className={styles.heroNumberCopy}>
+                  <Copy size={16} aria-hidden="true" />
+                  Copy
+                </span>
               </button>
               <small>Issued {formatDate(invoice.date)}</small>
             </div>
@@ -1243,17 +1250,29 @@ const InvoicePage = ({
         <StatusLegend status={docStatus} documentName={documentName} />
 
         <div className={styles.story}>
+          <section className={styles.storyStep} aria-labelledby="story-billed">
+            <StoryHead
+              number={1}
+              id="story-billed"
+              kicker={
+                invoice.gst ? "Customer and GST details" : "Customer details"
+              }
+              text
+              headline={customerDisplayName}
+            />
+            <PartyCard invoice={invoice} />
+          </section>
+
           <section
             className={styles.storyStep}
             aria-labelledby="story-products"
           >
             <StoryHead
-              number={1}
+              number={2}
               id="story-products"
-              kicker={
-                docStatus.key === "quotation" ? "You asked for" : "You bought"
-              }
-              headline={`${invoice.products.length} ${invoice.products.length === 1 ? "product" : "products"}`}
+              kicker="Products, quantity and price breakup"
+              text
+              headline={`${invoice.products.length} ${invoice.products.length === 1 ? "product" : "products"} · ${unitCount} ${unitCount === 1 ? "unit" : "units"}`}
             />
             <section className={styles.productsColumn}>
               <div className={styles.sectionHeading}>
@@ -1306,7 +1325,7 @@ const InvoicePage = ({
 
           <section className={styles.storyStep} aria-labelledby="story-amount">
             <StoryHead
-              number={2}
+              number={3}
               id="story-amount"
               kicker={
                 docStatus.key === "quotation"
@@ -1423,17 +1442,6 @@ const InvoicePage = ({
                 <span>via {titleCase(invoice.payment_type)}</span>
               </div>
             </section>
-          </section>
-
-          <section className={styles.storyStep} aria-labelledby="story-billed">
-            <StoryHead
-              number={3}
-              id="story-billed"
-              kicker="Billed to"
-              text
-              headline={customerDisplayName}
-            />
-            <PartyCard invoice={invoice} />
           </section>
 
           <section className={styles.storyStep} aria-labelledby="story-support">

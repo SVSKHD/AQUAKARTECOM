@@ -4414,12 +4414,6 @@
   box-shadow: 0 18px 44px rgba(15, 23, 42, 0.06);
 }
 
-/* Amount and Billed to sit side by side on wide screens. */
-.storyStep:nth-child(2),
-.storyStep:nth-child(3) {
-  grid-column: auto;
-}
-
 .storyHead {
   display: flex;
   align-items: center;
@@ -4544,10 +4538,68 @@
   color: #c3d2dc;
 }
 
-@media (max-width: 980px) {
-  .storyStep:nth-child(2),
-  .storyStep:nth-child(3) {
-    grid-column: 1 / -1;
+/* Invoice number: its own card, tap anywhere on it to copy; the copy
+   button is always visible. */
+.heroNumber {
+  display: flex;
+  width: 100%;
+  max-width: 440px;
+  margin: 8px 0;
+  padding: 10px 10px 10px 16px;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #cfe6df;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  cursor: pointer;
+}
+
+.heroNumber strong {
+  min-width: 0;
+  font-size: clamp(1.35rem, 4.8vw, 1.9rem);
+  letter-spacing: -0.01em;
+  text-align: left;
+}
+
+.heroNumber svg {
+  opacity: 1;
+}
+
+.heroNumberCopy {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 12px;
+  background: var(--invoice-green);
+  transition: background-color 0.2s;
+}
+
+.heroNumber:hover,
+.heroNumber:focus-visible {
+  border-color: var(--invoice-mint);
+  background: #fff;
+}
+
+.heroNumber:hover .heroNumberCopy,
+.heroNumber:focus-visible .heroNumberCopy {
+  background: #046c4e;
+}
+
+@media print {
+  .heroNumber {
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .heroNumberCopy {
+    display: none;
   }
 }
 

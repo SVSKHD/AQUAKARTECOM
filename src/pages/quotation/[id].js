@@ -1,7 +1,9 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import InvoiceLoader from "@/pageComponents/invoice/InvoiceLoader";
+import InvoiceLoader, {
+  useLoaderFilled,
+} from "@/pageComponents/invoice/InvoiceLoader";
 import InvoicePage from "@/pageComponents/invoice/InvoicePage";
 import { mapInvoiceFromApi } from "@/utils/invoice/normalizeInvoice";
 
@@ -14,6 +16,8 @@ const normalizeRouteId = (value) => {
 
 const PublicQuotationRoute = () => {
   const router = useRouter();
+  // On every refresh the logo fills to 75% before the quotation appears.
+  const loaderFilled = useLoaderFilled();
   const [state, setState] = useState({
     document: null,
     statusCode: 0,
@@ -82,7 +86,9 @@ const PublicQuotationRoute = () => {
     return () => controller.abort();
   }, [router.isReady, routeId]);
 
-  if (state.loading) return <InvoiceLoader documentName="quotation" />;
+  if (state.loading || !loaderFilled) {
+    return <InvoiceLoader documentName="quotation" />;
+  }
   return <InvoicePage invoice={state.document} statusCode={state.statusCode} />;
 };
 
