@@ -1179,9 +1179,11 @@ const InvoicePage = ({
                 title={`Copy ${documentName.toLowerCase()} number`}
               >
                 <strong>{documentLabel}</strong>
-                <span className={styles.heroNumberCopy}>
-                  <Copy size={16} aria-hidden="true" />
-                  Copy
+                <span className={styles.heroNumberCopy} aria-hidden="true">
+                  <Copy size={18} />
+                </span>
+                <span className={styles.srOnly}>
+                  Copy {documentName.toLowerCase()} number
                 </span>
               </button>
               <small>Issued {formatDate(invoice.date)}</small>

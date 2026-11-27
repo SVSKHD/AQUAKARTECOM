@@ -4567,14 +4567,12 @@
 }
 
 .heroNumberCopy {
-  display: inline-flex;
+  display: grid;
   flex-shrink: 0;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  place-items: center;
+  width: 40px;
+  height: 40px;
   color: #fff;
-  font-size: 0.85rem;
-  font-weight: 700;
   border-radius: 12px;
   background: var(--invoice-green);
   transition: background-color 0.2s;
