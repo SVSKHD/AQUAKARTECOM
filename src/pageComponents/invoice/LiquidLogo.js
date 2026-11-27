@@ -13,7 +13,7 @@ const WAVE = "M0 12 Q30 2 60 12 T120 12 T180 12 T240 12 V24 H0Z";
  */
 const LiquidLogo = ({
   size = 112,
-  level = 0.58,
+  level = 0.78,
   filling = false,
   className = "",
 }) => (

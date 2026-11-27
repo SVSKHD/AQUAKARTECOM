@@ -49,7 +49,7 @@ export const InvoiceStamp = ({ status, documentLabel }) => {
           </textPath>
         </text>
       </svg>
-      <LiquidLogo size={64} level={0.5} className={styles.stampLogo} />
+      <LiquidLogo size={64} className={styles.stampLogo} />
       <span key={takes} className={styles.stampBadge} aria-hidden="true">
         {word}
       </span>

@@ -6,7 +6,7 @@
 /* ---------- Liquid logo: the mark inside a glass sphere of water ---------- */
 .liquid {
   --size: 112px;
-  --level: 0.58;
+  --level: 0.78;
   position: relative;
   display: inline-block;
   flex-shrink: 0;

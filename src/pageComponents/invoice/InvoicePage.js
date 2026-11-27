@@ -327,7 +327,7 @@ const InvoiceError = ({ statusCode, onAccessGranted }) => {
       </Head>
       <div className={styles.errorCard}>
         <div className={styles.errorLogo}>
-          <LiquidLogo size={80} level={0.55} filling />
+          <LiquidLogo size={80} filling />
         </div>
         <span className={styles.eyebrow}>Aquakart invoices</span>
         <h1>
@@ -1063,7 +1063,7 @@ const InvoicePage = ({
       <header className={styles.commandBar}>
         <Link href="/" className={styles.brand} aria-label="Aquakart home">
           <span className={styles.brandMark}>
-            <LiquidLogo size={36} level={0.5} />
+            <LiquidLogo size={36} />
           </span>
           <span>
             <strong>Aquakart</strong>

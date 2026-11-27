@@ -16,7 +16,7 @@ const InvoiceLoader = ({ documentName = "invoice" }) => {
   return (
     <div className={styles.loader} role="status" aria-live="polite">
       <div className={styles.loaderCard}>
-        <LiquidLogo size={112} level={0.62} filling />
+        <LiquidLogo size={112} filling />
         <p className={styles.loaderTitle}>Preparing your {documentName}</p>
         <ol className={styles.steps}>
           {steps.map((step, index) => (
