@@ -5235,3 +5235,81 @@
   width: 50%;
   height: auto;
 }
+
+/* ==========================================================================
+   One look for every card and every tile, so the steps feel like one
+   document: a white card surface and a light tile surface inside it.
+   ========================================================================== */
+.page {
+  --card-bg: #ffffff;
+  --card-border: #dfe9e6;
+  --card-radius: 22px;
+  --card-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+  --tile-bg: #f4f9f7;
+  --tile-border: #e3eeea;
+  --tile-radius: 14px;
+  --key-bg: #ecfaf4;
+  --key-border: #c9ecdf;
+}
+
+/* Cards */
+.page .storyStep > .partyCard,
+.page .storyStep > .summaryCard,
+.page .lineItem,
+.page .amountWords,
+.page .termItem,
+.page .careCard {
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  background: var(--card-bg);
+  background-image: none;
+  box-shadow: var(--card-shadow);
+}
+
+.page .storyStep > .summaryCard::before,
+.page .storyStep > .summaryCard::after,
+.page .storyStep > .partyCard::before,
+.page .storyStep > .partyCard::after {
+  display: none;
+}
+
+/* Amount in words: a card like the others, with a green label. */
+.page .amountWords span {
+  color: var(--invoice-green);
+}
+
+.page .amountWords strong {
+  color: var(--invoice-ink);
+}
+
+/* Tiles inside the cards */
+.page .lineFigures > div,
+.page .summaryPriceCell,
+.page .gstBreakdown > div,
+.page .partyContacts a,
+.page .partyAddress {
+  border: 1px solid var(--tile-border);
+  border-radius: var(--tile-radius);
+  background: var(--tile-bg);
+  box-shadow: none;
+}
+
+/* CGST and SGST sit as two normal tiles, not inside a tinted box. */
+.page .gstBreakdown {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+/* The one highlighted figure in each product row: its line total. */
+.page .lineFigures > .lineFigureTotal {
+  border-color: var(--key-border);
+  background: var(--key-bg);
+}
+
+.page .lineThumb {
+  border: 1px solid var(--tile-border);
+  border-radius: var(--tile-radius);
+  background: var(--tile-bg);
+}
