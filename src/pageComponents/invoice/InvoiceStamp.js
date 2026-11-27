@@ -101,7 +101,7 @@ export const StatusLegend = ({ status, documentName }) => {
       <p className={`${styles.statusLegendHint} ${toneClass(active.key)}`}>
         <strong>
           {active.key === status.key
-            ? `This ${documentName.toLowerCase()} is ${active.label.toLowerCase()}.`
+            ? `This ${documentName.toLowerCase()}: ${active.label}.`
             : `${active.label}:`}
         </strong>{" "}
         {active.hint}

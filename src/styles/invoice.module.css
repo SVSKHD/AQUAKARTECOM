@@ -4388,3 +4388,793 @@
   font-size: 1.15rem;
   font-variant-numeric: tabular-nums;
 }
+
+/* ==========================================================================
+   Story steps: the invoice as numbered panels you scroll through, each led
+   by one huge headline. Built for phones first; the original cards sit
+   inside the steps unchanged.
+   ========================================================================== */
+.story {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: clamp(16px, 2.5vw, 28px);
+  padding: clamp(18px, 3vw, 40px) clamp(14px, 4vw, 56px) clamp(24px, 4vw, 56px);
+}
+
+.storyStep {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: clamp(16px, 2vw, 22px);
+  min-width: 0;
+  padding: clamp(18px, 3vw, 30px);
+  border: 1px solid #dfe9e6;
+  border-radius: 30px;
+  background: linear-gradient(170deg, rgba(236, 253, 245, 0.6), #fff 38%);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.06);
+}
+
+.storyHead {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 2vw, 18px);
+  min-width: 0;
+}
+
+.storyNumber {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: clamp(48px, 6vw, 60px);
+  height: clamp(48px, 6vw, 60px);
+  color: #fff;
+  font-size: clamp(1.4rem, 3vw, 1.75rem);
+  font-weight: 800;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #05845f, #10b981);
+  box-shadow: 0 12px 26px rgba(5, 132, 95, 0.28);
+}
+
+.storyTitles {
+  min-width: 0;
+}
+
+.storyKicker {
+  display: block;
+  color: var(--invoice-green);
+  font-size: clamp(1rem, 1.6vw, 1.1rem);
+  font-weight: 700;
+}
+
+.storyHeadline {
+  margin: 2px 0 0;
+  color: var(--invoice-ink);
+  font-family: var(--app-display-font);
+  font-size: clamp(2rem, 6.5vw, 3.1rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* Names and words are long: a step whose headline is text, not a figure,
+   gets a smaller size so it stays on one or two lines on a phone. */
+.storyHeadlineText {
+  font-size: clamp(1.6rem, 4.6vw, 2.4rem);
+  line-height: 1.15;
+}
+
+/* The mint strip had white text on a light background; make it readable. */
+.serviceAssurance strong {
+  color: var(--invoice-ink);
+}
+
+.serviceAssurance p {
+  color: #475569;
+}
+
+.serviceAssurance span,
+.serviceAssurance svg {
+  color: var(--invoice-green);
+}
+
+/* The step header replaces the cards' own titles. */
+.storyStep > .productsColumn > .sectionHeading,
+.storyStep .legalTitleGroup,
+.storyStep .paymentTitleGroup {
+  display: none;
+}
+
+.storyStep > .summaryCard,
+.storyStep > .partyCard {
+  box-shadow: none;
+}
+
+/* Terms and care: the step card is the background. */
+.storyStep > .legalSection {
+  padding: 0;
+  border-top: 0;
+  background: none;
+}
+
+.storyStep > .legalSection .legalHeading,
+.storyStep > .paymentInstructions .paymentHeading {
+  display: block;
+  margin-bottom: 18px;
+}
+
+/* How to pay keeps the original dark payment look. */
+.storyStep:has(> .paymentInstructions) {
+  border-color: transparent;
+  background:
+    radial-gradient(
+      circle at 12% 0,
+      rgba(56, 189, 248, 0.17),
+      transparent 20rem
+    ),
+    radial-gradient(
+      circle at 90% 15%,
+      rgba(16, 185, 129, 0.2),
+      transparent 24rem
+    ),
+    linear-gradient(135deg, #07111f, #0b2430 65%, #064e3b 145%);
+}
+
+.storyStep:has(> .paymentInstructions) .storyKicker {
+  color: #6ee7c7;
+}
+
+.storyStep:has(> .paymentInstructions) .storyHeadline {
+  color: #fff;
+}
+
+.storyStep > .paymentInstructions {
+  padding: 0;
+  background: none;
+}
+
+.storyStep > .paymentInstructions .paymentHeading p {
+  color: #c3d2dc;
+}
+
+/* Invoice number: its own card, tap anywhere on it to copy; the copy
+   button is always visible. */
+.heroNumber {
+  display: flex;
+  width: 100%;
+  max-width: 440px;
+  margin: 8px 0;
+  padding: 10px 10px 10px 16px;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #cfe6df;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  cursor: pointer;
+}
+
+.heroNumber strong {
+  min-width: 0;
+  font-size: clamp(1.35rem, 4.8vw, 1.9rem);
+  letter-spacing: -0.01em;
+  text-align: left;
+}
+
+.heroNumber svg {
+  opacity: 1;
+}
+
+.heroNumberCopy {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: #fff;
+  border-radius: 12px;
+  background: var(--invoice-green);
+  transition: background-color 0.2s;
+}
+
+.heroNumber:hover,
+.heroNumber:focus-visible {
+  border-color: var(--invoice-mint);
+  background: #fff;
+}
+
+.heroNumber:hover .heroNumberCopy,
+.heroNumber:focus-visible .heroNumberCopy {
+  background: #046c4e;
+}
+
+@media print {
+  .heroNumber {
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .heroNumberCopy {
+    display: none;
+  }
+}
+
+/* Number card: the number always on one line (sized to fit), and a footer
+   strip that copies it and turns green once copied. */
+.numberCard {
+  container-type: inline-size;
+  width: 100%;
+  max-width: 440px;
+  margin: 8px 0;
+  overflow: hidden;
+  border: 1px solid #cfe6df;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  text-align: left;
+}
+
+.numberTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px 0;
+}
+
+.numberLabel {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.numberDate {
+  display: block;
+  padding: 0 16px 12px;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.numberValue {
+  display: block;
+  padding: 6px 16px 4px;
+  overflow: hidden;
+  color: var(--invoice-ink);
+  /* Fits the whole number on one line: shrinks for long numbers. */
+  font-size: min(1.9rem, calc((100cqi - 32px) / (var(--chars) * 0.74)));
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.numberCopy {
+  display: flex;
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 16px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--invoice-green);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 0;
+  border-top: 1px solid #e1eeea;
+  background: #f4faf8;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.numberCopy:hover,
+.numberCopy:focus-visible {
+  background: #e8f5f1;
+}
+
+.numberCopied,
+.numberCopied:hover,
+.numberCopied:focus-visible {
+  color: #fff;
+  border-top-color: var(--invoice-green);
+  background: var(--invoice-green);
+}
+
+/* Phones: the status pill moves up beside the label so the number card
+   gets the full width. */
+/* Number block: status on top, then label, number card and date. */
+.heroInvoice {
+  gap: 6px;
+}
+
+.heroInvoice > span:not(.statusPill) {
+  margin-top: 6px;
+}
+
+@media (max-width: 720px) {
+  .heroInvoice {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .heroInvoice > .numberCard {
+    max-width: none;
+  }
+}
+
+/* Watermark logo, fixed at the centre of the screen. */
+.watermark {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 5;
+  width: min(62vw, 420px);
+  pointer-events: none;
+  opacity: 0.06;
+  transform: translate(-50%, -50%);
+}
+
+.watermark img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media print {
+  .numberCard {
+    border: 0;
+    box-shadow: none;
+  }
+
+  .numberCopy {
+    display: none;
+  }
+}
+
+/* ---------- Phones: bigger text everywhere, nothing too small ---------- */
+@media (max-width: 720px) {
+  /* Every rem on this page scales up by 12.5%. */
+  :global(html):has(.page) {
+    font-size: 18px;
+  }
+
+  .story {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* The smallest labels never drop below a readable size. */
+  .page
+    :is(
+      .eyebrow,
+      .itemCount,
+      .lineTags,
+      .lineFigures dt,
+      .metaStrip span,
+      .partyFacts dt,
+      .partyHead small,
+      .summaryTopline small,
+      .summaryPriceCell small,
+      .grandTotal small,
+      .termNumber,
+      .careHeading span,
+      .bankTopline,
+      .bankDetails dt,
+      .statusPill,
+      .legendChip,
+      .quickViewLabel,
+      .recoCategory,
+      .amountWords span
+    ) {
+    font-size: 0.78rem !important;
+    letter-spacing: 0.02em !important;
+  }
+
+  .page :is(p, dd, li, a, span, strong) {
+    overflow-wrap: anywhere;
+  }
+
+  .lineBody h3 {
+    font-size: 1.1rem;
+    line-height: 1.3;
+  }
+
+  .termItem p,
+  .careCard p,
+  .legalHeading > p,
+  .paymentHeading > p,
+  .serviceAssurance p,
+  .greetingCopy p {
+    font-size: 0.86rem !important;
+    line-height: 1.6;
+  }
+
+  .termItem h3,
+  .careCard strong {
+    font-size: 1rem !important;
+  }
+
+  .lineFigures dd,
+  .summaryPriceCell strong,
+  .partyFacts dd,
+  .bankDetails dd {
+    font-size: 1rem;
+  }
+
+  .grandTotal strong {
+    font-size: 2.1rem;
+  }
+}
+
+/* ---------- Compact steps: no big cards, no numbers, details at once ---------- */
+.story {
+  gap: clamp(18px, 2.5vw, 26px);
+  padding-top: clamp(14px, 2.5vw, 28px);
+}
+
+.storyStep {
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.storyHead {
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+.storyTitle {
+  margin: 0;
+  color: var(--invoice-ink);
+  font-size: clamp(1.05rem, 2vw, 1.2rem);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.storyMeta {
+  flex-shrink: 0;
+  color: var(--invoice-green);
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* How to pay: the original dark panel, on its own. */
+.storyStep:has(> .paymentInstructions) {
+  background: none;
+}
+
+.storyStep:has(> .paymentInstructions) .storyTitle {
+  color: var(--invoice-ink);
+}
+
+.storyStep > .paymentInstructions {
+  padding: clamp(18px, 3vw, 28px);
+  border-radius: 24px;
+  background:
+    radial-gradient(
+      circle at 12% 0,
+      rgba(56, 189, 248, 0.17),
+      transparent 20rem
+    ),
+    radial-gradient(
+      circle at 90% 15%,
+      rgba(16, 185, 129, 0.2),
+      transparent 24rem
+    ),
+    linear-gradient(135deg, #07111f, #0b2430 65%, #064e3b 145%);
+}
+
+/* Customer card: contacts as chips, GST details beside them on wide screens. */
+.storyStep > .partyCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 20px;
+  align-content: start;
+  padding: 16px;
+}
+
+.storyStep > .partyCard > * {
+  grid-column: 1;
+}
+
+.storyStep > .partyCard > .partyHead {
+  grid-column: 1 / -1;
+}
+
+.storyStep > .partyCard > .partyFacts {
+  grid-column: 2;
+  grid-row: 2 / span 4;
+  align-self: start;
+  margin-top: 12px;
+  padding: 0 0 0 20px;
+  border-top: 0;
+  border-left: 1px dashed #d7e5e1;
+}
+
+.storyStep > .partyCard .partyAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+}
+
+.storyStep > .partyCard .partyContacts {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.storyStep > .partyCard .partyContacts a {
+  min-height: 34px;
+}
+
+.storyStep > .partyCard .partyAddress {
+  padding: 8px 10px;
+}
+
+.storyStep > .summaryCard,
+.storyStep > .partyCard,
+.storyStep > .productsColumn {
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+}
+
+@media (max-width: 720px) {
+  .story {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .storyStep > .partyCard {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .storyStep > .partyCard > .partyFacts {
+    grid-column: 1;
+    grid-row: auto;
+    padding: 12px 0 0;
+    border-top: 1px dashed #d7e5e1;
+    border-left: 0;
+  }
+}
+
+/* ==========================================================================
+   Header, rebuilt for every screen size.
+   Desktop: brand · verified badge · share actions with labels · Download PDF.
+   Below 1180px the actions become icons; on phones only the brand and the
+   share icons stay (chat, PDF and print live in the bottom bar).
+   ========================================================================== */
+.page .commandBar {
+  position: sticky;
+  top: 10px;
+  z-index: 40;
+  display: flex;
+  width: min(100% - 24px, 1380px);
+  min-height: 60px;
+  margin: 10px auto 16px;
+  padding: 8px 8px 8px 14px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+
+.page .commandBar::before {
+  display: none;
+}
+
+.page .brand {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  color: var(--invoice-ink);
+  text-decoration: none;
+}
+
+.page .brandMark {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.page .brandMark img {
+  width: 30px;
+  height: 30px;
+}
+
+.page .brand strong {
+  display: block;
+  font-size: 1.02rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.page .brand small {
+  display: block;
+  overflow: hidden;
+  color: var(--invoice-green);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.page .commandIdentity {
+  display: flex;
+  min-width: 0;
+  margin-right: auto;
+}
+
+/* The number card shows the full number, so the header doesn't repeat it. */
+.page .identityNumber {
+  display: none;
+}
+
+.page .identityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid #cdeee2;
+  border-radius: 999px;
+  color: #047857;
+  background: #ecfdf5;
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.page .commandActions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.page .actionGroup {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 0;
+  border-radius: 14px;
+  background: #f1f5f4;
+}
+
+.page .commandActions .groupAction,
+.page .commandActions .chatButton {
+  display: inline-flex;
+  height: 38px;
+  min-width: 38px;
+  padding: 0 12px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 11px;
+  color: var(--invoice-ink);
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.page .commandActions .groupAction:hover,
+.page .commandActions .groupAction:focus-visible {
+  background: #fff;
+}
+
+.page .commandActions .chatButton {
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.page .commandActions .chatButton:hover {
+  background: #d1fae5;
+}
+
+.page .commandActions .primaryButton {
+  display: inline-flex;
+  height: 40px;
+  padding: 0 16px;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  color: #fff;
+  background: var(--invoice-green);
+  box-shadow: 0 8px 18px rgba(5, 132, 95, 0.25);
+  font-size: 0.85rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.page .commandActions .primaryButton:hover:not(:disabled) {
+  background: #046c4e;
+}
+
+@media (max-width: 1180px) {
+  .page .commandActions .actionLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .page .commandActions .groupAction,
+  .page .commandActions .chatButton {
+    width: 38px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .page .commandIdentity {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .page .commandBar {
+    top: 8px;
+    width: auto;
+    min-height: 56px;
+    margin: 8px 12px 12px;
+    padding: 6px 6px 6px 10px;
+    border-radius: 18px;
+  }
+
+  .page .brandMark {
+    width: 36px;
+    height: 36px;
+  }
+
+  .page .brand small {
+    display: block;
+  }
+
+  .page .commandActions {
+    display: flex;
+  }
+
+  /* Chat and PDF are in the bottom bar on phones. */
+  .page .commandActions .chatButton,
+  .page .commandActions .primaryButton {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .page .commandActions .groupAction[title="Print"] {
+    display: none;
+  }
+}

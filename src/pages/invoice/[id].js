@@ -1,6 +1,9 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import InvoiceLoader, {
+  useLoaderFilled,
+} from "@/pageComponents/invoice/InvoiceLoader";
 import InvoicePage from "@/pageComponents/invoice/InvoicePage";
 import InvoiceServiceOperations from "@/services/invoice";
 import { enrichInvoiceProducts } from "@/utils/invoice/matchInvoiceProducts";
@@ -44,6 +47,8 @@ const fetchProductCatalogue = async (signal) => {
 const PublicInvoiceRoute = () => {
   const router = useRouter();
   const [refreshKey, setRefreshKey] = useState(0);
+  // On every refresh the logo fills to 75% before the invoice appears.
+  const loaderFilled = useLoaderFilled();
   const [state, setState] = useState({
     invoice: null,
     statusCode: 0,
@@ -120,7 +125,9 @@ const PublicInvoiceRoute = () => {
     return () => controller.abort();
   }, [refreshKey, router.isReady, routeId]);
 
-  if (state.loading) return null;
+  if (state.loading || !loaderFilled) {
+    return <InvoiceLoader documentName="invoice" />;
+  }
   return (
     <InvoicePage
       invoice={state.invoice}
