@@ -907,6 +907,7 @@ const InvoicePage = ({
   const autoDownloadChecked = useRef(false);
   const [copied, setCopied] = useState(false);
   const [copiedPayment, setCopiedPayment] = useState("");
+  const [numberCopied, setNumberCopied] = useState(false);
   const {
     available: assistantAvailable,
     openAssistant,
@@ -1037,7 +1038,9 @@ const InvoicePage = ({
   const handleCopyNumber = async () => {
     try {
       await navigator.clipboard.writeText(documentLabel);
-      toast.success(`${documentName} number copied`);
+      // The card footer turns green and says "Copied" for a moment.
+      setNumberCopied(true);
+      window.setTimeout(() => setNumberCopied(false), 2000);
     } catch {
       toast.error("Could not copy the number");
     }
@@ -1172,20 +1175,28 @@ const InvoicePage = ({
             <div className={styles.heroInvoice}>
               <StatusPill status={docStatus} />
               <span>{documentName} number</span>
-              <button
-                type="button"
-                className={styles.heroNumber}
-                onClick={handleCopyNumber}
-                title={`Copy ${documentName.toLowerCase()} number`}
+              {/* The number on one line; the card footer copies it. */}
+              <div
+                className={styles.numberCard}
+                style={{ "--chars": String(documentLabel).length }}
               >
-                <strong>{documentLabel}</strong>
-                <span className={styles.heroNumberCopy} aria-hidden="true">
-                  <Copy size={18} />
-                </span>
-                <span className={styles.srOnly}>
-                  Copy {documentName.toLowerCase()} number
-                </span>
-              </button>
+                <strong className={styles.numberValue}>{documentLabel}</strong>
+                <button
+                  type="button"
+                  className={`${styles.numberCopy} ${numberCopied ? styles.numberCopied : ""}`}
+                  onClick={handleCopyNumber}
+                  aria-live="polite"
+                >
+                  {numberCopied ? (
+                    <Check size={16} aria-hidden="true" />
+                  ) : (
+                    <Copy size={16} aria-hidden="true" />
+                  )}
+                  {numberCopied
+                    ? "Copied"
+                    : `Copy ${documentName.toLowerCase()} number`}
+                </button>
+              </div>
               <small>Issued {formatDate(invoice.date)}</small>
             </div>
           </div>

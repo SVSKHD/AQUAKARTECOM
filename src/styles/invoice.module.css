@@ -4601,6 +4601,94 @@
   }
 }
 
+/* Number card: the number always on one line (sized to fit), and a footer
+   strip that copies it and turns green once copied. */
+.numberCard {
+  container-type: inline-size;
+  width: 100%;
+  max-width: 440px;
+  margin: 8px 0;
+  overflow: hidden;
+  border: 1px solid #cfe6df;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  text-align: left;
+}
+
+.numberValue {
+  display: block;
+  padding: 14px 16px 12px;
+  overflow: hidden;
+  color: var(--invoice-ink);
+  /* Fits the whole number on one line: shrinks for long numbers. */
+  font-size: min(1.9rem, calc((100cqi - 32px) / (var(--chars) * 0.74)));
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.numberCopy {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 16px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--invoice-green);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 0;
+  border-top: 1px solid #e1eeea;
+  background: #f4faf8;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.numberCopy:hover,
+.numberCopy:focus-visible {
+  background: #e8f5f1;
+}
+
+.numberCopied,
+.numberCopied:hover,
+.numberCopied:focus-visible {
+  color: #fff;
+  border-top-color: var(--invoice-green);
+  background: var(--invoice-green);
+}
+
+/* Phones: the status pill moves up beside the label so the number card
+   gets the full width. */
+@media (max-width: 720px) {
+  .heroInvoice > .statusPill {
+    grid-row: 1;
+  }
+
+  .heroInvoice > .numberCard {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+}
+
+@media print {
+  .numberCard {
+    border: 0;
+    box-shadow: none;
+  }
+
+  .numberCopy {
+    display: none;
+  }
+}
+
 /* ---------- Phones: bigger text everywhere, nothing too small ---------- */
 @media (max-width: 720px) {
   /* Every rem on this page scales up by 12.5%. */
