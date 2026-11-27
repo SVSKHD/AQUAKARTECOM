@@ -97,7 +97,8 @@ const formatDate = (value) => {
 const titleCase = (value) =>
   String(value || "Not available")
     .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+    .replace(/\b(Upi|Neft|Rtgs|Imps|Emi)\b/g, (word) => word.toUpperCase());
 
 const PREVIEW_PRODUCTS = 3;
 
@@ -353,7 +354,9 @@ const InvoiceError = ({ statusCode, onAccessGranted }) => {
               ? "Check the invoice link and try again. The ID may be incomplete or no longer available."
               : "We could not reach the invoice service. Please wait a moment and try again."}
         </p>
-        {unauthorized && preview ? <InvoiceQuickView preview={preview} /> : null}
+        {unauthorized && preview ? (
+          <InvoiceQuickView preview={preview} />
+        ) : null}
         {clientAccessMessage ? (
           <p className={styles.accessError} role="alert">
             {clientAccessMessage}
@@ -790,6 +793,24 @@ const PartyCard = ({ invoice }) => {
   );
 };
 
+// One step of the story: a big number, a short label and a huge headline.
+const StoryHead = ({ number, id, kicker, headline, text = false }) => (
+  <header className={styles.storyHead}>
+    <span className={styles.storyNumber} aria-hidden="true">
+      {number}
+    </span>
+    <div className={styles.storyTitles}>
+      <span className={styles.storyKicker}>{kicker}</span>
+      <h2
+        id={id}
+        className={`${styles.storyHeadline} ${text ? styles.storyHeadlineText : ""}`}
+      >
+        {headline}
+      </h2>
+    </div>
+  </header>
+);
+
 const TermCard = ({ term, index }) => {
   const Icon = term.icon;
 
@@ -1175,9 +1196,11 @@ const InvoicePage = ({
               <span className={styles.eyebrow}>A note from Aquakart</span>
               <h2>Thank you, {customerDisplayName}.</h2>
               <p>
-                {isPaid
-                  ? "Your payment is received and your purchase is documented. Keep this receipt for warranty and service support."
-                  : `Your purchase is documented and payment is pending. Once it is paid, this ${documentName.toLowerCase()} becomes your receipt for warranty and service support.`}
+                {docStatus.key === "quotation"
+                  ? "Here is your quotation. Nothing is billed until you confirm the order."
+                  : isPaid
+                    ? "Your payment is received and your purchase is documented. Keep this receipt for warranty and service support."
+                    : `Your purchase is documented and payment is pending. Once it is paid, this ${documentName.toLowerCase()} becomes your receipt for warranty and service support.`}
               </p>
             </div>
             <div className={styles.greetingFacts}>
@@ -1219,58 +1242,81 @@ const InvoicePage = ({
 
         <StatusLegend status={docStatus} documentName={documentName} />
 
-        <div className={styles.invoiceGrid}>
-          <section className={styles.productsColumn}>
-            <div className={styles.sectionHeading}>
-              <div>
-                <span className={styles.sectionIndex}>01</span>
+        <div className={styles.story}>
+          <section
+            className={styles.storyStep}
+            aria-labelledby="story-products"
+          >
+            <StoryHead
+              number={1}
+              id="story-products"
+              kicker={
+                docStatus.key === "quotation" ? "You asked for" : "You bought"
+              }
+              headline={`${invoice.products.length} ${invoice.products.length === 1 ? "product" : "products"}`}
+            />
+            <section className={styles.productsColumn}>
+              <div className={styles.sectionHeading}>
                 <div>
-                  <span className={styles.eyebrow}>
-                    {documentName} contents
-                  </span>
-                  <h2>Products supplied</h2>
-                </div>
-              </div>
-              <span className={styles.itemCount}>
-                {invoice.products.length}{" "}
-                {invoice.products.length === 1 ? "item" : "items"}
-              </span>
-            </div>
-
-            <div className={styles.lineItems}>
-              {invoice.products.length ? (
-                invoice.products.map((product, index) => (
-                  <ProductRow
-                    key={product.id || `${product.productName}-${index}`}
-                    product={product}
-                    index={index}
-                    grandTotal={amounts.grandTotal}
-                    onAsk={assistantAvailable ? askAboutPurchased : null}
-                  />
-                ))
-              ) : (
-                <div className={styles.emptyProducts}>
-                  <Package size={28} />
+                  <span className={styles.sectionIndex}>01</span>
                   <div>
-                    <strong>No product details available</strong>
-                    <p>
-                      The {documentName.toLowerCase()} total and customer record
-                      are still shown.
-                    </p>
+                    <span className={styles.eyebrow}>
+                      {documentName} contents
+                    </span>
+                    <h2>Products supplied</h2>
                   </div>
                 </div>
-              )}
-            </div>
+                <span className={styles.itemCount}>
+                  {invoice.products.length}{" "}
+                  {invoice.products.length === 1 ? "item" : "items"}
+                </span>
+              </div>
 
-            <div className={styles.amountWords}>
-              <span>Amount in words</span>
-              <strong>{priceUtils.numberToWords(amounts.grandTotal)}</strong>
-            </div>
+              <div className={styles.lineItems}>
+                {invoice.products.length ? (
+                  invoice.products.map((product, index) => (
+                    <ProductRow
+                      key={product.id || `${product.productName}-${index}`}
+                      product={product}
+                      index={index}
+                      grandTotal={amounts.grandTotal}
+                      onAsk={assistantAvailable ? askAboutPurchased : null}
+                    />
+                  ))
+                ) : (
+                  <div className={styles.emptyProducts}>
+                    <Package size={28} />
+                    <div>
+                      <strong>No product details available</strong>
+                      <p>
+                        The {documentName.toLowerCase()} total and customer
+                        record are still shown.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.amountWords}>
+                <span>Amount in words</span>
+                <strong>{priceUtils.numberToWords(amounts.grandTotal)}</strong>
+              </div>
+            </section>
           </section>
 
-          <aside className={styles.detailsRail}>
-            <PartyCard invoice={invoice} />
-
+          <section className={styles.storyStep} aria-labelledby="story-amount">
+            <StoryHead
+              number={2}
+              id="story-amount"
+              kicker={
+                docStatus.key === "quotation"
+                  ? "Quoted amount"
+                  : isPaid
+                    ? "You paid"
+                    : "Amount due"
+              }
+              headline={priceUtils.formatAmount(amounts.grandTotal)}
+            />
             <section className={styles.summaryCard}>
               <div className={styles.summaryTopline}>
                 <div>
@@ -1377,7 +1423,131 @@ const InvoicePage = ({
                 <span>via {titleCase(invoice.payment_type)}</span>
               </div>
             </section>
-          </aside>
+          </section>
+
+          <section className={styles.storyStep} aria-labelledby="story-billed">
+            <StoryHead
+              number={3}
+              id="story-billed"
+              kicker="Billed to"
+              text
+              headline={customerDisplayName}
+            />
+            <PartyCard invoice={invoice} />
+          </section>
+
+          <section className={styles.storyStep} aria-labelledby="story-support">
+            <StoryHead
+              number={4}
+              id="story-support"
+              kicker="Warranty and support"
+              text
+              headline="Terms and care"
+            />
+            <section className={styles.legalSection}>
+              <div className={styles.legalHeading}>
+                <div className={styles.legalTitleGroup}>
+                  <span className={styles.sectionIndex}>02</span>
+                  <div>
+                    <span className={styles.eyebrow}>Commercial framework</span>
+                    <h2>Terms, responsibilities and service standards</h2>
+                  </div>
+                </div>
+                <p>
+                  These terms form part of this invoice and clarify the
+                  delivery, installation, payment and after-sales
+                  responsibilities associated with the supplied products.
+                </p>
+              </div>
+
+              <div className={styles.termsGrid}>
+                {termsAndConditions.map((term, index) => (
+                  <TermCard key={term.title} term={term} index={index} />
+                ))}
+              </div>
+
+              <div className={styles.serviceAssurance}>
+                <div>
+                  <ShieldCheck size={23} strokeWidth={1.7} />
+                  <div>
+                    <span>Service assurance</span>
+                    <strong>Protected by Aquakart support standards</strong>
+                  </div>
+                </div>
+                <p>
+                  Retain this invoice for installation verification, warranty
+                  registration, service coordination and eligible replacement
+                  requests.
+                </p>
+              </div>
+
+              <div className={styles.careSection}>
+                <div className={styles.careHeading}>
+                  <div>
+                    <span className={styles.eyebrow}>
+                      Manufacturer assistance
+                    </span>
+                    <h3>Customer-care directory</h3>
+                  </div>
+                  <span>Direct product support</span>
+                </div>
+                <div className={styles.careGrid}>
+                  {customerCare.map((contact) => (
+                    <CustomerCareCard key={contact.name} contact={contact} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          </section>
+
+          {invoice.po ? (
+            <section className={styles.storyStep} aria-labelledby="story-pay">
+              <StoryHead
+                number={5}
+                id="story-pay"
+                kicker="How to pay"
+                text
+                headline="Bank transfer or UPI"
+              />
+              <section className={styles.paymentInstructions}>
+                <div className={styles.paymentHeading}>
+                  <div className={styles.paymentTitleGroup}>
+                    <span className={styles.paymentIndex}>03</span>
+                    <div>
+                      <span className={styles.eyebrow}>
+                        Purchase-order payment
+                      </span>
+                      <h2>Approved remittance details</h2>
+                    </div>
+                  </div>
+                  <p>
+                    Use the invoice number as the payment reference and share
+                    the remittance confirmation with Aquakart for allocation.
+                  </p>
+                </div>
+
+                <div className={styles.bankGrid}>
+                  {bankPaymentMethods.map((method) => (
+                    <BankMethodCard
+                      key={method.key}
+                      method={method}
+                      copied={copiedPayment === method.key}
+                      onCopy={handleCopyPaymentDetails}
+                    />
+                  ))}
+                </div>
+
+                <div className={styles.paymentNotice}>
+                  <BadgeCheck size={18} />
+                  <p>
+                    Payment instructions are displayed because this invoice is
+                    linked to a purchase order. Please verify the beneficiary
+                    name, account number and IFSC before initiating a transfer.
+                  </p>
+                </div>
+              </section>
+            </section>
+          ) : null}
         </div>
 
         {assistantAvailable ? (
@@ -1429,97 +1599,6 @@ const InvoicePage = ({
                 />
               ))}
             </ScrollRail>
-          </section>
-        ) : null}
-
-        <section className={styles.legalSection}>
-          <div className={styles.legalHeading}>
-            <div className={styles.legalTitleGroup}>
-              <span className={styles.sectionIndex}>02</span>
-              <div>
-                <span className={styles.eyebrow}>Commercial framework</span>
-                <h2>Terms, responsibilities and service standards</h2>
-              </div>
-            </div>
-            <p>
-              These terms form part of this invoice and clarify the delivery,
-              installation, payment and after-sales responsibilities associated
-              with the supplied products.
-            </p>
-          </div>
-
-          <div className={styles.termsGrid}>
-            {termsAndConditions.map((term, index) => (
-              <TermCard key={term.title} term={term} index={index} />
-            ))}
-          </div>
-
-          <div className={styles.serviceAssurance}>
-            <div>
-              <ShieldCheck size={23} strokeWidth={1.7} />
-              <div>
-                <span>Service assurance</span>
-                <strong>Protected by Aquakart support standards</strong>
-              </div>
-            </div>
-            <p>
-              Retain this invoice for installation verification, warranty
-              registration, service coordination and eligible replacement
-              requests.
-            </p>
-          </div>
-
-          <div className={styles.careSection}>
-            <div className={styles.careHeading}>
-              <div>
-                <span className={styles.eyebrow}>Manufacturer assistance</span>
-                <h3>Customer-care directory</h3>
-              </div>
-              <span>Direct product support</span>
-            </div>
-            <div className={styles.careGrid}>
-              {customerCare.map((contact) => (
-                <CustomerCareCard key={contact.name} contact={contact} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {invoice.po ? (
-          <section className={styles.paymentInstructions}>
-            <div className={styles.paymentHeading}>
-              <div className={styles.paymentTitleGroup}>
-                <span className={styles.paymentIndex}>03</span>
-                <div>
-                  <span className={styles.eyebrow}>Purchase-order payment</span>
-                  <h2>Approved remittance details</h2>
-                </div>
-              </div>
-              <p>
-                Use the invoice number as the payment reference and share the
-                remittance confirmation with Aquakart for allocation.
-              </p>
-            </div>
-
-            <div className={styles.bankGrid}>
-              {bankPaymentMethods.map((method) => (
-                <BankMethodCard
-                  key={method.key}
-                  method={method}
-                  copied={copiedPayment === method.key}
-                  onCopy={handleCopyPaymentDetails}
-                />
-              ))}
-            </div>
-
-            <div className={styles.paymentNotice}>
-              <BadgeCheck size={18} />
-              <p>
-                Payment instructions are displayed because this invoice is
-                linked to a purchase order. Please verify the beneficiary name,
-                account number and IFSC before initiating a transfer.
-              </p>
-            </div>
           </section>
         ) : null}
 

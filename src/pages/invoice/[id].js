@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import InvoiceLoader from "@/pageComponents/invoice/InvoiceLoader";
 import InvoicePage from "@/pageComponents/invoice/InvoicePage";
 import InvoiceServiceOperations from "@/services/invoice";
 import { enrichInvoiceProducts } from "@/utils/invoice/matchInvoiceProducts";
@@ -120,7 +121,7 @@ const PublicInvoiceRoute = () => {
     return () => controller.abort();
   }, [refreshKey, router.isReady, routeId]);
 
-  if (state.loading) return null;
+  if (state.loading) return <InvoiceLoader documentName="invoice" />;
   return (
     <InvoicePage
       invoice={state.invoice}
