@@ -5178,3 +5178,60 @@
     display: none;
   }
 }
+
+/* Header as a rounded, floating pill with the liquid logo. */
+.page .commandBar {
+  top: 12px;
+  margin-top: 12px;
+  padding: 6px 6px 6px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(240, 253, 248, 0.88)
+  );
+  box-shadow:
+    0 18px 44px rgba(15, 23, 42, 0.12),
+    0 2px 6px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.page .brandMark {
+  width: auto;
+  height: auto;
+  border-radius: 50%;
+  background: none;
+  box-shadow: none;
+}
+
+.page .actionGroup,
+.page .commandActions .groupAction,
+.page .commandActions .chatButton,
+.page .commandActions .primaryButton {
+  border-radius: 999px;
+}
+
+.page .actionGroup {
+  padding: 3px;
+}
+
+.page .commandActions .primaryButton {
+  height: 42px;
+  padding: 0 18px;
+}
+
+@media (max-width: 720px) {
+  .page .commandBar {
+    top: 10px;
+    margin: 10px 12px 12px;
+    padding: 5px 5px 5px 6px;
+    border-radius: 999px;
+  }
+}
+
+/* Let the liquid logo size its own mark. */
+.page .brandMark img {
+  width: 50%;
+  height: auto;
+}

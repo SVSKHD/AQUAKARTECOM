@@ -62,6 +62,7 @@ import {
   getDocumentStatus,
 } from "@/utils/invoice/documentKind";
 import InvoiceAiPanel from "@/pageComponents/invoice/InvoiceAiPanel";
+import LiquidLogo from "@/pageComponents/invoice/LiquidLogo";
 import {
   CountUp,
   InvoiceStamp,
@@ -1081,8 +1082,9 @@ const InvoicePage = ({
 
       <header className={styles.commandBar}>
         <Link href="/" className={styles.brand} aria-label="Aquakart home">
+          {/* Liquid logo: the water rises when the brand is hovered. */}
           <span className={styles.brandMark}>
-            <Image src={logo} alt="" width={40} height={40} priority />
+            <LiquidLogo size={42} />
           </span>
           <span>
             <strong>Aquakart</strong>
