@@ -4720,7 +4720,10 @@
   z-index: 5;
   width: min(62vw, 420px);
   pointer-events: none;
-  opacity: 0.06;
+  /* Visible, but multiply only darkens what is under it, so text and
+     buttons stay crisp. */
+  opacity: 0.1;
+  mix-blend-mode: multiply;
   transform: translate(-50%, -50%);
 }
 
