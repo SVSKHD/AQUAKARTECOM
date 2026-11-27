@@ -1086,7 +1086,7 @@ const InvoicePage = ({
           </span>
           <span>
             <strong>Aquakart</strong>
-            <small>{documentName} studio</small>
+            <small>{documentName}</small>
           </span>
         </Link>
 
@@ -1178,14 +1178,22 @@ const InvoicePage = ({
             </div>
 
             <div className={styles.heroInvoice}>
-              <StatusPill status={docStatus} />
-              <span>{documentName} number</span>
-              {/* The number on one line; the card footer copies it. */}
+              {/* One card: label and status, the number on one line, the
+                  issue date, and a footer that copies the number. */}
               <div
                 className={styles.numberCard}
                 style={{ "--chars": String(documentLabel).length }}
               >
+                <div className={styles.numberTop}>
+                  <span className={styles.numberLabel}>
+                    {documentName} number
+                  </span>
+                  <StatusPill status={docStatus} />
+                </div>
                 <strong className={styles.numberValue}>{documentLabel}</strong>
+                <span className={styles.numberDate}>
+                  Issued {formatDate(invoice.date)}
+                </span>
                 <button
                   type="button"
                   className={`${styles.numberCopy} ${numberCopied ? styles.numberCopied : ""}`}
@@ -1204,7 +1212,6 @@ const InvoicePage = ({
                   )}
                 </button>
               </div>
-              <small>Issued {formatDate(invoice.date)}</small>
             </div>
           </div>
 

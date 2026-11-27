@@ -4616,9 +4616,33 @@
   text-align: left;
 }
 
+.numberTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px 0;
+}
+
+.numberLabel {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.numberDate {
+  display: block;
+  padding: 0 16px 12px;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 .numberValue {
   display: block;
-  padding: 14px 16px 12px;
+  padding: 6px 16px 4px;
   overflow: hidden;
   color: var(--invoice-ink);
   /* Fits the whole number on one line: shrinks for long numbers. */
@@ -4924,5 +4948,233 @@
     padding: 12px 0 0;
     border-top: 1px dashed #d7e5e1;
     border-left: 0;
+  }
+}
+
+/* ==========================================================================
+   Header, rebuilt for every screen size.
+   Desktop: brand · verified badge · share actions with labels · Download PDF.
+   Below 1180px the actions become icons; on phones only the brand and the
+   share icons stay (chat, PDF and print live in the bottom bar).
+   ========================================================================== */
+.page .commandBar {
+  position: sticky;
+  top: 10px;
+  z-index: 40;
+  display: flex;
+  width: min(100% - 24px, 1380px);
+  min-height: 60px;
+  margin: 10px auto 16px;
+  padding: 8px 8px 8px 14px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+
+.page .commandBar::before {
+  display: none;
+}
+
+.page .brand {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  color: var(--invoice-ink);
+  text-decoration: none;
+}
+
+.page .brandMark {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.page .brandMark img {
+  width: 30px;
+  height: 30px;
+}
+
+.page .brand strong {
+  display: block;
+  font-size: 1.02rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.page .brand small {
+  display: block;
+  overflow: hidden;
+  color: var(--invoice-green);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.page .commandIdentity {
+  display: flex;
+  min-width: 0;
+  margin-right: auto;
+}
+
+/* The number card shows the full number, so the header doesn't repeat it. */
+.page .identityNumber {
+  display: none;
+}
+
+.page .identityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid #cdeee2;
+  border-radius: 999px;
+  color: #047857;
+  background: #ecfdf5;
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.page .commandActions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.page .actionGroup {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 0;
+  border-radius: 14px;
+  background: #f1f5f4;
+}
+
+.page .commandActions .groupAction,
+.page .commandActions .chatButton {
+  display: inline-flex;
+  height: 38px;
+  min-width: 38px;
+  padding: 0 12px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 11px;
+  color: var(--invoice-ink);
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.page .commandActions .groupAction:hover,
+.page .commandActions .groupAction:focus-visible {
+  background: #fff;
+}
+
+.page .commandActions .chatButton {
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.page .commandActions .chatButton:hover {
+  background: #d1fae5;
+}
+
+.page .commandActions .primaryButton {
+  display: inline-flex;
+  height: 40px;
+  padding: 0 16px;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  color: #fff;
+  background: var(--invoice-green);
+  box-shadow: 0 8px 18px rgba(5, 132, 95, 0.25);
+  font-size: 0.85rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.page .commandActions .primaryButton:hover:not(:disabled) {
+  background: #046c4e;
+}
+
+@media (max-width: 1180px) {
+  .page .commandActions .actionLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .page .commandActions .groupAction,
+  .page .commandActions .chatButton {
+    width: 38px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .page .commandIdentity {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .page .commandBar {
+    top: 8px;
+    width: auto;
+    min-height: 56px;
+    margin: 8px 12px 12px;
+    padding: 6px 6px 6px 10px;
+    border-radius: 18px;
+  }
+
+  .page .brandMark {
+    width: 36px;
+    height: 36px;
+  }
+
+  .page .brand small {
+    display: block;
+  }
+
+  .page .commandActions {
+    display: flex;
+  }
+
+  /* Chat and PDF are in the bottom bar on phones. */
+  .page .commandActions .chatButton,
+  .page .commandActions .primaryButton {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .page .commandActions .groupAction[title="Print"] {
+    display: none;
   }
 }
