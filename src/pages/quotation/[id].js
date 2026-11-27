@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import InvoiceLoader from "@/pageComponents/invoice/InvoiceLoader";
 import InvoicePage from "@/pageComponents/invoice/InvoicePage";
 import { mapInvoiceFromApi } from "@/utils/invoice/normalizeInvoice";
 
@@ -81,7 +82,7 @@ const PublicQuotationRoute = () => {
     return () => controller.abort();
   }, [router.isReady, routeId]);
 
-  if (state.loading) return null;
+  if (state.loading) return <InvoiceLoader documentName="quotation" />;
   return <InvoicePage invoice={state.document} statusCode={state.statusCode} />;
 };
 

@@ -1,5 +1,4 @@
 import Head from "next/head";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -15,7 +14,6 @@ import {
   CreditCard,
   Download,
   ExternalLink,
-  FileText,
   Hash,
   Headphones,
   Landmark,
@@ -28,13 +26,11 @@ import {
   Printer,
   ReceiptIndianRupee,
   ShieldCheck,
-  ShoppingBag,
   Sparkles,
   Tags,
   Truck,
 } from "lucide-react";
 import { toast } from "sonner";
-import logo from "@/assests/logo.png";
 import GoogleMark from "@/components/auth/GoogleMark";
 import {
   exchangeFirebaseIdToken,
@@ -62,6 +58,7 @@ import {
   getDocumentStatus,
 } from "@/utils/invoice/documentKind";
 import InvoiceAiPanel from "@/pageComponents/invoice/InvoiceAiPanel";
+import LiquidLogo from "@/pageComponents/invoice/LiquidLogo";
 import {
   CountUp,
   InvoiceStamp,
@@ -97,7 +94,8 @@ const formatDate = (value) => {
 const titleCase = (value) =>
   String(value || "Not available")
     .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+    .replace(/\b(Upi|Neft|Rtgs|Imps|Emi)\b/g, (word) => word.toUpperCase());
 
 const PREVIEW_PRODUCTS = 3;
 
@@ -327,18 +325,17 @@ const InvoiceError = ({ statusCode, onAccessGranted }) => {
         </title>
         <meta name="robots" content="noindex, nofollow, noarchive" />
       </Head>
-      <div className={styles.errorGlow} />
       <div className={styles.errorCard}>
         <div className={styles.errorLogo}>
-          <Image src={logo} alt="Aquakart" width={68} height={68} priority />
+          <LiquidLogo size={80} level={0.55} filling />
         </div>
         <span className={styles.eyebrow}>Aquakart invoices</span>
         <h1>
           {unauthorized
-            ? "Open your invoice."
+            ? "Open your invoice"
             : notFound
-              ? "We could not find that invoice."
-              : "The invoice is taking a pause."}
+              ? "We could not find that invoice"
+              : "The invoice service is not responding"}
         </h1>
         <p>
           {unauthorized
@@ -353,7 +350,9 @@ const InvoiceError = ({ statusCode, onAccessGranted }) => {
               ? "Check the invoice link and try again. The ID may be incomplete or no longer available."
               : "We could not reach the invoice service. Please wait a moment and try again."}
         </p>
-        {unauthorized && preview ? <InvoiceQuickView preview={preview} /> : null}
+        {unauthorized && preview ? (
+          <InvoiceQuickView preview={preview} />
+        ) : null}
         {clientAccessMessage ? (
           <p className={styles.accessError} role="alert">
             {clientAccessMessage}
@@ -414,16 +413,12 @@ const copyProductLink = async (href) => {
 };
 
 // One compact line item: picture, name, the arithmetic and quick actions.
-const ProductRow = ({ product, index, onAsk, grandTotal }) => {
+const ProductRow = ({ product, index, onAsk }) => {
   const href = getProductHref(product);
   const line = priceUtils.getLineAmounts(product);
   const tags = [product.productCategory, product.productSubcategory].filter(
     Boolean,
   );
-  const share =
-    grandTotal > 0
-      ? Math.min(100, Math.round((line.offerTotal / grandTotal) * 100))
-      : 0;
 
   return (
     <article className={styles.lineItem}>
@@ -482,16 +477,6 @@ const ProductRow = ({ product, index, onAsk, grandTotal }) => {
             <dd>{priceUtils.formatAmount(line.offerTotal)}</dd>
           </div>
         </dl>
-        {share > 0 ? (
-          <div
-            className={styles.lineShare}
-            title={`${share}% of the total`}
-            aria-label={`${share}% of the total`}
-          >
-            <span style={{ "--share": `${share}%` }} />
-            <small>{share}% of total</small>
-          </div>
-        ) : null}
       </div>
 
       <div className={styles.lineActions}>
@@ -720,7 +705,7 @@ const PartyCard = ({ invoice }) => {
     : [];
 
   return (
-    <section className={styles.partyCard}>
+    <section className={styles.partyCard} data-reveal>
       <header className={styles.partyHead}>
         <span className={styles.partyAvatar} aria-hidden="true">
           {initialsOf(name)}
@@ -790,7 +775,7 @@ const PartyCard = ({ invoice }) => {
   );
 };
 
-const TermCard = ({ term, index }) => {
+const TermCard = ({ term }) => {
   const Icon = term.icon;
 
   return (
@@ -798,9 +783,6 @@ const TermCard = ({ term, index }) => {
       <div className={styles.termTopline}>
         <span className={styles.termIcon} aria-hidden="true">
           <Icon size={18} strokeWidth={1.7} />
-        </span>
-        <span className={styles.termNumber}>
-          {String(index + 1).padStart(2, "0")}
         </span>
       </div>
       <h3>{term.title}</h3>
@@ -898,6 +880,35 @@ const InvoicePage = ({
     setAssistantContext,
   } = useAssistant();
   const hasInvoice = Boolean(invoice) && statusCode === 200;
+  const pageRef = useRef(null);
+
+  // Sections fade and rise in as they scroll into view. The class that hides
+  // them is only added here, so without JS or with reduced motion nothing
+  // is ever hidden.
+  useEffect(() => {
+    const root = pageRef.current;
+    if (!hasInvoice || !root || typeof IntersectionObserver === "undefined") {
+      return undefined;
+    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return undefined;
+    }
+    root.classList.add(styles.revealReady);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.setAttribute("data-shown", "");
+          observer.unobserve(entry.target);
+        });
+      },
+      { rootMargin: "0px 0px -8% 0px" },
+    );
+    root
+      .querySelectorAll("[data-reveal]")
+      .forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [hasInvoice]);
 
   const recommendations = useMemo(
     () => (hasInvoice ? recommendProducts(invoice, catalogue) : []),
@@ -1036,7 +1047,7 @@ const InvoicePage = ({
   };
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} ref={pageRef}>
       <Head>
         <title>
           {documentLabel} | Aquakart {documentName}
@@ -1049,17 +1060,14 @@ const InvoicePage = ({
         <meta name="googlebot" content="noindex, nofollow, noarchive" />
       </Head>
 
-      <div className={styles.ambientOne} aria-hidden="true" />
-      <div className={styles.ambientTwo} aria-hidden="true" />
-
       <header className={styles.commandBar}>
         <Link href="/" className={styles.brand} aria-label="Aquakart home">
           <span className={styles.brandMark}>
-            <Image src={logo} alt="" width={40} height={40} priority />
+            <LiquidLogo size={36} level={0.5} />
           </span>
           <span>
             <strong>Aquakart</strong>
-            <small>{documentName} studio</small>
+            <small>{documentName}</small>
           </span>
         </Link>
 
@@ -1144,7 +1152,7 @@ const InvoicePage = ({
             <div className={styles.heroBrand}>
               <InvoiceStamp status={docStatus} documentLabel={documentLabel} />
               <div>
-                <span className={styles.eyebrow}>Premium water solutions</span>
+                <span className={styles.eyebrow}>Aquakart water solutions</span>
                 <h1>{documentTitle}</h1>
                 <p>GSTIN 36AJOPH6387A1Z2</p>
               </div>
@@ -1168,16 +1176,15 @@ const InvoicePage = ({
 
           {/* The greeting lives in the hero so it costs no extra scroll. */}
           <div className={styles.greetingCard}>
-            <span className={styles.greetingIcon} aria-hidden="true">
-              <Sparkles size={22} strokeWidth={1.7} />
-            </span>
             <div className={styles.greetingCopy}>
               <span className={styles.eyebrow}>A note from Aquakart</span>
-              <h2>Thank you, {customerDisplayName}.</h2>
+              <h2>Thank you, {customerDisplayName}</h2>
               <p>
-                {isPaid
-                  ? "Your payment is received and your purchase is documented. Keep this receipt for warranty and service support."
-                  : `Your purchase is documented and payment is pending. Once it is paid, this ${documentName.toLowerCase()} becomes your receipt for warranty and service support.`}
+                {docStatus.key === "quotation"
+                  ? "Here is your quotation. Nothing is billed until you confirm the order."
+                  : isPaid
+                    ? "Your payment is received and your purchase is documented. Keep this receipt for warranty and service support."
+                    : `Your purchase is documented and payment is pending. Once it is paid, this ${documentName.toLowerCase()} becomes your receipt for warranty and service support.`}
               </p>
             </div>
             <div className={styles.greetingFacts}>
@@ -1192,7 +1199,7 @@ const InvoicePage = ({
           </div>
         </section>
 
-        <section className={styles.metaStrip}>
+        <section className={styles.metaStrip} data-reveal>
           <div>
             <CalendarDays size={18} />
             <span>{documentName} date</span>
@@ -1220,17 +1227,10 @@ const InvoicePage = ({
         <StatusLegend status={docStatus} documentName={documentName} />
 
         <div className={styles.invoiceGrid}>
-          <section className={styles.productsColumn}>
+          <PartyCard invoice={invoice} />
+          <section className={styles.productsColumn} data-reveal>
             <div className={styles.sectionHeading}>
-              <div>
-                <span className={styles.sectionIndex}>01</span>
-                <div>
-                  <span className={styles.eyebrow}>
-                    {documentName} contents
-                  </span>
-                  <h2>Products supplied</h2>
-                </div>
-              </div>
+              <h2>Products</h2>
               <span className={styles.itemCount}>
                 {invoice.products.length}{" "}
                 {invoice.products.length === 1 ? "item" : "items"}
@@ -1244,7 +1244,6 @@ const InvoicePage = ({
                     key={product.id || `${product.productName}-${index}`}
                     product={product}
                     index={index}
-                    grandTotal={amounts.grandTotal}
                     onAsk={assistantAvailable ? askAboutPurchased : null}
                   />
                 ))
@@ -1266,12 +1265,21 @@ const InvoicePage = ({
               <span>Amount in words</span>
               <strong>{priceUtils.numberToWords(amounts.grandTotal)}</strong>
             </div>
+
+            {/* Questions about the bill sit next to what was bought. */}
+            {assistantAvailable ? (
+              <InvoiceAiPanel
+                invoice={invoice}
+                status={docStatus}
+                amounts={amounts}
+                documentName={documentName}
+                openAssistant={openAssistant}
+              />
+            ) : null}
           </section>
 
           <aside className={styles.detailsRail}>
-            <PartyCard invoice={invoice} />
-
-            <section className={styles.summaryCard}>
+            <section className={styles.summaryCard} data-reveal>
               <div className={styles.summaryTopline}>
                 <div>
                   <small>
@@ -1283,9 +1291,8 @@ const InvoicePage = ({
                           ? "GST claim tax invoice"
                           : "Retail tax invoice"}
                   </small>
-                  <h2>Price calculation</h2>
+                  <h2>Price summary</h2>
                 </div>
-                <FileText size={21} />
               </div>
 
               {amounts.hasDiscount ? (
@@ -1380,26 +1387,14 @@ const InvoicePage = ({
           </aside>
         </div>
 
-        {assistantAvailable ? (
-          <InvoiceAiPanel
-            invoice={invoice}
-            status={docStatus}
-            amounts={amounts}
-            documentName={documentName}
-            openAssistant={openAssistant}
-          />
-        ) : null}
-
         {recommendations.length ? (
           <section
             className={styles.recoSection}
+            data-reveal
             aria-labelledby="invoice-recommendations"
           >
             <div className={styles.recoHeading}>
               <div>
-                <span className={styles.recoIcon} aria-hidden="true">
-                  <ShoppingBag size={18} />
-                </span>
                 <div>
                   <span className={styles.eyebrow}>Picked for your home</span>
                   <h2 id="invoice-recommendations">
@@ -1432,25 +1427,20 @@ const InvoicePage = ({
           </section>
         ) : null}
 
-        <section className={styles.legalSection}>
+        <section className={styles.legalSection} data-reveal>
           <div className={styles.legalHeading}>
             <div className={styles.legalTitleGroup}>
-              <span className={styles.sectionIndex}>02</span>
-              <div>
-                <span className={styles.eyebrow}>Commercial framework</span>
-                <h2>Terms, responsibilities and service standards</h2>
-              </div>
+              <h2>Terms and conditions</h2>
             </div>
             <p>
-              These terms form part of this invoice and clarify the delivery,
-              installation, payment and after-sales responsibilities associated
-              with the supplied products.
+              These terms are part of this {documentName.toLowerCase()}: who
+              handles delivery, installation, payment and after-sales service.
             </p>
           </div>
 
           <div className={styles.termsGrid}>
-            {termsAndConditions.map((term, index) => (
-              <TermCard key={term.title} term={term} index={index} />
+            {termsAndConditions.map((term) => (
+              <TermCard key={term.title} term={term} />
             ))}
           </div>
 
@@ -1458,24 +1448,19 @@ const InvoicePage = ({
             <div>
               <ShieldCheck size={23} strokeWidth={1.7} />
               <div>
-                <span>Service assurance</span>
-                <strong>Protected by Aquakart support standards</strong>
+                <span>Keep this {documentName.toLowerCase()}</span>
+                <strong>You need it for warranty and service</strong>
               </div>
             </div>
             <p>
-              Retain this invoice for installation verification, warranty
-              registration, service coordination and eligible replacement
-              requests.
+              Show it for installation checks, warranty registration, service
+              visits and eligible replacements.
             </p>
           </div>
 
           <div className={styles.careSection}>
             <div className={styles.careHeading}>
-              <div>
-                <span className={styles.eyebrow}>Manufacturer assistance</span>
-                <h3>Customer-care directory</h3>
-              </div>
-              <span>Direct product support</span>
+              <h3>Manufacturer customer care</h3>
             </div>
             <div className={styles.careGrid}>
               {customerCare.map((contact) => (
@@ -1486,18 +1471,14 @@ const InvoicePage = ({
         </section>
 
         {invoice.po ? (
-          <section className={styles.paymentInstructions}>
+          <section className={styles.paymentInstructions} data-reveal>
             <div className={styles.paymentHeading}>
               <div className={styles.paymentTitleGroup}>
-                <span className={styles.paymentIndex}>03</span>
-                <div>
-                  <span className={styles.eyebrow}>Purchase-order payment</span>
-                  <h2>Approved remittance details</h2>
-                </div>
+                <h2>Bank details</h2>
               </div>
               <p>
-                Use the invoice number as the payment reference and share the
-                remittance confirmation with Aquakart for allocation.
+                Use the invoice number as the payment reference and send the
+                transfer confirmation to Aquakart.
               </p>
             </div>
 
@@ -1523,9 +1504,9 @@ const InvoicePage = ({
           </section>
         ) : null}
 
-        <footer className={styles.invoiceFooter}>
+        <footer className={styles.invoiceFooter} data-reveal>
           <div>
-            <strong>Thank you for choosing Aquakart.</strong>
+            <strong>Thank you for choosing Aquakart</strong>
             <span>support@aquakart.co.in · +91 90147 74667</span>
           </div>
           <p>

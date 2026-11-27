@@ -98,13 +98,12 @@ const InvoiceAiPanel = ({
       </div>
 
       <div className={styles.aiChips} role="list">
-        {questions.map((entry, index) => (
+        {questions.map((entry) => (
           <button
             key={entry.label}
             type="button"
             role="listitem"
             className={styles.aiChip}
-            style={{ animationDelay: `${index * 70}ms` }}
             onClick={() => openAssistant(entry.question, { autoSend: true })}
             title={entry.question}
           >
