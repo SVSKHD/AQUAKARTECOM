@@ -2506,6 +2506,20 @@
   }
 }
 
+/* The stamp's ring turns slowly; the logo and badge in the middle stay still. */
+@media (prefers-reduced-motion: no-preference) {
+  .stampRing {
+    transform-origin: 50% 50%;
+    animation: stampTurn 24s linear infinite;
+  }
+}
+
+@keyframes stampTurn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes bandLight {
   to {
     transform: translateX(200%);
@@ -2914,7 +2928,8 @@
     -webkit-print-color-adjust: exact;
   }
 
-  .stampBadge {
+  .stampBadge,
+  .stampRing {
     animation: none;
   }
 }
